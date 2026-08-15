@@ -34,11 +34,12 @@ jobs:
       - name: Install Flutter Dependencies
         run: flutter pub get
 
-      # 5. Install CocoaPods with repo update
+      # 5. Install CocoaPods with repo update and strip Xcode 16 incompatible flags
       - name: Install iOS Pods
         run: |
           cd ios
           pod install --repo-update
+          find Pods -type f \( -name "*.xcconfig" -o -name "*.pbxproj" -o -name "*.sh" \) -exec sed -i '' 's/-G //g; s/-G\b//g' {} + || true
           cd ..
 
       # 6. Build iOS app bundle (unsigned)

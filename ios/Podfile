@@ -44,23 +44,29 @@ post_install do |installer|
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
       config.build_settings['ENABLE_BITCODE'] = 'NO'
       
-      # Strip invalid -G flag passed to clang in Xcode 16
-      if config.build_settings['OTHER_CFLAGS']
-        if config.build_settings['OTHER_CFLAGS'].is_a?(String)
-          config.build_settings['OTHER_CFLAGS'] = config.build_settings['OTHER_CFLAGS'].gsub(/-G(\s+|$)/, '')
-        elsif config.build_settings['OTHER_CFLAGS'].is_a?(Array)
-          config.build_settings['OTHER_CFLAGS'] = config.build_settings['OTHER_CFLAGS'].reject { |f| f == '-G' }
+      # Strip invalid -G flag from all flags
+      ['OTHER_CFLAGS', 'OTHER_CPLUSPLUSFLAGS', 'OTHER_ASMFLAGS', 'ASFLAGS'].each do |key|
+        if config.build_settings[key]
+          if config.build_settings[key].is_a?(String)
+            config.build_settings[key] = config.build_settings[key].gsub(/-G(\s+|$)/, '')
+          elsif config.build_settings[key].is_a?(Array)
+            config.build_settings[key] = config.build_settings[key].reject { |f| f == '-G' }
+          end
         end
       end
     end
-  end
 
-  installer.pods_project.targets.each do |target|
-    if ['BoringSSL-GRPC', 'gRPC-C++', 'gRPC-Core'].include?(target.name)
-      target.source_build_phase.files.each do |file|
-        if file.settings && file.settings['COMPILER_FLAGS']
-          flags = file.settings['COMPILER_FLAGS']
-          file.settings['COMPILER_FLAGS'] = flags.gsub(/-G(\s+|$)/, '')
+    target.build_phases.each do |phase|
+      if phase.respond_to?(:files)
+        phase.files.each do |file|
+          if file.settings && file.settings['COMPILER_FLAGS']
+            flags = file.settings['COMPILER_FLAGS']
+            if flags.is_a?(String)
+              file.settings['COMPILER_FLAGS'] = flags.gsub(/-G(\s+|$)/, '')
+            elsif flags.is_a?(Array)
+              file.settings['COMPILER_FLAGS'] = flags.reject { |f| f == '-G' }
+            end
+          end
         end
       end
     end
