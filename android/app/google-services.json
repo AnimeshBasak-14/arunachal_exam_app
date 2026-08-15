@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "646900488202",
+    "project_id": "arunachal-exam-app",
+    "storage_bucket": "arunachal-exam-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:646900488202:android:2d474107c037f4d34e67f3",
+        "android_client_info": {
+          "package_name": "com.example.arunachal_exam_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8KsvkrcI1RkelPfPxqeHzzC8H-PBENPk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

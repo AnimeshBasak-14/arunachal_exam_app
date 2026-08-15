@@ -30,8 +30,8 @@ class SocialButton extends StatelessWidget {
         color = const Color(0xFF1877F2);
         break;
       case SocialType.google:
-        label = 'g+ google';
-        icon = Icons.g_mobiledata_rounded;
+        label = 'Gmail';
+        icon = Icons.mail_rounded;
         color = const Color(0xFFEA4335);
         break;
       case SocialType.instagram:

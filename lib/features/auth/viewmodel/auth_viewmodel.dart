@@ -1,100 +1,191 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/services/storage_service.dart';
 import '../../../core/services/service_providers.dart';
+import '../../../core/services/storage_service.dart';
+import '../../../core/services/firebase_service.dart';
 import '../../../models/user_model.dart';
-
-final authViewModelProvider = StateNotifierProvider<AuthViewModel, AuthState>((ref) {
-  final storage = ref.watch(storageServiceProvider);
-  return AuthViewModel(storage);
-});
 
 class AuthState {
   final bool isLoggedIn;
-  final bool isLoading;
   final UserModel? user;
+  final bool isLoading;
   final String? errorMessage;
 
   AuthState({
-    required this.isLoggedIn,
-    this.isLoading = false,
+    this.isLoggedIn = false,
     this.user,
+    this.isLoading = false,
     this.errorMessage,
   });
 
   AuthState copyWith({
     bool? isLoggedIn,
-    bool? isLoading,
     UserModel? user,
+    bool? isLoading,
     String? errorMessage,
   }) {
     return AuthState(
       isLoggedIn: isLoggedIn ?? this.isLoggedIn,
-      isLoading: isLoading ?? this.isLoading,
       user: user ?? this.user,
-      errorMessage: errorMessage ?? this.errorMessage,
+      isLoading: isLoading ?? this.isLoading,
+      errorMessage: errorMessage,
     );
   }
 }
 
 class AuthViewModel extends StateNotifier<AuthState> {
   final StorageService _storage;
+  final FirebaseService _firebase;
 
-  AuthViewModel(this._storage)
+  AuthViewModel(this._storage, this._firebase)
       : super(AuthState(
           isLoggedIn: _storage.isLoggedIn,
           user: _storage.isLoggedIn
-              ? UserModel(
-                  name: _storage.userName,
-                  email: _storage.userEmail,
-                  phone: _storage.userPhone,
-                )
+              ? (_storage.getAccountData(_storage.userEmail) ??
+                  UserModel(
+                    name: _storage.userName,
+                    email: _storage.userEmail,
+                    phone: _storage.userPhone,
+                    profilePic: _storage.userProfilePic,
+                    dob: _storage.userDob,
+                    rating: _storage.userRating,
+                    city: _storage.userCity,
+                  ))
               : null,
         ));
 
-  Future<bool> login(String emailOrPhone, String password) async {
+  void clearError() {
+    state = state.copyWith(errorMessage: null);
+  }
+
+  Future<bool> login(
+    String emailOrPhone,
+    String password,
+  ) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
-    // Mock validation & network latency simulation
-    await Future.delayed(const Duration(milliseconds: 600));
+    await Future.delayed(const Duration(milliseconds: 500));
 
-    if (emailOrPhone.isEmpty || password.isEmpty) {
-      state = state.copyWith(isLoading: false, errorMessage: 'Fields cannot be empty');
+    final cleanInput = emailOrPhone.trim().toLowerCase();
+    final isGmail = cleanInput.endsWith('@gmail.com');
+    final isPhone = RegExp(r'^\d{10}$').hasMatch(cleanInput);
+
+    if (!isGmail && !isPhone) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Invalid ID. Only Gmail (@gmail.com) or 10-digit Phone numbers allowed.',
+      );
       return false;
     }
 
-    if (password.length < 6) {
-      state = state.copyWith(isLoading: false, errorMessage: 'Password must be at least 6 characters');
+    final registeredPassword = _storage.getRegisteredPassword(cleanInput);
+    if (registeredPassword == null) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Account does not exist. Please register first.',
+      );
       return false;
     }
 
-    String extractedName = 'Student Name';
-    if (emailOrPhone.contains('@')) {
-      final part = emailOrPhone.split('@').first;
-      extractedName = part.substring(0, 1).toUpperCase() + part.substring(1);
-    } else if (emailOrPhone.isNotEmpty) {
-      extractedName = 'Student Name';
+    if (registeredPassword != password) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Incorrect password. Please try again.',
+      );
+      return false;
     }
 
-    final user = UserModel(
-      name: extractedName,
-      email: emailOrPhone.contains('@') ? emailOrPhone : 'student@arunachal.in',
-      phone: emailOrPhone.contains('@') ? '9876543210' : emailOrPhone,
+    // Load per-account reserved model if present
+    final existingAccount = _storage.getAccountData(cleanInput);
+    final user = existingAccount ??
+        UserModel(
+          name: _storage.getRegisteredName(cleanInput) ?? 'Student Name',
+          email: isGmail ? cleanInput : 'candidate.google@gmail.com',
+          phone: isPhone ? cleanInput : '9876543210',
+          profilePic: _storage.userProfilePic,
+          dob: _storage.getRegisteredDob(cleanInput) ?? '2000-01-01',
+          rating: _storage.getRegisteredRating(cleanInput),
+          city: _storage.getRegisteredCity(cleanInput),
+        );
+
+    await _storage.saveUser(
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      profilePic: user.profilePic,
+      dob: user.dob,
+      rating: user.rating,
+      city: user.city,
     );
-
-    await _storage.saveUser(name: user.name, email: user.email, phone: user.phone);
     await _storage.setLoggedIn(true);
+
+    // Sync with Firestore & Analytics
+    try {
+      await _firebase.logLogin('email_or_phone');
+      await _firebase.syncUserProfile(user);
+    } catch (_) {}
 
     state = AuthState(isLoggedIn: true, user: user);
     return true;
   }
 
-  Future<bool> register(String emailOrPhone, String password, String confirmPassword) async {
+  Future<void> updateRating(int newRating) async {
+    if (state.user == null) return;
+    final updated = state.user!.copyWith(rating: newRating);
+    await _storage.saveUser(
+      name: updated.name,
+      email: updated.email,
+      phone: updated.phone,
+      profilePic: updated.profilePic,
+      dob: updated.dob,
+      rating: newRating,
+      city: updated.city,
+    );
+    state = state.copyWith(user: updated);
+  }
+
+  Future<bool> register({
+    required String name,
+    required String emailOrPhone,
+    required String dob,
+    required String password,
+    required String confirmPassword,
+    required String otpEntered,
+    required String otpSent,
+    String city = 'Itanagar',
+  }) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
-    await Future.delayed(const Duration(milliseconds: 600));
+    await Future.delayed(const Duration(milliseconds: 500));
 
-    if (emailOrPhone.isEmpty || password.isEmpty) {
-      state = state.copyWith(isLoading: false, errorMessage: 'Fields cannot be empty');
+    final cleanInput = emailOrPhone.trim().toLowerCase();
+    final isGmail = cleanInput.endsWith('@gmail.com');
+    final isPhone = RegExp(r'^\d{10}$').hasMatch(cleanInput);
+
+    if (name.trim().isEmpty) {
+      state = state.copyWith(isLoading: false, errorMessage: 'Please enter your name');
+      return false;
+    }
+
+    if (!isGmail && !isPhone) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Only Gmail (@gmail.com) or 10-digit Phone numbers are allowed.',
+      );
+      return false;
+    }
+
+    // Check if account already exists
+    final existingPwd = _storage.getRegisteredPassword(cleanInput);
+    if (existingPwd != null) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'An account already exists for this Gmail/Phone. Please log in.',
+      );
+      return false;
+    }
+
+    if (otpEntered.isEmpty || otpEntered != otpSent) {
+      state = state.copyWith(isLoading: false, errorMessage: 'Wrong OTP entered. Please check and try again.');
       return false;
     }
 
@@ -108,20 +199,105 @@ class AuthViewModel extends StateNotifier<AuthState> {
       return false;
     }
 
-    String extractedName = 'Student Name';
-    if (emailOrPhone.contains('@')) {
-      final part = emailOrPhone.split('@').first;
-      extractedName = part.substring(0, 1).toUpperCase() + part.substring(1);
-    }
-
     final user = UserModel(
-      name: extractedName,
-      email: emailOrPhone.contains('@') ? emailOrPhone : 'student@arunachal.in',
-      phone: emailOrPhone.contains('@') ? '9876543210' : emailOrPhone,
+      name: name,
+      email: isGmail ? cleanInput : 'candidate.google@gmail.com',
+      phone: isPhone ? cleanInput : '9876543210',
+      profilePic: 'avatar_green',
+      dob: dob,
+      rating: 1200,
+      city: city,
     );
 
-    await _storage.saveUser(name: user.name, email: user.email, phone: user.phone);
+    // Persist credentials in local storage database
+    await _storage.registerUserAccount(
+      emailOrPhone: cleanInput,
+      password: password,
+      name: name,
+      dob: dob,
+      rating: 1200,
+      city: city,
+    );
+
+    // Save active logged-in user profile & account dictionary
+    await _storage.saveUser(
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      profilePic: user.profilePic,
+      dob: user.dob,
+      rating: user.rating,
+      city: user.city,
+    );
     await _storage.setLoggedIn(true);
+
+    // Sync with Firestore & Analytics
+    try {
+      await _firebase.logSignUp('manual_register');
+      await _firebase.syncUserProfile(user);
+    } catch (_) {}
+
+    state = AuthState(isLoggedIn: true, user: user);
+    return true;
+  }
+
+  Future<bool> loginSocial(String provider, {String? email}) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    await Future.delayed(const Duration(milliseconds: 400));
+
+    final selectedEmail = (email ?? 'candidate.google@gmail.com').trim().toLowerCase();
+
+    // Check if user previously existed with this email
+    final savedAccount = _storage.getAccountData(selectedEmail);
+
+    final UserModel user;
+    if (savedAccount != null) {
+      // Restore previously saved profile, rating, and city!
+      user = savedAccount;
+    } else {
+      final parts = selectedEmail.split('@')[0].split('.');
+      final capName = parts.map((w) {
+        if (w.isEmpty) return '';
+        return w[0].toUpperCase() + w.substring(1);
+      }).join(' ');
+
+      user = UserModel(
+        name: capName.isNotEmpty ? capName : 'Google Candidate',
+        email: selectedEmail,
+        phone: '9876543210',
+        profilePic: 'avatar_gold',
+        dob: '2000-01-01',
+        rating: 1200,
+        city: 'Itanagar',
+      );
+
+      // Register account credentials if new
+      await _storage.registerUserAccount(
+        emailOrPhone: user.email,
+        password: 'socialpassword',
+        name: user.name,
+        dob: user.dob,
+        rating: 1200,
+        city: 'Itanagar',
+      );
+    }
+
+    await _storage.saveUser(
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      profilePic: user.profilePic,
+      dob: user.dob,
+      rating: user.rating,
+      city: user.city,
+    );
+    await _storage.setLoggedIn(true);
+
+    // Sync with Firestore & Analytics
+    try {
+      await _firebase.logLogin(provider);
+      await _firebase.syncUserProfile(user);
+    } catch (_) {}
 
     state = AuthState(isLoggedIn: true, user: user);
     return true;
@@ -131,17 +307,62 @@ class AuthViewModel extends StateNotifier<AuthState> {
     required String name,
     required String email,
     required String phone,
+    String? profilePic,
+    String? dob,
+    int? rating,
+    String? city,
   }) async {
     if (state.user == null) return;
     state = state.copyWith(isLoading: true);
-    await Future.delayed(const Duration(milliseconds: 300));
-    await _storage.saveUser(name: name, email: email, phone: phone);
-    final updated = state.user!.copyWith(name: name, email: email, phone: phone);
+    await Future.delayed(const Duration(milliseconds: 200));
+
+    final selectedPic = profilePic ?? state.user!.profilePic;
+    final selectedDob = dob ?? state.user!.dob;
+    final selectedRating = rating ?? state.user!.rating;
+    final selectedCity = city ?? state.user!.city;
+
+    // Update registered paths
+    await _storage.updateRegisteredAccount(state.user!.email, email, name, selectedDob, selectedRating);
+    if (state.user!.phone.isNotEmpty) {
+      await _storage.updateRegisteredAccount(state.user!.phone, phone, name, selectedDob, selectedRating);
+    }
+
+    await _storage.saveUser(
+      name: name,
+      email: email,
+      phone: phone,
+      profilePic: selectedPic,
+      dob: selectedDob,
+      rating: selectedRating,
+      city: selectedCity,
+    );
+
+    final updated = state.user!.copyWith(
+      name: name,
+      email: email,
+      phone: phone,
+      profilePic: selectedPic,
+      dob: selectedDob,
+      rating: selectedRating,
+      city: selectedCity,
+    );
+
+    // Sync profile updates to Firestore
+    try {
+      await _firebase.syncUserProfile(updated);
+    } catch (_) {}
+
     state = state.copyWith(isLoading: false, user: updated);
   }
 
   Future<void> logout() async {
     await _storage.clearUser();
-    state = AuthState(isLoggedIn: false);
+    state = AuthState(isLoggedIn: false, user: null);
   }
 }
+
+final authViewModelProvider = StateNotifierProvider<AuthViewModel, AuthState>((ref) {
+  final storage = ref.watch(storageServiceProvider);
+  final firebase = ref.watch(firebaseServiceProvider);
+  return AuthViewModel(storage, firebase);
+});

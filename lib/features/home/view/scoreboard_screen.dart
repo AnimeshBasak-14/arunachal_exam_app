@@ -1,0 +1,328 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/rank_utils.dart';
+import '../../auth/viewmodel/auth_viewmodel.dart';
+
+// Simulated global competitors
+final _mockCompetitors = [
+  {'name': 'Tenzin Dorje', 'email': 'tenzin@gmail.com', 'rating': 1580, 'state': 'Tawang'},
+  {'name': 'Mepung Loyi', 'email': 'mepung@gmail.com', 'rating': 1540, 'state': 'Itanagar'},
+  {'name': 'Geyum Riba', 'email': 'geyum@gmail.com', 'rating': 1510, 'state': 'Pasighat'},
+  {'name': 'Chukhu Takia', 'email': 'chukhu@gmail.com', 'rating': 1490, 'state': 'Naharlagun'},
+  {'name': 'Nabam Riram', 'email': 'nabam@gmail.com', 'rating': 1465, 'state': 'Ziro'},
+  {'name': 'Koj Naro', 'email': 'koj@gmail.com', 'rating': 1440, 'state': 'Along'},
+  {'name': 'Bamang Tago', 'email': 'bamang@gmail.com', 'rating': 1420, 'state': 'Bomdila'},
+  {'name': 'Likha Pul', 'email': 'likha@gmail.com', 'rating': 1395, 'state': 'Roing'},
+  {'name': 'Talom Rupam', 'email': 'talom@gmail.com', 'rating': 1370, 'state': 'Seppa'},
+  {'name': 'Dungey Karga', 'email': 'dungey@gmail.com', 'rating': 1340, 'state': 'Tezu'},
+  {'name': 'Yomge Ete', 'email': 'yomge@gmail.com', 'rating': 1315, 'state': 'Daporijo'},
+  {'name': 'Oken Tayeng', 'email': 'oken@gmail.com', 'rating': 1290, 'state': 'Changlang'},
+  {'name': 'Mudang Komo', 'email': 'mudang@gmail.com', 'rating': 1260, 'state': 'Longding'},
+  {'name': 'Hano Tara', 'email': 'hano@gmail.com', 'rating': 1235, 'state': 'Yupia'},
+  {'name': 'Jorum Bam', 'email': 'jorum@gmail.com', 'rating': 1210, 'state': 'Basar'},
+];
+
+String _rankSuffix(int rank) {
+  if (rank == 1) return '🥇';
+  if (rank == 2) return '🥈';
+  if (rank == 3) return '🥉';
+  return '#$rank';
+}
+
+class ScoreboardScreen extends ConsumerWidget {
+  const ScoreboardScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentUser = ref.watch(authViewModelProvider).user;
+    final userRating = currentUser?.rating ?? 1200;
+    final userName = currentUser?.name ?? 'You';
+
+    final userTier = RankUtils.getTier(userRating);
+
+    // Build full leaderboard: insert current user at proper position
+    final allEntries = [
+      ..._mockCompetitors,
+      {'name': userName, 'email': currentUser?.email ?? '', 'rating': userRating, 'state': 'Me', 'isMe': true},
+    ];
+    allEntries.sort((a, b) => (b['rating'] as int).compareTo(a['rating'] as int));
+
+    final myRank = allEntries.indexWhere((e) => e['isMe'] == true) + 1;
+    final topThree = allEntries.take(3).toList();
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          onPressed: () => context.pop(),
+        ),
+        title: const Text('Global Scoreboard'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history_rounded),
+            tooltip: 'Trophy History',
+            onPressed: () => context.push('/trophy-history'),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          // ── PODIUM ───────────────────────────────────────────────────────
+          Container(
+            margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1F6F4A), Color(0xFF14B8A6)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusXL),
+            ),
+            child: Column(
+              children: [
+                const Text(
+                  'TOP COMPETITORS',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white70, letterSpacing: 1.4),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    // 2nd place
+                    if (topThree.length > 1) _buildPodiumEntry(topThree[1], 2, 70),
+                    // 1st place
+                    if (topThree.isNotEmpty) _buildPodiumEntry(topThree[0], 1, 90),
+                    // 3rd place
+                    if (topThree.length > 2) _buildPodiumEntry(topThree[2], 3, 55),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          // ── MY RANK BANNER ──────────────────────────────────────────────
+          Container(
+            margin: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppColors.primaryLight,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+            ),
+            child: Row(
+              children: [
+                Text(
+                  'Rank #$myRank',
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryDark, fontSize: 13.5),
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: userTier.color.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: userTier.color.withOpacity(0.4)),
+                    ),
+                    child: Text(
+                      userTier.title,
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: userTier.color),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.emoji_events_rounded, color: AppColors.accent, size: 16),
+                    const SizedBox(width: 4),
+                    Text(
+                      '$userRating 🏆',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          // ── FULL LEADERBOARD ─────────────────────────────────────────────
+          Expanded(
+            child: ListView.separated(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              itemCount: allEntries.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 6),
+              itemBuilder: (context, index) {
+                final entry = allEntries[index];
+                final rank = index + 1;
+                final isMe = entry['isMe'] == true;
+                final rating = entry['rating'] as int;
+                final tier = RankUtils.getTier(rating);
+
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: isMe ? AppColors.primaryLight.withOpacity(0.6) : AppColors.surface,
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusL),
+                    border: Border.all(
+                      color: isMe ? AppColors.primary.withOpacity(0.4) : AppColors.divider,
+                      width: isMe ? 1.5 : 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      // Rank
+                      SizedBox(
+                        width: 32,
+                        child: rank <= 3
+                            ? Text(
+                                _rankSuffix(rank),
+                                style: const TextStyle(fontSize: 18),
+                                textAlign: TextAlign.center,
+                              )
+                            : Text(
+                                '#$rank',
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: isMe ? AppColors.primary : AppColors.textSecondary,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Avatar
+                      CircleAvatar(
+                        radius: 17,
+                        backgroundColor: isMe ? AppColors.primary : tier.color.withOpacity(0.22),
+                        child: Text(
+                          (entry['name'] as String).substring(0, 1),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            color: isMe ? Colors.white : tier.color,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Name and State
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              isMe ? '$userName (You)' : entry['name'] as String,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13.5,
+                                color: isMe ? AppColors.primaryDark : AppColors.textPrimary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                  decoration: BoxDecoration(
+                                    color: tier.color.withOpacity(0.12),
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  child: Text(
+                                    tier.title,
+                                    style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: tier.color),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    entry['state'] as String,
+                                    style: const TextStyle(fontSize: 11, color: AppColors.textHint),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      // Rating
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.emoji_events_rounded, color: AppColors.accent, size: 14),
+                              const SizedBox(width: 2),
+                              Text(
+                                '$rating',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.textPrimary),
+                              ),
+                            ],
+                          ),
+                          const Text('Trophies', style: TextStyle(fontSize: 9.5, color: AppColors.textHint)),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPodiumEntry(Map<String, dynamic> entry, int rank, double height) {
+    final isMe = entry['isMe'] == true;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        CircleAvatar(
+          radius: rank == 1 ? 26 : 20,
+          backgroundColor: Colors.white.withOpacity(0.2),
+          child: Text(
+            (entry['name'] as String).substring(0, 1),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: rank == 1 ? 20 : 16, color: Colors.white),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          isMe ? 'You' : (entry['name'] as String).split(' ').first,
+          style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        Text(
+          '${entry['rating']}',
+          style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.75)),
+        ),
+        const SizedBox(height: 4),
+        Container(
+          width: rank == 1 ? 80 : 65,
+          height: height,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.15),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+          ),
+          child: Center(
+            child: Text(
+              _rankSuffix(rank),
+              style: TextStyle(fontSize: rank == 1 ? 28 : 22),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}

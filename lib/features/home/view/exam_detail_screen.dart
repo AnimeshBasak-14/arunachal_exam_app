@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../viewmodel/exam_viewmodel.dart';
+import '../../../models/exam.dart';
 
 class ExamDetailScreen extends ConsumerStatefulWidget {
   final String examId;
@@ -15,6 +16,101 @@ class ExamDetailScreen extends ConsumerStatefulWidget {
 
 class _ExamDetailScreenState extends ConsumerState<ExamDetailScreen> {
   int? _expandedIndex;
+
+  List<Widget> _buildModuleContent(BuildContext context, Exam exam, ModuleItem module) {
+    if (module.title == 'Syllabus') {
+      return module.details.map((detail) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.s),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(top: 6, right: 8),
+                child: Icon(Icons.circle, size: 6, color: AppColors.primary),
+              ),
+              Expanded(
+                child: Text(
+                  detail,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList();
+    } else if (module.title == 'PYQ') {
+      // Show list of previous year papers
+      final papers = [
+        {'name': 'APSSB CGL 2021 Solved Paper', 'code': 'CGL', 'year': 2021},
+        {'name': 'APSSB UDC 2019 Solved Paper', 'code': 'UDC', 'year': 2019},
+        {'name': 'APSSB CSLE 2023 Solved Paper', 'code': 'CSCE', 'year': 2023},
+      ];
+
+      return papers.map((p) {
+        final isPrimaryForThisExam = exam.code == p['code'];
+        return Container(
+          margin: const EdgeInsets.only(bottom: AppSpacing.s),
+          decoration: BoxDecoration(
+            color: isPrimaryForThisExam ? AppColors.primaryLight.withOpacity(0.3) : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: isPrimaryForThisExam ? AppColors.primary.withOpacity(0.3) : AppColors.divider),
+          ),
+          child: ListTile(
+            dense: true,
+            leading: const Icon(Icons.article_rounded, color: AppColors.primary, size: 20),
+            title: Text(
+              p['name'] as String,
+              style: TextStyle(
+                fontWeight: isPrimaryForThisExam ? FontWeight.bold : FontWeight.normal,
+                fontSize: 13,
+              ),
+            ),
+            subtitle: isPrimaryForThisExam ? const Text('Highly Recommended for this Exam', style: TextStyle(fontSize: 10, color: AppColors.primaryDark, fontWeight: FontWeight.bold)) : null,
+            trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: AppColors.textHint),
+            onTap: () {
+              context.push('/pyqs/${p['code']}/${p['year']}');
+            },
+          ),
+        );
+      }).toList();
+    } else if (module.title == 'QUIZ') {
+      // Mock test buttons
+      final quizzes = [
+        {'name': 'Full-length Mock Test', 'type': 'full', 'desc': '5-minute exam simulated with timer and ELO rating updates'},
+        {'name': 'Topic Test: Elementary Mathematics', 'type': 'topic_math', 'desc': 'Math questions with detailed step solutions'},
+        {'name': 'Topic Test: General English', 'type': 'topic_english', 'desc': 'Grammar and comprehension questions'},
+      ];
+
+      return quizzes.map((q) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: AppSpacing.s),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.divider),
+          ),
+          child: ListTile(
+            dense: true,
+            leading: const Icon(Icons.quiz_rounded, color: AppColors.primary, size: 20),
+            title: Text(
+              q['name'] as String,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+            subtitle: Text(q['desc'] as String, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+            trailing: const Icon(Icons.play_arrow_rounded, color: AppColors.primary),
+            onTap: () {
+              context.push('/mock-test/${exam.code}/${q['type']}');
+            },
+          ),
+        );
+      }).toList();
+    }
+    return [];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,22 +134,12 @@ class _ExamDetailScreenState extends ConsumerState<ExamDetailScreen> {
       ModuleItem(
         title: 'PYQ',
         icon: Icons.edit_note_rounded,
-        details: [
-          'APPSC ${exam.code} Prelims 2024 Past Paper (Solved)',
-          'APPSC ${exam.code} Prelims 2023 Past Paper (Solved)',
-          'APPSC ${exam.code} Mains General Studies 2022 Paper',
-          'Arunachal State GK Questions (2020-2024 Compilation)',
-        ],
+        details: [],
       ),
       ModuleItem(
         title: 'QUIZ',
         icon: Icons.assignment_outlined,
-        details: [
-          'Daily General Studies Quiz — 20 Questions (Active)',
-          'Arunachal Culture & Geography Quiz — 15 Questions (Active)',
-          'State Administration & Panchayats Quiz — 10 Questions (Completed)',
-          'General Mental Aptitude Test — 25 Questions (Active)',
-        ],
+        details: [],
       ),
     ];
 
@@ -64,7 +150,7 @@ class _ExamDetailScreenState extends ConsumerState<ExamDetailScreen> {
         children: [
           // Header Card
           Container(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.m, AppSpacing.xl, AppSpacing.m, AppSpacing.l),
+            padding: const EdgeInsets.fromLTRB(AppSpacing.s, AppSpacing.xl, AppSpacing.m, AppSpacing.l),
             decoration: BoxDecoration(
               gradient: themeGradient,
               borderRadius: const BorderRadius.only(
@@ -171,30 +257,7 @@ class _ExamDetailScreenState extends ConsumerState<ExamDetailScreen> {
                           padding: const EdgeInsets.all(AppSpacing.m),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: module.details.map((detail) {
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: AppSpacing.s),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Padding(
-                                      padding: EdgeInsets.only(top: 6, right: 8),
-                                      child: Icon(Icons.circle, size: 6, color: AppColors.primary),
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                        detail,
-                                        style: const TextStyle(
-                                          color: AppColors.textSecondary,
-                                          fontSize: 13,
-                                          height: 1.4,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
+                            children: _buildModuleContent(context, exam, module),
                           ),
                         ),
                       ],

@@ -1,17 +1,157 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/secondary_button.dart';
 import '../../../core/widgets/social_button.dart';
+import '../viewmodel/auth_viewmodel.dart';
 
-class WelcomeScreen extends StatelessWidget {
+class WelcomeScreen extends ConsumerWidget {
   const WelcomeScreen({super.key});
 
+  Widget _buildAccountTile(BuildContext context, String name, String email, Color color) {
+    final initials = name.split(' ').map((e) => e.isNotEmpty ? e[0].toUpperCase() : '').take(2).join();
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: CircleAvatar(
+        backgroundColor: color.withOpacity(0.12),
+        child: Text(
+          initials.isEmpty ? 'G' : initials,
+          style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 13),
+        ),
+      ),
+      title: Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+      subtitle: Text(email, style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary)),
+      onTap: () => Navigator.pop(context, email),
+    );
+  }
+
+  Future<String?> _showGoogleAccountChooser(BuildContext context) async {
+    return showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusXL),
+          ),
+          title: Row(
+            children: [
+              const Icon(Icons.account_circle_outlined, color: AppColors.primary, size: 24),
+              const SizedBox(width: 8),
+              const Text(
+                'Choose an account',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            height: 380,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'to continue to Arunachal Exam Prep',
+                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: AppSpacing.m),
+                Expanded(
+                  child: ListView(
+                    shrinkWrap: true,
+                    physics: const BouncingScrollPhysics(),
+                    children: [
+                      _buildAccountTile(context, 'Animesh Basak', 'basakanimesh16@gmail.com', Colors.teal),
+                      const Divider(height: 1),
+                      _buildAccountTile(context, 'Animesh Basak', 'basakanimesh49@gmail.com', Colors.blue),
+                      const Divider(height: 1),
+                      _buildAccountTile(context, 'COC DYSTOPIAN', 'amazonbose08@gmail.com', Colors.purple),
+                      const Divider(height: 1),
+                      _buildAccountTile(context, 'ANIMESH BASAK', 'animesh.cse.21@nitap.ac.in', Colors.orange),
+                      const Divider(height: 1),
+                      _buildAccountTile(context, 'ANIMESH BASAK', 'tourdelhikolkata@gmail.com', Colors.red),
+                      const Divider(height: 1),
+                      _buildAccountTile(context, 'ANIMESH BASAK', 'tourkgp2022@gmail.com', Colors.amber),
+                      const Divider(height: 1),
+                      _buildAccountTile(context, 'Animesh BASAK', 'internshipapply445@gmail.com', Colors.pink),
+                      const Divider(height: 1),
+                      _buildAccountTile(context, 'tournortheast', 'tournortheast182@gmail.com', Colors.indigo),
+                      const Divider(height: 1),
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.add_circle_outline_rounded, color: AppColors.textSecondary),
+                        title: const Text('Use another account', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                        onTap: () async {
+                          final newMail = await _showAddAccountDialog(context);
+                          if (newMail != null && context.mounted) {
+                            Navigator.pop(context, newMail);
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<String?> _showAddAccountDialog(BuildContext context) async {
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Sign in with Gmail'),
+          content: TextField(
+            controller: controller,
+            keyboardType: TextInputType.emailAddress,
+            decoration: const InputDecoration(
+              hintText: 'example@gmail.com',
+              labelText: 'Gmail Address',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('CANCEL'),
+            ),
+            TextButton(
+              onPressed: () {
+                final text = controller.text.trim();
+                if (text.toLowerCase().endsWith('@gmail.com')) {
+                  Navigator.pop(context, text);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Only @gmail.com accounts are allowed'), backgroundColor: AppColors.error),
+                  );
+                }
+              },
+              child: const Text('NEXT'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _handleSocialLogin(BuildContext context, WidgetRef ref, String provider) async {
+    final chosenEmail = await _showGoogleAccountChooser(context);
+    if (chosenEmail != null) {
+      final success = await ref.read(authViewModelProvider.notifier).loginSocial(provider, email: chosenEmail);
+      if (success && context.mounted) {
+        context.go('/home');
+      }
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       body: Stack(
         children: [
@@ -109,7 +249,7 @@ class WelcomeScreen extends StatelessWidget {
                   const SizedBox(height: AppSpacing.xxl),
                   // Social Login section
                   Text(
-                    AppStrings.orConnectWith,
+                    'Or Connect with Gmail',
                     style: TextStyle(
                       color: AppColors.textWhite.withOpacity(0.7),
                       fontSize: 12,
@@ -117,24 +257,9 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.m),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SocialButton(
-                        type: SocialType.twitter,
-                        onPressed: () {},
-                      ),
-                      const SizedBox(width: AppSpacing.s),
-                      SocialButton(
-                        type: SocialType.facebook,
-                        onPressed: () {},
-                      ),
-                      const SizedBox(width: AppSpacing.s),
-                      SocialButton(
-                        type: SocialType.google,
-                        onPressed: () {},
-                      ),
-                    ],
+                  SocialButton(
+                    type: SocialType.google,
+                    onPressed: () => _handleSocialLogin(context, ref, 'google'),
                   ),
                   const SizedBox(height: AppSpacing.xl),
                 ],
