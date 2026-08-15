@@ -1,0 +1,46 @@
+name: Build Flutter iOS
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+
+    steps:
+      # 1. Check out repository code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. Set up Java (required for common tooling)
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      # 3. Set up Flutter
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      # 4. Install dependencies
+      - name: Install Flutter Dependencies
+        run: flutter pub get
+
+      # 5. Build iOS app bundle (unsigned)
+      - name: Build iOS Application
+        run: flutter build ios --release --no-codesign
+
+      # 6. Upload output as an artifact
+      - name: Upload iOS Build Output
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build-output
+          path: build/ios/iphoneos/Runner.app
