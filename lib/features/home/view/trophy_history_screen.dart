@@ -217,42 +217,56 @@ class TrophyHistoryScreen extends ConsumerWidget {
                               ),
                               const SizedBox(height: 8),
                               // Score + time row
-                              Row(
+                              Wrap(
+                                spacing: 6,
+                                runSpacing: 4,
+                                crossAxisAlignment: WrapCrossAlignment.center,
                                 children: [
                                   _infoChip(Icons.equalizer_rounded, 'Score $score / $maxScore', AppColors.primary),
-                                  const SizedBox(width: 6),
                                   _infoChip(Icons.timer_outlined, '${mins}m ${secs}s', AppColors.secondary),
                                 ],
                               ),
                               const SizedBox(height: 8),
                               // Trophy breakdown row
                               Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  _trophyTag('Score', ratingChange, AppColors.textPrimary),
-                                  if (speedBonus != 0) ...[
-                                    const SizedBox(width: 6),
-                                    _trophyTag('Speed', speedBonus, speedBonus > 0 ? AppColors.accent : AppColors.error),
-                                  ],
-                                  const Spacer(),
-                                  // Before → After
-                                  Text(
-                                    '$ratingBefore',
-                                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                                  ),
-                                  const Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 4),
-                                    child: Icon(Icons.arrow_forward_rounded, size: 12, color: AppColors.textHint),
-                                  ),
-                                  Text(
-                                    '$ratingAfter',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                      color: isGain ? AppColors.success : AppColors.error,
+                                  Expanded(
+                                    child: Wrap(
+                                      spacing: 4,
+                                      runSpacing: 4,
+                                      children: [
+                                        _trophyTag('Score', ratingChange, AppColors.textPrimary),
+                                        if (speedBonus != 0)
+                                          _trophyTag('Speed', speedBonus, speedBonus > 0 ? AppColors.accent : AppColors.error),
+                                      ],
                                     ),
                                   ),
-                                  const SizedBox(width: 2),
-                                  const Icon(Icons.emoji_events_rounded, color: AppColors.accent, size: 13),
+                                  const SizedBox(width: 4),
+                                  // Before → After
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        '$ratingBefore',
+                                        style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                                      ),
+                                      const Padding(
+                                        padding: EdgeInsets.symmetric(horizontal: 2),
+                                        child: Icon(Icons.arrow_forward_rounded, size: 11, color: AppColors.textHint),
+                                      ),
+                                      Text(
+                                        '$ratingAfter',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: isGain ? AppColors.success : AppColors.error,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 2),
+                                      const Icon(Icons.emoji_events_rounded, color: AppColors.accent, size: 12),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ],

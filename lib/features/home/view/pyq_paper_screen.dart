@@ -431,42 +431,53 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Row(
-                                      children: [
-                                        const Icon(Icons.check_circle_outline_rounded, color: AppColors.primary, size: 18),
-                                        const SizedBox(width: 6),
-                                        Text(
-                                          'Official Answer: ${question.officialAnswer}',
-                                          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryDark, fontSize: 13),
-                                        ),
-                                      ],
-                                    ),
-                                    // Helpful / Solution Like toggle
-                                    Row(
-                                      children: [
-                                        IconButton(
-                                          icon: Icon(
-                                            (_likedSolutions[question.id] ?? false)
-                                                ? Icons.thumb_up_rounded
-                                                : Icons.thumb_up_outlined,
-                                            color: (_likedSolutions[question.id] ?? false)
-                                                ? AppColors.primary
-                                                : AppColors.textSecondary,
-                                            size: 16,
+                                    Expanded(
+                                      child: Row(
+                                        children: [
+                                          const Icon(Icons.check_circle_outline_rounded, color: AppColors.primary, size: 18),
+                                          const SizedBox(width: 6),
+                                          Flexible(
+                                            child: Text(
+                                              'Official Answer: ${question.officialAnswer}',
+                                              style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryDark, fontSize: 13),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
                                           ),
-                                          onPressed: () {
-                                            setState(() {
-                                              _likedSolutions[question.id] = !(_likedSolutions[question.id] ?? false);
-                                            });
-                                          },
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    // Helpful / Solution Like toggle
+                                    InkWell(
+                                      borderRadius: BorderRadius.circular(8),
+                                      onTap: () {
+                                        setState(() {
+                                          _likedSolutions[question.id] = !(_likedSolutions[question.id] ?? false);
+                                        });
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              (_likedSolutions[question.id] ?? false)
+                                                  ? Icons.thumb_up_rounded
+                                                  : Icons.thumb_up_outlined,
+                                              color: (_likedSolutions[question.id] ?? false)
+                                                  ? AppColors.primary
+                                                  : AppColors.textSecondary,
+                                              size: 15,
+                                            ),
+                                            const SizedBox(width: 4),
+                                            const Text(
+                                              'Helpful',
+                                              style: TextStyle(fontSize: 11, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                                            ),
+                                          ],
                                         ),
-                                        const Text(
-                                          'Helpful',
-                                          style: TextStyle(fontSize: 11, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
-                                        ),
-                                      ],
+                                      ),
                                     ),
                                   ],
                                 ),

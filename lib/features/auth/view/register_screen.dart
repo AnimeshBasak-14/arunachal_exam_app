@@ -103,7 +103,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     });
 
     // Simulate network latency then send OTP
-    Future.delayed(const Duration(milliseconds: 600), () {
+    Future.delayed(const Duration(milliseconds: 400), () {
       final randomOtp = (100000 + (899999 * (DateTime.now().microsecond / 1000000))).round().toString();
       setState(() {
         _sentOtp = randomOtp;
@@ -111,11 +111,70 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         _startTimer();
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('[OTP Verification] Code sent: $randomOtp. Use it to register.'),
-          backgroundColor: AppColors.success,
-          duration: const Duration(seconds: 8),
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusXL)),
+          title: const Row(
+            children: [
+              Icon(Icons.mark_email_read_rounded, color: AppColors.primary, size: 22),
+              SizedBox(width: 8),
+              Text('OTP Verification Code', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Your verification code for $emailPhone is:',
+                style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryLight,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                ),
+                child: Text(
+                  randomOtp,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 6,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Tap "Auto-fill Code" below to enter it automatically.',
+                style: TextStyle(fontSize: 11, color: AppColors.textHint),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                _otpController.text = randomOtp;
+                Navigator.pop(ctx);
+              },
+              child: const Text('Auto-fill Code', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: const Text('OK'),
+            ),
+          ],
         ),
       );
     });
