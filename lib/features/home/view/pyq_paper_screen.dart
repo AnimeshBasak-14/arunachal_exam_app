@@ -47,15 +47,42 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
   int? _replyingToCommentIndex;
   String? _activeReplyingQuestionId;
 
+  bool _isLoadingLive = false;
+
   @override
   void initState() {
     super.initState();
-    // Filter questions matching examCode and year
+    // 1. Initial quick load from local bank
     _questions = QuestionRepository.allQuestions
         .where((q) => q.examCode == widget.examCode && q.year == widget.year)
         .toList();
+    _initQuestionMetadata();
 
-    // Initialize comments, controllers, and likes
+    // 2. Fetch all live synced questions from Cloud Firestore
+    _loadLiveQuestions();
+  }
+
+  Future<void> _loadLiveQuestions() async {
+    setState(() => _isLoadingLive = true);
+    try {
+      final live = await QuestionRepository.fetchLiveQuestions(
+        examCode: widget.examCode,
+        year: widget.year,
+        paperType: 'PYQ',
+      );
+      if (live.isNotEmpty && mounted) {
+        setState(() {
+          _questions = live;
+          _isLoadingLive = false;
+        });
+        _initQuestionMetadata();
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoadingLive = false);
+    }
+  }
+
+  void _initQuestionMetadata() {
     final storage = ref.read(storageServiceProvider);
     final prefs = ref.read(sharedPreferencesProvider);
 
@@ -64,24 +91,19 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
       _questionComments[q.id] = [...q.initialComments, ...savedComments];
       _commentControllers[q.id] = TextEditingController();
 
-      // Pseudo-random initial likes based on question content
       _questionLikes[q.id] = (q.questionText.length % 15) + 6;
       _likedQuestions[q.id] = false;
       _likedSolutions[q.id] = false;
 
-      // Load replies & likes for each comment index
       final allComments = _questionComments[q.id]!;
       for (int i = 0; i < allComments.length; i++) {
-        // Load replies from prefs
         final repliesList = prefs.getStringList('replies_${q.id}_$i') ?? [];
         _commentReplies.putIfAbsent(q.id, () => {})[i] = repliesList;
 
-        // Load comment likes
-        final likes = prefs.getInt('likes_${q.id}_$i') ?? (i * 3 + 2); // default mock likes
+        final likes = prefs.getInt('likes_${q.id}_$i') ?? (i * 3 + 2);
         _commentLikesCount.putIfAbsent(q.id, () => {})[i] = likes;
         _commentUserLiked.putIfAbsent(q.id, () => {})[i] = prefs.getBool('user_liked_${q.id}_$i') ?? false;
 
-        // Load reply likes
         for (int j = 0; j < repliesList.length; j++) {
           final rLikes = prefs.getInt('reply_likes_${q.id}_${i}_$j') ?? 1;
           _replyLikesCount.putIfAbsent(q.id, () => {}).putIfAbsent(i, () => {})[j] = rLikes;

@@ -45,11 +45,32 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
   @override
   void initState() {
     super.initState();
-    // Fetch a subset of questions (e.g. 5 questions for this mock test)
+    // 1. Initial quick load
     final all = QuestionRepository.allQuestions;
-    _testQuestions = all.take(5).toList();
+    _testQuestions = all.take(15).toList();
+
+    // 2. Fetch live mock test questions from Firestore
+    _loadLiveMockQuestions();
 
     _startTimer();
+  }
+
+  Future<void> _loadLiveMockQuestions() async {
+    try {
+      final live = await QuestionRepository.fetchLiveQuestions(
+        examCode: widget.examCode,
+        paperType: 'MOCK',
+      );
+      if (live.isNotEmpty && mounted) {
+        setState(() {
+          _testQuestions = live;
+          // Dynamically adjust timer based on test configuration
+          if (live.first.timeLimitMins > 0) {
+            _secondsRemaining = live.first.timeLimitMins * 60;
+          }
+        });
+      }
+    } catch (_) {}
   }
 
   @override

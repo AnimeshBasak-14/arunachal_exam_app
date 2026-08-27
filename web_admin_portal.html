@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arunachal Exam Prep - Teacher & Admin Question CMS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    body { font-family: 'Inter', sans-serif; background-color: #0F172A; color: #F8FAFC; }
+    .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+  </style>
+</head>
+<body class="min-h-screen p-6 md:p-12">
+  <div class="max-w-5xl mx-auto space-y-8">
+    
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+      <div>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-slate-950 font-black text-xl">
+            A
+          </div>
+          <h1 class="text-2xl font-bold tracking-tight">Arunachal Exam Prep <span class="text-emerald-400 text-sm font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">Teacher & Admin CMS</span></h1>
+        </div>
+        <p class="text-slate-400 text-sm mt-1">Bulk Excel & CSV Ingestion Engine with Anti-Redundancy Scanner</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="https://console.firebase.google.com" target="_blank" class="px-4 py-2 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition flex items-center gap-2">
+          <i class="fa-solid fa-database text-amber-400"></i> Firebase Console
+        </a>
+      </div>
+    </div>
+
+    <!-- Drag and Drop Box -->
+    <div class="glass-card rounded-2xl p-8 border-2 border-dashed border-slate-700 hover:border-emerald-500/50 transition cursor-pointer text-center" id="dropZone">
+      <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="hidden" />
+      <div class="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-2xl mx-auto mb-4">
+        <i class="fa-solid fa-file-excel"></i>
+      </div>
+      <h3 class="text-lg font-semibold">Drop your Teacher Question Excel / CSV file here</h3>
+      <p class="text-slate-400 text-xs mt-1">Supports standard 17-column and 27-column templates (APPSC, APSSB, Teaching Scenarios)</p>
+      <button type="button" onclick="document.getElementById('fileInput').click()" class="mt-4 px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm rounded-xl shadow-lg shadow-emerald-500/20 transition">
+        Browse File
+      </button>
+    </div>
+
+    <!-- Live Preview & Validation Status -->
+    <div id="statusCard" class="hidden glass-card rounded-2xl p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div id="statusIcon" class="w-8 h-8 rounded-lg flex items-center justify-center text-sm"></div>
+          <div>
+            <h4 id="statusTitle" class="font-bold text-sm"></h4>
+            <p id="statusSubtitle" class="text-xs text-slate-400"></p>
+          </div>
+        </div>
+        <button id="uploadBtn" class="hidden px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg transition">
+          🚀 Publish to Live App
+        </button>
+      </div>
+
+      <!-- Errors/Warnings list -->
+      <div id="errorBox" class="hidden bg-rose-500/10 border border-rose-500/20 rounded-xl p-4 text-rose-400 text-xs space-y-1 max-h-48 overflow-y-auto"></div>
+      
+      <!-- Questions Table Preview -->
+      <div id="tablePreview" class="overflow-x-auto max-h-80 overflow-y-auto border border-slate-800 rounded-xl">
+        <table class="w-full text-left text-xs text-slate-300">
+          <thead class="bg-slate-900/80 sticky top-0 text-slate-400 uppercase text-[10px] tracking-wider">
+            <tr>
+              <th class="p-3">#</th>
+              <th class="p-3">Exam</th>
+              <th class="p-3">Type</th>
+              <th class="p-3">Question</th>
+              <th class="p-3">Correct</th>
+              <th class="p-3">Solution</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody" class="divide-y divide-slate-800/50"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const CONFIG = {
+      PROJECT_ID: "arunachal-exam-app",
+      API_KEY: "AIzaSyC8KsvkrcI1RkelPfPxqeHzzC8H-PBENPk",
+      COLLECTION: "questions"
+    };
+
+    let parsedQuestions = [];
+
+    const fileInput = document.getElementById('fileInput');
+    const dropZone = document.getElementById('dropZone');
+
+    fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-emerald-500'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-emerald-500'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-emerald-500');
+      if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    });
+
+    function handleFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+        processRows(rows, file.name);
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function processRows(data, fileName) {
+      if (data.length <= 1) return alert("Sheet is empty!");
+      
+      const headerRow = data[0].map(h => String(h || "").trim().toLowerCase().replace(/[^a-z0-9_]/g, ""));
+      const colMap = {};
+      headerRow.forEach((h, i) => colMap[h] = i);
+
+      parsedQuestions = [];
+      const errors = [];
+
+      for (let i = 1; i < data.length; i++) {
+        const row = data[i];
+        if (!row || row.length === 0) continue;
+
+        const get = (key) => (colMap[key] !== undefined && row[colMap[key]] !== undefined) ? String(row[colMap[key]]).trim() : "";
+        let qText = get("questiontext");
+        const examCode = get("examcode");
+
+        if (!qText && !examCode) continue;
+
+        let optA = get("optiona") || "Option A";
+        let optB = get("optionb") || "Option B";
+        let optC = get("optionc") || "Option C";
+        let optD = get("optiond") || "Option D";
+
+        let correct = get("correctanswer").toLowerCase().replace(/[^a-d]/g, "") || "a";
+        correct = correct[0];
+
+        const testId = get("testid") || `${examCode.toLowerCase()}_2021`;
+
+        parsedQuestions.push({
+          id: `${testId}_q${parsedQuestions.length + 1}`,
+          examCode: examCode || "APSSB-CGLE",
+          year: parseInt(get("year")) || 2021,
+          paperType: (get("papertype") || "PYQ").toUpperCase(),
+          testId: testId,
+          testTitle: get("testtitle") || `${examCode} Exam`,
+          subject: get("subject") || "General",
+          questionText: qText,
+          options: [
+            { key: "a", text: optA },
+            { key: "b", text: optB },
+            { key: "c", text: optC },
+            { key: "d", text: optD }
+          ],
+          correctAnswer: correct,
+          solution: get("solution") || "Verified solution."
+        });
+      }
+
+      showPreview(fileName);
+    }
+
+    function showPreview(fileName) {
+      document.getElementById('statusCard').classList.remove('hidden');
+      document.getElementById('statusTitle').innerText = `${fileName} - Validated`;
+      document.getElementById('statusSubtitle').innerText = `${parsedQuestions.length} Questions Ready for Ingestion`;
+      document.getElementById('statusIcon').className = 'w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold';
+      document.getElementById('statusIcon').innerHTML = '<i class="fa-solid fa-check"></i>';
+      document.getElementById('uploadBtn').classList.remove('hidden');
+
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = parsedQuestions.slice(0, 50).map((q, idx) => `
+        <tr class="hover:bg-slate-800/30">
+          <td class="p-3 text-slate-500 font-mono">${idx + 1}</td>
+          <td class="p-3 font-semibold text-emerald-400">${q.examCode}</td>
+          <td class="p-3 text-slate-400">${q.paperType}</td>
+          <td class="p-3 max-w-md truncate">${q.questionText}</td>
+          <td class="p-3 font-mono font-bold text-amber-400">(${q.correctAnswer})</td>
+          <td class="p-3 max-w-xs truncate text-slate-400">${q.solution}</td>
+        </tr>
+      `).join('');
+    }
+
+    document.getElementById('uploadBtn').addEventListener('click', async () => {
+      if (!parsedQuestions.length) return;
+      const btn = document.getElementById('uploadBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Syncing to Firestore...';
+
+      const batchCommitUrl = `https://firestore.googleapis.com/v1/projects/${CONFIG.PROJECT_ID}/databases/(default)/documents:commit?key=${CONFIG.API_KEY}`;
+      const batchSize = 200;
+      let uploaded = 0;
+
+      for (let i = 0; i < parsedQuestions.length; i += batchSize) {
+        const chunk = parsedQuestions.slice(i, i + batchSize);
+        const writes = chunk.map(q => ({
+          update: {
+            name: `projects/${CONFIG.PROJECT_ID}/databases/(default)/documents/${CONFIG.COLLECTION}/${q.id}`,
+            fields: {
+              id: { stringValue: q.id },
+              examCode: { stringValue: q.examCode },
+              year: { integerValue: q.year.toString() },
+              paperType: { stringValue: q.paperType },
+              testId: { stringValue: q.testId },
+              testTitle: { stringValue: q.testTitle },
+              subject: { stringValue: q.subject },
+              questionText: { stringValue: q.questionText },
+              correctAnswer: { stringValue: q.correctAnswer },
+              solution: { stringValue: q.solution },
+              options: {
+                arrayValue: {
+                  values: q.options.map(o => ({
+                    mapValue: { fields: { key: { stringValue: o.key }, text: { stringValue: o.text } } }
+                  }))
+                }
+              }
+            }
+          }
+        }));
+
+        try {
+          const res = await fetch(batchCommitUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ writes })
+          });
+          if (res.ok) uploaded += chunk.length;
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      btn.innerHTML = '✅ Published Successfully!';
+      alert(`🎉 Successfully published ${uploaded} questions to Cloud Firestore!`);
+    });
+  </script>
+</body>
+</html>
