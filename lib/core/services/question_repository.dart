@@ -93,13 +93,16 @@ class Question {
     }
 
     final rawExamCode = (data['examCode'] ?? 'APSSB-CGLE').toString();
-    final rawYear = int.tryParse(data['year']?.toString() ?? '') ?? 2021;
+    int parsedYear = int.tryParse(data['year']?.toString() ?? '') ?? 2021;
+    if (parsedYear > DateTime.now().year || parsedYear < 2010) {
+      parsedYear = 2021;
+    }
     final rawPaperType = (data['paperType'] ?? 'PYQ').toString().toUpperCase();
 
     return Question(
       id: docId,
       examCode: rawExamCode,
-      year: rawYear,
+      year: parsedYear,
       paperType: rawPaperType,
       testId: (data['testId'] ?? '').toString(),
       testTitle: (data['testTitle'] ?? '').toString(),
@@ -121,7 +124,7 @@ class Question {
       isScenarioTest: data['isScenarioTest'] == true || data['isScenarioTest']?.toString().toLowerCase() == 'true',
       scenarioTags: data['scenarioTags']?.toString(),
       initialComments: const [],
-      pyqText: '[$rawExamCode $rawYear]',
+      pyqText: '[$rawExamCode $parsedYear]',
     );
   }
 

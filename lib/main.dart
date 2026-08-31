@@ -33,6 +33,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'core/services/streak_service.dart';
 import 'core/services/notification_service.dart';
 import 'features/chatbot/view/chatbot_screen.dart';
+import 'features/home/view/streak_calendar_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -220,6 +221,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/chatbot',
         builder: (context, state) => const ChatbotScreen(),
+      ),
+      GoRoute(
+        path: '/streak-calendar',
+        builder: (context, state) => const StreakCalendarScreen(),
       ),
     ],
   );

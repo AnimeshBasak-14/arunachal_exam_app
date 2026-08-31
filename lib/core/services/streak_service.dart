@@ -10,9 +10,18 @@ class StreakService {
   int getLongestStreak() => _prefs.getInt(AppConstants.streakLongestKey) ?? 0;
   String? getLastActiveDate() => _prefs.getString(AppConstants.streakLastDateKey);
 
+  List<String> getActiveDatesHistory() => _prefs.getStringList('streak_active_dates_history') ?? [];
+
   Future<void> checkAndUpdateStreak() async {
     final today = _todayString();
     final lastDate = getLastActiveDate();
+
+    // Ensure today is added to history
+    final history = getActiveDatesHistory();
+    if (!history.contains(today)) {
+      history.add(today);
+      await _prefs.setStringList('streak_active_dates_history', history);
+    }
 
     if (lastDate == today) {
       // Already checked in today — no change

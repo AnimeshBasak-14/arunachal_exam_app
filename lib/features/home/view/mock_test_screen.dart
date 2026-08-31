@@ -454,38 +454,42 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                                     ),
                                   ),
                                   const SizedBox(width: 8),
-                                  if (question.pyqText != null || question.paperType.toUpperCase() == 'PYQ')
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: Colors.amber.shade100,
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Text(
-                                        'PYQ ${question.year}',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.amber.shade800,
+                                  (() {
+                                    final isPyq = question.paperType.toUpperCase() == 'PYQ';
+                                    if (isPyq) {
+                                      return Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: Colors.amber.shade100,
+                                          borderRadius: BorderRadius.circular(12),
                                         ),
-                                      ),
-                                    )
-                                  else
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: Colors.blue.shade100,
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: const Text(
-                                        'MOCK QUESTION',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xFF1E40AF),
+                                        child: Text(
+                                          'PYQ ${question.year > 2026 ? 2021 : question.year}',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.amber.shade800,
+                                          ),
                                         ),
-                                      ),
-                                    ),
+                                      );
+                                    } else {
+                                      return Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: Colors.blue.shade100,
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: const Text(
+                                          'MOCK QUESTION',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF1E40AF),
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  })(),
                                 ],
                               ),
                             ),
@@ -762,38 +766,42 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                                 ),
                               ),
                             ),
-                            if (question.pyqText != null || question.paperType.toUpperCase() == 'PYQ')
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: Colors.amber.shade100,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  'PYQ ${question.year}',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.amber.shade800,
+                            (() {
+                              final isPyq = question.paperType.toUpperCase() == 'PYQ';
+                              if (isPyq) {
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.amber.shade100,
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
-                                ),
-                              )
-                            else
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: Colors.blue.shade100,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Text(
-                                  'MOCK QUESTION',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF1E40AF),
+                                  child: Text(
+                                    'PYQ ${question.year > 2026 ? 2021 : question.year}',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.amber.shade800,
+                                    ),
                                   ),
-                                ),
-                              ),
+                                );
+                              } else {
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.shade100,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Text(
+                                    'MOCK QUESTION',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1E40AF),
+                                    ),
+                                  ),
+                                );
+                              }
+                            })(),
                           ],
                         ),
                         const SizedBox(height: AppSpacing.s),

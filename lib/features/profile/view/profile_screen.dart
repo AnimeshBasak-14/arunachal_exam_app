@@ -135,31 +135,34 @@ class ProfileScreen extends ConsumerWidget {
             final longest = prefs.getInt('streak_longest') ?? 0;
             final lastDate = prefs.getString('streak_last_date') ?? 'Never';
             if (streak == 0) return const SizedBox.shrink();
-            return Card(
-              margin: const EdgeInsets.only(bottom: AppSpacing.m),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusL)),
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.m),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Row(
-                      children: [
-                        Text('🔥', style: TextStyle(fontSize: 18)),
-                        SizedBox(width: 6),
-                        Text('Study Streak', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.m),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _buildStreakStat('Current', '$streak days', AppColors.primary),
-                        _buildStreakStat('Best', '$longest days', AppColors.accent),
-                        _buildStreakStat('Last Active', lastDate.length > 10 ? lastDate.substring(5) : lastDate, AppColors.textSecondary),
-                      ],
-                    ),
-                  ],
+            return GestureDetector(
+              onTap: () => context.push('/streak-calendar'),
+              child: Card(
+                margin: const EdgeInsets.only(bottom: AppSpacing.m),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusL)),
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.m),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Text('🔥', style: TextStyle(fontSize: 18)),
+                          SizedBox(width: 6),
+                          Text('Study Streak', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.m),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _buildStreakStat('Current', '$streak days', AppColors.primary),
+                          _buildStreakStat('Best', '$longest days', AppColors.accent),
+                          _buildStreakStat('Last Active', lastDate.length > 10 ? lastDate.substring(5) : lastDate, AppColors.textSecondary),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );

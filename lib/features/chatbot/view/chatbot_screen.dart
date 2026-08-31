@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -8,8 +9,9 @@ class ChatMessage {
   final String text;
   final bool isUser;
   final DateTime timestamp;
+  final bool isApiKeyError;
 
-  ChatMessage({required this.text, required this.isUser, required this.timestamp});
+  ChatMessage({required this.text, required this.isUser, required this.timestamp, this.isApiKeyError = false});
 }
 
 class ChatbotScreen extends StatefulWidget {
@@ -45,27 +47,84 @@ Always respond in English unless the user writes in Hindi.
     _initChat();
   }
 
-  void _initChat() {
-    if (AppConstants.effectiveGeminiApiKey.isEmpty) {
+  Future<void> _initChat() async {
+    final prefs = await SharedPreferences.getInstance();
+    final customKey = prefs.getString('user_gemini_api_key');
+    final apiKey = (customKey != null && customKey.isNotEmpty) ? customKey : AppConstants.effectiveGeminiApiKey;
+
+    if (apiKey.isEmpty) {
       setState(() => _apiKeyMissing = true);
       return;
     }
+    
+    setState(() => _apiKeyMissing = false);
+
     try {
       final model = GenerativeModel(
         model: 'gemini-1.5-flash',
-        apiKey: AppConstants.effectiveGeminiApiKey,
+        apiKey: apiKey,
         systemInstruction: Content.system(_systemPrompt),
       );
       _chat = model.startChat();
-      // Add welcome message
-      _messages.add(ChatMessage(
-        text: 'Namste! 🙏 I am your APSSB/APPSC AI tutor. Ask me anything about the exam syllabus, practice questions, or study strategies!',
-        isUser: false,
-        timestamp: DateTime.now(),
-      ));
+      // Add welcome message if empty
+      if (_messages.isEmpty) {
+        setState(() {
+          _messages.add(ChatMessage(
+            text: 'Namste! 🙏 I am your APSSB/APPSC AI tutor. Ask me anything about the exam syllabus, practice questions, or study strategies!',
+            isUser: false,
+            timestamp: DateTime.now(),
+          ));
+        });
+      }
     } catch (e) {
       setState(() => _apiKeyMissing = true);
     }
+  }
+
+  Future<void> _showApiKeyDialog() async {
+    final prefs = await SharedPreferences.getInstance();
+    final customKey = prefs.getString('user_gemini_api_key') ?? '';
+    final controller = TextEditingController(text: customKey);
+
+    if (!mounted) return;
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Update Gemini API Key'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Enter your free Gemini API key from aistudio.google.com to use the AI Tutor.'),
+              const SizedBox(height: 16),
+              TextField(
+                controller: controller,
+                decoration: const InputDecoration(
+                  labelText: 'API Key',
+                  border: OutlineInputBorder(),
+                ),
+                obscureText: true,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final newKey = controller.text.trim();
+                await prefs.setString('user_gemini_api_key', newKey);
+                Navigator.pop(context);
+                _initChat();
+              },
+              child: const Text('Save & Apply'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _sendMessage(String text) async {
@@ -86,13 +145,15 @@ Always respond in English unless the user writes in Hindi.
       });
     } catch (e) {
       debugPrint('[Chatbot] Error: $e');
+      final isKeyError = e.toString().toLowerCase().contains('key') || e.toString().toLowerCase().contains('api') || e.toString().contains('API');
       setState(() {
         _messages.add(ChatMessage(
-          text: e.toString().toLowerCase().contains('key') || e.toString().toLowerCase().contains('api') || e.toString().contains('API')
-              ? 'API Key error. Please verify your Gemini API Key in app_constants.dart'
+          text: isKeyError 
+              ? 'Gemini API Key Error. Please tap the Key icon in the top right to paste a valid free key from aistudio.google.com'
               : 'Connection error. Please try again.',
           isUser: false,
           timestamp: DateTime.now(),
+          isApiKeyError: isKeyError,
         ));
         _isLoading = false;
       });
@@ -142,6 +203,10 @@ Always respond in English unless the user writes in Hindi.
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.vpn_key_rounded, color: AppColors.textSecondary, size: 20),
+            onPressed: _showApiKeyDialog,
+          ),
           Container(
             margin: const EdgeInsets.only(right: AppSpacing.m),
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -205,8 +270,8 @@ Always respond in English unless the user writes in Hindi.
             ),
             const SizedBox(height: AppSpacing.m),
             ElevatedButton(
-              onPressed: () {},
-              child: const Text('Get Free Key at aistudio.google.com'),
+              onPressed: _showApiKeyDialog,
+              child: const Text('Open Key Dialog'),
             ),
           ],
         ),
@@ -238,13 +303,30 @@ Always respond in English unless the user writes in Hindi.
             ),
           ],
         ),
-        child: Text(
-          msg.text,
-          style: TextStyle(
-            color: isUser ? Colors.white : AppColors.textPrimary,
-            fontSize: 14,
-            height: 1.4,
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              msg.text,
+              style: TextStyle(
+                color: isUser ? Colors.white : AppColors.textPrimary,
+                fontSize: 14,
+                height: 1.4,
+              ),
+            ),
+            if (msg.isApiKeyError) ...[
+              const SizedBox(height: 8),
+              ElevatedButton.icon(
+                onPressed: _showApiKeyDialog,
+                icon: const Icon(Icons.key),
+                label: const Text('Open Key Dialog'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );
