@@ -33,6 +33,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
   int _secondsRemaining = 300; // 5 minutes mock test
   int _initialSeconds = 300;
   bool _isSubmitted = false;
+  bool _isLoadingQuestions = true;
 
   // Calculated Results state
   double _scoreObtained = 0.0;
@@ -58,35 +59,51 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
   }
 
   Future<void> _loadLiveMockQuestions() async {
+    setState(() => _isLoadingQuestions = true);
     try {
-      final live = await QuestionRepository.fetchLiveQuestions(
+      // Tier 1: Try MOCK paperType for specific examCode
+      var live = await QuestionRepository.fetchLiveQuestions(
         examCode: widget.examCode,
         paperType: 'MOCK',
       );
+
+      // Tier 2: Try specific examCode without paperType filter
+      if (live.isEmpty) {
+        live = await QuestionRepository.fetchLiveQuestions(
+          examCode: widget.examCode,
+        );
+      }
+
+      // Tier 3: Try general MOCK pool (APSSB-MOCK)
+      if (live.isEmpty) {
+        live = await QuestionRepository.fetchLiveQuestions(
+          examCode: 'APSSB-MOCK',
+        );
+      }
+
+      // Tier 4: Fallback to APSSB-CGLE bank so test is NEVER blank
+      if (live.isEmpty) {
+        live = await QuestionRepository.fetchLiveQuestions(
+          examCode: 'APSSB-CGLE',
+        );
+      }
+
       if (live.isNotEmpty && mounted) {
-        // Pick 10 random questions shuffled each time
         final shuffled = List<Question>.from(live)..shuffle(math.Random());
         setState(() {
           _testQuestions = shuffled.take(10).toList();
+          _isLoadingQuestions = false;
           if (_testQuestions.first.timeLimitMins > 0) {
             _secondsRemaining = _testQuestions.first.timeLimitMins * 60;
             _initialSeconds = _secondsRemaining;
           }
         });
       } else {
-        // Fallback: also try without paperType filter (some data may not have paperType field)
-        final all = await QuestionRepository.fetchLiveQuestions(
-          examCode: widget.examCode,
-        );
-        if (all.isNotEmpty && mounted) {
-          final shuffled = List<Question>.from(all)..shuffle(math.Random());
-          setState(() {
-            _testQuestions = shuffled.take(10).toList();
-          });
-        }
+        if (mounted) setState(() => _isLoadingQuestions = false);
       }
     } catch (e) {
       debugPrint('[MockTest] Error loading live questions: $e');
+      if (mounted) setState(() => _isLoadingQuestions = false);
     }
   }
 
@@ -635,12 +652,36 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
           ),
         ],
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(
-            child: ListView.builder(
-              physics: const BouncingScrollPhysics(),
+      body: _isLoadingQuestions
+          ? const Center(child: CircularProgressIndicator())
+          : _testQuestions.isEmpty
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.xl),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline_rounded, size: 54, color: AppColors.textHint),
+                    const SizedBox(height: AppSpacing.m),
+                    Text('No questions found for ${widget.examCode}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const SizedBox(height: AppSpacing.s),
+                    const Text('Check your internet connection and tap retry.', textAlign: TextAlign.center, style: TextStyle(color: AppColors.textSecondary)),
+                    const SizedBox(height: AppSpacing.m),
+                    ElevatedButton.icon(
+                      onPressed: _loadLiveMockQuestions,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('RETRY LOADING'),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.all(AppSpacing.m),
               itemCount: _testQuestions.length,
               itemBuilder: (context, index) {

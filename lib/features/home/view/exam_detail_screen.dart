@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../viewmodel/exam_viewmodel.dart';
 import '../../../models/exam.dart';
+import '../../../data/exam_spec_data.dart';
 
 class ExamDetailScreen extends ConsumerStatefulWidget {
   final String examId;
@@ -17,9 +18,9 @@ class ExamDetailScreen extends ConsumerStatefulWidget {
 class _ExamDetailScreenState extends ConsumerState<ExamDetailScreen> {
   int? _expandedIndex;
 
-  List<Widget> _buildModuleContent(BuildContext context, Exam exam, ModuleItem module) {
+  List<Widget> _buildModuleContent(BuildContext context, Exam exam, ExamSpec spec, ModuleItem module) {
     if (module.title == 'Syllabus') {
-      return module.details.map((detail) {
+      return spec.syllabusDetails.map((detail) {
         return Padding(
           padding: const EdgeInsets.only(bottom: AppSpacing.s),
           child: Row(
@@ -44,49 +45,31 @@ class _ExamDetailScreenState extends ConsumerState<ExamDetailScreen> {
         );
       }).toList();
     } else if (module.title == 'PYQ') {
-      // Show list of previous year papers
-      final papers = [
-        {'name': 'APSSB CGL 2021 Solved Paper', 'code': 'CGL', 'year': 2021},
-        {'name': 'APSSB UDC 2019 Solved Paper', 'code': 'UDC', 'year': 2019},
-        {'name': 'APSSB CSLE 2023 Solved Paper', 'code': 'CSCE', 'year': 2023},
-      ];
-
-      return papers.map((p) {
-        final isPrimaryForThisExam = exam.code == p['code'];
+      return spec.pyqPapers.map((p) {
         return Container(
           margin: const EdgeInsets.only(bottom: AppSpacing.s),
           decoration: BoxDecoration(
-            color: isPrimaryForThisExam ? AppColors.primaryLight.withOpacity(0.3) : Colors.transparent,
+            color: AppColors.primaryLight.withOpacity(0.2),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: isPrimaryForThisExam ? AppColors.primary.withOpacity(0.3) : AppColors.divider),
+            border: Border.all(color: AppColors.primary.withOpacity(0.3)),
           ),
           child: ListTile(
             dense: true,
             leading: const Icon(Icons.article_rounded, color: AppColors.primary, size: 20),
             title: Text(
-              p['name'] as String,
-              style: TextStyle(
-                fontWeight: isPrimaryForThisExam ? FontWeight.bold : FontWeight.normal,
-                fontSize: 13,
-              ),
+              p.name,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
             ),
-            subtitle: isPrimaryForThisExam ? const Text('Highly Recommended for this Exam', style: TextStyle(fontSize: 10, color: AppColors.primaryDark, fontWeight: FontWeight.bold)) : null,
+            subtitle: const Text('Tap to solve full paper with solutions', style: TextStyle(fontSize: 10, color: AppColors.textSecondary)),
             trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: AppColors.textHint),
             onTap: () {
-              context.push('/pyqs/${p['code']}/${p['year']}');
+              context.push('/pyqs/${p.code}/${p.year}');
             },
           ),
         );
       }).toList();
     } else if (module.title == 'QUIZ') {
-      // Mock test buttons
-      final quizzes = [
-        {'name': 'Full-length Mock Test', 'type': 'full', 'desc': '5-minute exam simulated with timer and ELO rating updates'},
-        {'name': 'Topic Test: Elementary Mathematics', 'type': 'topic_math', 'desc': 'Math questions with detailed step solutions'},
-        {'name': 'Topic Test: General English', 'type': 'topic_english', 'desc': 'Grammar and comprehension questions'},
-      ];
-
-      return quizzes.map((q) {
+      return spec.quizzes.map((q) {
         return Container(
           margin: const EdgeInsets.only(bottom: AppSpacing.s),
           decoration: BoxDecoration(
@@ -97,13 +80,13 @@ class _ExamDetailScreenState extends ConsumerState<ExamDetailScreen> {
             dense: true,
             leading: const Icon(Icons.quiz_rounded, color: AppColors.primary, size: 20),
             title: Text(
-              q['name'] as String,
+              q.name,
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
             ),
-            subtitle: Text(q['desc'] as String, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+            subtitle: Text(q.desc, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
             trailing: const Icon(Icons.play_arrow_rounded, color: AppColors.primary),
             onTap: () {
-              context.push('/mock-test/${exam.code}/${q['type']}');
+              context.push('/mock-test/${exam.code}/${q.type}');
             },
           ),
         );
@@ -116,6 +99,7 @@ class _ExamDetailScreenState extends ConsumerState<ExamDetailScreen> {
   Widget build(BuildContext context) {
     final exams = ref.watch(examViewModelProvider);
     final exam = exams.firstWhere((e) => e.id == widget.examId, orElse: () => exams.first);
+    final spec = ExamSpecData.getSpec(exam.id, exam.code);
 
     final isAppsc = exam.categoryId == 'appsc';
     final themeGradient = isAppsc ? AppColors.appscGradient : AppColors.apssbGradient;
@@ -124,22 +108,14 @@ class _ExamDetailScreenState extends ConsumerState<ExamDetailScreen> {
       ModuleItem(
         title: 'Syllabus',
         icon: Icons.menu_book_rounded,
-        details: [
-          'Paper I: General English (Grammar, Vocabulary, Essay) — 100 Marks',
-          'Paper II: General Knowledge & Current Affairs — 100 Marks',
-          'Paper III: General Studies (Indian History, Geography, Polity, Science) — 150 Marks',
-          'Paper IV: State-Specific Subjects (Arunachal Tribes, History & Administration) — 50 Marks',
-        ],
       ),
       ModuleItem(
         title: 'PYQ',
         icon: Icons.edit_note_rounded,
-        details: [],
       ),
       ModuleItem(
         title: 'QUIZ',
         icon: Icons.assignment_outlined,
-        details: [],
       ),
     ];
 
@@ -257,7 +233,7 @@ class _ExamDetailScreenState extends ConsumerState<ExamDetailScreen> {
                           padding: const EdgeInsets.all(AppSpacing.m),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: _buildModuleContent(context, exam, module),
+                            children: _buildModuleContent(context, exam, spec, module),
                           ),
                         ),
                       ],
@@ -276,11 +252,9 @@ class _ExamDetailScreenState extends ConsumerState<ExamDetailScreen> {
 class ModuleItem {
   final String title;
   final IconData icon;
-  final List<String> details;
 
   ModuleItem({
     required this.title,
     required this.icon,
-    required this.details,
   });
 }
