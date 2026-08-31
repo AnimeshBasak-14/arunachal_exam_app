@@ -127,6 +127,44 @@ class ProfileScreen extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.xl),
 
+          // Streak Stats Card
+          Builder(builder: (context) {
+            // Read from SharedPreferences via StorageService
+            final prefs = ref.read(sharedPreferencesProvider);
+            final streak = prefs.getInt('streak_count') ?? 0;
+            final longest = prefs.getInt('streak_longest') ?? 0;
+            final lastDate = prefs.getString('streak_last_date') ?? 'Never';
+            if (streak == 0) return const SizedBox.shrink();
+            return Card(
+              margin: const EdgeInsets.only(bottom: AppSpacing.m),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusL)),
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.m),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Text('🔥', style: TextStyle(fontSize: 18)),
+                        SizedBox(width: 6),
+                        Text('Study Streak', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.m),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildStreakStat('Current', '$streak days', AppColors.primary),
+                        _buildStreakStat('Best', '$longest days', AppColors.accent),
+                        _buildStreakStat('Last Active', lastDate.length > 10 ? lastDate.substring(5) : lastDate, AppColors.textSecondary),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+
           // 2. Menu Options Container (Page 3 & 12 & 14)
           Container(
             decoration: BoxDecoration(
@@ -204,6 +242,16 @@ class ProfileScreen extends ConsumerWidget {
           const SizedBox(height: AppSpacing.xl),
         ],
       ),
+    );
+  }
+
+  Widget _buildStreakStat(String label, String value, Color color) {
+    return Column(
+      children: [
+        Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color)),
+        const SizedBox(height: 2),
+        Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+      ],
     );
   }
 

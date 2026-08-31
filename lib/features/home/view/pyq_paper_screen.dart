@@ -48,6 +48,9 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
   String? _activeReplyingQuestionId;
 
   bool _isLoadingLive = false;
+  String _selectedSubject = 'All';
+  List<String> _allSubjects = ['All'];
+  List<Question> _filteredQuestions = [];
 
   @override
   void initState() {
@@ -56,6 +59,7 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
     _questions = QuestionRepository.allQuestions
         .where((q) => q.examCode == widget.examCode)
         .toList();
+    _filteredQuestions = _questions;
     _initQuestionMetadata();
 
     // 2. Fetch all live synced questions from Cloud Firestore
@@ -72,14 +76,28 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
       if (live.isNotEmpty && mounted) {
         setState(() {
           _questions = live;
+          _initQuestionMetadata();
+          final subjects = ['All', ...{...live.map((q) => q.subject)}.where((s) => s.isNotEmpty)];
+          _allSubjects = subjects;
+          _selectedSubject = 'All';
+          _filteredQuestions = live;
           _isLoadingLive = false;
         });
-        _initQuestionMetadata();
       }
     } catch (_) {
       if (mounted) setState(() => _isLoadingLive = false);
     }
   }
+
+  void _applySubjectFilter(String subject) {
+    setState(() {
+      _selectedSubject = subject;
+      _filteredQuestions = subject == 'All'
+          ? _questions
+          : _questions.where((q) => q.subject == subject).toList();
+    });
+  }
+
 
   void _initQuestionMetadata() {
     final storage = ref.read(storageServiceProvider);
@@ -297,12 +315,50 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                 style: TextStyle(color: AppColors.textSecondary),
               ),
             )
-          : ListView.builder(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.all(AppSpacing.m),
-              itemCount: _questions.length,
-              itemBuilder: (context, index) {
-                final question = _questions[index];
+          : Column(
+              children: [
+                if (_allSubjects.length > 1)
+                  SizedBox(
+                    height: 48,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: 6),
+                      itemCount: _allSubjects.length,
+                      itemBuilder: (context, i) {
+                        final subj = _allSubjects[i];
+                        final isSelected = _selectedSubject == subj;
+                        return GestureDetector(
+                          onTap: () => _applySubjectFilter(subj),
+                          child: Container(
+                            margin: const EdgeInsets.only(right: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: isSelected ? AppColors.primary : AppColors.surface,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isSelected ? AppColors.primary : AppColors.divider,
+                              ),
+                            ),
+                            child: Text(
+                              subj,
+                              style: TextStyle(
+                                color: isSelected ? Colors.white : AppColors.textSecondary,
+                                fontSize: 12,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                Expanded(
+                  child: ListView.builder(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.all(AppSpacing.m),
+                    itemCount: _filteredQuestions.length,
+                    itemBuilder: (context, index) {
+                      final question = _filteredQuestions[index];
                 final isBookmarked = bookmarkedIds.contains(question.id);
                 final selectedOption = _selectedAnswers[question.id];
                 final showSolution = _showSolutions[question.id] ?? false;
@@ -758,6 +814,9 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                 );
               },
             ),
+          ),
+        ],
+      ),
     );
   }
 }

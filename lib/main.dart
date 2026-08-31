@@ -29,6 +29,10 @@ import 'features/home/view/mock_test_result_screen.dart';
 import 'features/home/view/scoreboard_screen.dart';
 import 'features/home/view/trophy_history_screen.dart';
 import 'features/home/view/notifications_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'core/services/streak_service.dart';
+import 'core/services/notification_service.dart';
+import 'features/chatbot/view/chatbot_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,7 +43,22 @@ void main() async {
     debugPrint("Firebase initialization skipped (google-services.json not found yet): $e");
   }
 
+  // Enable Firestore offline persistence
+  try {
+    FirebaseFirestore.instance.settings = const Settings(
+      persistenceEnabled: true,
+      cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+    );
+  } catch (_) {}
+
+  // Initialize notifications
+  await NotificationService.initialize();
+
   final prefs = await SharedPreferences.getInstance();
+
+  // Update streak
+  final streakService = StreakService(prefs);
+  await streakService.checkAndUpdateStreak();
   
   runApp(
     ProviderScope(
@@ -197,6 +216,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/notifications',
         builder: (context, state) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: '/chatbot',
+        builder: (context, state) => const ChatbotScreen(),
       ),
     ],
   );

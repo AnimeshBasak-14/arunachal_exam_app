@@ -11,6 +11,8 @@ import '../../profile/view/profile_screen.dart';
 import '../../../core/services/service_providers.dart';
 import '../../../core/services/question_repository.dart';
 import 'notifications_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../widgets/word_of_day_card.dart';
 
 final currentTabProvider = StateProvider<int>((ref) => 0);
 
@@ -32,6 +34,17 @@ class HomeScreen extends ConsumerWidget {
       body: SafeArea(
         child: tabs[selectedTab],
       ),
+      floatingActionButton: selectedTab == 0
+          ? FloatingActionButton.extended(
+              onPressed: () => context.push('/chatbot'),
+              backgroundColor: AppColors.primary,
+              icon: const Icon(Icons.psychology_rounded, color: Colors.white),
+              label: const Text(
+                'AI Tutor',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            )
+          : null,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           boxShadow: [
@@ -223,6 +236,40 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                     ),
                   ],
                 ),
+                const SizedBox(height: AppSpacing.s),
+                Consumer(
+                  builder: (context, ref, _) {
+                    final prefs = ref.read(sharedPreferencesProvider);
+                    final streak = prefs.getInt('streak_count') ?? 0;
+                    if (streak == 0) return const SizedBox.shrink();
+                    return Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('🔥', style: TextStyle(fontSize: 14)),
+                              const SizedBox(width: 4),
+                              Text(
+                                '$streak day streak!',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
               ],
             ),
           ),
@@ -350,6 +397,10 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                       },
                     ),
                 ] else ...[
+                  // Word of the Day Card
+                  const WordOfDayCard(),
+                  const SizedBox(height: AppSpacing.m),
+
                   // 3. Promoted Banner (Video Section)
                   Container(
                     padding: const EdgeInsets.all(AppSpacing.m),
@@ -505,11 +556,39 @@ class BookmarksTabBody extends ConsumerStatefulWidget {
 
 class _BookmarksTabBodyState extends ConsumerState<BookmarksTabBody> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  List<Question> _bookmarkedQs = [];
+  bool _loadingQs = false;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+  }
+
+  Future<void> _loadBookmarkedQuestions(List<String> ids) async {
+    if (ids.isEmpty) {
+      setState(() { _bookmarkedQs = []; _loadingQs = false; });
+      return;
+    }
+    setState(() => _loadingQs = true);
+    try {
+      final firestore = FirebaseFirestore.instance;
+      // Firestore whereIn supports up to 30 items
+      final chunks = <List<String>>[];
+      for (int i = 0; i < ids.length; i += 30) {
+        chunks.add(ids.sublist(i, i + 30 > ids.length ? ids.length : i + 30));
+      }
+      final results = <Question>[];
+      for (final chunk in chunks) {
+        final snap = await firestore.collection('questions')
+            .where(FieldPath.documentId, whereIn: chunk)
+            .get();
+        results.addAll(snap.docs.map((d) => Question.fromFirestore(d)));
+      }
+      if (mounted) setState(() { _bookmarkedQs = results; _loadingQs = false; });
+    } catch (e) {
+      if (mounted) setState(() => _loadingQs = false);
+    }
   }
 
   @override
@@ -524,9 +603,14 @@ class _BookmarksTabBodyState extends ConsumerState<BookmarksTabBody> with Single
 
     // Load question bookmarks
     final bookmarkedQuestionIds = ref.watch(bookmarkedQuestionsProvider);
-    final bookmarkedQuestions = QuestionRepository.allQuestions
-        .where((q) => bookmarkedQuestionIds.contains(q.id))
-        .toList();
+    
+    if (!_loadingQs && _bookmarkedQs.isEmpty && bookmarkedQuestionIds.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _loadBookmarkedQuestions(bookmarkedQuestionIds);
+      });
+    }
+    
+    final bookmarkedQuestions = _bookmarkedQs;
 
     // Group by Exam Code
     final Map<String, List<Question>> groupedByExam = {};
