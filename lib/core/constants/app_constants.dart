@@ -5,7 +5,7 @@ class AppConstants {
   // TODO: Before production - restrict this key in Google Cloud Console
   // to your Android package name: com.example.arunachal_exam_app
   // Get a free key at: https://aistudio.google.com
-  static const String geminiApiKey = 'YOUR_GEMINI_API_KEY'; // Replace with your key
+  static const String geminiApiKey = 'AQ.Ab8RN6Ky-8kYGX5P-nvgh7Dzc914_oECI-4-kaCo4nTBAkimdA';
 
   // App info
   static const String appName = 'Arunachal Exam Prep';
