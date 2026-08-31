@@ -73,14 +73,15 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
         examCode: widget.examCode,
         paperType: 'PYQ',
       );
-      if (live.isNotEmpty && mounted) {
+      final pyqOnly = live.where((q) => q.paperType.toUpperCase() == 'PYQ' && q.year > 2000).toList();
+      if (pyqOnly.isNotEmpty && mounted) {
         setState(() {
-          _questions = live;
+          _questions = pyqOnly;
           _initQuestionMetadata();
-          final subjects = ['All', ...{...live.map((q) => q.subject)}.where((s) => s.isNotEmpty)];
+          final subjects = ['All', ...{...pyqOnly.map((q) => q.subject)}.where((s) => s.isNotEmpty)];
           _allSubjects = subjects;
           _selectedSubject = 'All';
-          _filteredQuestions = live;
+          _filteredQuestions = pyqOnly;
           _isLoadingLive = false;
         });
       } else {

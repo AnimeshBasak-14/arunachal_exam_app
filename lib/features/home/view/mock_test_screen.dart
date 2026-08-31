@@ -455,7 +455,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                                   ),
                                   const SizedBox(width: 8),
                                   (() {
-                                    final isPyq = question.paperType.toUpperCase() == 'PYQ';
+                                    final isPyq = question.paperType.toUpperCase() == 'PYQ' && question.year > 2000;
                                     if (isPyq) {
                                       return Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -464,7 +464,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                                           borderRadius: BorderRadius.circular(12),
                                         ),
                                         child: Text(
-                                          'PYQ ${question.year > 2026 ? 2021 : question.year}',
+                                          'PYQ ${question.year}',
                                           style: TextStyle(
                                             fontSize: 10,
                                             fontWeight: FontWeight.bold,
@@ -767,7 +767,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                               ),
                             ),
                             (() {
-                              final isPyq = question.paperType.toUpperCase() == 'PYQ';
+                              final isPyq = question.paperType.toUpperCase() == 'PYQ' && question.year > 2000;
                               if (isPyq) {
                                 return Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -776,7 +776,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Text(
-                                    'PYQ ${question.year > 2026 ? 2021 : question.year}',
+                                    'PYQ ${question.year}',
                                     style: TextStyle(
                                       fontSize: 10,
                                       fontWeight: FontWeight.bold,

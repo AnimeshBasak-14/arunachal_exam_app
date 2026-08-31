@@ -94,10 +94,16 @@ class Question {
 
     final rawExamCode = (data['examCode'] ?? 'APSSB-CGLE').toString();
     int parsedYear = int.tryParse(data['year']?.toString() ?? '') ?? 2021;
-    if (parsedYear > DateTime.now().year || parsedYear < 2010) {
-      parsedYear = 2021;
+    String rawPaperType = (data['paperType'] ?? '').toString().toUpperCase();
+
+    // Strict Year Constraints:
+    // If year <= 2000 or year > current year or paperType == 'MOCK', classify as MOCK test (year 2000).
+    if (parsedYear <= 2000 || parsedYear > DateTime.now().year || rawPaperType == 'MOCK') {
+      rawPaperType = 'MOCK';
+      parsedYear = 2000;
+    } else if (rawPaperType.isEmpty) {
+      rawPaperType = 'PYQ';
     }
-    final rawPaperType = (data['paperType'] ?? 'PYQ').toString().toUpperCase();
 
     return Question(
       id: docId,
