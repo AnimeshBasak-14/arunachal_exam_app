@@ -31,6 +31,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
   final Map<String, String> _selectedAnswers = {}; // questionId -> optionChar
   late Timer _timer;
   int _secondsRemaining = 300; // 5 minutes mock test
+  int _initialSeconds = 300;
   bool _isSubmitted = false;
 
   // Calculated Results state
@@ -47,7 +48,8 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
     super.initState();
     // 1. Initial quick load
     final all = QuestionRepository.allQuestions;
-    _testQuestions = all.take(15).toList();
+    _testQuestions = all.take(10).toList();
+    _initialSeconds = _secondsRemaining;
 
     // 2. Fetch live mock test questions from Firestore
     _loadLiveMockQuestions();
@@ -62,15 +64,37 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
         paperType: 'MOCK',
       );
       if (live.isNotEmpty && mounted) {
+        // Pick 10 random questions shuffled each time
+        final shuffled = List<Question>.from(live)..shuffle(math.Random());
         setState(() {
-          _testQuestions = live;
-          // Dynamically adjust timer based on test configuration
-          if (live.first.timeLimitMins > 0) {
-            _secondsRemaining = live.first.timeLimitMins * 60;
+          _testQuestions = shuffled.take(10).toList();
+          if (_testQuestions.first.timeLimitMins > 0) {
+            _secondsRemaining = _testQuestions.first.timeLimitMins * 60;
+            _initialSeconds = _secondsRemaining;
           }
         });
+      } else {
+        // Fallback: also try without paperType filter (some data may not have paperType field)
+        final all = await QuestionRepository.fetchLiveQuestions(
+          examCode: widget.examCode,
+        );
+        if (all.isNotEmpty && mounted) {
+          final shuffled = List<Question>.from(all)..shuffle(math.Random());
+          setState(() {
+            _testQuestions = shuffled.take(10).toList();
+          });
+        }
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[MockTest] Error loading live questions: $e');
+    }
+  }
+
+  String _extractOptionChar(String option, int fallbackIndex) {
+    final trimmed = option.trim();
+    final match = RegExp(r'^[\(\[]?([a-dA-D])[\)\]\.\s]').firstMatch(trimmed);
+    if (match != null) return match.group(1)!.toLowerCase();
+    return String.fromCharCode(97 + fallbackIndex);
   }
 
   @override
@@ -142,13 +166,13 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
     // Rating adjustment (K-factor = 32)
     final int ratingChange = (32 * (actualScore - expectedScore)).round();
 
-    final int timeTaken = 300 - _secondsRemaining;
+    final int timeTaken = _initialSeconds - _secondsRemaining;
 
     // Speed Bonus: awarded only if accuracy >= 40%; max 10 trophies
     // Formula: timeLeft ratio × 10, rounded. Faster completion = higher bonus.
     int speedBonus = 0;
-    if (actualScore >= 0.40 && timeTaken < 300) {
-      final double timeLeftRatio = (_secondsRemaining / 300.0);
+    if (actualScore >= 0.40 && timeTaken < _initialSeconds) {
+      final double timeLeftRatio = (_secondsRemaining / _initialSeconds.toDouble());
       speedBonus = (timeLeftRatio * 10).round();
     }
     final int totalChange = ratingChange + speedBonus;
@@ -379,6 +403,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                 final isCorrect = selectedOption == question.correctAnswer;
 
                 return Card(
+                  key: ValueKey(question.id),
                   margin: const EdgeInsets.only(bottom: AppSpacing.m),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppSpacing.radiusL),
@@ -392,19 +417,25 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryLight,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                question.subject,
-                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary),
+                            Flexible(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryLight,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  question.subject,
+                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
                               ),
                             ),
+                            const SizedBox(width: 4),
                             if (selectedOption == null)
                               const Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(Icons.remove_circle_outline_rounded, color: AppColors.textHint, size: 16),
                                   SizedBox(width: 4),
@@ -413,6 +444,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                               )
                             else if (isCorrect)
                               const Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(Icons.check_circle_rounded, color: AppColors.success, size: 16),
                                   SizedBox(width: 4),
@@ -421,6 +453,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                               )
                             else
                               const Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(Icons.cancel_rounded, color: AppColors.error, size: 16),
                                   SizedBox(width: 4),
@@ -437,8 +470,9 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                         const SizedBox(height: AppSpacing.m),
                         
                         // Option tiles colored based on correct answer
-                        ...question.options.map((option) {
-                          final optionChar = option.trim().substring(1, 2).toLowerCase();
+                        ...List.generate(question.options.length, (optIdx) {
+                          final option = question.options[optIdx];
+                          final optionChar = _extractOptionChar(option, optIdx);
                           final isUserSelected = selectedOption == optionChar;
                           final isOptionCorrect = question.correctAnswer == optionChar;
 
@@ -454,6 +488,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                           }
 
                           return Container(
+                            key: ValueKey('${question.id}_opt_$optIdx'),
                             margin: const EdgeInsets.only(bottom: AppSpacing.s),
                             decoration: BoxDecoration(
                               color: optionBgColor,
@@ -517,6 +552,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                     ),
                   ),
                 );
+
               },
             ),
             const SizedBox(height: AppSpacing.m),
@@ -612,6 +648,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                 final selectedOption = _selectedAnswers[question.id];
 
                 return Card(
+                  key: ValueKey(question.id),
                   margin: const EdgeInsets.only(bottom: AppSpacing.m),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppSpacing.radiusL),
@@ -625,18 +662,22 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryLight,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                question.subject,
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.primary,
+                            Flexible(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryLight,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  question.subject,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
                                 ),
                               ),
                             ),
@@ -669,11 +710,13 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                         ),
                         const SizedBox(height: AppSpacing.m),
 
-                        ...question.options.map((option) {
-                          final optionChar = option.trim().substring(1, 2).toLowerCase();
+                        ...List.generate(question.options.length, (optIdx) {
+                          final option = question.options[optIdx];
+                          final optionChar = _extractOptionChar(option, optIdx);
                           final isSelected = selectedOption == optionChar;
 
                           return Container(
+                            key: ValueKey('${question.id}_opt_$optIdx'),
                             margin: const EdgeInsets.only(bottom: AppSpacing.s),
                             decoration: BoxDecoration(
                               color: isSelected ? AppColors.primary.withOpacity(0.06) : Colors.transparent,
@@ -710,6 +753,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                     ),
                   ),
                 );
+
               },
             ),
           ),

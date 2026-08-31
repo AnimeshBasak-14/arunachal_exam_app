@@ -54,7 +54,7 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
     super.initState();
     // 1. Initial quick load from local bank
     _questions = QuestionRepository.allQuestions
-        .where((q) => q.examCode == widget.examCode && q.year == widget.year)
+        .where((q) => q.examCode == widget.examCode)
         .toList();
     _initQuestionMetadata();
 
@@ -67,7 +67,6 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
     try {
       final live = await QuestionRepository.fetchLiveQuestions(
         examCode: widget.examCode,
-        year: widget.year,
         paperType: 'PYQ',
       );
       if (live.isNotEmpty && mounted) {
@@ -239,8 +238,10 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
           icon: Icon(
             isLiked ? Icons.thumb_up_rounded : Icons.thumb_up_outlined,
             color: isLiked ? AppColors.primary : AppColors.textHint,
-            size: 20,
+            size: 18,
           ),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
           onPressed: () {
             setState(() {
               if (isLiked) {
@@ -265,6 +266,15 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
     );
   }
 
+  String _extractOptionChar(String option, int fallbackIndex) {
+    final trimmed = option.trim();
+    // Pattern: starts with (a), (b), a), b., A., etc.
+    final match = RegExp(r'^[\(\[]?([a-dA-D])[\)\]\.\s]').firstMatch(trimmed);
+    if (match != null) return match.group(1)!.toLowerCase();
+    // Fallback to index
+    return String.fromCharCode(97 + fallbackIndex);
+  }
+
   @override
   Widget build(BuildContext context) {
     final bookmarkedIds = ref.watch(bookmarkedQuestionsProvider);
@@ -276,12 +286,14 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => context.pop(),
         ),
-        title: Text('${widget.examCode} ${widget.year} PYQ'),
+        title: Text('${widget.examCode} PYQ Papers'),
       ),
-      body: _questions.isEmpty
+      body: _isLoadingLive && _questions.isEmpty
+          ? const Center(child: CircularProgressIndicator())
+          : _questions.isEmpty
           ? const Center(
               child: Text(
-                'No questions found for this past paper.',
+                'No questions found. Check your connection.',
                 style: TextStyle(color: AppColors.textSecondary),
               ),
             )
@@ -297,6 +309,7 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                 final comments = _questionComments[question.id] ?? [];
 
                 return Card(
+                  key: ValueKey(question.id),
                   margin: const EdgeInsets.only(bottom: AppSpacing.m),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppSpacing.radiusL),
@@ -310,29 +323,38 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                         // Question Header (Subject & Actions)
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryLight,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                question.subject,
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.primary,
+                            Flexible(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryLight,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  question.subject,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
                                 ),
                               ),
                             ),
+                            const SizedBox(width: 4),
                             Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 _buildLikeButton(question.id),
                                 IconButton(
                                   icon: const Icon(Icons.share_outlined, color: AppColors.textHint, size: 20),
                                   onPressed: () => _shareQuestion(question),
                                   tooltip: 'Share Question',
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                                 ),
                                 IconButton(
                                   icon: Icon(
@@ -344,6 +366,8 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                                     await ref.read(bookmarkedQuestionsProvider.notifier).toggleBookmark(question.id);
                                   },
                                   tooltip: 'Bookmark Question',
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                                 ),
                               ],
                             ),
@@ -363,8 +387,9 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                         const SizedBox(height: AppSpacing.m),
 
                         // Options List
-                        ...question.options.map((option) {
-                          final optionChar = option.trim().substring(1, 2).toLowerCase(); // 'a', 'b', 'c', 'd'
+                        ...List.generate(question.options.length, (optIdx) {
+                          final option = question.options[optIdx];
+                          final optionChar = _extractOptionChar(option, optIdx);
                           final isSelected = selectedOption == optionChar;
                           final isCorrect = question.correctAnswer == optionChar;
 
@@ -382,6 +407,7 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                           }
 
                           return Container(
+                            key: ValueKey('${question.id}_opt_$optIdx'),
                             margin: const EdgeInsets.only(bottom: AppSpacing.s),
                             decoration: BoxDecoration(
                               color: optionBgColor,
@@ -417,6 +443,7 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                           );
                         }),
                         const SizedBox(height: AppSpacing.s),
+
 
                         // Show solution button
                         Align(
