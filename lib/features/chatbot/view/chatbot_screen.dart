@@ -46,14 +46,14 @@ Always respond in English unless the user writes in Hindi.
   }
 
   void _initChat() {
-    if (AppConstants.geminiApiKey == 'YOUR_GEMINI_API_KEY' || AppConstants.geminiApiKey.isEmpty) {
+    if (AppConstants.effectiveGeminiApiKey.isEmpty) {
       setState(() => _apiKeyMissing = true);
       return;
     }
     try {
       final model = GenerativeModel(
         model: 'gemini-1.5-flash',
-        apiKey: AppConstants.geminiApiKey,
+        apiKey: AppConstants.effectiveGeminiApiKey,
         systemInstruction: Content.system(_systemPrompt),
       );
       _chat = model.startChat();
@@ -85,9 +85,12 @@ Always respond in English unless the user writes in Hindi.
         _isLoading = false;
       });
     } catch (e) {
+      debugPrint('[Chatbot] Error: $e');
       setState(() {
         _messages.add(ChatMessage(
-          text: 'Connection error. Please check your internet connection and try again.',
+          text: e.toString().toLowerCase().contains('key') || e.toString().toLowerCase().contains('api') || e.toString().contains('API')
+              ? 'API Key error. Please verify your Gemini API Key in app_constants.dart'
+              : 'Connection error. Please try again.',
           isUser: false,
           timestamp: DateTime.now(),
         ));

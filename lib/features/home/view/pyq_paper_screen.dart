@@ -83,6 +83,8 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
           _filteredQuestions = live;
           _isLoadingLive = false;
         });
+      } else {
+        if (mounted) setState(() => _isLoadingLive = false);
       }
     } catch (_) {
       if (mounted) setState(() => _isLoadingLive = false);
@@ -309,10 +311,25 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
       body: _isLoadingLive && _questions.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : _questions.isEmpty
-          ? const Center(
-              child: Text(
-                'No questions found. Check your connection.',
-                style: TextStyle(color: AppColors.textSecondary),
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.xl),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.folder_off_rounded, size: 54, color: AppColors.textHint),
+                    const SizedBox(height: AppSpacing.m),
+                    Text('No PYQ papers uploaded for ${widget.examCode} yet.', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const SizedBox(height: AppSpacing.s),
+                    const Text('New papers are uploaded regularly via the CMS web portal.', textAlign: TextAlign.center, style: TextStyle(color: AppColors.textSecondary)),
+                    const SizedBox(height: AppSpacing.m),
+                    ElevatedButton.icon(
+                      onPressed: _loadLiveQuestions,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('RETRY LOADING'),
+                    ),
+                  ],
+                ),
               ),
             )
           : Column(

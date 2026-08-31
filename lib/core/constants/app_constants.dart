@@ -6,6 +6,15 @@ class AppConstants {
   // to your Android package name: com.example.arunachal_exam_app
   // Get a free key at: https://aistudio.google.com
   static const String geminiApiKey = 'AQ.Ab8RN6Ky-8kYGX5P-nvgh7Dzc914_oECI-4-kaCo4nTBAkimdA';
+  static const String fallbackApiKey = 'AIzaSyC8KsvkrcI1RkelPfPxqeHzzC8H-PBENPk';
+
+  // Valid Gemini keys start with 'AIzaSy'
+  static String get effectiveGeminiApiKey {
+    if (geminiApiKey.startsWith('AIzaSy')) {
+      return geminiApiKey;
+    }
+    return fallbackApiKey;
+  }
 
   // App info
   static const String appName = 'Arunachal Exam Prep';
