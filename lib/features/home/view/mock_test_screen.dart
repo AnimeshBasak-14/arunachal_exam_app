@@ -61,35 +61,27 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
   Future<void> _loadLiveMockQuestions() async {
     setState(() => _isLoadingQuestions = true);
     try {
-      // Tier 1: Try MOCK paperType for specific examCode
-      var live = await QuestionRepository.fetchLiveQuestions(
+      // 1. Fetch all questions for this exam (includes both PYQ and MOCK questions)
+      final examQs = await QuestionRepository.fetchLiveQuestions(
         examCode: widget.examCode,
-        paperType: 'MOCK',
       );
 
-      // Tier 2: Try specific examCode without paperType filter
-      if (live.isEmpty) {
-        live = await QuestionRepository.fetchLiveQuestions(
-          examCode: widget.examCode,
-        );
-      }
+      // 2. Fetch general mock pool questions (APSSB-MOCK)
+      final generalMocks = await QuestionRepository.fetchLiveQuestions(
+        examCode: 'APSSB-MOCK',
+      );
 
-      // Tier 3: Try general MOCK pool (APSSB-MOCK)
-      if (live.isEmpty) {
-        live = await QuestionRepository.fetchLiveQuestions(
-          examCode: 'APSSB-MOCK',
-        );
-      }
-
-      // Tier 4: Fallback to APSSB-CGLE bank so test is NEVER blank
-      if (live.isEmpty) {
-        live = await QuestionRepository.fetchLiveQuestions(
+      // 3. Fallback to APSSB-CGLE if both empty
+      var pool = <Question>[...examQs, ...generalMocks];
+      if (pool.isEmpty) {
+        pool = await QuestionRepository.fetchLiveQuestions(
           examCode: 'APSSB-CGLE',
         );
       }
 
-      if (live.isNotEmpty && mounted) {
-        final shuffled = List<Question>.from(live)..shuffle(math.Random());
+      if (pool.isNotEmpty && mounted) {
+        // Randomize so every session gets a fresh mix of PYQ and MOCK questions
+        final shuffled = List<Question>.from(pool)..shuffle(math.Random());
         setState(() {
           _testQuestions = shuffled.take(10).toList();
           _isLoadingQuestions = false;

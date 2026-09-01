@@ -1,20 +1,10 @@
 class AppConstants {
   AppConstants._();
 
-  // Gemini AI API Key
-  // TODO: Before production - restrict this key in Google Cloud Console
-  // to your Android package name: com.example.arunachal_exam_app
-  // Get a free key at: https://aistudio.google.com
-  static const String geminiApiKey = 'AQ.Ab8RN6Ky-8kYGX5P-nvgh7Dzc914_oECI-4-kaCo4nTBAkimdA';
-  static const String fallbackApiKey = 'AIzaSyC8KsvkrcI1RkelPfPxqeHzzC8H-PBENPk';
-
-  // Valid Gemini keys start with 'AIzaSy'
-  static String get effectiveGeminiApiKey {
-    if (geminiApiKey.startsWith('AIzaSy')) {
-      return geminiApiKey;
-    }
-    return fallbackApiKey;
-  }
+  // Hugging Face API Token (starts with hf_...)
+  // Get a free user token at: https://huggingface.co/settings/tokens
+  static const String huggingFaceApiKey = 'hf_YOUR_TOKEN_HERE';
+  static const String huggingFaceModel = 'meta-llama/Llama-3.2-3B-Instruct';
 
   // App info
   static const String appName = 'Arunachal Exam Prep';
@@ -24,6 +14,7 @@ class AppConstants {
   static const String streakCountKey = 'streak_count';
   static const String streakLastDateKey = 'streak_last_date';
   static const String streakLongestKey = 'streak_longest';
+  static const String streakHistoryKey = 'streak_date_history';
 
   // Notification IDs
   static const int dailyStreakNotifId = 1001;
