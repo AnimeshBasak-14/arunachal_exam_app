@@ -93,7 +93,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.primaryLight,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
                 ),
                 child: Text(
                   randomOtp,
@@ -212,9 +212,9 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.m),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryLight.withOpacity(0.5),
+                    color: AppColors.primaryLight.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(AppSpacing.radiusL),
-                    border: Border.all(color: AppColors.primary.withOpacity(0.25)),
+                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
                   ),
                   child: Row(
                     children: [

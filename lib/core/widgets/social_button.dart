@@ -45,7 +45,7 @@ class SocialButton extends StatelessWidget {
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
         foregroundColor: color,
-        side: BorderSide(color: color.withOpacity(0.4), width: 1.2),
+        side: BorderSide(color: color.withValues(alpha: 0.4), width: 1.2),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(30),
         ),

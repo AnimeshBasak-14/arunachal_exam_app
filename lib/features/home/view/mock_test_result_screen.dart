@@ -38,9 +38,9 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         margin: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.08),
+          color: color.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: color.withOpacity(0.25)),
+          border: Border.all(color: color.withValues(alpha: 0.25)),
         ),
         child: Column(
           children: [
@@ -53,7 +53,7 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
             const SizedBox(height: 2),
             Text(
               label,
-              style: TextStyle(fontSize: 11, color: color.withOpacity(0.8), fontWeight: FontWeight.w600),
+              style: TextStyle(fontSize: 11, color: color.withValues(alpha: 0.8), fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -166,7 +166,7 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                           ),
                           Text(
                             'Accuracy ${accuracy.toStringAsFixed(1)}%',
-                            style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.8), fontWeight: FontWeight.w600),
+                            style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.8), fontWeight: FontWeight.w600),
                           ),
                           const SizedBox(height: 4),
                           Row(
@@ -175,14 +175,14 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                               const SizedBox(width: 4),
                               Text(
                                 '${mins}m ${secs}s',
-                                style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.75)),
+                                style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.75)),
                               ),
                               const SizedBox(width: 12),
                               const Icon(Icons.calendar_today_outlined, color: Colors.white70, size: 13),
                               const SizedBox(width: 4),
                               Text(
                                 date,
-                                style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.75)),
+                                style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.75)),
                               ),
                             ],
                           ),
@@ -193,9 +193,9 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                         width: 64,
                         height: 64,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.15),
+                          color: Colors.white.withValues(alpha: 0.15),
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white.withOpacity(0.4), width: 2),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 2),
                         ),
                         child: Center(
                           child: Text(
@@ -220,7 +220,7 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.12),
+                      color: Colors.white.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
@@ -327,7 +327,7 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(AppSpacing.radiusL),
                   border: Border.all(
-                    color: isExpanded ? statusColor.withOpacity(0.35) : AppColors.divider,
+                    color: isExpanded ? statusColor.withValues(alpha: 0.35) : AppColors.divider,
                     width: isExpanded ? 1.5 : 1,
                   ),
                 ),
@@ -371,7 +371,7 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                               decoration: BoxDecoration(
-                                color: statusColor.withOpacity(0.1),
+                                color: statusColor.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Row(
@@ -439,9 +439,9 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                                     Container(
                                       padding: const EdgeInsets.all(10),
                                       decoration: BoxDecoration(
-                                        color: AppColors.success.withOpacity(0.07),
+                                        color: AppColors.success.withValues(alpha: 0.07),
                                         borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(color: AppColors.success.withOpacity(0.3)),
+                                        border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
                                       ),
                                       child: Row(
                                         children: [
@@ -469,11 +469,11 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
 
                                       if (isRightAnswer) {
                                         borderColor = AppColors.success;
-                                        bgColor = AppColors.success.withOpacity(0.06);
+                                        bgColor = AppColors.success.withValues(alpha: 0.06);
                                         textColor = AppColors.primaryDark;
                                       } else if (isUserPick) {
                                         borderColor = AppColors.error;
-                                        bgColor = AppColors.error.withOpacity(0.06);
+                                        bgColor = AppColors.error.withValues(alpha: 0.06);
                                         textColor = AppColors.error;
                                       }
 
@@ -506,9 +506,9 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                                     Container(
                                       padding: const EdgeInsets.all(AppSpacing.m),
                                       decoration: BoxDecoration(
-                                        color: AppColors.primaryLight.withOpacity(0.25),
+                                        color: AppColors.primaryLight.withValues(alpha: 0.25),
                                         borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(color: AppColors.primary.withOpacity(0.15)),
+                                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.15)),
                                       ),
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,

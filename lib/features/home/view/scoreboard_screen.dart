@@ -112,7 +112,7 @@ class ScoreboardScreen extends ConsumerWidget {
             decoration: BoxDecoration(
               color: AppColors.primaryLight,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+              border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
@@ -125,9 +125,9 @@ class ScoreboardScreen extends ConsumerWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: userTier.color.withOpacity(0.15),
+                      color: userTier.color.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: userTier.color.withOpacity(0.4)),
+                      border: Border.all(color: userTier.color.withValues(alpha: 0.4)),
                     ),
                     child: Text(
                       userTier.title,
@@ -169,10 +169,10 @@ class ScoreboardScreen extends ConsumerWidget {
                   duration: const Duration(milliseconds: 200),
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   decoration: BoxDecoration(
-                    color: isMe ? AppColors.primaryLight.withOpacity(0.6) : AppColors.surface,
+                    color: isMe ? AppColors.primaryLight.withValues(alpha: 0.6) : AppColors.surface,
                     borderRadius: BorderRadius.circular(AppSpacing.radiusL),
                     border: Border.all(
-                      color: isMe ? AppColors.primary.withOpacity(0.4) : AppColors.divider,
+                      color: isMe ? AppColors.primary.withValues(alpha: 0.4) : AppColors.divider,
                       width: isMe ? 1.5 : 1,
                     ),
                   ),
@@ -201,7 +201,7 @@ class ScoreboardScreen extends ConsumerWidget {
                       // Avatar
                       CircleAvatar(
                         radius: 17,
-                        backgroundColor: isMe ? AppColors.primary : tier.color.withOpacity(0.22),
+                        backgroundColor: isMe ? AppColors.primary : tier.color.withValues(alpha: 0.22),
                         child: Text(
                           (entry['name'] as String).substring(0, 1),
                           style: TextStyle(
@@ -233,7 +233,7 @@ class ScoreboardScreen extends ConsumerWidget {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                                   decoration: BoxDecoration(
-                                    color: tier.color.withOpacity(0.12),
+                                    color: tier.color.withValues(alpha: 0.12),
                                     borderRadius: BorderRadius.circular(5),
                                   ),
                                   child: Text(
@@ -292,7 +292,7 @@ class ScoreboardScreen extends ConsumerWidget {
       children: [
         CircleAvatar(
           radius: rank == 1 ? 26 : 20,
-          backgroundColor: Colors.white.withOpacity(0.2),
+          backgroundColor: Colors.white.withValues(alpha: 0.2),
           child: Text(
             (entry['name'] as String).substring(0, 1),
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: rank == 1 ? 20 : 16, color: Colors.white),
@@ -305,14 +305,14 @@ class ScoreboardScreen extends ConsumerWidget {
         ),
         Text(
           '${entry['rating']}',
-          style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.75)),
+          style: TextStyle(fontSize: 10, color: Colors.white.withValues(alpha: 0.75)),
         ),
         const SizedBox(height: 4),
         Container(
           width: rank == 1 ? 80 : 65,
           height: height,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.15),
+            color: Colors.white.withValues(alpha: 0.15),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
           ),
           child: Center(

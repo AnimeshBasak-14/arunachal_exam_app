@@ -162,9 +162,9 @@ class TrophyHistoryScreen extends ConsumerWidget {
                             height: 36,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: isGain ? AppColors.success.withOpacity(0.12) : AppColors.error.withOpacity(0.12),
+                              color: isGain ? AppColors.success.withValues(alpha: 0.12) : AppColors.error.withValues(alpha: 0.12),
                               border: Border.all(
-                                color: isGain ? AppColors.success.withOpacity(0.4) : AppColors.error.withOpacity(0.4),
+                                color: isGain ? AppColors.success.withValues(alpha: 0.4) : AppColors.error.withValues(alpha: 0.4),
                                 width: 1.5,
                               ),
                             ),
@@ -285,7 +285,7 @@ class TrophyHistoryScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -304,7 +304,7 @@ class TrophyHistoryScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
@@ -324,7 +324,7 @@ class TrophyHistoryScreen extends ConsumerWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: AppColors.primaryLight,
-            border: Border.all(color: AppColors.primary.withOpacity(0.4)),
+            border: Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
           ),
           child: const Center(
             child: Icon(Icons.person_add_alt_1_rounded, color: AppColors.primary, size: 18),
@@ -335,9 +335,9 @@ class TrophyHistoryScreen extends ConsumerWidget {
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.primaryLight.withOpacity(0.4),
+              color: AppColors.primaryLight.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(AppSpacing.radiusL),
-              border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+              border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
             ),
             child: const Row(
               children: [

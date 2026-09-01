@@ -49,7 +49,7 @@ class HomeScreen extends ConsumerWidget {
         decoration: BoxDecoration(
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 10,
               offset: const Offset(0, -2),
             ),
@@ -170,7 +170,7 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                           Text(
                             'What do you want to learn today?',
                             style: TextStyle(
-                              color: AppColors.textWhite.withOpacity(0.85),
+                              color: AppColors.textWhite.withValues(alpha: 0.85),
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                             ),
@@ -249,7 +249,7 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
+                              color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Row(
@@ -482,7 +482,7 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                               borderRadius: BorderRadius.circular(AppSpacing.radiusL),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.amber.withOpacity(0.25),
+                                  color: Colors.amber.withValues(alpha: 0.25),
                                   blurRadius: 10,
                                   offset: const Offset(0, 4),
                                 ),
@@ -514,7 +514,7 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                               borderRadius: BorderRadius.circular(AppSpacing.radiusL),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.teal.withOpacity(0.25),
+                                  color: Colors.teal.withValues(alpha: 0.25),
                                   blurRadius: 10,
                                   offset: const Offset(0, 4),
                                 ),
@@ -762,7 +762,7 @@ class _BookmarksTabBodyState extends ConsumerState<BookmarksTabBody> with Single
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(icon, size: 72, color: AppColors.textHint.withOpacity(0.5)),
+        Icon(icon, size: 72, color: AppColors.textHint.withValues(alpha: 0.5)),
         const SizedBox(height: AppSpacing.m),
         Text(
           title,

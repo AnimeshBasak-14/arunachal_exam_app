@@ -165,7 +165,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
     final currentRating = user?.rating ?? 1200;
 
     // Expected score E (Assuming a Medium test with difficulty rating 1200)
-    final double testDifficulty = 1200.0;
+    const double testDifficulty = 1200.0;
     final double exponent = (testDifficulty - currentRating) / 400.0;
     final double expectedScore = 1.0 / (1.0 + math.pow(10.0, exponent));
 
@@ -534,10 +534,10 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
 
                           if (isOptionCorrect) {
                             optionBorderColor = AppColors.success;
-                            optionBgColor = AppColors.success.withOpacity(0.06);
+                            optionBgColor = AppColors.success.withValues(alpha: 0.06);
                           } else if (isUserSelected) {
                             optionBorderColor = AppColors.error;
-                            optionBgColor = AppColors.error.withOpacity(0.06);
+                            optionBgColor = AppColors.error.withValues(alpha: 0.06);
                           }
 
                           return Container(
@@ -571,9 +571,9 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                         Container(
                           padding: const EdgeInsets.all(AppSpacing.m),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryLight.withOpacity(0.2),
+                            color: AppColors.primaryLight.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppColors.primary.withOpacity(0.12)),
+                            border: Border.all(color: AppColors.primary.withValues(alpha: 0.12)),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -662,7 +662,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: _secondsRemaining < 60 ? AppColors.error.withOpacity(0.12) : AppColors.primaryLight,
+                  color: _secondsRemaining < 60 ? AppColors.error.withValues(alpha: 0.12) : AppColors.primaryLight,
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: Row(
@@ -816,7 +816,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                             key: ValueKey('${question.id}_opt_$optIdx'),
                             margin: const EdgeInsets.only(bottom: AppSpacing.s),
                             decoration: BoxDecoration(
-                              color: isSelected ? AppColors.primary.withOpacity(0.06) : Colors.transparent,
+                              color: isSelected ? AppColors.primary.withValues(alpha: 0.06) : Colors.transparent,
                               border: Border.all(
                                 color: isSelected ? AppColors.primary : AppColors.divider,
                                 width: isSelected ? 2.0 : 1.0,

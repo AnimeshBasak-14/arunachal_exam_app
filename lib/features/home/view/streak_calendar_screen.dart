@@ -126,7 +126,7 @@ class _StreakCalendarScreenState extends ConsumerState<StreakCalendarScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.orange.withOpacity(0.3),
+            color: Colors.orange.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -145,7 +145,7 @@ class _StreakCalendarScreenState extends ConsumerState<StreakCalendarScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _buildHeroStat('Longest Streak', '$_longestStreak'),
-              Container(width: 1, height: 40, color: Colors.white.withOpacity(0.3)),
+              Container(width: 1, height: 40, color: Colors.white.withValues(alpha: 0.3)),
               _buildHeroStat('Total Active', '${_activeDates.length}'),
             ],
           ),
@@ -164,7 +164,7 @@ class _StreakCalendarScreenState extends ConsumerState<StreakCalendarScreen> {
         const SizedBox(height: 4),
         Text(
           label,
-          style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.8)),
+          style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.8)),
         ),
       ],
     );
@@ -183,7 +183,7 @@ class _StreakCalendarScreenState extends ConsumerState<StreakCalendarScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -191,9 +191,9 @@ class _StreakCalendarScreenState extends ConsumerState<StreakCalendarScreen> {
       ),
       child: Column(
         children: [
-          Row(
+          const Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: const [
+            children: [
               Text('Mon'), Text('Tue'), Text('Wed'), Text('Thu'),
               Text('Fri'), Text('Sat'), Text('Sun'),
             ],
@@ -225,7 +225,7 @@ class _StreakCalendarScreenState extends ConsumerState<StreakCalendarScreen> {
                   border: isToday ? Border.all(color: Colors.blue, width: 2) : null,
                   boxShadow: isActive ? [
                     BoxShadow(
-                      color: Colors.green.shade400.withOpacity(0.6),
+                      color: Colors.green.shade400.withValues(alpha: 0.6),
                       blurRadius: 6,
                       spreadRadius: 1,
                     )

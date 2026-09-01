@@ -166,7 +166,7 @@ class NotificationsScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.notifications_off_outlined, size: 64, color: AppColors.textHint.withOpacity(0.4)),
+                  Icon(Icons.notifications_off_outlined, size: 64, color: AppColors.textHint.withValues(alpha: 0.4)),
                   const SizedBox(height: 16),
                   const Text(
                     'No notifications yet',
@@ -195,13 +195,13 @@ class NotificationsScreen extends ConsumerWidget {
                   background: Container(
                     alignment: Alignment.centerRight,
                     padding: const EdgeInsets.only(right: 20),
-                    color: AppColors.error.withOpacity(0.12),
+                    color: AppColors.error.withValues(alpha: 0.12),
                     child: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
                   ),
                   child: InkWell(
                     onTap: () => ref.read(notificationsProvider.notifier).markRead(notif.id),
                     child: Container(
-                      color: notif.isRead ? Colors.transparent : notif.color.withOpacity(0.05),
+                      color: notif.isRead ? Colors.transparent : notif.color.withValues(alpha: 0.05),
                       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: 14),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,7 +211,7 @@ class NotificationsScreen extends ConsumerWidget {
                             width: 44,
                             height: 44,
                             decoration: BoxDecoration(
-                              color: notif.color.withOpacity(0.12),
+                              color: notif.color.withValues(alpha: 0.12),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(notif.icon, color: notif.color, size: 22),

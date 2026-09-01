@@ -158,9 +158,9 @@ class BioScreen extends ConsumerWidget {
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppSpacing.radiusL),
-                    side: BorderSide(color: rankTier.color.withOpacity(0.4), width: 1.5),
+                    side: BorderSide(color: rankTier.color.withValues(alpha: 0.4), width: 1.5),
                   ),
-                  color: rankTier.color.withOpacity(0.06),
+                  color: rankTier.color.withValues(alpha: 0.06),
                   child: Padding(
                     padding: const EdgeInsets.all(AppSpacing.m),
                     child: Row(
@@ -168,7 +168,7 @@ class BioScreen extends ConsumerWidget {
                         Container(
                           padding: const EdgeInsets.all(AppSpacing.s),
                           decoration: BoxDecoration(
-                            color: rankTier.color.withOpacity(0.2),
+                            color: rankTier.color.withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(rankTier.icon, color: rankTier.color, size: 36),
@@ -192,7 +192,7 @@ class BioScreen extends ConsumerWidget {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: rankTier.color.withOpacity(0.18),
+                                      color: rankTier.color.withValues(alpha: 0.18),
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: Text(
@@ -280,7 +280,7 @@ class BioScreen extends ConsumerWidget {
                       children: [
                         _buildStatMetric('Mocks Taken', '$mocksTaken'),
                         _buildStatMetric('Avg Accuracy', mocksTaken > 0 ? '${avgAccuracy.toStringAsFixed(0)}%' : '--'),
-                        _buildStatMetric('Best Score', mocksTaken > 0 ? '${bestScore.toStringAsFixed(1)}' : '--'),
+                        _buildStatMetric('Best Score', mocksTaken > 0 ? bestScore.toStringAsFixed(1) : '--'),
                       ],
                     ),
                   ],

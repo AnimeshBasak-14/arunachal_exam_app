@@ -41,7 +41,7 @@ class MyCoursesScreen extends ConsumerWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.bookmark_outline_rounded, size: 72, color: AppColors.textHint.withOpacity(0.5)),
+                      Icon(Icons.bookmark_outline_rounded, size: 72, color: AppColors.textHint.withValues(alpha: 0.5)),
                       const SizedBox(height: AppSpacing.m),
                       const Text(
                         'No bookmarked exams yet',

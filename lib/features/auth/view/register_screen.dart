@@ -137,7 +137,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.primaryLight,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
                 ),
                 child: Text(
                   randomOtp,
@@ -255,7 +255,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: CircleAvatar(
-        backgroundColor: color.withOpacity(0.12),
+        backgroundColor: color.withValues(alpha: 0.12),
         child: Text(
           initials.isEmpty ? 'G' : initials,
           style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 13),
@@ -275,11 +275,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSpacing.radiusXL),
           ),
-          title: Row(
+          title: const Row(
             children: [
-              const Icon(Icons.account_circle_outlined, color: AppColors.primary, size: 24),
-              const SizedBox(width: 8),
-              const Text(
+              Icon(Icons.account_circle_outlined, color: AppColors.primary, size: 24),
+              SizedBox(width: 8),
+              Text(
                 'Choose an account',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
@@ -584,9 +584,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   Container(
                     padding: const EdgeInsets.all(AppSpacing.s),
                     decoration: BoxDecoration(
-                      color: AppColors.error.withOpacity(0.08),
+                      color: AppColors.error.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.error.withOpacity(0.3)),
+                      border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       children: [
@@ -645,7 +645,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   'Or Connect with Gmail',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: AppColors.textSecondary.withOpacity(0.8),
+                    color: AppColors.textSecondary.withValues(alpha: 0.8),
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),

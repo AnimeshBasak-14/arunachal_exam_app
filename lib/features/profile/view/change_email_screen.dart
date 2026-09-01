@@ -101,7 +101,7 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.primaryLight,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
                 ),
                 child: Text(
                   randomOtp,
@@ -158,7 +158,7 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
       Navigator.pop(context); // Pop loading dialog
       final user = ref.read(authViewModelProvider).user;
       if (user != null) {
-        final gmail = 'candidate.google@gmail.com';
+        const gmail = 'candidate.google@gmail.com';
         await ref.read(authViewModelProvider.notifier).updateProfile(
               name: user.name,
               email: gmail,

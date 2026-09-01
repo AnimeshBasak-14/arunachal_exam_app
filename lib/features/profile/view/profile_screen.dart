@@ -96,9 +96,9 @@ class ProfileScreen extends ConsumerWidget {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: 6),
                           decoration: BoxDecoration(
-                            color: tier.color.withOpacity(0.12),
+                            color: tier.color.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: tier.color.withOpacity(0.5), width: 1.5),
+                            border: Border.all(color: tier.color.withValues(alpha: 0.5), width: 1.5),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,

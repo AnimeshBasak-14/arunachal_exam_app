@@ -49,9 +49,9 @@ class _ExamDetailScreenState extends ConsumerState<ExamDetailScreen> {
         return Container(
           margin: const EdgeInsets.only(bottom: AppSpacing.s),
           decoration: BoxDecoration(
-            color: AppColors.primaryLight.withOpacity(0.2),
+            color: AppColors.primaryLight.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+            border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
           ),
           child: ListTile(
             dense: true,

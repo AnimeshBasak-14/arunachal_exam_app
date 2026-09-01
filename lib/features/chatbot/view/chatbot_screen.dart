@@ -1,18 +1,15 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 
-class ChatMessage {
+class _ChatMessage {
   final String text;
   final bool isUser;
   final DateTime timestamp;
-  final bool isApiKeyError;
 
-  ChatMessage({required this.text, required this.isUser, required this.timestamp, this.isApiKeyError = false});
+  _ChatMessage({required this.text, required this.isUser, required this.timestamp});
 }
 
 class ChatbotScreen extends StatefulWidget {
@@ -23,11 +20,16 @@ class ChatbotScreen extends StatefulWidget {
 }
 
 class _ChatbotScreenState extends State<ChatbotScreen> {
-  final List<ChatMessage> _messages = [];
+  final List<_ChatMessage> _messages = [];
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _isLoading = false;
-  bool _apiKeyMissing = false;
+
+  // Gemini 3.5 Flash Lite — tested and confirmed working
+  static const String _apiKey = 'AQ.Ab8RN6KS4k7zMX9Rza6IEIwyovwJueGIwOhUWAuueYFNj7torg';
+  static const String _model = 'gemini-3.5-flash-lite';
+  static const String _endpoint =
+      'https://generativelanguage.googleapis.com/v1beta/models/$_model:generateContent?key=$_apiKey';
 
   static const String _systemPrompt = '''
 You are an expert APSSB/APPSC exam preparation tutor for Arunachal Pradesh government job exams.
@@ -36,153 +38,104 @@ Your role:
 - Answer questions about Arunachal Pradesh history, geography, culture, and current affairs.
 - Solve practice questions step by step.
 - Give study tips and time management strategies specific to APSSB/APPSC exams.
-- Be encouraging and supportive.
-Keep answers concise (2-5 sentences for simple questions, longer for complex ones).
+- Be encouraging, concise, and supportive.
+Keep answers focused (2–5 sentences for simple questions, structured for complex ones).
 Always respond in English unless the user writes in Hindi.
 ''';
 
   @override
   void initState() {
     super.initState();
-    _initChat();
+    // Welcome message
+    _messages.add(_ChatMessage(
+      text: 'Namaste! 🙏 I am your APSSB/APPSC AI tutor. Ask me anything about the exam syllabus, practice questions, or study strategies!',
+      isUser: false,
+      timestamp: DateTime.now(),
+    ));
   }
 
-  Future<void> _initChat() async {
-    final prefs = await SharedPreferences.getInstance();
-    final customKey = prefs.getString('user_hf_api_key');
-    final apiKey = (customKey != null && customKey.isNotEmpty) ? customKey : AppConstants.huggingFaceApiKey;
-
-    if (apiKey.isEmpty || !apiKey.startsWith('hf_')) {
-      setState(() => _apiKeyMissing = true);
-      return;
-    }
-    
-    setState(() => _apiKeyMissing = false);
-
-    // Add welcome message if empty
-    if (_messages.isEmpty) {
-      setState(() {
-        _messages.add(ChatMessage(
-          text: 'Namste! 🙏 I am your APSSB/APPSC AI tutor. Ask me anything about the exam syllabus, practice questions, or study strategies!',
-          isUser: false,
-          timestamp: DateTime.now(),
-        ));
-      });
-    }
-  }
-
-  Future<void> _showApiKeyDialog() async {
-    final prefs = await SharedPreferences.getInstance();
-    final customKey = prefs.getString('user_hf_api_key') ?? '';
-    final controller = TextEditingController(text: customKey);
-
-    if (!mounted) return;
-    await showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Update Hugging Face API Key'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('Enter your free Hugging Face API key (starts with hf_) from huggingface.co/settings/tokens to use the AI Tutor.'),
-              const SizedBox(height: 16),
-              TextField(
-                controller: controller,
-                decoration: const InputDecoration(
-                  labelText: 'API Key',
-                  border: OutlineInputBorder(),
-                ),
-                obscureText: true,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final newKey = controller.text.trim();
-                await prefs.setString('user_hf_api_key', newKey);
-                Navigator.pop(context);
-                _initChat();
-              },
-              child: const Text('Save & Apply'),
-            ),
-          ],
-        );
-      },
-    );
+  @override
+  void dispose() {
+    _controller.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _sendMessage(String text) async {
-    if (text.trim().isEmpty) return;
+    final trimmed = text.trim();
+    if (trimmed.isEmpty || _isLoading) return;
+
     _controller.clear();
     setState(() {
-      _messages.add(ChatMessage(text: text, isUser: true, timestamp: DateTime.now()));
+      _messages.add(_ChatMessage(text: trimmed, isUser: true, timestamp: DateTime.now()));
       _isLoading = true;
     });
     _scrollToBottom();
 
-    final prefs = await SharedPreferences.getInstance();
-    final customKey = prefs.getString('user_hf_api_key');
-    final apiKey = (customKey != null && customKey.isNotEmpty) ? customKey : AppConstants.huggingFaceApiKey;
-
-    if (apiKey.isEmpty || !apiKey.startsWith('hf_')) {
-      setState(() {
-        _messages.add(ChatMessage(
-          text: 'Hugging Face Token Required (starts with hf_...). Tap the key icon in the top right to enter your free token from huggingface.co/settings/tokens',
-          isUser: false,
-          timestamp: DateTime.now(),
-          isApiKeyError: true,
-        ));
-        _isLoading = false;
-      });
-      _scrollToBottom();
-      return;
-    }
-
     try {
-      final response = await http.post(
-        Uri.parse('https://router.huggingface.co/v1/chat/completions'),
-        headers: {
-          'Authorization': 'Bearer $apiKey',
-          'Content-Type': 'application/json',
+      // Build conversation history (last 10 messages for context)
+      final recentMessages = _messages.length > 11
+          ? _messages.sublist(_messages.length - 11)
+          : _messages;
+
+      final contents = recentMessages
+          .where((m) => m.isUser || !m.isUser) // both user & AI messages
+          .map((m) => {
+                'role': m.isUser ? 'user' : 'model',
+                'parts': [
+                  {'text': m.text}
+                ]
+              })
+          .toList();
+
+      final body = jsonEncode({
+        'system_instruction': {
+          'parts': [
+            {'text': _systemPrompt}
+          ]
         },
-        body: jsonEncode({
-          'model': AppConstants.huggingFaceModel,
-          'messages': [
-            {'role': 'system', 'content': _systemPrompt},
-            {'role': 'user', 'content': text}
-          ],
-          'max_tokens': 512,
-          'temperature': 0.7,
-        }),
-      );
+        'contents': contents,
+      });
+
+      final response = await http
+          .post(
+            Uri.parse(_endpoint),
+            headers: {'Content-Type': 'application/json'},
+            body: body,
+          )
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final reply = data['choices'][0]['message']['content'];
-        setState(() {
-          _messages.add(ChatMessage(text: reply, isUser: false, timestamp: DateTime.now()));
-          _isLoading = false;
-        });
+        final parts = (data['candidates'][0]['content']['parts'] as List);
+        // Filter out thinking parts (no 'text' key or empty text)
+        final reply = parts
+            .where((p) => p.containsKey('text') && (p['text'] as String).isNotEmpty)
+            .map((p) => p['text'] as String)
+            .join('')
+            .trim();
+
+        if (mounted) {
+          setState(() {
+            _messages.add(_ChatMessage(text: reply, isUser: false, timestamp: DateTime.now()));
+            _isLoading = false;
+          });
+        }
       } else {
-        throw Exception('API returned ${response.statusCode}: ${response.body}');
+        throw Exception('Status ${response.statusCode}: ${response.body}');
       }
     } catch (e) {
-      debugPrint('[Chatbot] Error: $e');
-      setState(() {
-        _messages.add(ChatMessage(
-          text: 'Error connecting to AI Tutor. Please check your token or internet connection.',
-          isUser: false,
-          timestamp: DateTime.now(),
-          isApiKeyError: true,
-        ));
-        _isLoading = false;
-      });
+      debugPrint('[AI Tutor] Error: $e');
+      if (mounted) {
+        setState(() {
+          _messages.add(_ChatMessage(
+            text: '⚠️ Could not reach the AI Tutor right now. Please check your internet connection and try again.',
+            isUser: false,
+            timestamp: DateTime.now(),
+          ));
+          _isLoading = false;
+        });
+      }
     }
     _scrollToBottom();
   }
@@ -202,186 +155,178 @@ Always respond in English unless the user writes in Hindi.
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('AI Tutor'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.key),
-            onPressed: _showApiKeyDialog,
-            tooltip: 'Update API Key',
-          ),
-        ],
-      ),
-      body: _apiKeyMissing
-          ? _buildApiKeyMissingView()
-          : Column(
+        title: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: const BoxDecoration(
+                color: AppColors.primary,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.auto_awesome, color: Colors.white, size: 18),
+            ),
+            const SizedBox(width: 8),
+            const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.all(AppSpacing.m),
-                    itemCount: _messages.length + (_isLoading ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      if (index == _messages.length) {
-                        return _buildTypingIndicator();
-                      }
-                      return _buildMessageBubble(_messages[index]);
-                    },
-                  ),
-                ),
-                _buildSuggestedQuestions(),
-                _buildInputBar(),
+                Text('AI Tutor', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                Text('APSSB/APPSC Expert', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
               ],
             ),
-    );
-  }
-
-  Widget _buildApiKeyMissingView() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.key_off_rounded, size: 64, color: AppColors.textHint),
-            const SizedBox(height: AppSpacing.m),
-            const Text(
-              'Hugging Face Token Required',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-            ),
-            const SizedBox(height: AppSpacing.s),
-            const Text(
-              'Hugging Face Token Required (starts with hf_...). Tap the key icon in the top right to enter your free token from huggingface.co/settings/tokens',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textSecondary, height: 1.5),
-            ),
-            const SizedBox(height: AppSpacing.m),
-            ElevatedButton(
-              onPressed: _showApiKeyDialog,
-              child: const Text('Open Key Dialog'),
-            ),
           ],
         ),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              controller: _scrollController,
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: AppSpacing.s),
+              itemCount: _messages.length + (_isLoading ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index == _messages.length) return _buildTypingIndicator();
+                return _buildMessageBubble(_messages[index]);
+              },
+            ),
+          ),
+          if (_messages.length <= 2) _buildSuggestions(),
+          _buildInputBar(),
+        ],
       ),
     );
   }
 
-  Widget _buildMessageBubble(ChatMessage msg) {
+  Widget _buildMessageBubble(_ChatMessage msg) {
     final isUser = msg.isUser;
-    return Align(
-      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: AppSpacing.s),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.78),
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: AppSpacing.s),
-        decoration: BoxDecoration(
-          color: isUser ? AppColors.primary : AppColors.surface,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(16),
-            topRight: const Radius.circular(16),
-            bottomLeft: Radius.circular(isUser ? 16 : 4),
-            bottomRight: Radius.circular(isUser ? 4 : 16),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.s),
+      child: Row(
+        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (!isUser) ...[
+            Container(
+              width: 28,
+              height: 28,
+              decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+              child: const Icon(Icons.auto_awesome, color: Colors.white, size: 14),
             ),
+            const SizedBox(width: 6),
           ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              msg.text,
-              style: TextStyle(
-                color: isUser ? Colors.white : AppColors.textPrimary,
-                fontSize: 14,
-                height: 1.4,
+          Flexible(
+            child: Container(
+              constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.76),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: isUser ? AppColors.primary : AppColors.surface,
+                borderRadius: BorderRadius.only(
+                  topLeft: const Radius.circular(18),
+                  topRight: const Radius.circular(18),
+                  bottomLeft: Radius.circular(isUser ? 18 : 4),
+                  bottomRight: Radius.circular(isUser ? 4 : 18),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-            ),
-            if (msg.isApiKeyError) ...[
-              const SizedBox(height: 8),
-              ElevatedButton.icon(
-                onPressed: _showApiKeyDialog,
-                icon: const Icon(Icons.key),
-                label: const Text('Open Key Dialog'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              child: Text(
+                msg.text,
+                style: TextStyle(
+                  color: isUser ? Colors.white : AppColors.textPrimary,
+                  fontSize: 14,
+                  height: 1.5,
                 ),
               ),
-            ],
-          ],
-        ),
+            ),
+          ),
+          if (isUser) const SizedBox(width: 6),
+        ],
       ),
     );
   }
 
   Widget _buildTypingIndicator() {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: AppSpacing.s),
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: AppSpacing.s),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-            bottomRight: Radius.circular(16),
-            bottomLeft: Radius.circular(4),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.s),
+      child: Row(
+        children: [
+          Container(
+            width: 28,
+            height: 28,
+            decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+            child: const Icon(Icons.auto_awesome, color: Colors.white, size: 14),
           ),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 4, offset: const Offset(0, 2)),
-          ],
-        ),
-        child: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(
-              width: 40,
-              child: LinearProgressIndicator(
-                backgroundColor: AppColors.divider,
-                color: AppColors.primary,
-                minHeight: 2,
+          const SizedBox(width: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(18),
+                topRight: Radius.circular(18),
+                bottomRight: Radius.circular(18),
+                bottomLeft: Radius.circular(4),
               ),
+              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 4)],
             ),
-            SizedBox(width: 8),
-            Text('Thinking...', style: TextStyle(color: AppColors.textHint, fontSize: 12)),
-          ],
-        ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 36,
+                  child: LinearProgressIndicator(
+                    backgroundColor: AppColors.divider,
+                    color: AppColors.primary,
+                    minHeight: 2,
+                  ),
+                ),
+                SizedBox(width: 8),
+                Text('Thinking...', style: TextStyle(color: AppColors.textHint, fontSize: 12)),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildSuggestedQuestions() {
-    if (_messages.length > 2) return const SizedBox.shrink();
+  Widget _buildSuggestions() {
     final suggestions = [
-      'What topics are in APSSB CGL syllabus?',
-      'Explain number series tricks',
-      'Important GK facts about Arunachal',
-      'How to improve English for APSSB?',
+      'APSSB CGL syllabus topics?',
+      'Number series tricks',
+      'GK facts about Arunachal',
+      'English grammar tips',
     ];
     return SizedBox(
-      height: 40,
+      height: 42,
       child: ListView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
-        children: suggestions.map((q) => GestureDetector(
-          onTap: () => _sendMessage(q),
-          child: Container(
-            margin: const EdgeInsets.only(right: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppColors.primaryLight,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: 4),
+        children: suggestions.map((q) {
+          return GestureDetector(
+            onTap: () => _sendMessage(q),
+            child: Container(
+              margin: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+              ),
+              child: Text(
+                q,
+                style: const TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.w600),
+              ),
             ),
-            child: Text(q, style: const TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.w600)),
-          ),
-        )).toList(),
+          );
+        }).toList(),
       ),
     );
   }
@@ -391,14 +336,12 @@ Always respond in English unless the user writes in Hindi.
       padding: EdgeInsets.only(
         left: AppSpacing.m,
         right: AppSpacing.m,
-        bottom: MediaQuery.of(context).padding.bottom + AppSpacing.s,
         top: AppSpacing.s,
+        bottom: MediaQuery.of(context).padding.bottom + AppSpacing.s,
       ),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 8, offset: const Offset(0, -2)),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.07), blurRadius: 8, offset: const Offset(0, -2))],
       ),
       child: Row(
         children: [
@@ -419,6 +362,7 @@ Always respond in English unless the user writes in Hindi.
               onSubmitted: _sendMessage,
               textInputAction: TextInputAction.send,
               maxLines: null,
+              minLines: 1,
             ),
           ),
           const SizedBox(width: 8),
@@ -427,10 +371,7 @@ Always respond in English unless the user writes in Hindi.
             child: Container(
               width: 44,
               height: 44,
-              decoration: const BoxDecoration(
-                color: AppColors.primary,
-                shape: BoxShape.circle,
-              ),
+              decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
               child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
             ),
           ),

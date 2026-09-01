@@ -473,10 +473,10 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                           if (selectedOption != null) {
                             if (isCorrect) {
                               optionBorderColor = AppColors.success;
-                              optionBgColor = AppColors.success.withOpacity(0.06);
+                              optionBgColor = AppColors.success.withValues(alpha: 0.06);
                             } else if (isSelected) {
                               optionBorderColor = AppColors.error;
-                              optionBgColor = AppColors.error.withOpacity(0.06);
+                              optionBgColor = AppColors.error.withValues(alpha: 0.06);
                             }
                           }
 
@@ -546,9 +546,9 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                           Container(
                             padding: const EdgeInsets.all(AppSpacing.m),
                             decoration: BoxDecoration(
-                              color: AppColors.primaryLight.withOpacity(0.3),
+                              color: AppColors.primaryLight.withValues(alpha: 0.3),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+                              border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -771,7 +771,7 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                         // Replying Header Banner
                         if (_replyingToCommentText != null && _activeReplyingQuestionId == question.id)
                           Container(
-                            color: AppColors.primaryLight.withOpacity(0.4),
+                            color: AppColors.primaryLight.withValues(alpha: 0.4),
                             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: 4),
                             margin: const EdgeInsets.only(bottom: AppSpacing.s),
                             child: Row(

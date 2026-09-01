@@ -17,7 +17,7 @@ class WelcomeScreen extends ConsumerWidget {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: CircleAvatar(
-        backgroundColor: color.withOpacity(0.12),
+        backgroundColor: color.withValues(alpha: 0.12),
         child: Text(
           initials.isEmpty ? 'G' : initials,
           style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 13),
@@ -37,11 +37,11 @@ class WelcomeScreen extends ConsumerWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSpacing.radiusXL),
           ),
-          title: Row(
+          title: const Row(
             children: [
-              const Icon(Icons.account_circle_outlined, color: AppColors.primary, size: 24),
-              const SizedBox(width: 8),
-              const Text(
+              Icon(Icons.account_circle_outlined, color: AppColors.primary, size: 24),
+              SizedBox(width: 8),
+              Text(
                 'Choose an account',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
@@ -166,7 +166,7 @@ class WelcomeScreen extends ConsumerWidget {
           ),
           // Blur Overlay
           Container(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
           ),
           BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0),
@@ -188,7 +188,7 @@ class WelcomeScreen extends ConsumerWidget {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.12),
+                          color: Colors.black.withValues(alpha: 0.12),
                           blurRadius: 16,
                           spreadRadius: 2,
                         ),
@@ -213,7 +213,7 @@ class WelcomeScreen extends ConsumerWidget {
                           fontSize: 36,
                           shadows: [
                             Shadow(
-                              color: Colors.black.withOpacity(0.4),
+                              color: Colors.black.withValues(alpha: 0.4),
                               offset: const Offset(0, 2),
                               blurRadius: 6,
                             ),
@@ -225,7 +225,7 @@ class WelcomeScreen extends ConsumerWidget {
                     AppStrings.welcomeSubtitle,
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textWhite.withOpacity(0.85),
+                          color: AppColors.textWhite.withValues(alpha: 0.85),
                           fontWeight: FontWeight.w500,
                         ),
                   ),
@@ -251,7 +251,7 @@ class WelcomeScreen extends ConsumerWidget {
                   Text(
                     'Or Connect with Gmail',
                     style: TextStyle(
-                      color: AppColors.textWhite.withOpacity(0.7),
+                      color: AppColors.textWhite.withValues(alpha: 0.7),
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),

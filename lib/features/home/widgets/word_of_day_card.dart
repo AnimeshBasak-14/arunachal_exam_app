@@ -30,7 +30,7 @@ class _WordOfDayCardState extends State<WordOfDayCard> {
           borderRadius: BorderRadius.circular(AppSpacing.radiusL),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF1a237e).withOpacity(0.3),
+              color: const Color(0xFF1a237e).withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -44,7 +44,7 @@ class _WordOfDayCardState extends State<WordOfDayCard> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
@@ -147,9 +147,9 @@ class _WordOfDayCardState extends State<WordOfDayCard> {
           children: words.map((w) => Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
+              color: color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: color.withOpacity(0.4)),
+              border: Border.all(color: color.withValues(alpha: 0.4)),
             ),
             child: Text(w, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w600)),
           )).toList(),
