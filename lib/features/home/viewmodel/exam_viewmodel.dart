@@ -118,6 +118,13 @@ class ExamViewModel extends StateNotifier<List<Exam>> {
       icon: Icons.edit_rounded,
       categoryId: 'apssb',
     ),
+    Exam(
+      id: 'apssb_udc',
+      code: 'UDC',
+      name: 'Upper Division Clerk',
+      icon: Icons.account_balance_outlined,
+      categoryId: 'apssb',
+    ),
   ];
 
   void toggleBookmark(String id) {

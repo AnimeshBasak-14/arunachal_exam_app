@@ -17,6 +17,8 @@ class _StreakCalendarScreenState extends ConsumerState<StreakCalendarScreen> {
   int _currentStreak = 0;
   int _longestStreak = 0;
   List<String> _activeDates = [];
+  
+  late DateTime _selectedMonth;
 
   @override
   void initState() {
@@ -26,6 +28,38 @@ class _StreakCalendarScreenState extends ConsumerState<StreakCalendarScreen> {
     _currentStreak = _streakService.getCurrentStreak();
     _longestStreak = _streakService.getLongestStreak();
     _activeDates = _streakService.getActiveDatesHistory();
+    _selectedMonth = DateTime(DateTime.now().year, DateTime.now().month, 1);
+  }
+
+  void _previousMonth() {
+    final now = DateTime.now();
+    final minAllowed = DateTime(now.year - 1, now.month);
+    final newMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1, 1);
+    
+    if (newMonth.isAfter(minAllowed) || (newMonth.year == minAllowed.year && newMonth.month == minAllowed.month)) {
+      setState(() {
+        _selectedMonth = newMonth;
+      });
+    }
+  }
+
+  void _nextMonth() {
+    final now = DateTime.now();
+    final newMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1, 1);
+    
+    if (newMonth.isBefore(now) || (newMonth.year == now.year && newMonth.month == now.month)) {
+      setState(() {
+        _selectedMonth = newMonth;
+      });
+    }
+  }
+  
+  String _getMonthName(int month) {
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return months[month - 1];
   }
 
   @override
@@ -42,7 +76,7 @@ class _StreakCalendarScreenState extends ConsumerState<StreakCalendarScreen> {
           children: [
             _buildHeroCard(),
             const SizedBox(height: AppSpacing.l),
-            const Text('This Month', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            _buildCalendarHeader(),
             const SizedBox(height: AppSpacing.s),
             _buildCalendarGrid(),
             const SizedBox(height: AppSpacing.l),
@@ -52,6 +86,31 @@ class _StreakCalendarScreenState extends ConsumerState<StreakCalendarScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildCalendarHeader() {
+    final now = DateTime.now();
+    final isCurrentMonth = _selectedMonth.year == now.year && _selectedMonth.month == now.month;
+    final minAllowed = DateTime(now.year - 1, now.month);
+    final isMinMonth = _selectedMonth.year == minAllowed.year && _selectedMonth.month == minAllowed.month;
+    
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.chevron_left),
+          onPressed: isMinMonth ? null : _previousMonth,
+        ),
+        Text(
+          '${_getMonthName(_selectedMonth.month)} ${_selectedMonth.year}',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        IconButton(
+          icon: const Icon(Icons.chevron_right),
+          onPressed: isCurrentMonth ? null : _nextMonth,
+        ),
+      ],
     );
   }
 
@@ -112,8 +171,10 @@ class _StreakCalendarScreenState extends ConsumerState<StreakCalendarScreen> {
   }
 
   Widget _buildCalendarGrid() {
+    final daysInMonth = DateUtils.getDaysInMonth(_selectedMonth.year, _selectedMonth.month);
+    final firstDayOffset = DateTime(_selectedMonth.year, _selectedMonth.month, 1).weekday - 1;
+    final totalCells = daysInMonth + firstDayOffset;
     final now = DateTime.now();
-    final daysInMonth = DateUtils.getDaysInMonth(now.year, now.month);
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.m),
@@ -128,42 +189,60 @@ class _StreakCalendarScreenState extends ConsumerState<StreakCalendarScreen> {
           ),
         ],
       ),
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 7,
-          crossAxisSpacing: 8,
-          mainAxisSpacing: 8,
-        ),
-        itemCount: daysInMonth,
-        itemBuilder: (context, index) {
-          final day = index + 1;
-          final dateStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}';
-          final isActive = _activeDates.contains(dateStr);
-          
-          return Container(
-            decoration: BoxDecoration(
-              color: isActive ? Colors.green.shade500 : Colors.grey.shade200,
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: isActive ? [
-                BoxShadow(
-                  color: Colors.green.shade400.withOpacity(0.6),
-                  blurRadius: 6,
-                  spreadRadius: 1,
-                )
-              ] : null,
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: const [
+              Text('Mon'), Text('Tue'), Text('Wed'), Text('Thu'),
+              Text('Fri'), Text('Sat'), Text('Sun'),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.s),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 7,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
             ),
-            alignment: Alignment.center,
-            child: Text(
-              '$day',
-              style: TextStyle(
-                color: isActive ? Colors.white : Colors.grey.shade600,
-                fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
-          );
-        },
+            itemCount: totalCells,
+            itemBuilder: (context, index) {
+              if (index < firstDayOffset) {
+                return const SizedBox();
+              }
+              
+              final day = index - firstDayOffset + 1;
+              final dateStr = '${_selectedMonth.year}-${_selectedMonth.month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}';
+              final isActive = _activeDates.contains(dateStr);
+              final isToday = now.year == _selectedMonth.year && now.month == _selectedMonth.month && now.day == day;
+              
+              return Container(
+                decoration: BoxDecoration(
+                  color: isActive ? Colors.green.shade500 : Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(8),
+                  border: isToday ? Border.all(color: Colors.blue, width: 2) : null,
+                  boxShadow: isActive ? [
+                    BoxShadow(
+                      color: Colors.green.shade400.withOpacity(0.6),
+                      blurRadius: 6,
+                      spreadRadius: 1,
+                    )
+                  ] : null,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  '$day',
+                  style: TextStyle(
+                    color: isActive ? Colors.white : Colors.grey.shade600,
+                    fontWeight: (isActive || isToday) ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
