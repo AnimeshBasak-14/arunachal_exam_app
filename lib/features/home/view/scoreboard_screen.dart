@@ -25,6 +25,46 @@ final _mockCompetitors = [
   {'name': 'Jorum Bam', 'email': 'jorum@gmail.com', 'rating': 1210, 'state': 'Basar'},
 ];
 
+/// Helper data class for sorted leaderboard state
+class LeaderboardData {
+  final List<Map<String, dynamic>> allEntries;
+  final int myRank;
+  final List<Map<String, dynamic>> topThree;
+
+  const LeaderboardData({
+    required this.allEntries,
+    required this.myRank,
+    required this.topThree,
+  });
+}
+
+// ⚡ PERFORMANCE OPTIMIZATION (Bolt):
+// Derive and memoize the sorted leaderboard list using a Riverpod Provider.
+// Previously, list cloning `[...]` and `sort()` (O(N log N)) were executed inside
+// `ScoreboardScreen.build()`, causing redundant allocations and CPU work on every widget frame rebuild.
+final leaderboardProvider = Provider.autoDispose<LeaderboardData>((ref) {
+  final currentUser = ref.watch(authViewModelProvider).user;
+  final userRating = currentUser?.rating ?? 1200;
+  final userName = currentUser?.name ?? 'You';
+
+  final allEntries = [
+    ..._mockCompetitors,
+    {'name': userName, 'email': currentUser?.email ?? '', 'rating': userRating, 'state': 'Me', 'isMe': true},
+  ];
+
+  // O(N log N) sort operation offloaded from Widget.build()
+  allEntries.sort((a, b) => (b['rating'] as int).compareTo(a['rating'] as int));
+
+  final myRank = allEntries.indexWhere((e) => e['isMe'] == true) + 1;
+  final topThree = allEntries.take(3).toList();
+
+  return LeaderboardData(
+    allEntries: allEntries,
+    myRank: myRank,
+    topThree: topThree,
+  );
+});
+
 String _rankSuffix(int rank) {
   if (rank == 1) return '🥇';
   if (rank == 2) return '🥈';
@@ -39,19 +79,14 @@ class ScoreboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentUser = ref.watch(authViewModelProvider).user;
     final userRating = currentUser?.rating ?? 1200;
-    final userName = currentUser?.name ?? 'You';
 
     final userTier = RankUtils.getTier(userRating);
 
-    // Build full leaderboard: insert current user at proper position
-    final allEntries = [
-      ..._mockCompetitors,
-      {'name': userName, 'email': currentUser?.email ?? '', 'rating': userRating, 'state': 'Me', 'isMe': true},
-    ];
-    allEntries.sort((a, b) => (b['rating'] as int).compareTo(a['rating'] as int));
-
-    final myRank = allEntries.indexWhere((e) => e['isMe'] == true) + 1;
-    final topThree = allEntries.take(3).toList();
+    // ⚡ Fetch memoized leaderboard calculations from Riverpod provider
+    final leaderboard = ref.watch(leaderboardProvider);
+    final allEntries = leaderboard.allEntries;
+    final myRank = leaderboard.myRank;
+    final topThree = leaderboard.topThree;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -218,7 +253,7 @@ class ScoreboardScreen extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              isMe ? '$userName (You)' : entry['name'] as String,
+                              isMe ? '${currentUser?.name ?? 'You'} (You)' : entry['name'] as String,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13.5,
