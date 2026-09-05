@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/service_providers.dart';
 import '../../../core/services/storage_service.dart';
@@ -271,10 +273,13 @@ class AuthViewModel extends StateNotifier<AuthState> {
         city: 'Itanagar',
       );
 
+      // Generate a cryptographically secure random password for social login accounts
+      final securePassword = _generateSecureRandomPassword();
+
       // Register account credentials if new
       await _storage.registerUserAccount(
         emailOrPhone: user.email,
-        password: 'socialpassword',
+        password: securePassword,
         name: user.name,
         dob: user.dob,
         rating: 1200,
@@ -353,6 +358,12 @@ class AuthViewModel extends StateNotifier<AuthState> {
     } catch (_) {}
 
     state = state.copyWith(isLoading: false, user: updated);
+  }
+
+  static String _generateSecureRandomPassword([int length = 32]) {
+    final random = Random.secure();
+    final values = List<int>.generate(length, (i) => random.nextInt(256));
+    return base64Url.encode(values);
   }
 
   Future<void> logout() async {
