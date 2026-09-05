@@ -49,6 +49,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
                   _obscureText ? Icons.visibility_off_rounded : Icons.visibility_rounded,
                   color: AppColors.primary,
                 ),
+                tooltip: _obscureText ? 'Show password' : 'Hide password',
                 onPressed: () {
                   setState(() {
                     _obscureText = !_obscureText;
