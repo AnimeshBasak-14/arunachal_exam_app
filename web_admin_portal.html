@@ -88,7 +88,7 @@
   <script>
     const CONFIG = {
       PROJECT_ID: "arunachal-exam-app",
-      API_KEY: "AIzaSyC8KsvkrcI1RkelPfPxqeHzzC8H-PBENPk",
+      API_KEY: "YOUR_FIREBASE_API_KEY",
       COLLECTION: "questions"
     };
 
@@ -195,11 +195,21 @@
 
     document.getElementById('uploadBtn').addEventListener('click', async () => {
       if (!parsedQuestions.length) return;
+
+      let apiKey = CONFIG.API_KEY;
+      if (!apiKey || apiKey === "YOUR_FIREBASE_API_KEY") {
+        apiKey = prompt("Please enter your Firebase API Key to proceed:");
+        if (!apiKey) {
+          alert("API Key is required to sync to Firestore.");
+          return;
+        }
+      }
+
       const btn = document.getElementById('uploadBtn');
       btn.disabled = true;
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Syncing to Firestore...';
 
-      const batchCommitUrl = `https://firestore.googleapis.com/v1/projects/${CONFIG.PROJECT_ID}/databases/(default)/documents:commit?key=${CONFIG.API_KEY}`;
+      const batchCommitUrl = `https://firestore.googleapis.com/v1/projects/${CONFIG.PROJECT_ID}/databases/(default)/documents:commit?key=${apiKey}`;
       const batchSize = 200;
       let uploaded = 0;
 
