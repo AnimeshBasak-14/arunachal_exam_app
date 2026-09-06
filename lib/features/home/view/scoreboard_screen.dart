@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:go_router/go_router.dart';
@@ -14,91 +15,91 @@ final _mockCompetitors = [
   {
     'name': 'Tenzin Dorje',
     'email': 'tenzin@gmail.com',
-    'rating': 1580,
+    'rating': 2200,
     'state': 'Tawang'
   },
   {
     'name': 'Mepung Loyi',
     'email': 'mepung@gmail.com',
-    'rating': 1540,
+    'rating': 2000,
     'state': 'Itanagar'
   },
   {
     'name': 'Geyum Riba',
     'email': 'geyum@gmail.com',
-    'rating': 1510,
+    'rating': 1900,
     'state': 'Pasighat'
   },
   {
     'name': 'Chukhu Takia',
     'email': 'chukhu@gmail.com',
-    'rating': 1490,
+    'rating': 1750,
     'state': 'Naharlagun'
   },
   {
     'name': 'Nabam Riram',
     'email': 'nabam@gmail.com',
-    'rating': 1465,
+    'rating': 1600,
     'state': 'Ziro'
   },
   {
     'name': 'Koj Naro',
     'email': 'koj@gmail.com',
-    'rating': 1440,
+    'rating': 1450,
     'state': 'Along'
   },
   {
     'name': 'Bamang Tago',
     'email': 'bamang@gmail.com',
-    'rating': 1420,
+    'rating': 1300,
     'state': 'Bomdila'
   },
   {
     'name': 'Likha Pul',
     'email': 'likha@gmail.com',
-    'rating': 1395,
+    'rating': 1150,
     'state': 'Roing'
   },
   {
     'name': 'Talom Rupam',
     'email': 'talom@gmail.com',
-    'rating': 1370,
+    'rating': 1000,
     'state': 'Seppa'
   },
   {
     'name': 'Dungey Karga',
     'email': 'dungey@gmail.com',
-    'rating': 1340,
+    'rating': 850,
     'state': 'Tezu'
   },
   {
     'name': 'Yomge Ete',
     'email': 'yomge@gmail.com',
-    'rating': 1315,
+    'rating': 700,
     'state': 'Daporijo'
   },
   {
     'name': 'Oken Tayeng',
     'email': 'oken@gmail.com',
-    'rating': 1290,
+    'rating': 550,
     'state': 'Changlang'
   },
   {
     'name': 'Mudang Komo',
     'email': 'mudang@gmail.com',
-    'rating': 1260,
+    'rating': 400,
     'state': 'Longding'
   },
   {
     'name': 'Hano Tara',
     'email': 'hano@gmail.com',
-    'rating': 1235,
+    'rating': 250,
     'state': 'Yupia'
   },
   {
     'name': 'Jorum Bam',
     'email': 'jorum@gmail.com',
-    'rating': 1210,
+    'rating': 150,
     'state': 'Basar'
   },
 ];
@@ -118,7 +119,7 @@ final globalLeaderboardStreamProvider = StreamProvider<List<Map<String, dynamic>
       return {
         'name': data['name'] ?? 'Unknown',
         'email': data['email'] ?? '',
-        'rating': data['rating'] ?? 1200,
+        'rating': data['rating'] ?? 0,
         'state': data['city'] ?? 'Unknown',
       };
     }).toList();
@@ -141,7 +142,7 @@ class LeaderboardData {
 final leaderboardProvider = Provider.autoDispose<LeaderboardData>((ref) {
   final currentUser = ref.watch(authViewModelProvider).user;
   final userEmail = currentUser?.email ?? '';
-  final userRating = currentUser?.rating ?? 1200;
+  final userRating = currentUser?.rating ?? 0;
   final userName = currentUser?.name ?? 'You';
 
   final asyncLeaderboard = ref.watch(globalLeaderboardStreamProvider);
@@ -197,7 +198,7 @@ class ScoreboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentUser = ref.watch(authViewModelProvider).user;
-    final userRating = currentUser?.rating ?? 1200;
+    final userRating = currentUser?.rating ?? 0;
 
     final userTier = RankUtils.getTier(userRating);
 
@@ -380,19 +381,12 @@ class ScoreboardScreen extends ConsumerWidget {
                       ),
                       const SizedBox(width: 8),
                       // Avatar
-                      CircleAvatar(
+                      _buildAvatarWidget(
+                        entry['profilePic'] as String?,
+                        entry['name'] as String,
                         radius: 17,
-                        backgroundColor: isMe
-                            ? AppColors.primary
-                            : tier.color.withValues(alpha: 0.22),
-                        child: Text(
-                          (entry['name'] as String).substring(0, 1),
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                            color: isMe ? Colors.white : tier.color,
-                          ),
-                        ),
+                        isMe: isMe,
+                        fallbackColor: tier.color,
                       ),
                       const SizedBox(width: 8),
                       // Name and State
@@ -484,22 +478,54 @@ class ScoreboardScreen extends ConsumerWidget {
     );
   }
 
+  
+  Widget _buildAvatarWidget(String? profilePic, String name, {double radius = 17, bool isMe = false, Color fallbackColor = Colors.grey}) {
+    ImageProvider? imageProvider;
+    if (profilePic != null && profilePic.isNotEmpty) {
+      if (profilePic.startsWith('http://') || profilePic.startsWith('https://')) {
+        imageProvider = NetworkImage(profilePic);
+      } else if (profilePic.startsWith('/') || profilePic.startsWith('C:') || profilePic.startsWith('file:')) {
+        imageProvider = FileImage(File(profilePic));
+      } else if (profilePic.startsWith('assets/')) {
+        imageProvider = AssetImage(profilePic);
+      }
+    }
+
+    if (imageProvider != null) {
+      return CircleAvatar(
+        radius: radius,
+        backgroundColor: Colors.transparent,
+        backgroundImage: imageProvider,
+        onBackgroundImageError: (_, __) {},
+      );
+    }
+    
+    return CircleAvatar(
+      radius: radius,
+      backgroundColor: isMe ? AppColors.primary : fallbackColor.withValues(alpha: 0.22),
+      child: Text(
+        name.isNotEmpty ? name.substring(0, 1).toUpperCase() : '?',
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: radius * 0.75,
+          color: isMe ? Colors.white : fallbackColor,
+        ),
+      ),
+    );
+  }
+
   Widget _buildPodiumEntry(
       Map<String, dynamic> entry, int rank, double height) {
     final isMe = entry['isMe'] == true;
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        CircleAvatar(
+        _buildAvatarWidget(
+          entry['profilePic'] as String?,
+          entry['name'] as String,
           radius: rank == 1 ? 26 : 20,
-          backgroundColor: Colors.white.withValues(alpha: 0.2),
-          child: Text(
-            (entry['name'] as String).substring(0, 1),
-            style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: rank == 1 ? 20 : 16,
-                color: Colors.white),
-          ),
+          isMe: isMe,
+          fallbackColor: Colors.white,
         ),
         const SizedBox(height: 4),
         Text(

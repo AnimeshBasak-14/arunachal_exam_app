@@ -14,6 +14,7 @@ import '../../../core/services/question_repository.dart';
 import 'notifications_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../widgets/word_of_day_card.dart';
+import '../../../core/services/current_affairs_service.dart';
 
 final currentTabProvider = StateProvider<int>((ref) => 0);
 
@@ -465,61 +466,8 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                   const WordOfDayCard(),
                   const SizedBox(height: AppSpacing.m),
 
-                  // 3. Promoted Banner (Video Section)
-                  Container(
-                    padding: const EdgeInsets.all(AppSpacing.m),
-                    decoration: BoxDecoration(
-                      color: Colors.amber.shade400,
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusL),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'APPSC/APSSB Prep',
-                                style: TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'General Studies:\nIntro to Arunachal',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleLarge
-                                    ?.copyWith(
-                                      color: AppColors.textPrimary,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18,
-                                      height: 1.2,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.s),
-                        // Play Button UI representation
-                        Container(
-                          width: 54,
-                          height: 54,
-                          decoration: const BoxDecoration(
-                            color: AppColors.surface,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.play_arrow_rounded,
-                            color: AppColors.primary,
-                            size: 32,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  // 3. Current Affairs & GK
+                  const _CurrentAffairsSection(),
                   const SizedBox(height: AppSpacing.l),
 
                   // 4. Categories header
@@ -871,6 +819,109 @@ class _BookmarksTabBodyState extends ConsumerState<BookmarksTabBody>
           subtitle,
           textAlign: TextAlign.center,
           style: const TextStyle(color: AppColors.textHint, fontSize: 13),
+        ),
+      ],
+    );
+  }
+}
+
+class _CurrentAffairsSection extends ConsumerWidget {
+  const _CurrentAffairsSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final affairsAsync = ref.watch(currentAffairsProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          '📰 Daily Current Affairs & State GK',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+        ),
+        const SizedBox(height: AppSpacing.s),
+        affairsAsync.when(
+          data: (items) {
+            return SizedBox(
+              height: 180,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                itemCount: items.length,
+                itemBuilder: (context, index) {
+                  final item = items[index];
+                  return Container(
+                    width: 280,
+                    margin: const EdgeInsets.only(right: AppSpacing.m),
+                    padding: const EdgeInsets.all(AppSpacing.m),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusL),
+                      border: Border.all(color: AppColors.divider),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryLight,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                item.source,
+                                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.primary),
+                              ),
+                            ),
+                            Text(
+                              item.dateStr,
+                              style: const TextStyle(fontSize: 10, color: AppColors.textHint),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          item.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        ),
+                        const SizedBox(height: 4),
+                        Expanded(
+                          child: Text(
+                            item.summary,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                          ),
+                        ),
+                        Align(
+                          alignment: Alignment.bottomRight,
+                          child: InkWell(
+                            onTap: () {
+                              context.push('/chatbot', extra: 'Explain more about: ${item.title}');
+                            },
+                            child: const Text(
+                              'Ask AI Tutor →',
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+          loading: () => const SizedBox(height: 180, child: Center(child: CircularProgressIndicator())),
+          error: (_, __) => const SizedBox.shrink(),
         ),
       ],
     );

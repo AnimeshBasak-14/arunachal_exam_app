@@ -29,7 +29,7 @@ void main() {
     when(() => mockStorage.userPhone).thenReturn('');
     when(() => mockStorage.userProfilePic).thenReturn('avatar_green');
     when(() => mockStorage.userDob).thenReturn('2000-01-01');
-    when(() => mockStorage.userRating).thenReturn(1200);
+    when(() => mockStorage.userRating).thenReturn(0);
     when(() => mockStorage.userCity).thenReturn('Itanagar');
 
     authViewModel = AuthViewModel(mockStorage, mockFirebase);
@@ -235,7 +235,7 @@ void main() {
       when(() => mockStorage.getAccountData(email)).thenReturn(null);
       when(() => mockStorage.getRegisteredName(email)).thenReturn(null);
       when(() => mockStorage.getRegisteredDob(email)).thenReturn(null);
-      when(() => mockStorage.getRegisteredRating(email)).thenReturn(1200);
+      when(() => mockStorage.getRegisteredRating(email)).thenReturn(0);
       when(() => mockStorage.getRegisteredCity(email)).thenReturn('Itanagar');
 
       when(() => mockStorage.saveUser(
@@ -271,7 +271,7 @@ void main() {
       when(() => mockStorage.getAccountData(email)).thenReturn(null);
       when(() => mockStorage.getRegisteredName(email)).thenReturn('User');
       when(() => mockStorage.getRegisteredDob(email)).thenReturn('2000-01-01');
-      when(() => mockStorage.getRegisteredRating(email)).thenReturn(1200);
+      when(() => mockStorage.getRegisteredRating(email)).thenReturn(0);
       when(() => mockStorage.getRegisteredCity(email)).thenReturn('Itanagar');
 
       when(() => mockStorage.saveUser(

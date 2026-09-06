@@ -40,7 +40,7 @@ class StorageService {
   String get userProfilePic =>
       _prefs.getString(_keyUserProfilePic) ?? 'avatar_green';
   String get userDob => _prefs.getString(_keyUserDob) ?? '2000-01-01';
-  int get userRating => _prefs.getInt(_keyUserRating) ?? 1200;
+  int get userRating => _prefs.getInt(_keyUserRating) ?? 0;
   String get userCity => _prefs.getString(_keyUserCity) ?? 'Itanagar';
 
   String _cleanKey(String? key) => (key ?? userEmail).trim().toLowerCase();
@@ -106,7 +106,7 @@ class StorageService {
           phone: map['phone'] as String? ?? '9876543210',
           profilePic: map['profilePic'] as String? ?? 'avatar_green',
           dob: map['dob'] as String? ?? '2000-01-01',
-          rating: (map['rating'] as num?)?.toInt() ?? 1200,
+          rating: (map['rating'] as num?)?.toInt() ?? 0,
           city: map['city'] as String? ?? 'Itanagar',
         );
       } catch (_) {}
@@ -136,7 +136,7 @@ class StorageService {
     required String password,
     required String name,
     String dob = '2000-01-01',
-    int rating = 1200,
+    int rating = 0,
     String city = 'Itanagar',
   }) async {
     final key = emailOrPhone.trim().toLowerCase();
@@ -180,7 +180,7 @@ class StorageService {
 
   int getRegisteredRating(String emailOrPhone) {
     final key = emailOrPhone.trim().toLowerCase();
-    return _prefs.getInt('reg_rating_$key') ?? 1200;
+    return _prefs.getInt('reg_rating_$key') ?? 0;
   }
 
   String getRegisteredCity(String emailOrPhone) {

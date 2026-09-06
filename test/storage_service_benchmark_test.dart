@@ -20,7 +20,7 @@ void main() {
         phone: '987654321$i',
         profilePic: 'avatar_green',
         dob: '2000-01-01',
-        rating: 1200 + i,
+        rating: 0 + i,
         city: 'Itanagar',
       );
     }

@@ -15,7 +15,7 @@ void main() {
       expect(user.phone, '1234567890');
       expect(user.profilePic, isNull);
       expect(user.dob, '2000-01-01');
-      expect(user.rating, 1200);
+      expect(user.rating, 0);
       expect(user.city, '');
     });
 

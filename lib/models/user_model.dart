@@ -13,7 +13,7 @@ class UserModel {
     required this.phone,
     this.profilePic,
     this.dob = '2000-01-01',
-    this.rating = 1200,
+    this.rating = 0,
     this.city = '',
   });
 

@@ -75,7 +75,7 @@ void main() {
         'new@gmail.com',
         'New Name',
         '2000-01-01',
-        1200,
+        0,
       );
 
       expect(await storageService.getRegisteredPassword('old@gmail.com'), isNull);

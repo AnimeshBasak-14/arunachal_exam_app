@@ -220,7 +220,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
       phone: isPhone ? cleanInput : '',
       profilePic: 'avatar_green',
       dob: dob,
-      rating: 1200,
+      rating: 0,
       city: city,
     );
 
@@ -230,7 +230,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
       password: password,
       name: name,
       dob: dob,
-      rating: 1200,
+      rating: 0,
       city: city,
     );
 
@@ -282,7 +282,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
         phone: '',
         profilePic: 'avatar_gold',
         dob: '2000-01-01',
-        rating: 1200,
+        rating: 0,
         city: 'Itanagar',
       );
 
@@ -296,7 +296,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
           password: securePassword,
           name: user.name,
           dob: user.dob,
-          rating: 1200,
+          rating: 0,
           city: 'Itanagar',
         );
       }

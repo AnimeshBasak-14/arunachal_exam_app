@@ -75,7 +75,7 @@ void main() {
       expect(result.phone, '9876543210'); // default fallback
       expect(result.profilePic, 'avatar_green'); // default fallback
       expect(result.dob, '2000-01-01'); // default fallback
-      expect(result.rating, 1200); // default fallback
+      expect(result.rating, 0); // default fallback
       expect(result.city, 'Itanagar'); // default fallback
     });
 
