@@ -47,7 +47,6 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
   int? _replyingToCommentIndex;
   String? _activeReplyingQuestionId;
 
-  bool _isLoadingLive = false;
   String _selectedSubject = 'All';
   List<String> _allSubjects = ['All'];
   List<Question> _filteredQuestions = [];
@@ -67,7 +66,6 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
   }
 
   Future<void> _loadLiveQuestions() async {
-    setState(() => _isLoadingLive = true);
     try {
       final live = await QuestionRepository.fetchLiveQuestions(
         examCode: widget.examCode,
@@ -82,14 +80,9 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
           _allSubjects = subjects;
           _selectedSubject = 'All';
           _filteredQuestions = pyqOnly;
-          _isLoadingLive = false;
         });
-      } else {
-        if (mounted) setState(() => _isLoadingLive = false);
       }
-    } catch (_) {
-      if (mounted) setState(() => _isLoadingLive = false);
-    }
+    } catch (_) {}
   }
 
   void _applySubjectFilter(String subject) {
@@ -309,9 +302,7 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
         ),
         title: Text('${widget.examCode} PYQ Papers'),
       ),
-      body: _isLoadingLive && _questions.isEmpty
-          ? const Center(child: CircularProgressIndicator())
-          : _questions.isEmpty
+      body: _questions.isEmpty
           ? Center(
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.xl),

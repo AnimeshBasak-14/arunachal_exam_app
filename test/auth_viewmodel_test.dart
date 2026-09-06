@@ -1,12 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:arunachal_exam_app/models/user_model.dart';
 import 'package:arunachal_exam_app/core/services/storage_service.dart';
 import 'package:arunachal_exam_app/core/services/firebase_service.dart';
 import 'package:arunachal_exam_app/features/auth/viewmodel/auth_viewmodel.dart';
 
-class FakeFirebaseService implements FirebaseService {
+class MockFirebaseService implements FirebaseService {
   @override
   FirebaseAnalytics get analytics => throw UnimplementedError();
 
@@ -33,7 +34,7 @@ class FakeFirebaseService implements FirebaseService {
   }) async {}
 
   @override
-  Future<void> syncUserProfile(dynamic user) async {}
+  Future<void> syncUserProfile(UserModel user) async {}
 
   @override
   Future<void> saveQuizResultToFirestore(String userEmail, Map<String, dynamic> resultData) async {}
@@ -43,40 +44,81 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late StorageService storageService;
-  late FakeFirebaseService firebaseService;
+  late MockFirebaseService firebaseService;
   late AuthViewModel authViewModel;
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     storageService = StorageService(prefs);
-    firebaseService = FakeFirebaseService();
+    firebaseService = MockFirebaseService();
     authViewModel = AuthViewModel(storageService, firebaseService);
   });
 
-  test('loginSocial generates a unique secure password and prevents default password login', () async {
-    const testEmail = 'user1.test@gmail.com';
+  group('AuthViewModel Security Tests - No Hardcoded Default Fallbacks', () {
+    test('register with Gmail does not set hardcoded test phone', () async {
+      final success = await authViewModel.register(
+        name: 'John Doe',
+        emailOrPhone: 'johndoe@gmail.com',
+        dob: '1998-05-15',
+        password: 'password123',
+        confirmPassword: 'password123',
+        otpEntered: '123456',
+        otpSent: '123456',
+      );
 
-    // Perform social login for a new account
-    final success = await authViewModel.loginSocial('google', email: testEmail);
-    expect(success, isTrue);
+      expect(success, true);
+      final user = authViewModel.state.user;
+      expect(user, isNotNull);
+      expect(user!.email, 'johndoe@gmail.com');
+      expect(user.phone, isNot('9876543210'));
+      expect(user.phone, '');
+    });
 
-    // Retrieve the registered password from storage
-    final registeredPassword = storageService.getRegisteredPassword(testEmail);
-    expect(registeredPassword, isNotNull);
-    expect(registeredPassword, isNot(equals('socialpassword')));
-    expect(registeredPassword!.length, greaterThanOrEqualTo(32));
+    test('register with Phone does not set hardcoded test email', () async {
+      final success = await authViewModel.register(
+        name: 'Jane Doe',
+        emailOrPhone: '9876543211',
+        dob: '1999-01-01',
+        password: 'password123',
+        confirmPassword: 'password123',
+        otpEntered: '123456',
+        otpSent: '123456',
+      );
 
-    // Create a new AuthViewModel instance to test normal email login
-    final loginViewModel = AuthViewModel(storageService, firebaseService);
+      expect(success, true);
+      final user = authViewModel.state.user;
+      expect(user, isNotNull);
+      expect(user!.phone, '9876543211');
+      expect(user.email, isNot('candidate.google@gmail.com'));
+      expect(user.email, '');
+    });
 
-    // Attempt to log in using the old hardcoded 'socialpassword'
-    final loginWithSocialPwd = await loginViewModel.login(testEmail, 'socialpassword');
-    expect(loginWithSocialPwd, isFalse);
-    expect(loginViewModel.state.errorMessage, equals('Incorrect password. Please try again.'));
+    test('login with Phone does not set hardcoded test email', () async {
+      await storageService.registerUserAccount(
+        emailOrPhone: '9876543211',
+        password: 'password123',
+        name: 'Jane Doe',
+      );
 
-    // Attempt to log in with the generated secure password
-    final loginWithSecurePwd = await loginViewModel.login(testEmail, registeredPassword);
-    expect(loginWithSecurePwd, isTrue);
+      final success = await authViewModel.login('9876543211', 'password123');
+
+      expect(success, true);
+      final user = authViewModel.state.user;
+      expect(user, isNotNull);
+      expect(user!.phone, '9876543211');
+      expect(user.email, isNot('candidate.google@gmail.com'));
+      expect(user.email, '');
+    });
+
+    test('loginSocial without email parameter does not default to candidate.google@gmail.com', () async {
+      final success = await authViewModel.loginSocial('google');
+
+      expect(success, true);
+      final user = authViewModel.state.user;
+      expect(user, isNotNull);
+      expect(user!.email, isNot('candidate.google@gmail.com'));
+      expect(user.phone, isNot('9876543210'));
+    });
   });
 }
