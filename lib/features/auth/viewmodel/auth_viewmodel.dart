@@ -563,11 +563,16 @@ class AuthViewModel extends StateNotifier<AuthState> {
       } else if (e.code == 'popup-blocked') {
         message =
             'Popup was blocked by your browser. Please allow popups for this site.';
+      } else if (e.code == 'configuration-not-found') {
+        message =
+            'Google Sign-In is not enabled yet in Firebase Console. Enable "Google" under Firebase Console > Authentication > Sign-in method (100% Free).';
       } else if (e.code == 'unauthorized-domain') {
         message =
-            'Domain not authorized in Firebase Auth settings. Please check Firebase console.';
+            'Domain not authorized. Please add animeshbasak-14.github.io in Firebase Console > Authentication > Settings > Authorized domains.';
       } else {
-        message = e.message ?? 'Google sign-in failed. Please try again.';
+        message = (e.message != null && e.message!.isNotEmpty && e.message != 'Error')
+            ? e.message!
+            : 'Google Sign-In is initializing. Please try again or sign in with your email.';
       }
       state = state.copyWith(isLoading: false, errorMessage: message);
       return false;
