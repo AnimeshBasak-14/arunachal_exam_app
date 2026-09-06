@@ -20,8 +20,17 @@ class WelcomeScreen extends ConsumerWidget {
         .loginWithGoogleNative();
     if (success && context.mounted) {
       context.go('/home');
+    } else if (context.mounted) {
+      final err = ref.read(authViewModelProvider).errorMessage;
+      if (err != null && err.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(err),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
-    // No fallback dialog — native Google Sign-In is the only Google auth method
   }
 
   @override

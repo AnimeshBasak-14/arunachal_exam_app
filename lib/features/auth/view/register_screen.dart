@@ -273,8 +273,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         .loginWithGoogleNative();
     if (success && mounted) {
       context.go('/home');
+    } else if (mounted) {
+      final err = ref.read(authViewModelProvider).errorMessage;
+      if (err != null && err.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(err),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
-    // No fallback dialog — native Google Sign-In is the only Google auth method
   }
 
   @override

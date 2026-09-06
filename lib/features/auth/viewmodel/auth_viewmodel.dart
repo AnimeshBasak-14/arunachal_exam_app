@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../../core/services/service_providers.dart';
 import '../../../core/services/storage_service.dart';
@@ -490,23 +491,61 @@ class AuthViewModel extends StateNotifier<AuthState> {
   Future<bool> loginWithGoogleNative() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      final googleSignIn = GoogleSignIn(
-        scopes: ['email', 'profile'],
-      );
-      final account = await googleSignIn.signIn();
-      if (account == null) {
-        state = state.copyWith(isLoading: false);
-        return false;
-      }
+      if (kIsWeb) {
+        final googleProvider = GoogleAuthProvider();
+        googleProvider.addScope('email');
+        googleProvider.addScope('profile');
+        googleProvider.setCustomParameters({'prompt': 'select_account'});
 
-      return await loginWithGoogleAccount(
-        email: account.email,
-        displayName: account.displayName,
-        photoUrl: account.photoUrl,
-      );
+        final userCredential =
+            await FirebaseAuth.instance.signInWithPopup(googleProvider);
+        final user = userCredential.user;
+        if (user == null || user.email == null || user.email!.isEmpty) {
+          state = state.copyWith(isLoading: false);
+          return false;
+        }
+
+        return await loginWithGoogleAccount(
+          email: user.email!,
+          displayName: user.displayName,
+          photoUrl: user.photoURL,
+        );
+      } else {
+        final googleSignIn = GoogleSignIn(
+          scopes: ['email', 'profile'],
+        );
+        final account = await googleSignIn.signIn();
+        if (account == null) {
+          state = state.copyWith(isLoading: false);
+          return false;
+        }
+
+        return await loginWithGoogleAccount(
+          email: account.email,
+          displayName: account.displayName,
+          photoUrl: account.photoUrl,
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      debugPrint('[GoogleSignIn Web] FirebaseAuthException: ${e.code} - ${e.message}');
+      String? message;
+      if (e.code == 'popup-closed-by-user' || e.code == 'cancelled') {
+        message = null; // User simply closed the popup, no error needed
+      } else if (e.code == 'popup-blocked') {
+        message = 'Popup was blocked by your browser. Please allow popups for this site.';
+      } else {
+        message = e.message ?? 'Google sign-in failed. Please try again.';
+      }
+      state = state.copyWith(isLoading: false, errorMessage: message);
+      return false;
     } catch (e) {
       debugPrint('[GoogleSignIn] Native sign-in error or cancelled: $e');
-      state = state.copyWith(isLoading: false);
+      final errStr = e.toString().toLowerCase();
+      final String? message =
+          (errStr.contains('cancel') || errStr.contains('popup_closed'))
+              ? null
+              : 'Google sign-in could not be completed. Please try again.';
+      state = state.copyWith(isLoading: false, errorMessage: message);
       return false;
     }
   }
