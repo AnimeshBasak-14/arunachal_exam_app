@@ -21,6 +21,25 @@ const CONFIG = {
   COLLECTION: "questions"
 };
 
+function getApiKey() {
+  let apiKey = CONFIG.API_KEY || PropertiesService.getScriptProperties().getProperty("API_KEY");
+  if (!apiKey) {
+    const ui = SpreadsheetApp.getUi();
+    const response = ui.prompt(
+      "Firebase API Key Required",
+      "Please enter your Firebase API Key (or configure 'API_KEY' in Script Properties):",
+      ui.ButtonSet.OK_CANCEL
+    );
+    if (response.getSelectedButton() === ui.Button.OK) {
+      apiKey = response.getResponseText().trim();
+      if (apiKey) {
+        PropertiesService.getScriptProperties().setProperty("API_KEY", apiKey);
+      }
+    }
+  }
+  return apiKey;
+}
+
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu("🚀 Arunachal Exam App")
@@ -206,10 +225,16 @@ function publishQuestionsToFirestore() {
 
   if (confirm !== ui.Button.YES) return;
 
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    ui.alert("⚠️ Operation Cancelled", "Firebase API Key is required to push to Firestore.", ui.ButtonSet.OK);
+    return;
+  }
+
   const baseUrl = `https://firestore.googleapis.com/v1/projects/${CONFIG.PROJECT_ID}/databases/(default)/documents`;
   
   // Firestore REST batch commit endpoint supports up to 500 writes per batch
-  const batchCommitUrl = `${baseUrl}:commit?key=${CONFIG.API_KEY}`;
+  const batchCommitUrl = `${baseUrl}:commit?key=${apiKey}`;
   const batchSize = 250; // Use 250 items per batch request for maximum reliability
   const totalBatches = Math.ceil(questions.length / batchSize);
   

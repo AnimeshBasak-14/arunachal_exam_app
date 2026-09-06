@@ -27,7 +27,11 @@
         </div>
         <p class="text-slate-400 text-sm mt-1">Bulk Excel & CSV Ingestion Engine with Anti-Redundancy Scanner</p>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex flex-wrap items-center gap-3">
+        <div class="flex items-center gap-2 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
+          <i class="fa-solid fa-key text-amber-400 text-xs"></i>
+          <input type="password" id="apiKeyInput" placeholder="Enter Firebase API Key..." class="bg-transparent text-xs text-slate-200 focus:outline-none w-48 font-mono" />
+        </div>
         <a href="https://console.firebase.google.com" target="_blank" class="px-4 py-2 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition flex items-center gap-2">
           <i class="fa-solid fa-database text-amber-400"></i> Firebase Console
         </a>
@@ -93,6 +97,30 @@
     };
 
     let parsedQuestions = [];
+
+    function getApiKey() {
+      const apiKeyInput = document.getElementById('apiKeyInput');
+      let key = (apiKeyInput && apiKeyInput.value.trim()) || CONFIG.API_KEY || sessionStorage.getItem('FIREBASE_API_KEY') || "";
+      if (!key) {
+        key = prompt("Please enter your Firebase API Key to publish to Live App:");
+        if (key) {
+          key = key.trim();
+          sessionStorage.setItem('FIREBASE_API_KEY', key);
+          if (apiKeyInput) apiKeyInput.value = key;
+        }
+      } else {
+        sessionStorage.setItem('FIREBASE_API_KEY', key);
+      }
+      return key;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const apiKeyInput = document.getElementById('apiKeyInput');
+      if (apiKeyInput) {
+        const savedKey = sessionStorage.getItem('FIREBASE_API_KEY') || CONFIG.API_KEY || "";
+        apiKeyInput.value = savedKey;
+      }
+    });
 
     const fileInput = document.getElementById('fileInput');
     const dropZone = document.getElementById('dropZone');
