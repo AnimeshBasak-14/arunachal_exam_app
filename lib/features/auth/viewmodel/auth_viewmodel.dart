@@ -513,46 +513,44 @@ class AuthViewModel extends StateNotifier<AuthState> {
           photoUrl: user.photoURL,
         );
       } else {
-        // 1. First try the Android system account picker via native MethodChannel.
-        // AccountManager.newChooseAccountIntent displays the exact system bottom sheet
-        // with all Google accounts on device. Once the user selects their account,
-        // it directly returns the email without failing on OAuth client verification.
-        bool methodChannelFailed = false;
-        String? selectedEmail;
+        // 1. Try modern Google Play Services bottom sheet (GoogleSignIn plugin).
+        // With SHA-1 registered in Firebase Console, this displays the modern
+        // Google account picker with profile pictures and one-tap selection.
+        try {
+          final googleSignIn = GoogleSignIn();
+          final account = await googleSignIn.signIn();
+          if (account != null) {
+            return await loginWithGoogleAccount(
+              email: account.email,
+              displayName: account.displayName,
+              photoUrl: account.photoUrl,
+            );
+          } else {
+            // User cancelled/dismissed the account picker
+            state = state.copyWith(isLoading: false);
+            return false;
+          }
+        } catch (e) {
+          debugPrint('[GoogleSignIn] Standard sign-in failed: $e, trying native account picker fallback');
+        }
+
+        // 2. Fallback: Android system AccountManager chooser if GoogleSignIn failed
         try {
           const channel =
               MethodChannel('com.example.arunachal_exam_app/google_auth');
-          selectedEmail =
+          final selectedEmail =
               await channel.invokeMethod<String>('pickGoogleAccount');
-        } catch (e) {
-          debugPrint('[GoogleAccountPicker] MethodChannel error: $e');
-          methodChannelFailed = true;
-        }
-
-        if (!methodChannelFailed) {
           if (selectedEmail != null && selectedEmail.trim().isNotEmpty) {
             return await loginWithGoogleAccount(
               email: selectedEmail.trim(),
             );
           }
-          // User dismissed or cancelled the native account chooser
-          state = state.copyWith(isLoading: false);
-          return false;
+        } catch (e) {
+          debugPrint('[GoogleAccountPicker] Fallback error: $e');
         }
 
-        // 2. Fallback to GoogleSignIn plugin if MethodChannel was not available
-        final googleSignIn = GoogleSignIn();
-        final account = await googleSignIn.signIn();
-        if (account == null) {
-          state = state.copyWith(isLoading: false);
-          return false;
-        }
-
-        return await loginWithGoogleAccount(
-          email: account.email,
-          displayName: account.displayName,
-          photoUrl: account.photoUrl,
-        );
+        state = state.copyWith(isLoading: false);
+        return false;
       }
     } on FirebaseAuthException catch (e) {
       debugPrint(
