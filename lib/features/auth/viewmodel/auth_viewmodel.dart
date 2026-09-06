@@ -515,9 +515,10 @@ class AuthViewModel extends StateNotifier<AuthState> {
       } else {
         // 1. Try modern Google Play Services bottom sheet (GoogleSignIn plugin).
         // With SHA-1 registered in Firebase Console, this displays the modern
-        // Google account picker with profile pictures and one-tap selection.
         try {
-          final googleSignIn = GoogleSignIn();
+          final googleSignIn = GoogleSignIn(
+            scopes: ['email', 'profile'],
+          );
           final account = await googleSignIn.signIn();
           if (account != null) {
             return await loginWithGoogleAccount(
