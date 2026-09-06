@@ -629,35 +629,55 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
       return _buildResultView(context);
     }
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: const Text('Quit Test?'),
-                content: const Text(
-                    'Are you sure you want to exit? Your progress will not be saved.'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('CANCEL'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      context.pop();
-                    },
-                    child: const Text('QUIT',
-                        style: TextStyle(color: AppColors.error)),
-                  ),
-                ],
-              ),
-            );
-          },
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && !_isSubmitted) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Cannot Go Back'),
+              content: const Text(
+                  'You must submit the test before leaving. Tap SUBMIT MOCK TEST to finish.'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Quit Test?'),
+                  content: const Text(
+                      'Are you sure you want to exit? Your progress will not be saved.'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('CANCEL'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        context.pop();
+                      },
+                      child: const Text('QUIT',
+                          style: TextStyle(color: AppColors.error)),
+                    ),
+                  ],
+                ),
+              );
+            },
         ),
         title: Text('${widget.examCode} Mock Test'),
         actions: [
@@ -899,40 +919,45 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
 
                     // Submit Button
                     if (!_isSubmitted)
-                      Padding(
-                        padding: const EdgeInsets.all(AppSpacing.m),
-                        child: PrimaryButton(
-                          text: 'SUBMIT MOCK TEST',
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text('Submit Test?'),
-                                content: Text(
-                                    'You have answered ${_selectedAnswers.length} of ${_testQuestions.length} questions. Do you want to submit?'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: const Text('CANCEL'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                      _submitTest();
-                                    },
-                                    child: const Text('SUBMIT',
-                                        style: TextStyle(
-                                            color: AppColors.primary,
-                                            fontWeight: FontWeight.bold)),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
+                      SafeArea(
+                        top: false,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(
+                              AppSpacing.m, 0, AppSpacing.m, AppSpacing.m),
+                          child: PrimaryButton(
+                            text: 'SUBMIT MOCK TEST',
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: const Text('Submit Test?'),
+                                  content: Text(
+                                      'You have answered ${_selectedAnswers.length} of ${_testQuestions.length} questions. Do you want to submit?'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text('CANCEL'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                        _submitTest();
+                                      },
+                                      child: const Text('SUBMIT',
+                                          style: TextStyle(
+                                              color: AppColors.primary,
+                                              fontWeight: FontWeight.bold)),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ),
                   ],
                 ),
+    ),
     );
   }
 }

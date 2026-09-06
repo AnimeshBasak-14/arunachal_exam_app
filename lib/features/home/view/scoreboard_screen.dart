@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/rank_utils.dart';
+import '../../../core/utils/avatar_utils.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -343,7 +343,11 @@ class ScoreboardScreen extends ConsumerWidget {
                 final rating = entry['rating'] as int;
                 final tier = RankUtils.getTier(rating);
 
-                return AnimatedContainer(
+                return GestureDetector(
+                  onTap: entry['isMe'] == true
+                      ? null
+                      : () => context.push('/public-profile', extra: entry),
+                  child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -472,6 +476,7 @@ class ScoreboardScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
+                  ),
                 );
               },
             ),
@@ -482,17 +487,11 @@ class ScoreboardScreen extends ConsumerWidget {
   }
 
   
-  Widget _buildAvatarWidget(String? profilePic, String name, {double radius = 17, bool isMe = false, Color fallbackColor = Colors.grey}) {
-    ImageProvider? imageProvider;
-    if (profilePic != null && profilePic.isNotEmpty) {
-      if (profilePic.startsWith('http://') || profilePic.startsWith('https://')) {
-        imageProvider = NetworkImage(profilePic);
-      } else if (profilePic.startsWith('/') || profilePic.startsWith('C:') || profilePic.startsWith('file:')) {
-        imageProvider = FileImage(File(profilePic));
-      } else if (profilePic.startsWith('assets/')) {
-        imageProvider = AssetImage(profilePic);
-      }
-    }
+  Widget _buildAvatarWidget(String? profilePic, String name,
+      {double radius = 17,
+      bool isMe = false,
+      Color fallbackColor = Colors.grey}) {
+    final imageProvider = AvatarUtils.getAvatarImageProvider(profilePic);
 
     if (imageProvider != null) {
       return CircleAvatar(
@@ -502,10 +501,11 @@ class ScoreboardScreen extends ConsumerWidget {
         onBackgroundImageError: (_, __) {},
       );
     }
-    
+
     return CircleAvatar(
       radius: radius,
-      backgroundColor: isMe ? AppColors.primary : fallbackColor.withValues(alpha: 0.22),
+      backgroundColor:
+          isMe ? AppColors.primary : fallbackColor.withValues(alpha: 0.22),
       child: Text(
         name.isNotEmpty ? name.substring(0, 1).toUpperCase() : '?',
         style: TextStyle(

@@ -7,7 +7,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'core/services/firebase_service.dart';
 import 'core/theme/app_theme.dart';
-import 'core/theme/theme_provider.dart';
 import 'core/services/service_providers.dart';
 import 'features/onboarding/view/onboarding_screen.dart';
 import 'features/onboarding/viewmodel/onboarding_viewmodel.dart';
@@ -37,6 +36,9 @@ import 'core/services/notification_service.dart';
 import 'features/chatbot/view/chatbot_screen.dart';
 import 'features/home/view/streak_calendar_screen.dart';
 import 'features/home/view/news_details_screen.dart';
+import 'features/profile/view/public_profile_screen.dart';
+import 'features/home/view/state_gk_screen.dart';
+import 'features/home/view/current_affairs_gk_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -227,7 +229,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/chatbot',
-        builder: (context, state) => const ChatbotScreen(),
+        builder: (context, state) => ChatbotScreen(
+          initialContext: state.extra as String?,
+        ),
       ),
       GoRoute(
         path: '/streak-calendar',
@@ -240,6 +244,21 @@ final routerProvider = Provider<GoRouter>((ref) {
           return NewsDetailsScreen(article: article);
         },
       ),
+      GoRoute(
+        path: '/public-profile',
+        builder: (context, state) {
+          final user = state.extra as Map<String, dynamic>? ?? {};
+          return PublicProfileScreen(user: user);
+        },
+      ),
+      GoRoute(
+        path: '/state-gk',
+        builder: (context, state) => const StateGkScreen(),
+      ),
+      GoRoute(
+        path: '/current-affairs-gk',
+        builder: (context, state) => const CurrentAffairsGkScreen(),
+      ),
     ],
   );
 });
@@ -250,14 +269,11 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
-    final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
       title: 'Arunachal Exam Prep',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: themeMode,
       routerConfig: router,
     );
   }

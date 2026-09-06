@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -6,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/avatar_utils.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../viewmodel/exam_viewmodel.dart';
 import '../../profile/view/profile_screen.dart';
@@ -15,7 +15,6 @@ import 'notifications_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../widgets/word_of_day_card.dart';
 import '../../../core/services/current_affairs_service.dart';
-import '../../../core/theme/theme_provider.dart';
 
 final currentTabProvider = StateProvider<int>((ref) => 0);
 
@@ -221,22 +220,6 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                       children: [
                         Consumer(
                           builder: (context, ref, _) {
-                            final themeMode = ref.watch(themeModeProvider);
-                            final isDark = themeMode == ThemeMode.dark;
-                            return IconButton(
-                              onPressed: () {
-                                ref.read(themeModeProvider.notifier).toggleTheme();
-                              },
-                              icon: Icon(
-                                isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-                                color: AppColors.textWhite,
-                                size: 24,
-                              ),
-                            );
-                          },
-                        ),
-                        Consumer(
-                          builder: (context, ref, _) {
                             final hasUnread = ref.watch(hasUnreadNotifProvider);
                             return IconButton(
                               onPressed: () {
@@ -266,14 +249,13 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                             child: Builder(
                               builder: (context) {
                                 final pic = authState.user?.profilePic;
-                                final isFile =
-                                    pic != null && !pic.startsWith('avatar_');
+                                final imgProvider =
+                                    AvatarUtils.getAvatarImageProvider(pic);
                                 return CircleAvatar(
                                   radius: 22,
                                   backgroundColor: getAvatarColor(pic),
-                                  backgroundImage:
-                                      isFile ? FileImage(File(pic)) : null,
-                                  child: isFile
+                                  backgroundImage: imgProvider,
+                                  child: imgProvider != null
                                       ? null
                                       : Text(
                                           userName.isNotEmpty
@@ -852,31 +834,182 @@ class _CurrentAffairsSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          '📰 Daily Current Affairs & State GK',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '📰 Daily Current Affairs & GK',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.arrow_forward_ios_rounded,
+                  size: 16, color: AppColors.primary),
+              tooltip: 'View All Current Affairs & GK',
+              onPressed: () => context.push('/current-affairs-gk'),
+            ),
+          ],
         ),
         const SizedBox(height: AppSpacing.s),
         affairsAsync.when(
           data: (items) {
             return SizedBox(
-              height: 180,
+              height: 185,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
-                itemCount: items.length,
+                itemCount: items.length + 2,
                 itemBuilder: (context, index) {
-                  final item = items[index];
+                  if (index == 0) {
+                    return InkWell(
+                      onTap: () => context.push('/state-gk'),
+                      borderRadius:
+                          BorderRadius.circular(AppSpacing.radiusL),
+                      child: Container(
+                        width: 280,
+                        margin: const EdgeInsets.only(right: AppSpacing.m),
+                        padding: const EdgeInsets.all(AppSpacing.m),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF0F9D58), Color(0xFF0B8043)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.radiusL),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF0F9D58)
+                                  .withValues(alpha: 0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text(
+                                '📚 STATE GK HANDBOOK',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Arunachal Pradesh Comprehensive Compendium',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            const Expanded(
+                              child: Text(
+                                '11 Modules: All 28 Districts, GI Tags, History, Rivers, Peaks, Governors & Demographics.',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                            ),
+                            const Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Explore All Chapters →',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                Icon(Icons.arrow_forward_rounded,
+                                    color: Colors.white, size: 16),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
+                  if (index == items.length + 1) {
+                    return InkWell(
+                      onTap: () => context.push('/current-affairs-gk'),
+                      borderRadius:
+                          BorderRadius.circular(AppSpacing.radiusL),
+                      child: Container(
+                        width: 220,
+                        margin: const EdgeInsets.only(right: AppSpacing.m),
+                        padding: const EdgeInsets.all(AppSpacing.m),
+                        decoration: BoxDecoration(
+                          color:
+                              AppColors.primaryLight.withValues(alpha: 0.5),
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.radiusL),
+                          border: Border.all(
+                              color: AppColors.primary
+                                  .withValues(alpha: 0.4)),
+                        ),
+                        child: const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.feed_outlined,
+                                  color: AppColors.primary, size: 36),
+                              SizedBox(height: 8),
+                              Text(
+                                'More Current Affairs & GK →',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: AppColors.primaryDark,
+                                ),
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                'View All Articles & Notifications',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.textSecondary),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+
+                  final item = items[index - 1];
                   return Container(
                     width: 280,
                     margin: const EdgeInsets.only(right: AppSpacing.m),
                     padding: const EdgeInsets.all(AppSpacing.m),
                     decoration: BoxDecoration(
                       color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusL),
+                      borderRadius:
+                          BorderRadius.circular(AppSpacing.radiusL),
                       border: Border.all(color: AppColors.divider),
                     ),
                     child: Column(
@@ -886,19 +1019,24 @@ class _CurrentAffairsSection extends ConsumerWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
                                 color: AppColors.primaryLight,
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
                                 item.source,
-                                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.primary),
+                                style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary),
                               ),
                             ),
                             Text(
                               item.dateStr,
-                              style: const TextStyle(fontSize: 10, color: AppColors.textHint),
+                              style: const TextStyle(
+                                  fontSize: 10, color: AppColors.textHint),
                             ),
                           ],
                         ),
@@ -907,7 +1045,8 @@ class _CurrentAffairsSection extends ConsumerWidget {
                           item.title,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 14),
                         ),
                         const SizedBox(height: 4),
                         Expanded(
@@ -915,7 +1054,9 @@ class _CurrentAffairsSection extends ConsumerWidget {
                             item.summary,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                            style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textSecondary),
                           ),
                         ),
                         Row(
@@ -928,21 +1069,32 @@ class _CurrentAffairsSection extends ConsumerWidget {
                                   'source': item.source,
                                   'date': item.dateStr,
                                   'description': item.summary,
-                                  'keyPoints': ['Important for state exams.'],
+                                  'link': item.link,
+                                  'keyPoints': [
+                                    'Important for upcoming APSSB exams.'
+                                  ],
                                 });
                               },
                               child: const Text(
                                 'More Info →',
-                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary),
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary),
                               ),
                             ),
                             InkWell(
                               onTap: () {
-                                context.push('/chatbot', extra: 'Explain more about: ${item.title}');
+                                context.push('/chatbot',
+                                    extra:
+                                        '${item.title}\n\n${item.summary}');
                               },
                               child: const Text(
                                 'Ask AI Tutor →',
-                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary),
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary),
                               ),
                             ),
                           ],
@@ -954,7 +1106,9 @@ class _CurrentAffairsSection extends ConsumerWidget {
               ),
             );
           },
-          loading: () => const SizedBox(height: 180, child: Center(child: CircularProgressIndicator())),
+          loading: () => const SizedBox(
+              height: 185,
+              child: Center(child: CircularProgressIndicator())),
           error: (_, __) => const SizedBox.shrink(),
         ),
       ],

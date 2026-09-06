@@ -1,8 +1,7 @@
-import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -10,6 +9,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
+import '../../../core/utils/avatar_utils.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
@@ -26,8 +26,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   late TextEditingController _phoneController;
   late TextEditingController _dobController;
   late TextEditingController _cityController;
-  String? _selectedProfilePic;
 
+  String? _selectedProfilePic;
   bool _isUploadingPhoto = false;
   double _uploadProgress = 0.0;
 
@@ -35,12 +35,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   void initState() {
     super.initState();
     final user = ref.read(authViewModelProvider).user;
-    _nameController = TextEditingController(text: user?.name);
-    _emailController = TextEditingController(text: user?.email);
-    _phoneController = TextEditingController(text: user?.phone);
-    _dobController = TextEditingController(text: user?.dob);
-    _cityController = TextEditingController(text: user?.city);
-    _selectedProfilePic = user?.profilePic ?? 'avatar_green';
+    _nameController = TextEditingController(text: user?.name ?? '');
+    _emailController = TextEditingController(text: user?.email ?? '');
+    _phoneController = TextEditingController(text: user?.phone ?? '');
+    _dobController = TextEditingController(text: user?.dob ?? '');
+    _cityController = TextEditingController(text: user?.city ?? '');
+    _selectedProfilePic = user?.profilePic;
   }
 
   @override
@@ -94,55 +94,52 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       final picker = ImagePicker();
       final pickedFile = await picker.pickImage(
         source: source,
-        maxWidth: 512,
-        maxHeight: 512,
-        imageQuality: 85,
+        maxWidth: 240,
+        maxHeight: 240,
+        imageQuality: 75,
       );
 
-      if (pickedFile != null) {
+      if (pickedFile != null && mounted) {
         setState(() {
           _isUploadingPhoto = true;
-          _uploadProgress = 0.0;
+          _uploadProgress = 0.3;
         });
 
-        Timer.periodic(const Duration(milliseconds: 60), (timer) {
-          if (!mounted) {
-            timer.cancel();
-            return;
-          }
-          setState(() {
-            _uploadProgress += 0.1;
-          });
-          if (_uploadProgress >= 1.0) {
-            timer.cancel();
-            setState(() {
-              _isUploadingPhoto = false;
-              _selectedProfilePic = pickedFile.path;
-            });
+        final bytes = await File(pickedFile.path).readAsBytes();
+        final base64Image = 'data:image/jpeg;base64,${base64Encode(bytes)}';
 
-            ref.read(authViewModelProvider.notifier).updateProfile(
-                  name: _nameController.text,
-                  email: _emailController.text,
-                  phone: _phoneController.text,
-                  dob: _dobController.text,
-                  profilePic: pickedFile.path,
-                  city: _cityController.text,
-                );
+        setState(() {
+          _uploadProgress = 0.8;
+          _selectedProfilePic = base64Image;
+        });
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Profile photo updated successfully!'),
-                backgroundColor: AppColors.success,
-              ),
+        await ref.read(authViewModelProvider.notifier).updateProfile(
+              name: _nameController.text,
+              email: _emailController.text,
+              phone: _phoneController.text,
+              dob: _dobController.text,
+              profilePic: base64Image,
+              city: _cityController.text,
             );
-            if (mounted) {
-              context.pop();
-            }
-          }
-        });
+
+        if (mounted) {
+          setState(() {
+            _isUploadingPhoto = false;
+            _uploadProgress = 1.0;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Profile photo updated and synced across devices!'),
+              backgroundColor: AppColors.success,
+            ),
+          );
+          context.pop();
+        }
       }
     } catch (e) {
-      debugPrint("Error picking image: `$e"); if (!mounted) return;
+      debugPrint("Error picking image: $e");
+      if (!mounted) return;
+      setState(() => _isUploadingPhoto = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error accessing camera or gallery: $e'),
@@ -381,15 +378,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                   radius: 48,
                                   backgroundColor:
                                       getAvatarColor(_selectedProfilePic),
-                                  backgroundImage: (_selectedProfilePic !=
-                                              null &&
-                                          !_selectedProfilePic!
-                                              .startsWith('avatar_'))
-                                      ? FileImage(File(_selectedProfilePic!))
-                                      : null,
-                                  child: (_selectedProfilePic != null &&
-                                          !_selectedProfilePic!
-                                              .startsWith('avatar_'))
+                                  backgroundImage: AvatarUtils.getAvatarImageProvider(_selectedProfilePic),
+                                  child: AvatarUtils.getAvatarImageProvider(_selectedProfilePic) != null
                                       ? null
                                       : Text(
                                           _nameController.text.isNotEmpty

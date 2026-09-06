@@ -98,7 +98,10 @@ class NewsDetailsScreen extends StatelessWidget {
               text: 'Ask AI Tutor About This',
               icon: Icons.chat_bubble_outline_rounded,
               onPressed: () {
-                context.push('/chatbot', extra: 'Can you explain the significance of "$title" for the upcoming APSSB exam?');
+                context.push(
+                  '/chatbot',
+                  extra: '$title\n\n$description',
+                );
               },
             ),
             const SizedBox(height: AppSpacing.m),
@@ -109,9 +112,13 @@ class NewsDetailsScreen extends StatelessWidget {
                 minimumSize: const Size(double.infinity, 50),
               ),
               onPressed: () async {
-                final url = Uri.parse('https://apssb.nic.in');
+                final linkStr = article['link'] as String?;
+                final target = (linkStr != null && linkStr.startsWith('http'))
+                    ? linkStr
+                    : 'https://apssb.nic.in';
+                final url = Uri.parse(target);
                 if (await canLaunchUrl(url)) {
-                  await launchUrl(url);
+                  await launchUrl(url, mode: LaunchMode.externalApplication);
                 }
               },
             ),

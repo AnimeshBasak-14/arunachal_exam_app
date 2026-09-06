@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../../core/services/service_providers.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../core/services/firebase_service.dart';
@@ -321,6 +323,79 @@ class AuthViewModel extends StateNotifier<AuthState> {
 
     state = AuthState(isLoggedIn: true, user: user);
     return true;
+  }
+
+  Future<bool> loginWithGoogleNative() async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      final googleSignIn = GoogleSignIn(
+        scopes: ['email', 'profile'],
+      );
+      final account = await googleSignIn.signIn();
+      if (account == null) {
+        state = state.copyWith(isLoading: false);
+        return false;
+      }
+
+      final email = account.email.trim().toLowerCase();
+      final name = account.displayName ?? 'Google Student';
+      final photoUrl = account.photoUrl;
+
+      final savedAccount = _storage.getAccountData(email);
+      final UserModel user;
+
+      if (savedAccount != null) {
+        user = savedAccount.copyWith(
+          profilePic: ((savedAccount.profilePic?.isNotEmpty ?? false) &&
+                  !(savedAccount.profilePic?.startsWith('avatar_') ?? false))
+              ? savedAccount.profilePic
+              : (photoUrl ?? savedAccount.profilePic),
+        );
+      } else {
+        user = UserModel(
+          name: name,
+          email: email,
+          phone: '',
+          profilePic: photoUrl ?? 'avatar_gold',
+          dob: '2000-01-01',
+          rating: 0,
+          city: 'Itanagar',
+        );
+
+        final securePassword = _generateSecureRandomPassword();
+        await _storage.registerUserAccount(
+          emailOrPhone: email,
+          password: securePassword,
+          name: name,
+          dob: user.dob,
+          rating: 0,
+          city: 'Itanagar',
+        );
+      }
+
+      await _storage.saveUser(
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        profilePic: user.profilePic,
+        dob: user.dob,
+        rating: user.rating,
+        city: user.city,
+      );
+      await _storage.setLoggedIn(true);
+
+      try {
+        await _firebase.logLogin('google');
+        await _firebase.syncUserProfile(user);
+      } catch (_) {}
+
+      state = AuthState(isLoggedIn: true, user: user);
+      return true;
+    } catch (e) {
+      debugPrint('[GoogleSignIn] Error: $e');
+      // If native Google Play Services is unavailable on emulator/device, fallback gracefully
+      return loginSocial('Google');
+    }
   }
 
   Future<void> updateProfile({
