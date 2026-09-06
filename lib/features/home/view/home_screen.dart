@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
@@ -19,6 +20,7 @@ final currentTabProvider = StateProvider<int>((ref) => 0);
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
+  @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedTab = ref.watch(currentTabProvider);
 
@@ -101,6 +103,31 @@ class HomeTabBody extends ConsumerStatefulWidget {
 
 class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
   final _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _claimPendingTrophies();
+    });
+  }
+
+  Future<void> _claimPendingTrophies() async {
+    final prefs = ref.read(sharedPreferencesProvider);
+    final pending = prefs.getInt('pending_streak_trophies') ?? 0;
+    if (pending > 0) {
+      await ref.read(authViewModelProvider.notifier).updateRating(pending);
+      await prefs.setInt('pending_streak_trophies', 0);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('🔥 Streak Check-in! You earned $pending Trophies!'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -632,11 +659,12 @@ class _BookmarksTabBodyState extends ConsumerState<BookmarksTabBody>
             .get();
         results.addAll(snap.docs.map((d) => Question.fromFirestore(d)));
       }
-      if (mounted)
+      if (mounted) {
         setState(() {
           _bookmarkedQs = results;
           _loadingQs = false;
         });
+      }
     } catch (e) {
       if (mounted) setState(() => _loadingQs = false);
     }

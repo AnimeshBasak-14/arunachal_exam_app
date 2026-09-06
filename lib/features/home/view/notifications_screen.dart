@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
 
 // ─── Notification Model ────────────────────────────────────────────────────
 class AppNotification {
@@ -86,7 +89,19 @@ class NotificationsNotifier extends StateNotifier<List<AppNotification>> {
             time: DateTime.now().subtract(const Duration(days: 3)),
             isRead: true,
           ),
-        ]);
+        ]) {
+    _loadDismissed();
+  }
+
+  Future<void> _loadDismissed() async {
+    final prefs = await SharedPreferences.getInstance();
+    final dismissed = prefs.getStringList('dismissed_notification_ids') ?? [];
+    if (dismissed.isNotEmpty) {
+      if (mounted) {
+        state = state.where((n) => !dismissed.contains(n.id)).toList();
+      }
+    }
+  }
 
   void markAllRead() {
     state = state
@@ -119,8 +134,14 @@ class NotificationsNotifier extends StateNotifier<List<AppNotification>> {
     }).toList();
   }
 
-  void dismiss(String id) {
+  void dismiss(String id) async {
     state = state.where((n) => n.id != id).toList();
+    final prefs = await SharedPreferences.getInstance();
+    final dismissed = prefs.getStringList('dismissed_notification_ids') ?? [];
+    if (!dismissed.contains(id)) {
+      dismissed.add(id);
+      await prefs.setStringList('dismissed_notification_ids', dismissed);
+    }
   }
 }
 

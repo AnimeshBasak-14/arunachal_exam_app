@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -214,6 +215,7 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
       await prefs.setStringList(
           'replies_${questionId}_$cIndex', currentReplies);
 
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Reply posted successfully!'),
@@ -239,6 +241,7 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
             false;
       });
 
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Comment posted successfully!'),
@@ -374,89 +377,7 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
               ),
             )
           : Column(
-              children: [
-                if (_allSubjects.length > 1)
-                  SizedBox(
-                    height: 48,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: 6),
-                      itemCount: _allSubjects.length,
-                      itemBuilder: (context, i) {
-                        final subj = _allSubjects[i];
-                        final isSelected = _selectedSubject == subj;
-                        return GestureDetector(
-                          onTap: () => _applySubjectFilter(subj),
-                          child: Container(
-                            margin: const EdgeInsets.only(right: 8),
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: isSelected ? AppColors.primary : AppColors.surface,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: isSelected ? AppColors.primary : AppColors.divider,
-                              ),
-                            ),
-                            child: Text(
-                              subj,
-                              style: TextStyle(
-                                color: isSelected ? Colors.white : AppColors.textSecondary,
-                                fontSize: 12,
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                Expanded(
-                  child: ListView.builder(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.all(AppSpacing.m),
-                    itemCount: _filteredQuestions.length,
-                    itemBuilder: (context, index) {
-                      final question = _filteredQuestions[index];
-                final isBookmarked = bookmarkedIds.contains(question.id);
-                final selectedOption = _selectedAnswers[question.id];
-                final showSolution = _showSolutions[question.id] ?? false;
-                final comments = _questionComments[question.id] ?? [];
 
-                return Card(
-                  key: ValueKey(question.id),
-                  margin: const EdgeInsets.only(bottom: AppSpacing.m),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusL),
-                    side: const BorderSide(color: AppColors.divider),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.xl),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.folder_off_rounded,
-                            size: 54, color: AppColors.textHint),
-                        const SizedBox(height: AppSpacing.m),
-                        Text(
-                            'No PYQ papers uploaded for ${widget.examCode} yet.',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16)),
-                        const SizedBox(height: AppSpacing.s),
-                        const Text(
-                            'New papers are uploaded regularly via the CMS web portal.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: AppColors.textSecondary)),
-                        const SizedBox(height: AppSpacing.m),
-                        ElevatedButton.icon(
-                          onPressed: _loadLiveQuestions,
-                          icon: const Icon(Icons.refresh),
-                          label: const Text('RETRY LOADING'),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              : Column(
                   children: [
                     if (_allSubjects.length > 1)
                       SizedBox(

@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import '../../../core/services/service_providers.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../core/services/firebase_service.dart';
@@ -131,8 +131,9 @@ class AuthViewModel extends StateNotifier<AuthState> {
     return true;
   }
 
-  Future<void> updateRating(int newRating) async {
+  Future<void> updateRating(int delta) async {
     if (state.user == null) return;
+    final newRating = max(0, state.user!.rating + delta);
     final updated = state.user!.copyWith(rating: newRating);
     await _storage.saveUser(
       name: updated.name,
@@ -143,6 +144,9 @@ class AuthViewModel extends StateNotifier<AuthState> {
       rating: newRating,
       city: updated.city,
     );
+    try {
+      await _firebase.syncUserProfile(updated);
+    } catch (_) {}
     state = state.copyWith(user: updated);
   }
 
@@ -289,7 +293,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
       if (selectedEmail.isNotEmpty) {
         await _storage.registerUserAccount(
           emailOrPhone: user.email,
-          password: 'socialpassword',
+          password: securePassword,
           name: user.name,
           dob: user.dob,
           rating: 1200,

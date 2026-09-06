@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:arunachal_exam_app/models/user_model.dart';
 import 'package:arunachal_exam_app/core/services/storage_service.dart';
 import 'package:arunachal_exam_app/core/services/firebase_service.dart';
@@ -49,6 +50,7 @@ void main() {
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
+    FlutterSecureStorage.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     storageService = StorageService(prefs);
     firebaseService = MockFirebaseService();

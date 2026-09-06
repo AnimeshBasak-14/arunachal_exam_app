@@ -18,7 +18,13 @@ class NotificationService {
       const androidSettings =
           AndroidInitializationSettings('@mipmap/ic_launcher');
       const initSettings = InitializationSettings(android: androidSettings);
-      await _plugin.initialize(initSettings);
+      await _plugin.initialize(settings: initSettings);
+      
+      await _plugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.requestNotificationsPermission();
+          
       _initialized = true;
 
       // Schedule daily 8 AM notification
@@ -42,14 +48,12 @@ class NotificationService {
 
       // Schedule at 8:00 AM IST daily
       await _plugin.zonedSchedule(
-        AppConstants.dailyStreakNotifId,
-        '🔥 Keep your streak alive!',
-        'Open the app for your Word of the Day and solve 5 questions.',
-        _nextInstanceOf8AM(),
-        notifDetails,
+        id: AppConstants.dailyStreakNotifId,
+        title: '🔥 Keep your streak alive!',
+        body: 'Open the app for your Word of the Day and solve 5 questions.',
+        scheduledDate: _nextInstanceOf8AM(),
+        notificationDetails: notifDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
         matchDateTimeComponents: DateTimeComponents.time,
       );
     } catch (e) {

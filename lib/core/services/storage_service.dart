@@ -205,7 +205,6 @@ class StorageService {
         await _prefs.remove('reg_dob_$oldK');
         await _prefs.remove('reg_rating_$oldK');
       }
-      await Future.wait(writes);
     }
   }
 

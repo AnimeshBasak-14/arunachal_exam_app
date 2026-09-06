@@ -26,7 +26,7 @@ void main() {
     when(() => mockStorage.isLoggedIn).thenReturn(false);
     when(() => mockStorage.userEmail).thenReturn('student@arunachal.in');
     when(() => mockStorage.userName).thenReturn('Student Name');
-    when(() => mockStorage.userPhone).thenReturn('9876543210');
+    when(() => mockStorage.userPhone).thenReturn('');
     when(() => mockStorage.userProfilePic).thenReturn('avatar_green');
     when(() => mockStorage.userDob).thenReturn('2000-01-01');
     when(() => mockStorage.userRating).thenReturn(1200);
@@ -47,7 +47,7 @@ void main() {
       final savedUser = UserModel(
         name: 'Logged User',
         email: 'logged@gmail.com',
-        phone: '9876543210',
+        phone: '',
       );
       when(() => mockStorage.isLoggedIn).thenReturn(true);
       when(() => mockStorage.userEmail).thenReturn('logged@gmail.com');
@@ -61,7 +61,7 @@ void main() {
     });
 
     test('clearError removes error message from state', () async {
-      when(() => mockStorage.getRegisteredPassword('invalid')).thenReturn(null);
+      when(() => mockStorage.getRegisteredPassword('invalid')).thenAnswer((_) async => null);
 
       // Trigger an error first
       await authViewModel.login('invalid', 'pass');
@@ -98,7 +98,7 @@ void main() {
     });
 
     test('login fails when account does not exist in registered storage', () async {
-      when(() => mockStorage.getRegisteredPassword('user@gmail.com')).thenReturn(null);
+      when(() => mockStorage.getRegisteredPassword('user@gmail.com')).thenAnswer((_) async => null);
 
       final result = await authViewModel.login(' user@gmail.com ', 'password123');
 
@@ -113,7 +113,7 @@ void main() {
     });
 
     test('login fails when password is incorrect', () async {
-      when(() => mockStorage.getRegisteredPassword('user@gmail.com')).thenReturn('correct_pass');
+      when(() => mockStorage.getRegisteredPassword('user@gmail.com')).thenAnswer((_) async => 'correct_pass');
 
       final result = await authViewModel.login('user@gmail.com', 'wrong_pass');
 
@@ -135,14 +135,14 @@ void main() {
       final existingUser = UserModel(
         name: 'Existing User',
         email: email,
-        phone: '9876543210',
+        phone: '',
         profilePic: 'avatar_gold',
         dob: '1995-05-15',
         rating: 1350,
         city: 'Itanagar',
       );
 
-      when(() => mockStorage.getRegisteredPassword(email)).thenReturn(password);
+      when(() => mockStorage.getRegisteredPassword(email)).thenAnswer((_) async => password);
       when(() => mockStorage.getAccountData(email)).thenReturn(existingUser);
       when(() => mockStorage.saveUser(
             name: any(named: 'name'),
@@ -182,7 +182,7 @@ void main() {
       const phone = '9876543210';
       const password = 'correct_password';
 
-      when(() => mockStorage.getRegisteredPassword(phone)).thenReturn(password);
+      when(() => mockStorage.getRegisteredPassword(phone)).thenAnswer((_) async => password);
       when(() => mockStorage.getAccountData(phone)).thenReturn(null);
       when(() => mockStorage.getRegisteredName(phone)).thenReturn('Phone User');
       when(() => mockStorage.getRegisteredDob(phone)).thenReturn('1999-12-31');
@@ -209,7 +209,7 @@ void main() {
       final loggedInUser = authViewModel.state.user;
       expect(loggedInUser, isNotNull);
       expect(loggedInUser!.name, 'Phone User');
-      expect(loggedInUser.email, 'candidate.google@gmail.com');
+      expect(loggedInUser.email, '');
       expect(loggedInUser.phone, phone);
       expect(loggedInUser.dob, '1999-12-31');
       expect(loggedInUser.rating, 1400);
@@ -217,7 +217,7 @@ void main() {
 
       verify(() => mockStorage.saveUser(
             name: 'Phone User',
-            email: 'candidate.google@gmail.com',
+            email: '',
             phone: phone,
             profilePic: 'avatar_green',
             dob: '1999-12-31',
@@ -231,7 +231,7 @@ void main() {
       const email = 'newstudent@gmail.com';
       const password = 'password123';
 
-      when(() => mockStorage.getRegisteredPassword(email)).thenReturn(password);
+      when(() => mockStorage.getRegisteredPassword(email)).thenAnswer((_) async => password);
       when(() => mockStorage.getAccountData(email)).thenReturn(null);
       when(() => mockStorage.getRegisteredName(email)).thenReturn(null);
       when(() => mockStorage.getRegisteredDob(email)).thenReturn(null);
@@ -259,7 +259,7 @@ void main() {
       expect(loggedInUser, isNotNull);
       expect(loggedInUser!.name, 'Student Name');
       expect(loggedInUser.email, email);
-      expect(loggedInUser.phone, '9876543210');
+      expect(loggedInUser.phone, '');
       expect(loggedInUser.dob, '2000-01-01');
     });
 
@@ -267,7 +267,7 @@ void main() {
       const email = 'user@gmail.com';
       const password = 'password123';
 
-      when(() => mockStorage.getRegisteredPassword(email)).thenReturn(password);
+      when(() => mockStorage.getRegisteredPassword(email)).thenAnswer((_) async => password);
       when(() => mockStorage.getAccountData(email)).thenReturn(null);
       when(() => mockStorage.getRegisteredName(email)).thenReturn('User');
       when(() => mockStorage.getRegisteredDob(email)).thenReturn('2000-01-01');

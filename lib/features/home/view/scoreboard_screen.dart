@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/rank_utils.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Simulated global competitors
 final _mockCompetitors = [
@@ -100,6 +103,28 @@ final _mockCompetitors = [
   },
 ];
 
+final globalLeaderboardStreamProvider = StreamProvider<List<Map<String, dynamic>>>((ref) {
+  return FirebaseFirestore.instance
+      .collection('users')
+      .orderBy('rating', descending: true)
+      .limit(50)
+      .snapshots()
+      .map((snapshot) {
+    if (snapshot.docs.isEmpty) {
+      return _mockCompetitors;
+    }
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+      return {
+        'name': data['name'] ?? 'Unknown',
+        'email': data['email'] ?? '',
+        'rating': data['rating'] ?? 1200,
+        'state': data['city'] ?? 'Unknown',
+      };
+    }).toList();
+  });
+});
+
 /// Helper data class for sorted leaderboard state
 class LeaderboardData {
   final List<Map<String, dynamic>> allEntries;
@@ -113,25 +138,38 @@ class LeaderboardData {
   });
 }
 
-// ⚡ PERFORMANCE OPTIMIZATION (Bolt):
-// Derive and memoize the sorted leaderboard list using a Riverpod Provider.
-// Previously, list cloning `[...]` and `sort()` (O(N log N)) were executed inside
-// `ScoreboardScreen.build()`, causing redundant allocations and CPU work on every widget frame rebuild.
 final leaderboardProvider = Provider.autoDispose<LeaderboardData>((ref) {
   final currentUser = ref.watch(authViewModelProvider).user;
+  final userEmail = currentUser?.email ?? '';
   final userRating = currentUser?.rating ?? 1200;
   final userName = currentUser?.name ?? 'You';
 
-  final allEntries = [
-    ..._mockCompetitors,
-    {
+  final asyncLeaderboard = ref.watch(globalLeaderboardStreamProvider);
+  
+  List<Map<String, dynamic>> rawEntries = asyncLeaderboard.value ?? _mockCompetitors;
+
+  // Add myself if I am not in the top 50, or find myself and mark isMe
+  bool foundMe = false;
+  final allEntries = rawEntries.map((e) {
+    final entry = Map<String, dynamic>.from(e);
+    if (entry['email'] == userEmail && userEmail.isNotEmpty) {
+      entry['isMe'] = true;
+      foundMe = true;
+    } else {
+      entry['isMe'] = false;
+    }
+    return entry;
+  }).toList();
+
+  if (!foundMe && userEmail.isNotEmpty) {
+    allEntries.add({
       'name': userName,
-      'email': currentUser?.email ?? '',
+      'email': userEmail,
       'rating': userRating,
-      'state': 'Me',
+      'state': currentUser?.city ?? 'Me',
       'isMe': true
-    },
-  ];
+    });
+  }
 
   // O(N log N) sort operation offloaded from Widget.build()
   allEntries.sort((a, b) => (b['rating'] as int).compareTo(a['rating'] as int));

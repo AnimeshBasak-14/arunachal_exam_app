@@ -18,10 +18,10 @@ class MockTestScreen extends ConsumerStatefulWidget {
   final String testType; // 'topic' or 'full'
 
   const MockTestScreen({
-    key,
+    super.key,
     required this.examCode,
     required this.testType,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<MockTestScreen> createState() => _MockTestScreenState();
@@ -218,7 +218,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
       _incorrectCount = incorrectCount;
       _unattemptedCount = unattemptedCount;
       _ratingChange = ratingChange;
-      _newRating = currentRating + totalChange;
+      _newRating = math.max(0, currentRating + totalChange);
     });
 
     final resultData = {

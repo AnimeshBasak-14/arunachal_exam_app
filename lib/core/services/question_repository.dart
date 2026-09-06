@@ -176,36 +176,52 @@ class QuestionRepository {
       String queryCode = cleanCode;
       if (cleanCode == 'APSSB-CGLE' ||
           cleanCode == 'CGL' ||
-          cleanCode == 'CGLE') queryCode = 'APSSB-CGLE';
-      if (cleanCode == 'APSSB-CHSL' || cleanCode == 'CHSL')
+          cleanCode == 'CGLE') {
+        queryCode = 'APSSB-CGLE';
+      }
+      if (cleanCode == 'APSSB-CHSL' || cleanCode == 'CHSL') {
         queryCode = 'APSSB-CHSL';
+      }
       if (cleanCode == 'APSSB-CSLE' ||
           cleanCode == 'CSLE' ||
-          cleanCode == 'CSCE') queryCode = 'APSSB-CSLE';
-      if (cleanCode == 'APSSB-UDC' || cleanCode == 'UDC')
+          cleanCode == 'CSCE') {
+        queryCode = 'APSSB-CSLE';
+      }
+      if (cleanCode == 'APSSB-UDC' || cleanCode == 'UDC') {
         queryCode = 'APSSB-UDC';
-      if (cleanCode == 'APSSB-MTS' || cleanCode == 'MTS')
+      }
+      if (cleanCode == 'APSSB-MTS' || cleanCode == 'MTS') {
         queryCode = 'APSSB-MTS';
-      if (cleanCode == 'APSSB-MOCK' || cleanCode == 'MOCK')
+      }
+      if (cleanCode == 'APSSB-MOCK' || cleanCode == 'MOCK') {
         queryCode = 'APSSB-MOCK';
-      if (cleanCode == 'APSSB-MOCK-MATHS' || cleanCode == 'MOCK-MATHS')
+      }
+      if (cleanCode == 'APSSB-MOCK-MATHS' || cleanCode == 'MOCK-MATHS') {
         queryCode = 'APSSB-MOCK-MATHS';
+      }
       if (cleanCode == 'APPSC-AE' || cleanCode == 'AE') queryCode = 'APPSC-AE';
       if (cleanCode == 'APPSC-JE' || cleanCode == 'JE') queryCode = 'APPSC-JE';
-      if (cleanCode == 'APPSC-APCS' || cleanCode == 'APCS')
+      if (cleanCode == 'APPSC-APCS' || cleanCode == 'APCS') {
         queryCode = 'APPSC-APCS';
-      if (cleanCode == 'APPSC-ADO' || cleanCode == 'ADO')
+      }
+      if (cleanCode == 'APPSC-ADO' || cleanCode == 'ADO') {
         queryCode = 'APPSC-ADO';
-      if (cleanCode == 'APPSC-HDO' || cleanCode == 'HDO')
+      }
+      if (cleanCode == 'APPSC-HDO' || cleanCode == 'HDO') {
         queryCode = 'APPSC-HDO';
-      if (cleanCode == 'APPSC-FAO' || cleanCode == 'FAO')
+      }
+      if (cleanCode == 'APPSC-FAO' || cleanCode == 'FAO') {
         queryCode = 'APPSC-FAO';
-      if (cleanCode == 'APPSC-PGT' || cleanCode == 'PGT')
+      }
+      if (cleanCode == 'APPSC-PGT' || cleanCode == 'PGT') {
         queryCode = 'APPSC-PGT';
-      if (cleanCode == 'APPSC-TGT' || cleanCode == 'TGT')
+      }
+      if (cleanCode == 'APPSC-TGT' || cleanCode == 'TGT') {
         queryCode = 'APPSC-TGT';
-      if (cleanCode == 'APP' || cleanCode == 'PROSECUTOR')
+      }
+      if (cleanCode == 'APP' || cleanCode == 'PROSECUTOR') {
         queryCode = 'APPSC-APP';
+      }
 
       query = query.where('examCode', isEqualTo: queryCode);
 

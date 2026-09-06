@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -54,7 +55,8 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
   void _sendOtp() {
     final email = _emailController.text.trim();
     if (email.isEmpty || !email.toLowerCase().endsWith('@gmail.com')) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content:
               Text('Please enter a valid Gmail (@gmail.com) address first'),
@@ -178,6 +180,7 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
               dob: user.dob,
               rating: user.rating,
             );
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Connected with Google successfully!'),
@@ -191,7 +194,8 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
 
   Future<void> _submit() async {
     if (_sentOtp == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please request verification OTP first'),
           backgroundColor: AppColors.error,
@@ -201,7 +205,8 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
     }
 
     if (_otpController.text.trim() != _sentOtp) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Invalid OTP code. Please try again.'),
           backgroundColor: AppColors.error,
@@ -222,6 +227,7 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
               dob: user.dob,
               rating: user.rating,
             );
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Gmail address updated successfully!'),

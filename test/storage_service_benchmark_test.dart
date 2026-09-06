@@ -30,6 +30,6 @@ void main() {
     final avgUs = (stopwatch.elapsedMicroseconds / iterations).toStringAsFixed(2);
 
     // ignore: avoid_print
-    print('Benchmark Result: $iterations iterations of saveUser took ${elapsedMs}ms (Avg: ${avgUs}µs per call)');
+    print('Benchmark Result: $iterations iterations of saveUser took ${elapsedMs}ms (Avg: $avgUsµs per call)');
   });
 }

@@ -61,6 +61,35 @@ class StreakService {
     if (currentStreak > longest) {
       writes.add(_prefs.setInt(AppConstants.streakLongestKey, currentStreak));
     }
+    
+    int trophiesToAward = 10; // Daily check-in
+    
+    // Check milestones
+    final awardedMilestones = _prefs.getStringList('awarded_streak_milestones') ?? [];
+    if (currentStreak >= 30 && !awardedMilestones.contains('30')) {
+      trophiesToAward += 250;
+      awardedMilestones.add('30');
+    } else if (currentStreak >= 14 && !awardedMilestones.contains('14')) {
+      trophiesToAward += 100;
+      awardedMilestones.add('14');
+    } else if (currentStreak >= 7 && !awardedMilestones.contains('7')) {
+      trophiesToAward += 50;
+      awardedMilestones.add('7');
+    } else if (currentStreak >= 3 && !awardedMilestones.contains('3')) {
+      trophiesToAward += 25;
+      awardedMilestones.add('3');
+    }
+    
+    // Clear milestones if streak resets
+    if (currentStreak == 1) {
+      awardedMilestones.clear();
+    }
+    writes.add(_prefs.setStringList('awarded_streak_milestones', awardedMilestones));
+    
+    // Save pending trophies to be claimed in UI
+    final pendingTrophies = (_prefs.getInt('pending_streak_trophies') ?? 0) + trophiesToAward;
+    writes.add(_prefs.setInt('pending_streak_trophies', pendingTrophies));
+
     await Future.wait(writes);
   }
 

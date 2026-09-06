@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:arunachal_exam_app/core/services/storage_service.dart';
@@ -181,9 +182,9 @@ void main() {
     final optimizedAvgUs = swOptimized.elapsedMicroseconds / iterations;
     final speedup = ((baselineAvgUs - optimizedAvgUs) / baselineAvgUs) * 100;
 
-    print('BENCHMARK_BASELINE: ${swBaseline.elapsedMilliseconds}ms total (${baselineAvgUs.toStringAsFixed(2)} us/run)');
-    print('BENCHMARK_OPTIMIZED: ${swOptimized.elapsedMilliseconds}ms total (${optimizedAvgUs.toStringAsFixed(2)} us/run)');
-    print('BENCHMARK_SPEEDUP: ${speedup.toStringAsFixed(2)}% faster');
+    debugPrint('BENCHMARK_BASELINE: ${swBaseline.elapsedMilliseconds}ms total (${baselineAvgUs.toStringAsFixed(2)} us/run)');
+    debugPrint('BENCHMARK_OPTIMIZED: ${swOptimized.elapsedMilliseconds}ms total (${optimizedAvgUs.toStringAsFixed(2)} us/run)');
+    debugPrint('BENCHMARK_SPEEDUP: ${speedup.toStringAsFixed(2)}% faster');
   });
 }
 
