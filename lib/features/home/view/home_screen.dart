@@ -165,14 +165,11 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
       }
     }
 
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 1040),
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
           // 1. Header Card (Page 2 & 11)
           Container(
             padding: const EdgeInsets.symmetric(
@@ -559,9 +556,7 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
           ),
         ],
       ),
-    ),
-  ),
-);
+    );
   }
 }
 

@@ -335,10 +335,13 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           _saveCurrentSession();
         }
       } else {
+        final errMsg = response.statusCode == 429
+            ? '⚠️ AI is busy right now. Please try again in a moment.'
+            : '⚠️ AI summary failed (HTTP ${response.statusCode}). Tap the mic or type your question below.';
         if (mounted) {
           setState(() {
             _messages.add(_ChatMessage(
-              text: '⚠️ Could not summarise article right now. Please try again.',
+              text: errMsg,
               isUser: false,
               timestamp: DateTime.now(),
             ));
@@ -346,11 +349,14 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           });
         }
       }
-    } catch (_) {
+    } catch (e) {
+      final errMsg = e.toString().contains('TimeoutException')
+          ? '⚠️ Request timed out. Please check your connection and try again.'
+          : '⚠️ Could not reach AI service. Please check your internet connection.';
       if (mounted) {
         setState(() {
           _messages.add(_ChatMessage(
-            text: '⚠️ Could not summarise article. Please check your connection.',
+            text: errMsg,
             isUser: false,
             timestamp: DateTime.now(),
           ));
