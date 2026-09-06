@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CurrentAffairsItem {
   final String id;
@@ -25,10 +26,17 @@ class CurrentAffairsItem {
 }
 
 class CurrentAffairsService {
-  static const String _apiKey =
-      'AQ.Ab8RN6KS4k7zMX9Rza6IEIwyovwJueGIwOhUWAuueYFNj7torg';
-  static const String _geminiEndpoint =
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=$_apiKey';
+  static const String _envApiKey = String.fromEnvironment('GEMINI_API_KEY');
+  static const String _model = 'gemini-1.5-flash';
+
+  Future<String> _getApiKey() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = prefs.getString('gemini_api_key');
+      if (key != null && key.trim().isNotEmpty) return key.trim();
+    } catch (_) {}
+    return _envApiKey.trim();
+  }
 
   static List<CurrentAffairsItem>? _cache;
   static DateTime? _cacheTime;
@@ -256,6 +264,11 @@ class CurrentAffairsService {
 
   Future<List<CurrentAffairsItem>> _enhanceWithAI(
       List<CurrentAffairsItem> items) async {
+    final apiKey = await _getApiKey();
+    if (apiKey.isEmpty) {
+      return items;
+    }
+
     final result = <CurrentAffairsItem>[];
 
     for (int i = 0; i < items.length; i++) {
@@ -286,9 +299,12 @@ class CurrentAffairsService {
             'generationConfig': {'maxOutputTokens': 1000}
           });
 
+          final endpoint =
+              'https://generativelanguage.googleapis.com/v1beta/models/$_model:generateContent?key=$apiKey';
+
           final response = await http
               .post(
-                Uri.parse(_geminiEndpoint),
+                Uri.parse(endpoint),
                 headers: {'Content-Type': 'application/json'},
                 body: body,
               )

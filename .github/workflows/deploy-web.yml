@@ -27,6 +27,11 @@ jobs:
       - name: Build Web
         run: flutter build web --release --base-href /arunachal_exam_app/
 
+      - name: Prepare SPA and nojekyll for GitHub Pages
+        run: |
+          touch build/web/.nojekyll
+          cp build/web/index.html build/web/404.html
+
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
