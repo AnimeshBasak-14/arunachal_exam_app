@@ -100,29 +100,50 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
     final prefs = ref.read(sharedPreferencesProvider);
 
     for (final q in _questions) {
-      final savedComments = storage.getQuestionComments(q.id);
-      _questionComments[q.id] = [...q.initialComments, ...savedComments];
-      _commentControllers[q.id] = TextEditingController();
+      final qId = q.id;
+      final savedComments = storage.getQuestionComments(qId);
+      final allComments = [...q.initialComments, ...savedComments];
+      _questionComments[qId] = allComments;
+      _commentControllers[qId] = TextEditingController();
 
-      _questionLikes[q.id] = (q.questionText.length % 15) + 6;
-      _likedQuestions[q.id] = false;
-      _likedSolutions[q.id] = false;
+      _questionLikes[qId] = (q.questionText.length % 15) + 6;
+      _likedQuestions[qId] = false;
+      _likedSolutions[qId] = false;
 
-      final allComments = _questionComments[q.id]!;
+      final qCommentReplies = <int, List<String>>{};
+      final qCommentLikesCount = <int, int>{};
+      final qCommentUserLiked = <int, bool>{};
+      final qReplyLikesCount = <int, Map<int, int>>{};
+      final qReplyUserLiked = <int, Map<int, bool>>{};
+
       for (int i = 0; i < allComments.length; i++) {
-        final repliesList = prefs.getStringList('replies_${q.id}_$i') ?? [];
-        _commentReplies.putIfAbsent(q.id, () => {})[i] = repliesList;
+        final keyPrefix = '${qId}_$i';
+        final repliesList = prefs.getStringList('replies_$keyPrefix') ?? [];
+        qCommentReplies[i] = repliesList;
 
-        final likes = prefs.getInt('likes_${q.id}_$i') ?? (i * 3 + 2);
-        _commentLikesCount.putIfAbsent(q.id, () => {})[i] = likes;
-        _commentUserLiked.putIfAbsent(q.id, () => {})[i] = prefs.getBool('user_liked_${q.id}_$i') ?? false;
+        qCommentLikesCount[i] = prefs.getInt('likes_$keyPrefix') ?? (i * 3 + 2);
+        qCommentUserLiked[i] = prefs.getBool('user_liked_$keyPrefix') ?? false;
 
-        for (int j = 0; j < repliesList.length; j++) {
-          final rLikes = prefs.getInt('reply_likes_${q.id}_${i}_$j') ?? 1;
-          _replyLikesCount.putIfAbsent(q.id, () => {}).putIfAbsent(i, () => {})[j] = rLikes;
-          _replyUserLiked.putIfAbsent(q.id, () => {}).putIfAbsent(i, () => {})[j] = prefs.getBool('user_reply_liked_${q.id}_${i}_$j') ?? false;
+        if (repliesList.isNotEmpty) {
+          final iReplyLikes = <int, int>{};
+          final iReplyUserLiked = <int, bool>{};
+
+          for (int j = 0; j < repliesList.length; j++) {
+            final replyKeyPrefix = '${keyPrefix}_$j';
+            iReplyLikes[j] = prefs.getInt('reply_likes_$replyKeyPrefix') ?? 1;
+            iReplyUserLiked[j] = prefs.getBool('user_reply_liked_$replyKeyPrefix') ?? false;
+          }
+
+          qReplyLikesCount[i] = iReplyLikes;
+          qReplyUserLiked[i] = iReplyUserLiked;
         }
       }
+
+      _commentReplies[qId] = qCommentReplies;
+      _commentLikesCount[qId] = qCommentLikesCount;
+      _commentUserLiked[qId] = qCommentUserLiked;
+      _replyLikesCount[qId] = qReplyLikesCount;
+      _replyUserLiked[qId] = qReplyUserLiked;
     }
   }
 
