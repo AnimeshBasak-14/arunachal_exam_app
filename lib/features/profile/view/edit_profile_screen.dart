@@ -72,7 +72,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     );
     if (picked != null) {
       setState(() {
-        _dobController.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+        _dobController.text =
+            "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
       });
     }
   }
@@ -144,7 +145,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXL)),
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXL)),
       ),
       builder: (context) {
         return SafeArea(
@@ -156,13 +158,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               children: [
                 const Text(
                   'Change Profile Photo',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppSpacing.m),
                 ListTile(
-                  leading: const Icon(Icons.photo_library_rounded, color: AppColors.primary),
-                  title: const Text('Choose from Gallery', style: TextStyle(fontWeight: FontWeight.bold)),
+                  leading: const Icon(Icons.photo_library_rounded,
+                      color: AppColors.primary),
+                  title: const Text('Choose from Gallery',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                   onTap: () {
                     Navigator.pop(context);
                     _pickImage(ImageSource.gallery);
@@ -170,8 +177,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 ),
                 const Divider(height: 1),
                 ListTile(
-                  leading: const Icon(Icons.camera_alt_rounded, color: AppColors.primary),
-                  title: const Text('Take from Camera', style: TextStyle(fontWeight: FontWeight.bold)),
+                  leading: const Icon(Icons.camera_alt_rounded,
+                      color: AppColors.primary),
+                  title: const Text('Take from Camera',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                   onTap: () {
                     Navigator.pop(context);
                     _pickImage(ImageSource.camera);
@@ -179,8 +188,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 ),
                 const Divider(height: 1),
                 ListTile(
-                  leading: const Icon(Icons.palette_rounded, color: AppColors.primary),
-                  title: const Text('Choose Avatar Color', style: TextStyle(fontWeight: FontWeight.bold)),
+                  leading: const Icon(Icons.palette_rounded,
+                      color: AppColors.primary),
+                  title: const Text('Choose Avatar Color',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                   onTap: () {
                     Navigator.pop(context);
                     _showColorPicker();
@@ -200,11 +211,31 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       context: context,
       builder: (context) {
         final list = [
-          {'name': 'Mint Green', 'value': 'avatar_green', 'color': AppColors.primary},
-          {'name': 'Teal', 'value': 'avatar_teal', 'color': AppColors.secondary},
-          {'name': 'Amber Gold', 'value': 'avatar_gold', 'color': AppColors.accent},
-          {'name': 'Blue Accent', 'value': 'avatar_blue', 'color': const Color(0xff3b82f6)},
-          {'name': 'Orange Earth', 'value': 'avatar_orange', 'color': const Color(0xffe07a5f)},
+          {
+            'name': 'Mint Green',
+            'value': 'avatar_green',
+            'color': AppColors.primary
+          },
+          {
+            'name': 'Teal',
+            'value': 'avatar_teal',
+            'color': AppColors.secondary
+          },
+          {
+            'name': 'Amber Gold',
+            'value': 'avatar_gold',
+            'color': AppColors.accent
+          },
+          {
+            'name': 'Blue Accent',
+            'value': 'avatar_blue',
+            'color': const Color(0xff3b82f6)
+          },
+          {
+            'name': 'Orange Earth',
+            'value': 'avatar_orange',
+            'color': const Color(0xffe07a5f)
+          },
         ];
         return AlertDialog(
           title: const Text('Choose Avatar Color'),
@@ -227,7 +258,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           city: _cityController.text,
                         );
                     Navigator.pop(context);
-                    
+
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Profile avatar updated successfully!'),
@@ -315,7 +346,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: AppSpacing.m),
-                
+
                 // Photo upload block
                 Center(
                   child: Container(
@@ -337,14 +368,23 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               children: [
                                 CircleAvatar(
                                   radius: 48,
-                                  backgroundColor: getAvatarColor(_selectedProfilePic),
-                                  backgroundImage: (_selectedProfilePic != null && !_selectedProfilePic!.startsWith('avatar_'))
+                                  backgroundColor:
+                                      getAvatarColor(_selectedProfilePic),
+                                  backgroundImage: (_selectedProfilePic !=
+                                              null &&
+                                          !_selectedProfilePic!
+                                              .startsWith('avatar_'))
                                       ? FileImage(File(_selectedProfilePic!))
                                       : null,
-                                  child: (_selectedProfilePic != null && !_selectedProfilePic!.startsWith('avatar_'))
+                                  child: (_selectedProfilePic != null &&
+                                          !_selectedProfilePic!
+                                              .startsWith('avatar_'))
                                       ? null
                                       : Text(
-                                          _nameController.text.isNotEmpty ? _nameController.text[0].toUpperCase() : 'S',
+                                          _nameController.text.isNotEmpty
+                                              ? _nameController.text[0]
+                                                  .toUpperCase()
+                                              : 'S',
                                           style: const TextStyle(
                                             color: AppColors.textWhite,
                                             fontSize: 36,
@@ -358,7 +398,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                     color: AppColors.primary,
                                     shape: BoxShape.circle,
                                   ),
-                                  child: const Icon(Icons.edit_rounded, color: Colors.white, size: 14),
+                                  child: const Icon(Icons.edit_rounded,
+                                      color: Colors.white, size: 14),
                                 ),
                               ],
                             ),
@@ -379,7 +420,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           const SizedBox(height: AppSpacing.xs),
                           Text(
                             'Uploading Photo: ${(_uploadProgress * 100).round()}%',
-                            style: const TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold),
                           ),
                         ],
                       ],
@@ -391,7 +435,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 // SECTION 1: Personal Details
                 const Text(
                   'PERSONAL DETAILS',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textSecondary, letterSpacing: 1.1),
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textSecondary,
+                      letterSpacing: 1.1),
                 ),
                 const SizedBox(height: AppSpacing.s),
                 Container(
@@ -452,7 +500,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 // SECTION 2: Account Security
                 const Text(
                   'ACCOUNT & SECURITY',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textSecondary, letterSpacing: 1.1),
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textSecondary,
+                      letterSpacing: 1.1),
                 ),
                 const SizedBox(height: AppSpacing.s),
                 Container(
@@ -464,12 +516,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   child: Column(
                     children: [
                       ListTile(
-                        leading: const Icon(Icons.email_outlined, color: AppColors.primary),
-                        title: const Text('Change Gmail Address', style: TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Text(_emailController.text, style: const TextStyle(fontSize: 12)),
-                        trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: AppColors.textHint),
+                        leading: const Icon(Icons.email_outlined,
+                            color: AppColors.primary),
+                        title: const Text('Change Gmail Address',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: Text(_emailController.text,
+                            style: const TextStyle(fontSize: 12)),
+                        trailing: const Icon(Icons.arrow_forward_ios_rounded,
+                            size: 16, color: AppColors.textHint),
                         onTap: () async {
-                          final result = await context.push<String?>('/change-email');
+                          final result =
+                              await context.push<String?>('/change-email');
                           if (result != null) {
                             setState(() {
                               _emailController.text = result;
@@ -479,15 +536,21 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       ),
                       const Divider(height: 1),
                       ListTile(
-                        leading: const Icon(Icons.phone_android_rounded, color: AppColors.primary),
-                        title: const Text('Change Phone Number', style: TextStyle(fontWeight: FontWeight.bold)),
+                        leading: const Icon(Icons.phone_android_rounded,
+                            color: AppColors.primary),
+                        title: const Text('Change Phone Number',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
                         subtitle: Text(
-                          _phoneController.text.isNotEmpty ? '+91 ${_phoneController.text}' : 'Add verified phone number',
+                          _phoneController.text.isNotEmpty
+                              ? '+91 ${_phoneController.text}'
+                              : 'Add verified phone number',
                           style: const TextStyle(fontSize: 12),
                         ),
-                        trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: AppColors.textHint),
+                        trailing: const Icon(Icons.arrow_forward_ios_rounded,
+                            size: 16, color: AppColors.textHint),
                         onTap: () async {
-                          final result = await context.push<String?>('/change-phone');
+                          final result =
+                              await context.push<String?>('/change-phone');
                           if (result != null) {
                             setState(() {
                               _phoneController.text = result;
@@ -497,10 +560,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       ),
                       const Divider(height: 1),
                       ListTile(
-                        leading: const Icon(Icons.lock_reset_rounded, color: AppColors.primary),
-                        title: const Text('Set / Reset Password', style: TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: const Text('Secure account password update via OTP', style: TextStyle(fontSize: 12)),
-                        trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: AppColors.textHint),
+                        leading: const Icon(Icons.lock_reset_rounded,
+                            color: AppColors.primary),
+                        title: const Text('Set / Reset Password',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: const Text(
+                            'Secure account password update via OTP',
+                            style: TextStyle(fontSize: 12)),
+                        trailing: const Icon(Icons.arrow_forward_ios_rounded,
+                            size: 16, color: AppColors.textHint),
                         onTap: () {
                           context.push('/change-password');
                         },

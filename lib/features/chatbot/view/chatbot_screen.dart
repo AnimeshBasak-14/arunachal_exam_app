@@ -9,7 +9,8 @@ class _ChatMessage {
   final bool isUser;
   final DateTime timestamp;
 
-  _ChatMessage({required this.text, required this.isUser, required this.timestamp});
+  _ChatMessage(
+      {required this.text, required this.isUser, required this.timestamp});
 }
 
 class ChatbotScreen extends StatefulWidget {
@@ -26,7 +27,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   bool _isLoading = false;
 
   // Gemini 3.5 Flash Lite — tested and confirmed working
-  static const String _apiKey = 'AQ.Ab8RN6KS4k7zMX9Rza6IEIwyovwJueGIwOhUWAuueYFNj7torg';
+  static const String _apiKey =
+      'AQ.Ab8RN6KS4k7zMX9Rza6IEIwyovwJueGIwOhUWAuueYFNj7torg';
   static const String _model = 'gemini-3.5-flash-lite';
   static const String _endpoint =
       'https://generativelanguage.googleapis.com/v1beta/models/$_model:generateContent?key=$_apiKey';
@@ -48,7 +50,8 @@ Always respond in English unless the user writes in Hindi.
     super.initState();
     // Welcome message
     _messages.add(_ChatMessage(
-      text: 'Namaste! 🙏 I am your APSSB/APPSC AI tutor. Ask me anything about the exam syllabus, practice questions, or study strategies!',
+      text:
+          'Namaste! 🙏 I am your APSSB/APPSC AI tutor. Ask me anything about the exam syllabus, practice questions, or study strategies!',
       isUser: false,
       timestamp: DateTime.now(),
     ));
@@ -67,7 +70,8 @@ Always respond in English unless the user writes in Hindi.
 
     _controller.clear();
     setState(() {
-      _messages.add(_ChatMessage(text: trimmed, isUser: true, timestamp: DateTime.now()));
+      _messages.add(
+          _ChatMessage(text: trimmed, isUser: true, timestamp: DateTime.now()));
       _isLoading = true;
     });
     _scrollToBottom();
@@ -110,14 +114,16 @@ Always respond in English unless the user writes in Hindi.
         final parts = (data['candidates'][0]['content']['parts'] as List);
         // Filter out thinking parts (no 'text' key or empty text)
         final reply = parts
-            .where((p) => p.containsKey('text') && (p['text'] as String).isNotEmpty)
+            .where((p) =>
+                p.containsKey('text') && (p['text'] as String).isNotEmpty)
             .map((p) => p['text'] as String)
             .join('')
             .trim();
 
         if (mounted) {
           setState(() {
-            _messages.add(_ChatMessage(text: reply, isUser: false, timestamp: DateTime.now()));
+            _messages.add(_ChatMessage(
+                text: reply, isUser: false, timestamp: DateTime.now()));
             _isLoading = false;
           });
         }
@@ -129,7 +135,8 @@ Always respond in English unless the user writes in Hindi.
       if (mounted) {
         setState(() {
           _messages.add(_ChatMessage(
-            text: '⚠️ Could not reach the AI Tutor right now. Please check your internet connection and try again.',
+            text:
+                '⚠️ Could not reach the AI Tutor right now. Please check your internet connection and try again.',
             isUser: false,
             timestamp: DateTime.now(),
           ));
@@ -166,14 +173,19 @@ Always respond in English unless the user writes in Hindi.
                 color: AppColors.primary,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.auto_awesome, color: Colors.white, size: 18),
+              child:
+                  const Icon(Icons.auto_awesome, color: Colors.white, size: 18),
             ),
             const SizedBox(width: 8),
             const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('AI Tutor', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                Text('APSSB/APPSC Expert', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                Text('AI Tutor',
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                Text('APSSB/APPSC Expert',
+                    style: TextStyle(
+                        fontSize: 11, color: AppColors.textSecondary)),
               ],
             ),
           ],
@@ -184,7 +196,8 @@ Always respond in English unless the user writes in Hindi.
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: AppSpacing.s),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.m, vertical: AppSpacing.s),
               itemCount: _messages.length + (_isLoading ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index == _messages.length) return _buildTypingIndicator();
@@ -204,21 +217,25 @@ Always respond in English unless the user writes in Hindi.
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.s),
       child: Row(
-        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment:
+            isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isUser) ...[
             Container(
               width: 28,
               height: 28,
-              decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-              child: const Icon(Icons.auto_awesome, color: Colors.white, size: 14),
+              decoration: const BoxDecoration(
+                  color: AppColors.primary, shape: BoxShape.circle),
+              child:
+                  const Icon(Icons.auto_awesome, color: Colors.white, size: 14),
             ),
             const SizedBox(width: 6),
           ],
           Flexible(
             child: Container(
-              constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.76),
+              constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.76),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
                 color: isUser ? AppColors.primary : AppColors.surface,
@@ -260,8 +277,10 @@ Always respond in English unless the user writes in Hindi.
           Container(
             width: 28,
             height: 28,
-            decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-            child: const Icon(Icons.auto_awesome, color: Colors.white, size: 14),
+            decoration: const BoxDecoration(
+                color: AppColors.primary, shape: BoxShape.circle),
+            child:
+                const Icon(Icons.auto_awesome, color: Colors.white, size: 14),
           ),
           const SizedBox(width: 6),
           Container(
@@ -274,7 +293,10 @@ Always respond in English unless the user writes in Hindi.
                 bottomRight: Radius.circular(18),
                 bottomLeft: Radius.circular(4),
               ),
-              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 4)],
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06), blurRadius: 4)
+              ],
             ),
             child: const Row(
               mainAxisSize: MainAxisSize.min,
@@ -288,7 +310,8 @@ Always respond in English unless the user writes in Hindi.
                   ),
                 ),
                 SizedBox(width: 8),
-                Text('Thinking...', style: TextStyle(color: AppColors.textHint, fontSize: 12)),
+                Text('Thinking...',
+                    style: TextStyle(color: AppColors.textHint, fontSize: 12)),
               ],
             ),
           ),
@@ -308,7 +331,8 @@ Always respond in English unless the user writes in Hindi.
       height: 42,
       child: ListView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: 4),
+        padding:
+            const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: 4),
         children: suggestions.map((q) {
           return GestureDetector(
             onTap: () => _sendMessage(q),
@@ -318,11 +342,15 @@ Always respond in English unless the user writes in Hindi.
               decoration: BoxDecoration(
                 color: AppColors.primaryLight,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                border:
+                    Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
               ),
               child: Text(
                 q,
-                style: const TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600),
               ),
             ),
           );
@@ -341,7 +369,12 @@ Always respond in English unless the user writes in Hindi.
       ),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.07), blurRadius: 8, offset: const Offset(0, -2))],
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withValues(alpha: 0.07),
+              blurRadius: 8,
+              offset: const Offset(0, -2))
+        ],
       ),
       child: Row(
         children: [
@@ -353,7 +386,8 @@ Always respond in English unless the user writes in Hindi.
                 hintStyle: const TextStyle(color: AppColors.textHint),
                 filled: true,
                 fillColor: AppColors.background,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(24),
                   borderSide: BorderSide.none,
@@ -371,8 +405,10 @@ Always respond in English unless the user writes in Hindi.
             child: Container(
               width: 44,
               height: 44,
-              decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-              child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+              decoration: const BoxDecoration(
+                  color: AppColors.primary, shape: BoxShape.circle),
+              child:
+                  const Icon(Icons.send_rounded, color: Colors.white, size: 20),
             ),
           ),
         ],

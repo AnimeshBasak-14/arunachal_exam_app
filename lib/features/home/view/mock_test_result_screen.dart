@@ -15,7 +15,8 @@ class MockTestResultScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<MockTestResultScreen> createState() => _MockTestResultScreenState();
+  ConsumerState<MockTestResultScreen> createState() =>
+      _MockTestResultScreenState();
 }
 
 class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
@@ -32,7 +33,8 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
     });
   }
 
-  Widget _buildStatChip(String label, String value, Color color, IconData icon) {
+  Widget _buildStatChip(
+      String label, String value, Color color, IconData icon) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
@@ -48,12 +50,16 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
             const SizedBox(height: 4),
             Text(
               value,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color),
+              style: TextStyle(
+                  fontSize: 18, fontWeight: FontWeight.bold, color: color),
             ),
             const SizedBox(height: 2),
             Text(
               label,
-              style: TextStyle(fontSize: 11, color: color.withValues(alpha: 0.8), fontWeight: FontWeight.w600),
+              style: TextStyle(
+                  fontSize: 11,
+                  color: color.withValues(alpha: 0.8),
+                  fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -97,7 +103,8 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
     final selectedAnswersRaw = resultData['selectedAnswers'];
     Map<String, String> selectedAnswers = {};
     if (selectedAnswersRaw is Map) {
-      selectedAnswers = selectedAnswersRaw.map((k, v) => MapEntry(k.toString(), v.toString()));
+      selectedAnswers = selectedAnswersRaw
+          .map((k, v) => MapEntry(k.toString(), v.toString()));
     }
 
     final accuracy = maxScore > 0 ? (score / maxScore * 100) : 0.0;
@@ -106,16 +113,23 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
 
     // Load questions for review (fall back to first 5 if no exam-specific match)
     final allQuestions = QuestionRepository.allQuestions;
-    var testQuestions = allQuestions.where((q) => q.examCode == examCode).take(5).toList();
+    var testQuestions =
+        allQuestions.where((q) => q.examCode == examCode).take(5).toList();
     if (testQuestions.isEmpty) testQuestions = allQuestions.take(5).toList();
 
     // Grade label based on accuracy
     String gradeLabel;
-    if (accuracy >= 90) { gradeLabel = 'S'; }
-    else if (accuracy >= 75) { gradeLabel = 'A'; }
-    else if (accuracy >= 55) { gradeLabel = 'B'; }
-    else if (accuracy >= 35) { gradeLabel = 'C'; }
-    else { gradeLabel = 'D'; }
+    if (accuracy >= 90) {
+      gradeLabel = 'S';
+    } else if (accuracy >= 75) {
+      gradeLabel = 'A';
+    } else if (accuracy >= 55) {
+      gradeLabel = 'B';
+    } else if (accuracy >= 35) {
+      gradeLabel = 'C';
+    } else {
+      gradeLabel = 'D';
+    }
 
     final totalRatingChange = ratingChange + speedBonus;
 
@@ -137,7 +151,8 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: AppSpacing.s),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.m, vertical: AppSpacing.s),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -162,27 +177,41 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                         children: [
                           Text(
                             '${score.toStringAsFixed(1)} / ${maxScore.toStringAsFixed(0)}',
-                            style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
+                            style: const TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
                           ),
                           Text(
                             'Accuracy ${accuracy.toStringAsFixed(1)}%',
-                            style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.8), fontWeight: FontWeight.w600),
+                            style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.white.withValues(alpha: 0.8),
+                                fontWeight: FontWeight.w600),
                           ),
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              const Icon(Icons.timer_outlined, color: Colors.white70, size: 14),
+                              const Icon(Icons.timer_outlined,
+                                  color: Colors.white70, size: 14),
                               const SizedBox(width: 4),
                               Text(
                                 '${mins}m ${secs}s',
-                                style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.75)),
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color:
+                                        Colors.white.withValues(alpha: 0.75)),
                               ),
                               const SizedBox(width: 12),
-                              const Icon(Icons.calendar_today_outlined, color: Colors.white70, size: 13),
+                              const Icon(Icons.calendar_today_outlined,
+                                  color: Colors.white70, size: 13),
                               const SizedBox(width: 4),
                               Text(
                                 date,
-                                style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.75)),
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color:
+                                        Colors.white.withValues(alpha: 0.75)),
                               ),
                             ],
                           ),
@@ -195,12 +224,17 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.15),
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 2),
+                          border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.4),
+                              width: 2),
                         ),
                         child: Center(
                           child: Text(
                             gradeLabel,
-                            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white),
+                            style: const TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white),
                           ),
                         ),
                       ),
@@ -210,15 +244,19 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                   // Stats Row
                   Row(
                     children: [
-                      _buildStatChip('Correct', '$correct', Colors.greenAccent, Icons.check_circle_rounded),
-                      _buildStatChip('Wrong', '$wrong', Colors.redAccent, Icons.cancel_rounded),
-                      _buildStatChip('Skipped', '$left', Colors.white60, Icons.remove_circle_outline_rounded),
+                      _buildStatChip('Correct', '$correct', Colors.greenAccent,
+                          Icons.check_circle_rounded),
+                      _buildStatChip('Wrong', '$wrong', Colors.redAccent,
+                          Icons.cancel_rounded),
+                      _buildStatChip('Skipped', '$left', Colors.white60,
+                          Icons.remove_circle_outline_rounded),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.m),
                   // Trophies Row
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(12),
@@ -229,14 +267,20 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                         Column(
                           children: [
                             Text(
-                              ratingChange >= 0 ? '+$ratingChange' : '$ratingChange',
+                              ratingChange >= 0
+                                  ? '+$ratingChange'
+                                  : '$ratingChange',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
-                                color: ratingChange >= 0 ? Colors.greenAccent : Colors.redAccent,
+                                color: ratingChange >= 0
+                                    ? Colors.greenAccent
+                                    : Colors.redAccent,
                               ),
                             ),
-                            const Text('Score Pts', style: TextStyle(fontSize: 10, color: Colors.white70)),
+                            const Text('Score Pts',
+                                style: TextStyle(
+                                    fontSize: 10, color: Colors.white70)),
                           ],
                         ),
                         Container(width: 1, height: 32, color: Colors.white24),
@@ -247,10 +291,14 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
-                                color: speedBonus > 0 ? Colors.amber : Colors.white70,
+                                color: speedBonus > 0
+                                    ? Colors.amber
+                                    : Colors.white70,
                               ),
                             ),
-                            const Text('Speed Bonus', style: TextStyle(fontSize: 10, color: Colors.white70)),
+                            const Text('Speed Bonus',
+                                style: TextStyle(
+                                    fontSize: 10, color: Colors.white70)),
                           ],
                         ),
                         Container(width: 1, height: 32, color: Colors.white24),
@@ -259,18 +307,25 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                             Row(
                               children: [
                                 Text(
-                                  totalRatingChange >= 0 ? '+$totalRatingChange' : '$totalRatingChange',
+                                  totalRatingChange >= 0
+                                      ? '+$totalRatingChange'
+                                      : '$totalRatingChange',
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 18,
-                                    color: totalRatingChange >= 0 ? Colors.greenAccent : Colors.redAccent,
+                                    color: totalRatingChange >= 0
+                                        ? Colors.greenAccent
+                                        : Colors.redAccent,
                                   ),
                                 ),
                                 const SizedBox(width: 4),
-                                const Icon(Icons.emoji_events_rounded, color: Color(0xFFF59E0B), size: 18),
+                                const Icon(Icons.emoji_events_rounded,
+                                    color: Color(0xFFF59E0B), size: 18),
                               ],
                             ),
-                            const Text('Total Trophies', style: TextStyle(fontSize: 10, color: Colors.white70)),
+                            const Text('Total Trophies',
+                                style: TextStyle(
+                                    fontSize: 10, color: Colors.white70)),
                           ],
                         ),
                       ],
@@ -286,7 +341,11 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
               children: [
                 const Text(
                   'QUESTION REVIEW',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textSecondary, letterSpacing: 1.1),
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textSecondary,
+                      letterSpacing: 1.1),
                 ),
                 const Spacer(),
                 GestureDetector(
@@ -300,8 +359,13 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                     });
                   },
                   child: Text(
-                    _expandedIds.length == testQuestions.length ? 'Collapse All' : 'Expand All',
-                    style: const TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.bold),
+                    _expandedIds.length == testQuestions.length
+                        ? 'Collapse All'
+                        : 'Expand All',
+                    style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -313,13 +377,17 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
               final index = entry.key;
               final question = entry.value;
               final selectedOption = selectedAnswers[question.id];
-              final isCorrect = selectedOption != null && selectedOption == question.correctAnswer;
+              final isCorrect = selectedOption != null &&
+                  selectedOption == question.correctAnswer;
               final isSkipped = selectedOption == null;
               final isExpanded = _expandedIds.contains(question.id);
 
-              final statusColor = _getStatusColor(selectedOption, question.correctAnswer);
-              final statusIcon = _getStatusIcon(selectedOption, question.correctAnswer);
-              final statusLabel = _getStatusLabel(selectedOption, question.correctAnswer);
+              final statusColor =
+                  _getStatusColor(selectedOption, question.correctAnswer);
+              final statusIcon =
+                  _getStatusIcon(selectedOption, question.correctAnswer);
+              final statusLabel =
+                  _getStatusLabel(selectedOption, question.correctAnswer);
 
               return Container(
                 margin: const EdgeInsets.only(bottom: 10),
@@ -327,7 +395,9 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(AppSpacing.radiusL),
                   border: Border.all(
-                    color: isExpanded ? statusColor.withValues(alpha: 0.35) : AppColors.divider,
+                    color: isExpanded
+                        ? statusColor.withValues(alpha: 0.35)
+                        : AppColors.divider,
                     width: isExpanded ? 1.5 : 1,
                   ),
                 ),
@@ -338,7 +408,8 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                       onTap: () => _toggleExpanded(question.id),
                       borderRadius: BorderRadius.circular(AppSpacing.radiusL),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 12),
                         child: Row(
                           children: [
                             // Status indicator dot
@@ -354,7 +425,10 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                             // Q number
                             Text(
                               'Q${index + 1}',
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
+                              style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textSecondary),
                             ),
                             const SizedBox(width: 8),
                             // Question preview (truncated)
@@ -362,14 +436,20 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                               child: Text(
                                 question.questionText,
                                 maxLines: isExpanded ? 10 : 1,
-                                overflow: isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                                overflow: isExpanded
+                                    ? TextOverflow.visible
+                                    : TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textPrimary),
                               ),
                             ),
                             const SizedBox(width: 8),
                             // Status badge
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 3),
                               decoration: BoxDecoration(
                                 color: statusColor.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(20),
@@ -377,11 +457,15 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(statusIcon, color: statusColor, size: 12),
+                                  Icon(statusIcon,
+                                      color: statusColor, size: 12),
                                   const SizedBox(width: 3),
                                   Text(
                                     statusLabel,
-                                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: statusColor),
+                                    style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: statusColor),
                                   ),
                                 ],
                               ),
@@ -390,7 +474,10 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                             AnimatedRotation(
                               turns: isExpanded ? 0.5 : 0,
                               duration: const Duration(milliseconds: 200),
-                              child: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textHint, size: 20),
+                              child: const Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  color: AppColors.textHint,
+                                  size: 20),
                             ),
                           ],
                         ),
@@ -413,14 +500,19 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                                   Row(
                                     children: [
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 3),
                                         decoration: BoxDecoration(
                                           color: AppColors.primaryLight,
-                                          borderRadius: BorderRadius.circular(10),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
                                         ),
                                         child: Text(
                                           question.subject,
-                                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.primary),
+                                          style: const TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: AppColors.primary),
                                         ),
                                       ),
                                     ],
@@ -429,7 +521,11 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                                   // Full question text
                                   Text(
                                     question.questionText,
-                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary, height: 1.4),
+                                    style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.textPrimary,
+                                        height: 1.4),
                                   ),
                                   const SizedBox(height: 12),
 
@@ -439,18 +535,26 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                                     Container(
                                       padding: const EdgeInsets.all(10),
                                       decoration: BoxDecoration(
-                                        color: AppColors.success.withValues(alpha: 0.07),
+                                        color: AppColors.success
+                                            .withValues(alpha: 0.07),
                                         borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
+                                        border: Border.all(
+                                            color: AppColors.success
+                                                .withValues(alpha: 0.3)),
                                       ),
                                       child: Row(
                                         children: [
-                                          const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 16),
+                                          const Icon(Icons.check_circle_rounded,
+                                              color: AppColors.success,
+                                              size: 16),
                                           const SizedBox(width: 8),
                                           Flexible(
                                             child: Text(
                                               'You selected the correct answer — Option ${question.correctAnswer.toUpperCase()}',
-                                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primaryDark),
+                                              style: const TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: AppColors.primaryDark),
                                             ),
                                           ),
                                         ],
@@ -459,9 +563,14 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                                   else ...[
                                     // Show all options with highlights
                                     ...question.options.map((option) {
-                                      final optionChar = option.trim().substring(1, 2).toLowerCase();
-                                      final isUserPick = selectedOption == optionChar;
-                                      final isRightAnswer = question.correctAnswer == optionChar;
+                                      final optionChar = option
+                                          .trim()
+                                          .substring(1, 2)
+                                          .toLowerCase();
+                                      final isUserPick =
+                                          selectedOption == optionChar;
+                                      final isRightAnswer =
+                                          question.correctAnswer == optionChar;
 
                                       Color borderColor = AppColors.divider;
                                       Color bgColor = Colors.transparent;
@@ -469,34 +578,54 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
 
                                       if (isRightAnswer) {
                                         borderColor = AppColors.success;
-                                        bgColor = AppColors.success.withValues(alpha: 0.06);
+                                        bgColor = AppColors.success
+                                            .withValues(alpha: 0.06);
                                         textColor = AppColors.primaryDark;
                                       } else if (isUserPick) {
                                         borderColor = AppColors.error;
-                                        bgColor = AppColors.error.withValues(alpha: 0.06);
+                                        bgColor = AppColors.error
+                                            .withValues(alpha: 0.06);
                                         textColor = AppColors.error;
                                       }
 
                                       return Container(
-                                        margin: const EdgeInsets.only(bottom: 6),
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                        margin:
+                                            const EdgeInsets.only(bottom: 6),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 10),
                                         decoration: BoxDecoration(
                                           color: bgColor,
-                                          border: Border.all(color: borderColor, width: isRightAnswer || isUserPick ? 1.5 : 1),
-                                          borderRadius: BorderRadius.circular(10),
+                                          border: Border.all(
+                                              color: borderColor,
+                                              width: isRightAnswer || isUserPick
+                                                  ? 1.5
+                                                  : 1),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
                                         ),
                                         child: Row(
                                           children: [
                                             Expanded(
                                               child: Text(
                                                 option,
-                                                style: TextStyle(fontSize: 13, color: textColor, fontWeight: isRightAnswer || isUserPick ? FontWeight.bold : FontWeight.normal),
+                                                style: TextStyle(
+                                                    fontSize: 13,
+                                                    color: textColor,
+                                                    fontWeight: isRightAnswer ||
+                                                            isUserPick
+                                                        ? FontWeight.bold
+                                                        : FontWeight.normal),
                                               ),
                                             ),
                                             if (isRightAnswer)
-                                              const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 16)
+                                              const Icon(
+                                                  Icons.check_circle_rounded,
+                                                  color: AppColors.success,
+                                                  size: 16)
                                             else if (isUserPick)
-                                              const Icon(Icons.cancel_rounded, color: AppColors.error, size: 16),
+                                              const Icon(Icons.cancel_rounded,
+                                                  color: AppColors.error,
+                                                  size: 16),
                                           ],
                                         ),
                                       );
@@ -504,30 +633,44 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                                     const SizedBox(height: 8),
                                     // Explanation box (for wrong/skipped)
                                     Container(
-                                      padding: const EdgeInsets.all(AppSpacing.m),
+                                      padding:
+                                          const EdgeInsets.all(AppSpacing.m),
                                       decoration: BoxDecoration(
-                                        color: AppColors.primaryLight.withValues(alpha: 0.25),
+                                        color: AppColors.primaryLight
+                                            .withValues(alpha: 0.25),
                                         borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.15)),
+                                        border: Border.all(
+                                            color: AppColors.primary
+                                                .withValues(alpha: 0.15)),
                                       ),
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             isSkipped
                                                 ? 'You did not attempt this question.'
-                                            : 'You selected Option ${selectedOption.toUpperCase()} — that was incorrect.',
-                                            style: const TextStyle(fontSize: 11, color: AppColors.textSecondary, fontStyle: FontStyle.italic),
+                                                : 'You selected Option ${selectedOption.toUpperCase()} — that was incorrect.',
+                                            style: const TextStyle(
+                                                fontSize: 11,
+                                                color: AppColors.textSecondary,
+                                                fontStyle: FontStyle.italic),
                                           ),
                                           const SizedBox(height: 6),
                                           const Text(
                                             'Explanation:',
-                                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.textPrimary),
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 12,
+                                                color: AppColors.textPrimary),
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
                                             question.solution,
-                                            style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary, height: 1.5),
+                                            style: const TextStyle(
+                                                fontSize: 12.5,
+                                                color: AppColors.textSecondary,
+                                                height: 1.5),
                                           ),
                                         ],
                                       ),
@@ -552,11 +695,15 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
             OutlinedButton(
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusL)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusL)),
                 side: const BorderSide(color: AppColors.divider),
               ),
               onPressed: () => context.go('/home'),
-              child: const Text('Close & Go Home', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textSecondary)),
+              child: const Text('Close & Go Home',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textSecondary)),
             ),
             const SizedBox(height: AppSpacing.xl),
           ],

@@ -68,7 +68,10 @@ class _ChangePhoneScreenState extends ConsumerState<ChangePhoneScreen> {
     });
 
     Future.delayed(const Duration(milliseconds: 400), () {
-      final randomOtp = (100000 + (899999 * (DateTime.now().microsecond / 1000000))).round().toString();
+      final randomOtp =
+          (100000 + (899999 * (DateTime.now().microsecond / 1000000)))
+              .round()
+              .toString();
       setState(() {
         _sentOtp = randomOtp;
         _isSendingOtp = false;
@@ -79,12 +82,14 @@ class _ChangePhoneScreenState extends ConsumerState<ChangePhoneScreen> {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusXL)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusXL)),
           title: const Row(
             children: [
               Icon(Icons.sms_outlined, color: AppColors.primary, size: 22),
               SizedBox(width: 8),
-              Text('SMS Verification Code', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text('SMS Verification Code',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ],
           ),
           content: Column(
@@ -92,16 +97,19 @@ class _ChangePhoneScreenState extends ConsumerState<ChangePhoneScreen> {
             children: [
               Text(
                 'Your verification code for +91 $phone is:',
-                style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                style: const TextStyle(
+                    fontSize: 13, color: AppColors.textSecondary),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 14),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 decoration: BoxDecoration(
                   color: AppColors.primaryLight,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                  border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.3)),
                 ),
                 child: Text(
                   randomOtp,
@@ -127,14 +135,16 @@ class _ChangePhoneScreenState extends ConsumerState<ChangePhoneScreen> {
                 _otpController.text = randomOtp;
                 Navigator.pop(ctx);
               },
-              child: const Text('Auto-fill Code', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text('Auto-fill Code',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(ctx),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
               ),
               child: const Text('OK'),
             ),
@@ -213,11 +223,13 @@ class _ChangePhoneScreenState extends ConsumerState<ChangePhoneScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.primaryLight.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(AppSpacing.radiusL),
-                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                  border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.2)),
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.security_rounded, color: AppColors.primary, size: 28),
+                    Icon(Icons.security_rounded,
+                        color: AppColors.primary, size: 28),
                     SizedBox(width: AppSpacing.m),
                     Expanded(
                       child: Column(
@@ -225,12 +237,16 @@ class _ChangePhoneScreenState extends ConsumerState<ChangePhoneScreen> {
                         children: [
                           Text(
                             'Phone Number Security Verification',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.primaryDark),
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                color: AppColors.primaryDark),
                           ),
                           SizedBox(height: 2),
                           Text(
                             'Updating your mobile number requires 6-digit OTP verification.',
-                            style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+                            style: TextStyle(
+                                fontSize: 11.5, color: AppColors.textSecondary),
                           ),
                         ],
                       ),
@@ -283,10 +299,14 @@ class _ChangePhoneScreenState extends ConsumerState<ChangePhoneScreen> {
                           child: SizedBox(
                             height: 52,
                             child: OutlinedButton(
-                              onPressed: _timerSeconds > 0 || _isSendingOtp ? null : _sendOtp,
+                              onPressed: _timerSeconds > 0 || _isSendingOtp
+                                  ? null
+                                  : _sendOtp,
                               style: OutlinedButton.styleFrom(
                                 side: BorderSide(
-                                  color: _timerSeconds > 0 ? AppColors.textDisabled : AppColors.primary,
+                                  color: _timerSeconds > 0
+                                      ? AppColors.textDisabled
+                                      : AppColors.primary,
                                   width: 1.5,
                                 ),
                                 shape: RoundedRectangleBorder(
@@ -297,12 +317,18 @@ class _ChangePhoneScreenState extends ConsumerState<ChangePhoneScreen> {
                                   ? const SizedBox(
                                       width: 20,
                                       height: 20,
-                                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: AppColors.primary),
                                     )
                                   : Text(
-                                      _timerSeconds > 0 ? '${_timerSeconds}s' : 'Send OTP',
+                                      _timerSeconds > 0
+                                          ? '${_timerSeconds}s'
+                                          : 'Send OTP',
                                       style: TextStyle(
-                                        color: _timerSeconds > 0 ? AppColors.textDisabled : AppColors.primary,
+                                        color: _timerSeconds > 0
+                                            ? AppColors.textDisabled
+                                            : AppColors.primary,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 12,
                                       ),

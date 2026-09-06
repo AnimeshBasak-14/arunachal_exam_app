@@ -3,7 +3,8 @@ import 'package:flutter/foundation.dart';
 
 class Question {
   final String id;
-  final String examCode; // 'APSSB-CGLE', 'APSSB-CHSL', 'APSSB-CSLE', 'APSSB-UDC', 'APSSB-MOCK', etc.
+  final String
+      examCode; // 'APSSB-CGLE', 'APSSB-CHSL', 'APSSB-CSLE', 'APSSB-UDC', 'APSSB-MOCK', etc.
   final int year; // 2021, 2019, 2023, 2024
   final String paperType; // 'PYQ' or 'MOCK'
   final String testId;
@@ -66,7 +67,9 @@ class Question {
       for (int i = 0; i < rawList.length; i++) {
         final item = rawList[i];
         if (item is Map) {
-          final prefix = item['key'] != null ? '(${item['key']}) ' : '(${String.fromCharCode(97 + i)}) ';
+          final prefix = item['key'] != null
+              ? '(${item['key']}) '
+              : '(${String.fromCharCode(97 + i)}) ';
           final text = item['text'] != null ? item['text'].toString() : '';
           parsedOptions.add(text.startsWith('(') ? text : '$prefix$text');
           if (i < 4 && item['image'] != null) {
@@ -79,10 +82,18 @@ class Question {
     }
 
     if (parsedOptions.isEmpty) {
-      parsedOptions = ['(a) Option A', '(b) Option B', '(c) Option C', '(d) Option D'];
+      parsedOptions = [
+        '(a) Option A',
+        '(b) Option B',
+        '(c) Option C',
+        '(d) Option D'
+      ];
     }
 
-    final rawCorrect = (data['correctAnswer'] ?? 'a').toString().toLowerCase().replaceAll(RegExp(r'[^a-d]'), '');
+    final rawCorrect = (data['correctAnswer'] ?? 'a')
+        .toString()
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-d]'), '');
     final cleanCorrect = rawCorrect.isNotEmpty ? rawCorrect[0] : 'a';
 
     // Find official answer string
@@ -98,7 +109,9 @@ class Question {
 
     // Strict Year Constraints:
     // If year <= 2000 or year > current year or paperType == 'MOCK', classify as MOCK test (year 2000).
-    if (parsedYear <= 2000 || parsedYear > DateTime.now().year || rawPaperType == 'MOCK') {
+    if (parsedYear <= 2000 ||
+        parsedYear > DateTime.now().year ||
+        rawPaperType == 'MOCK') {
       rawPaperType = 'MOCK';
       parsedYear = 2000;
     } else if (rawPaperType.isEmpty) {
@@ -124,10 +137,14 @@ class Question {
       officialAnswer: official,
       solution: (data['solution'] ?? 'Verified with official key.').toString(),
       solutionImage: data['solutionImage']?.toString(),
-      timeLimitMins: int.tryParse(data['timeLimitMins']?.toString() ?? '') ?? 120,
-      marksPerCorrect: double.tryParse(data['marksPerCorrect']?.toString() ?? '') ?? 2.0,
-      negativeMarks: double.tryParse(data['negativeMarks']?.toString() ?? '') ?? 0.5,
-      isScenarioTest: data['isScenarioTest'] == true || data['isScenarioTest']?.toString().toLowerCase() == 'true',
+      timeLimitMins:
+          int.tryParse(data['timeLimitMins']?.toString() ?? '') ?? 120,
+      marksPerCorrect:
+          double.tryParse(data['marksPerCorrect']?.toString() ?? '') ?? 2.0,
+      negativeMarks:
+          double.tryParse(data['negativeMarks']?.toString() ?? '') ?? 0.5,
+      isScenarioTest: data['isScenarioTest'] == true ||
+          data['isScenarioTest']?.toString().toLowerCase() == 'true',
       scenarioTags: data['scenarioTags']?.toString(),
       initialComments: const [],
       pyqText: '[$rawExamCode $parsedYear]',
@@ -154,25 +171,41 @@ class QuestionRepository {
       Query query = firestore.collection('questions');
 
       final cleanCode = examCode.trim().toUpperCase();
-      
+
       // Match APSSB variants - accept both short codes and full codes
       String queryCode = cleanCode;
-      if (cleanCode == 'APSSB-CGLE' || cleanCode == 'CGL' || cleanCode == 'CGLE') queryCode = 'APSSB-CGLE';
-      if (cleanCode == 'APSSB-CHSL' || cleanCode == 'CHSL') queryCode = 'APSSB-CHSL';
-      if (cleanCode == 'APSSB-CSLE' || cleanCode == 'CSLE' || cleanCode == 'CSCE') queryCode = 'APSSB-CSLE';
-      if (cleanCode == 'APSSB-UDC' || cleanCode == 'UDC') queryCode = 'APSSB-UDC';
-      if (cleanCode == 'APSSB-MTS' || cleanCode == 'MTS') queryCode = 'APSSB-MTS';
-      if (cleanCode == 'APSSB-MOCK' || cleanCode == 'MOCK') queryCode = 'APSSB-MOCK';
-      if (cleanCode == 'APSSB-MOCK-MATHS' || cleanCode == 'MOCK-MATHS') queryCode = 'APSSB-MOCK-MATHS';
+      if (cleanCode == 'APSSB-CGLE' ||
+          cleanCode == 'CGL' ||
+          cleanCode == 'CGLE') queryCode = 'APSSB-CGLE';
+      if (cleanCode == 'APSSB-CHSL' || cleanCode == 'CHSL')
+        queryCode = 'APSSB-CHSL';
+      if (cleanCode == 'APSSB-CSLE' ||
+          cleanCode == 'CSLE' ||
+          cleanCode == 'CSCE') queryCode = 'APSSB-CSLE';
+      if (cleanCode == 'APSSB-UDC' || cleanCode == 'UDC')
+        queryCode = 'APSSB-UDC';
+      if (cleanCode == 'APSSB-MTS' || cleanCode == 'MTS')
+        queryCode = 'APSSB-MTS';
+      if (cleanCode == 'APSSB-MOCK' || cleanCode == 'MOCK')
+        queryCode = 'APSSB-MOCK';
+      if (cleanCode == 'APSSB-MOCK-MATHS' || cleanCode == 'MOCK-MATHS')
+        queryCode = 'APSSB-MOCK-MATHS';
       if (cleanCode == 'APPSC-AE' || cleanCode == 'AE') queryCode = 'APPSC-AE';
       if (cleanCode == 'APPSC-JE' || cleanCode == 'JE') queryCode = 'APPSC-JE';
-      if (cleanCode == 'APPSC-APCS' || cleanCode == 'APCS') queryCode = 'APPSC-APCS';
-      if (cleanCode == 'APPSC-ADO' || cleanCode == 'ADO') queryCode = 'APPSC-ADO';
-      if (cleanCode == 'APPSC-HDO' || cleanCode == 'HDO') queryCode = 'APPSC-HDO';
-      if (cleanCode == 'APPSC-FAO' || cleanCode == 'FAO') queryCode = 'APPSC-FAO';
-      if (cleanCode == 'APPSC-PGT' || cleanCode == 'PGT') queryCode = 'APPSC-PGT';
-      if (cleanCode == 'APPSC-TGT' || cleanCode == 'TGT') queryCode = 'APPSC-TGT';
-      if (cleanCode == 'APP' || cleanCode == 'PROSECUTOR') queryCode = 'APPSC-APP';
+      if (cleanCode == 'APPSC-APCS' || cleanCode == 'APCS')
+        queryCode = 'APPSC-APCS';
+      if (cleanCode == 'APPSC-ADO' || cleanCode == 'ADO')
+        queryCode = 'APPSC-ADO';
+      if (cleanCode == 'APPSC-HDO' || cleanCode == 'HDO')
+        queryCode = 'APPSC-HDO';
+      if (cleanCode == 'APPSC-FAO' || cleanCode == 'FAO')
+        queryCode = 'APPSC-FAO';
+      if (cleanCode == 'APPSC-PGT' || cleanCode == 'PGT')
+        queryCode = 'APPSC-PGT';
+      if (cleanCode == 'APPSC-TGT' || cleanCode == 'TGT')
+        queryCode = 'APPSC-TGT';
+      if (cleanCode == 'APP' || cleanCode == 'PROSECUTOR')
+        queryCode = 'APPSC-APP';
 
       query = query.where('examCode', isEqualTo: queryCode);
 
@@ -183,18 +216,21 @@ class QuestionRepository {
         query = query.where('paperType', isEqualTo: paperType.toUpperCase());
       }
 
-      final snapshot = await query.get(const GetOptions(source: Source.serverAndCache));
+      final snapshot =
+          await query.get(const GetOptions(source: Source.serverAndCache));
       if (snapshot.docs.isNotEmpty) {
         return snapshot.docs.map((doc) => Question.fromFirestore(doc)).toList();
       }
     } catch (e) {
-      debugPrint('[QuestionRepository] Error fetching live questions from Firestore: $e');
+      debugPrint(
+          '[QuestionRepository] Error fetching live questions from Firestore: $e');
     }
 
     // Fallback to local questions
     return allQuestions.where((q) {
-      final matchesExam = q.examCode.toUpperCase().contains(examCode.toUpperCase()) ||
-          examCode.toUpperCase().contains(q.examCode.toUpperCase());
+      final matchesExam =
+          q.examCode.toUpperCase().contains(examCode.toUpperCase()) ||
+              examCode.toUpperCase().contains(q.examCode.toUpperCase());
       final matchesYear = year == null || q.year == year;
       return matchesExam && matchesYear;
     }).toList();

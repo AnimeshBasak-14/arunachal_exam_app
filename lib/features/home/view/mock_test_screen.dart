@@ -181,7 +181,8 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
     // Formula: timeLeft ratio × 10, rounded. Faster completion = higher bonus.
     int speedBonus = 0;
     if (actualScore >= 0.40 && timeTaken < _initialSeconds) {
-      final double timeLeftRatio = (_secondsRemaining / _initialSeconds.toDouble());
+      final double timeLeftRatio =
+          (_secondsRemaining / _initialSeconds.toDouble());
       speedBonus = (timeLeftRatio * 10).round();
     }
     final int totalChange = ratingChange + speedBonus;
@@ -192,7 +193,8 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
     }
 
     final now = DateTime.now();
-    final dateStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}";
+    final dateStr =
+        "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}";
 
     // Save attempts history
     _saveHistoryToPrefs(
@@ -250,7 +252,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
   }) async {
     final storage = ref.read(storageServiceProvider);
     final historyList = List<String>.from(storage.getQuizHistory());
-    
+
     // Construct selected answers map JSON manually
     final selectedAnswersBuffer = StringBuffer('{');
     _selectedAnswers.forEach((key, value) {
@@ -258,8 +260,9 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
       selectedAnswersBuffer.write('"$key":"$value"');
     });
     selectedAnswersBuffer.write('}');
-    
-    final recordJson = '{"examCode":"${widget.examCode}","score":$score,"maxScore":$maxScore,"ratingChange":$ratingChange,"speedBonus":$speedBonus,"correct":$correct,"wrong":$wrong,"left":$left,"timeTaken":$timeTaken,"date":"$dateStr","selectedAnswers":$selectedAnswersBuffer}';
+
+    final recordJson =
+        '{"examCode":"${widget.examCode}","score":$score,"maxScore":$maxScore,"ratingChange":$ratingChange,"speedBonus":$speedBonus,"correct":$correct,"wrong":$wrong,"left":$left,"timeTaken":$timeTaken,"date":"$dateStr","selectedAnswers":$selectedAnswersBuffer}';
     historyList.insert(0, recordJson); // Add most recent first
     await storage.saveQuizHistory(historyList);
 
@@ -302,7 +305,8 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
       children: [
         Text(
           '$val',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color),
+          style: TextStyle(
+              fontSize: 16, fontWeight: FontWeight.bold, color: color),
         ),
         const SizedBox(height: 2),
         Text(
@@ -315,7 +319,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
 
   Widget _buildResultView(BuildContext context) {
     final accuracy = _maxScore > 0 ? (_scoreObtained / _maxScore * 100) : 0.0;
-    
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -342,51 +346,69 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                 padding: const EdgeInsets.all(AppSpacing.l),
                 child: Column(
                   children: [
-                    const Icon(Icons.emoji_events_rounded, color: AppColors.accent, size: 54),
+                    const Icon(Icons.emoji_events_rounded,
+                        color: AppColors.accent, size: 54),
                     const SizedBox(height: AppSpacing.s),
                     Text(
                       'Score: ${_scoreObtained.toStringAsFixed(1)} / ${_maxScore.toStringAsFixed(0)}',
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary),
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
                       'Accuracy: ${accuracy.toStringAsFixed(1)}%',
-                      style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: AppSpacing.m),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildMetric('Correct', _correctCount, AppColors.success),
+                        _buildMetric(
+                            'Correct', _correctCount, AppColors.success),
                         _buildMetric('Wrong', _incorrectCount, AppColors.error),
-                        _buildMetric('Left', _unattemptedCount, AppColors.textHint),
+                        _buildMetric(
+                            'Left', _unattemptedCount, AppColors.textHint),
                       ],
                     ),
                     const Divider(height: AppSpacing.l),
                     const Text(
                       'Global Trophies Rating Update',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textSecondary),
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          color: AppColors.textSecondary),
                     ),
                     const SizedBox(height: 6),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          _ratingChange >= 0 ? '+$_ratingChange Trophies' : '$_ratingChange Trophies',
+                          _ratingChange >= 0
+                              ? '+$_ratingChange Trophies'
+                              : '$_ratingChange Trophies',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: _ratingChange >= 0 ? AppColors.success : AppColors.error,
+                            color: _ratingChange >= 0
+                                ? AppColors.success
+                                : AppColors.error,
                           ),
                         ),
                         const SizedBox(width: AppSpacing.xs),
-                        const Icon(Icons.emoji_events_rounded, color: AppColors.accent, size: 18),
+                        const Icon(Icons.emoji_events_rounded,
+                            color: AppColors.accent, size: 18),
                       ],
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'New Rating: $_newRating',
-                      style: const TextStyle(color: AppColors.textHint, fontSize: 12),
+                      style: const TextStyle(
+                          color: AppColors.textHint, fontSize: 12),
                     ),
                   ],
                 ),
@@ -397,7 +419,11 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
             // review header
             const Text(
               'REVIEW ANSWERS & EXPLANATIONS',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textSecondary, letterSpacing: 1.1),
+              style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textSecondary,
+                  letterSpacing: 1.1),
             ),
             const SizedBox(height: AppSpacing.m),
 
@@ -432,14 +458,18 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                                 children: [
                                   Flexible(
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 4),
                                       decoration: BoxDecoration(
                                         color: AppColors.primaryLight,
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Text(
                                         question.subject,
-                                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary),
+                                        style: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppColors.primary),
                                         overflow: TextOverflow.ellipsis,
                                         maxLines: 1,
                                       ),
@@ -447,13 +477,18 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                                   ),
                                   const SizedBox(width: 8),
                                   (() {
-                                    final isPyq = question.paperType.toUpperCase() == 'PYQ' && question.year > 2000;
+                                    final isPyq =
+                                        question.paperType.toUpperCase() ==
+                                                'PYQ' &&
+                                            question.year > 2000;
                                     if (isPyq) {
                                       return Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 10, vertical: 4),
                                         decoration: BoxDecoration(
                                           color: Colors.amber.shade100,
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
                                         ),
                                         child: Text(
                                           'PYQ ${question.year}',
@@ -466,10 +501,12 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                                       );
                                     } else {
                                       return Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 10, vertical: 4),
                                         decoration: BoxDecoration(
                                           color: Colors.blue.shade100,
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
                                         ),
                                         child: const Text(
                                           'MOCK QUESTION',
@@ -490,27 +527,42 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                               const Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.remove_circle_outline_rounded, color: AppColors.textHint, size: 16),
+                                  Icon(Icons.remove_circle_outline_rounded,
+                                      color: AppColors.textHint, size: 16),
                                   SizedBox(width: 4),
-                                  Text('Not Answered', style: TextStyle(color: AppColors.textHint, fontSize: 12, fontWeight: FontWeight.bold)),
+                                  Text('Not Answered',
+                                      style: TextStyle(
+                                          color: AppColors.textHint,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold)),
                                 ],
                               )
                             else if (isCorrect)
                               const Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.check_circle_rounded, color: AppColors.success, size: 16),
+                                  Icon(Icons.check_circle_rounded,
+                                      color: AppColors.success, size: 16),
                                   SizedBox(width: 4),
-                                  Text('Correct (+2.0)', style: TextStyle(color: AppColors.success, fontSize: 12, fontWeight: FontWeight.bold)),
+                                  Text('Correct (+2.0)',
+                                      style: TextStyle(
+                                          color: AppColors.success,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold)),
                                 ],
                               )
                             else
                               const Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.cancel_rounded, color: AppColors.error, size: 16),
+                                  Icon(Icons.cancel_rounded,
+                                      color: AppColors.error, size: 16),
                                   SizedBox(width: 4),
-                                  Text('Incorrect (-0.5)', style: TextStyle(color: AppColors.error, fontSize: 12, fontWeight: FontWeight.bold)),
+                                  Text('Incorrect (-0.5)',
+                                      style: TextStyle(
+                                          color: AppColors.error,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold)),
                                 ],
                               ),
                           ],
@@ -518,26 +570,32 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                         const SizedBox(height: AppSpacing.s),
                         Text(
                           'Q${index + 1}. ${question.questionText}',
-                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                          style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary),
                         ),
                         const SizedBox(height: AppSpacing.m),
-                        
+
                         // Option tiles colored based on correct answer
                         ...List.generate(question.options.length, (optIdx) {
                           final option = question.options[optIdx];
                           final optionChar = _extractOptionChar(option, optIdx);
                           final isUserSelected = selectedOption == optionChar;
-                          final isOptionCorrect = question.correctAnswer == optionChar;
+                          final isOptionCorrect =
+                              question.correctAnswer == optionChar;
 
                           Color optionBorderColor = AppColors.divider;
                           Color optionBgColor = Colors.transparent;
 
                           if (isOptionCorrect) {
                             optionBorderColor = AppColors.success;
-                            optionBgColor = AppColors.success.withValues(alpha: 0.06);
+                            optionBgColor =
+                                AppColors.success.withValues(alpha: 0.06);
                           } else if (isUserSelected) {
                             optionBorderColor = AppColors.error;
-                            optionBgColor = AppColors.error.withValues(alpha: 0.06);
+                            optionBgColor =
+                                AppColors.error.withValues(alpha: 0.06);
                           }
 
                           return Container(
@@ -545,11 +603,16 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                             margin: const EdgeInsets.only(bottom: AppSpacing.s),
                             decoration: BoxDecoration(
                               color: optionBgColor,
-                              border: Border.all(color: optionBorderColor, width: isUserSelected || isOptionCorrect ? 2.0 : 1.0),
+                              border: Border.all(
+                                  color: optionBorderColor,
+                                  width: isUserSelected || isOptionCorrect
+                                      ? 2.0
+                                      : 1.0),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: 14),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.m, vertical: 14),
                               child: Text(
                                 option,
                                 style: TextStyle(
@@ -559,7 +622,9 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                                       : isUserSelected
                                           ? AppColors.error
                                           : AppColors.textPrimary,
-                                  fontWeight: isUserSelected || isOptionCorrect ? FontWeight.bold : FontWeight.normal,
+                                  fontWeight: isUserSelected || isOptionCorrect
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
                                 ),
                               ),
                             ),
@@ -571,32 +636,45 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                         Container(
                           padding: const EdgeInsets.all(AppSpacing.m),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryLight.withValues(alpha: 0.2),
+                            color:
+                                AppColors.primaryLight.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppColors.primary.withValues(alpha: 0.12)),
+                            border: Border.all(
+                                color:
+                                    AppColors.primary.withValues(alpha: 0.12)),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
                                 children: [
-                                  const Icon(Icons.check_circle_outline_rounded, color: AppColors.primary, size: 16),
+                                  const Icon(Icons.check_circle_outline_rounded,
+                                      color: AppColors.primary, size: 16),
                                   const SizedBox(width: 6),
                                   Text(
                                     'Correct Answer: Option ${question.correctAnswer.toUpperCase()}',
-                                    style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryDark, fontSize: 12),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.primaryDark,
+                                        fontSize: 12),
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 8),
                               const Text(
                                 'Solution Explanation:',
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.textPrimary),
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                    color: AppColors.textPrimary),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 question.solution,
-                                style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary, height: 1.4),
+                                style: const TextStyle(
+                                    fontSize: 12.5,
+                                    color: AppColors.textSecondary,
+                                    height: 1.4),
                               ),
                             ],
                           ),
@@ -605,7 +683,6 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                     ),
                   ),
                 );
-
               },
             ),
             const SizedBox(height: AppSpacing.m),
@@ -636,7 +713,8 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
               context: context,
               builder: (context) => AlertDialog(
                 title: const Text('Quit Test?'),
-                content: const Text('Are you sure you want to exit? Your progress will not be saved.'),
+                content: const Text(
+                    'Are you sure you want to exit? Your progress will not be saved.'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
@@ -647,7 +725,8 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                       Navigator.pop(context);
                       context.pop();
                     },
-                    child: const Text('QUIT', style: TextStyle(color: AppColors.error)),
+                    child: const Text('QUIT',
+                        style: TextStyle(color: AppColors.error)),
                   ),
                 ],
               ),
@@ -660,23 +739,30 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
             child: Padding(
               padding: const EdgeInsets.only(right: AppSpacing.m),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: _secondsRemaining < 60 ? AppColors.error.withValues(alpha: 0.12) : AppColors.primaryLight,
+                  color: _secondsRemaining < 60
+                      ? AppColors.error.withValues(alpha: 0.12)
+                      : AppColors.primaryLight,
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       Icons.timer_outlined,
-                      color: _secondsRemaining < 60 ? AppColors.error : AppColors.primary,
+                      color: _secondsRemaining < 60
+                          ? AppColors.error
+                          : AppColors.primary,
                       size: 16,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       _formatTime(_secondsRemaining),
                       style: TextStyle(
-                        color: _secondsRemaining < 60 ? AppColors.error : AppColors.primary,
+                        color: _secondsRemaining < 60
+                            ? AppColors.error
+                            : AppColors.primary,
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
                       ),
@@ -691,202 +777,236 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
       body: _isLoadingQuestions
           ? const Center(child: CircularProgressIndicator())
           : _testQuestions.isEmpty
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.xl),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.error_outline_rounded, size: 54, color: AppColors.textHint),
-                    const SizedBox(height: AppSpacing.m),
-                    Text('No questions found for ${widget.examCode}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    const SizedBox(height: AppSpacing.s),
-                    const Text('Check your internet connection and tap retry.', textAlign: TextAlign.center, style: TextStyle(color: AppColors.textSecondary)),
-                    const SizedBox(height: AppSpacing.m),
-                    ElevatedButton.icon(
-                      onPressed: _loadLiveMockQuestions,
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('RETRY LOADING'),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  child: ListView.builder(
-                    physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.all(AppSpacing.m),
-              itemCount: _testQuestions.length,
-              itemBuilder: (context, index) {
-                final question = _testQuestions[index];
-                final selectedOption = _selectedAnswers[question.id];
-
-                return Card(
-                  key: ValueKey(question.id),
-                  margin: const EdgeInsets.only(bottom: AppSpacing.m),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusL),
-                    side: const BorderSide(color: AppColors.divider),
-                  ),
+              ? Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.m),
+                    padding: const EdgeInsets.all(AppSpacing.xl),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Flexible(
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primaryLight,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  question.subject,
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.primary,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                              ),
-                            ),
-                            (() {
-                              final isPyq = question.paperType.toUpperCase() == 'PYQ' && question.year > 2000;
-                              if (isPyq) {
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.amber.shade100,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    'PYQ ${question.year}',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.amber.shade800,
-                                    ),
-                                  ),
-                                );
-                              } else {
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue.shade100,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: const Text(
-                                    'MOCK QUESTION',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF1E40AF),
-                                    ),
-                                  ),
-                                );
-                              }
-                            })(),
-                          ],
-                        ),
-                        const SizedBox(height: AppSpacing.s),
-                        Text(
-                          'Q${index + 1}. ${question.questionText}',
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
+                        const Icon(Icons.error_outline_rounded,
+                            size: 54, color: AppColors.textHint),
                         const SizedBox(height: AppSpacing.m),
+                        Text('No questions found for ${widget.examCode}',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 16)),
+                        const SizedBox(height: AppSpacing.s),
+                        const Text(
+                            'Check your internet connection and tap retry.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: AppColors.textSecondary)),
+                        const SizedBox(height: AppSpacing.m),
+                        ElevatedButton.icon(
+                          onPressed: _loadLiveMockQuestions,
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('RETRY LOADING'),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.all(AppSpacing.m),
+                        itemCount: _testQuestions.length,
+                        itemBuilder: (context, index) {
+                          final question = _testQuestions[index];
+                          final selectedOption = _selectedAnswers[question.id];
 
-                        ...List.generate(question.options.length, (optIdx) {
-                          final option = question.options[optIdx];
-                          final optionChar = _extractOptionChar(option, optIdx);
-                          final isSelected = selectedOption == optionChar;
-
-                          return Container(
-                            key: ValueKey('${question.id}_opt_$optIdx'),
-                            margin: const EdgeInsets.only(bottom: AppSpacing.s),
-                            decoration: BoxDecoration(
-                              color: isSelected ? AppColors.primary.withValues(alpha: 0.06) : Colors.transparent,
-                              border: Border.all(
-                                color: isSelected ? AppColors.primary : AppColors.divider,
-                                width: isSelected ? 2.0 : 1.0,
-                              ),
-                              borderRadius: BorderRadius.circular(12),
+                          return Card(
+                            key: ValueKey(question.id),
+                            margin: const EdgeInsets.only(bottom: AppSpacing.m),
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(AppSpacing.radiusL),
+                              side: const BorderSide(color: AppColors.divider),
                             ),
-                            child: InkWell(
-                              onTap: _isSubmitted
-                                  ? null
-                                  : () {
-                                      setState(() {
-                                        _selectedAnswers[question.id] = optionChar;
-                                      });
-                                    },
-                              borderRadius: BorderRadius.circular(12),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: 14),
-                                child: Text(
-                                  option,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: AppColors.textPrimary,
-                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            child: Padding(
+                              padding: const EdgeInsets.all(AppSpacing.m),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Flexible(
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.primaryLight,
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                          child: Text(
+                                            question.subject,
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                              color: AppColors.primary,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                          ),
+                                        ),
+                                      ),
+                                      (() {
+                                        final isPyq =
+                                            question.paperType.toUpperCase() ==
+                                                    'PYQ' &&
+                                                question.year > 2000;
+                                        if (isPyq) {
+                                          return Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 10, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: Colors.amber.shade100,
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Text(
+                                              'PYQ ${question.year}',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.amber.shade800,
+                                              ),
+                                            ),
+                                          );
+                                        } else {
+                                          return Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 10, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: Colors.blue.shade100,
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: const Text(
+                                              'MOCK QUESTION',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                                color: Color(0xFF1E40AF),
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      })(),
+                                    ],
                                   ),
-                                ),
+                                  const SizedBox(height: AppSpacing.s),
+                                  Text(
+                                    'Q${index + 1}. ${question.questionText}',
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: AppSpacing.m),
+                                  ...List.generate(question.options.length,
+                                      (optIdx) {
+                                    final option = question.options[optIdx];
+                                    final optionChar =
+                                        _extractOptionChar(option, optIdx);
+                                    final isSelected =
+                                        selectedOption == optionChar;
+
+                                    return Container(
+                                      key: ValueKey(
+                                          '${question.id}_opt_$optIdx'),
+                                      margin: const EdgeInsets.only(
+                                          bottom: AppSpacing.s),
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? AppColors.primary
+                                                .withValues(alpha: 0.06)
+                                            : Colors.transparent,
+                                        border: Border.all(
+                                          color: isSelected
+                                              ? AppColors.primary
+                                              : AppColors.divider,
+                                          width: isSelected ? 2.0 : 1.0,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: InkWell(
+                                        onTap: _isSubmitted
+                                            ? null
+                                            : () {
+                                                setState(() {
+                                                  _selectedAnswers[
+                                                      question.id] = optionChar;
+                                                });
+                                              },
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: AppSpacing.m,
+                                              vertical: 14),
+                                          child: Text(
+                                            option,
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: AppColors.textPrimary,
+                                              fontWeight: isSelected
+                                                  ? FontWeight.bold
+                                                  : FontWeight.normal,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                ],
                               ),
                             ),
                           );
-                        }),
-                      ],
+                        },
+                      ),
                     ),
-                  ),
-                );
 
-              },
-            ),
-          ),
-          
-          // Submit Button
-          if (!_isSubmitted)
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.m),
-              child: PrimaryButton(
-                text: 'SUBMIT MOCK TEST',
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Submit Test?'),
-                      content: Text('You have answered ${_selectedAnswers.length} of ${_testQuestions.length} questions. Do you want to submit?'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('CANCEL'),
-                        ),
-                        TextButton(
+                    // Submit Button
+                    if (!_isSubmitted)
+                      Padding(
+                        padding: const EdgeInsets.all(AppSpacing.m),
+                        child: PrimaryButton(
+                          text: 'SUBMIT MOCK TEST',
                           onPressed: () {
-                            Navigator.pop(context);
-                            _submitTest();
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Submit Test?'),
+                                content: Text(
+                                    'You have answered ${_selectedAnswers.length} of ${_testQuestions.length} questions. Do you want to submit?'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text('CANCEL'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                      _submitTest();
+                                    },
+                                    child: const Text('SUBMIT',
+                                        style: TextStyle(
+                                            color: AppColors.primary,
+                                            fontWeight: FontWeight.bold)),
+                                  ),
+                                ],
+                              ),
+                            );
                           },
-                          child: const Text('SUBMIT', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
                         ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-        ],
-      ),
+                      ),
+                  ],
+                ),
     );
   }
 }

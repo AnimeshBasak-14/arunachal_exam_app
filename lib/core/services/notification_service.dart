@@ -5,7 +5,8 @@ import 'package:timezone/timezone.dart' as tz;
 import '../constants/app_constants.dart';
 
 class NotificationService {
-  static final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
+  static final FlutterLocalNotificationsPlugin _plugin =
+      FlutterLocalNotificationsPlugin();
   static bool _initialized = false;
 
   static Future<void> initialize() async {
@@ -14,7 +15,8 @@ class NotificationService {
       tz.initializeTimeZones();
       tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));
 
-      const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+      const androidSettings =
+          AndroidInitializationSettings('@mipmap/ic_launcher');
       const initSettings = InitializationSettings(android: androidSettings);
       await _plugin.initialize(initSettings);
       _initialized = true;
@@ -46,7 +48,8 @@ class NotificationService {
         _nextInstanceOf8AM(),
         notifDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
         matchDateTimeComponents: DateTimeComponents.time,
       );
     } catch (e) {

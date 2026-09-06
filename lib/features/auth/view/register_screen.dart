@@ -78,7 +78,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (emailPhone.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please enter Gmail or Phone number first to receive OTP'),
+          content:
+              Text('Please enter Gmail or Phone number first to receive OTP'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -91,7 +92,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (!isGmail && !isPhone) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please enter a valid Gmail (@gmail.com) or a 10-digit Phone number'),
+          content: Text(
+              'Please enter a valid Gmail (@gmail.com) or a 10-digit Phone number'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -104,7 +106,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     // Simulate network latency then send OTP
     Future.delayed(const Duration(milliseconds: 400), () {
-      final randomOtp = (100000 + (899999 * (DateTime.now().microsecond / 1000000))).round().toString();
+      final randomOtp =
+          (100000 + (899999 * (DateTime.now().microsecond / 1000000)))
+              .round()
+              .toString();
       setState(() {
         _sentOtp = randomOtp;
         _isSendingOtp = false;
@@ -115,12 +120,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusXL)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusXL)),
           title: const Row(
             children: [
-              Icon(Icons.mark_email_read_rounded, color: AppColors.primary, size: 22),
+              Icon(Icons.mark_email_read_rounded,
+                  color: AppColors.primary, size: 22),
               SizedBox(width: 8),
-              Text('OTP Verification Code', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text('OTP Verification Code',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ],
           ),
           content: Column(
@@ -128,16 +136,19 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             children: [
               Text(
                 'Your verification code for $emailPhone is:',
-                style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                style: const TextStyle(
+                    fontSize: 13, color: AppColors.textSecondary),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 14),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 decoration: BoxDecoration(
                   color: AppColors.primaryLight,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                  border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.3)),
                 ),
                 child: Text(
                   randomOtp,
@@ -163,14 +174,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 _otpController.text = randomOtp;
                 Navigator.pop(ctx);
               },
-              child: const Text('Auto-fill Code', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text('Auto-fill Code',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(ctx),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
               ),
               child: const Text('OK'),
             ),
@@ -185,7 +198,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       context: context,
       initialDate: DateTime(2000, 1, 1),
       firstDate: DateTime(1960, 1, 1),
-      lastDate: DateTime.now().subtract(const Duration(days: 365 * 5)), // at least 5 years old
+      lastDate: DateTime.now()
+          .subtract(const Duration(days: 365 * 5)), // at least 5 years old
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -201,7 +215,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
     if (picked != null) {
       setState(() {
-        _dobController.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+        _dobController.text =
+            "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
       });
     }
   }
@@ -220,7 +235,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (_sentOtp == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please request an OTP code first by clicking "Send OTP"'),
+          content:
+              Text('Please request an OTP code first by clicking "Send OTP"'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -250,19 +266,28 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
   }
 
-  Widget _buildAccountTile(BuildContext context, String name, String email, Color color) {
-    final initials = name.split(' ').map((e) => e.isNotEmpty ? e[0].toUpperCase() : '').take(2).join();
+  Widget _buildAccountTile(
+      BuildContext context, String name, String email, Color color) {
+    final initials = name
+        .split(' ')
+        .map((e) => e.isNotEmpty ? e[0].toUpperCase() : '')
+        .take(2)
+        .join();
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: CircleAvatar(
         backgroundColor: color.withValues(alpha: 0.12),
         child: Text(
           initials.isEmpty ? 'G' : initials,
-          style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 13),
+          style: TextStyle(
+              color: color, fontWeight: FontWeight.bold, fontSize: 13),
         ),
       ),
-      title: Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-      subtitle: Text(email, style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary)),
+      title: Text(name,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+      subtitle: Text(email,
+          style:
+              const TextStyle(fontSize: 11.5, color: AppColors.textSecondary)),
       onTap: () => Navigator.pop(context, email),
     );
   }
@@ -277,7 +302,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           ),
           title: const Row(
             children: [
-              Icon(Icons.account_circle_outlined, color: AppColors.primary, size: 24),
+              Icon(Icons.account_circle_outlined,
+                  color: AppColors.primary, size: 24),
               SizedBox(width: 8),
               Text(
                 'Choose an account',
@@ -293,7 +319,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               children: [
                 const Text(
                   'to continue to Arunachal Exam Prep',
-                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  style:
+                      TextStyle(fontSize: 12, color: AppColors.textSecondary),
                 ),
                 const SizedBox(height: AppSpacing.m),
                 Expanded(
@@ -301,26 +328,37 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     shrinkWrap: true,
                     physics: const BouncingScrollPhysics(),
                     children: [
-                      _buildAccountTile(context, 'Animesh Basak', 'basakanimesh16@gmail.com', Colors.teal),
+                      _buildAccountTile(context, 'Animesh Basak',
+                          'basakanimesh16@gmail.com', Colors.teal),
                       const Divider(height: 1),
-                      _buildAccountTile(context, 'Animesh Basak', 'basakanimesh49@gmail.com', Colors.blue),
+                      _buildAccountTile(context, 'Animesh Basak',
+                          'basakanimesh49@gmail.com', Colors.blue),
                       const Divider(height: 1),
-                      _buildAccountTile(context, 'COC DYSTOPIAN', 'amazonbose08@gmail.com', Colors.purple),
+                      _buildAccountTile(context, 'COC DYSTOPIAN',
+                          'amazonbose08@gmail.com', Colors.purple),
                       const Divider(height: 1),
-                      _buildAccountTile(context, 'ANIMESH BASAK', 'animesh.cse.21@nitap.ac.in', Colors.orange),
+                      _buildAccountTile(context, 'ANIMESH BASAK',
+                          'animesh.cse.21@nitap.ac.in', Colors.orange),
                       const Divider(height: 1),
-                      _buildAccountTile(context, 'ANIMESH BASAK', 'tourdelhikolkata@gmail.com', Colors.red),
+                      _buildAccountTile(context, 'ANIMESH BASAK',
+                          'tourdelhikolkata@gmail.com', Colors.red),
                       const Divider(height: 1),
-                      _buildAccountTile(context, 'ANIMESH BASAK', 'tourkgp2022@gmail.com', Colors.amber),
+                      _buildAccountTile(context, 'ANIMESH BASAK',
+                          'tourkgp2022@gmail.com', Colors.amber),
                       const Divider(height: 1),
-                      _buildAccountTile(context, 'Animesh BASAK', 'internshipapply445@gmail.com', Colors.pink),
+                      _buildAccountTile(context, 'Animesh BASAK',
+                          'internshipapply445@gmail.com', Colors.pink),
                       const Divider(height: 1),
-                      _buildAccountTile(context, 'tournortheast', 'tournortheast182@gmail.com', Colors.indigo),
+                      _buildAccountTile(context, 'tournortheast',
+                          'tournortheast182@gmail.com', Colors.indigo),
                       const Divider(height: 1),
                       ListTile(
                         contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.add_circle_outline_rounded, color: AppColors.textSecondary),
-                        title: const Text('Use another account', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                        leading: const Icon(Icons.add_circle_outline_rounded,
+                            color: AppColors.textSecondary),
+                        title: const Text('Use another account',
+                            style: TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.bold)),
                         onTap: () async {
                           final newMail = await _showAddAccountDialog(context);
                           if (newMail != null && context.mounted) {
@@ -366,7 +404,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   Navigator.pop(context, text);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Only @gmail.com accounts are allowed'), backgroundColor: AppColors.error),
+                    const SnackBar(
+                        content: Text('Only @gmail.com accounts are allowed'),
+                        backgroundColor: AppColors.error),
                   );
                 }
               },
@@ -381,7 +421,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Future<void> _handleSocialLogin(String provider) async {
     final chosenEmail = await _showGoogleAccountChooser(context);
     if (chosenEmail != null) {
-      final success = await ref.read(authViewModelProvider.notifier).loginSocial(provider, email: chosenEmail);
+      final success = await ref
+          .read(authViewModelProvider.notifier)
+          .loginSocial(provider, email: chosenEmail);
       if (success && mounted) {
         context.go('/home');
       }
@@ -432,7 +474,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       ),
                 ),
                 const SizedBox(height: AppSpacing.xl),
-                
+
                 // Input Fields
                 CustomTextField(
                   label: 'Full Name',
@@ -446,7 +488,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   },
                 ),
                 const SizedBox(height: AppSpacing.m),
-                
+
                 // Email or Phone input
                 CustomTextField(
                   label: 'Gmail or Phone number',
@@ -515,10 +557,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       child: SizedBox(
                         height: 52,
                         child: OutlinedButton(
-                          onPressed: _timerSeconds > 0 || _isSendingOtp ? null : _sendOtp,
+                          onPressed: _timerSeconds > 0 || _isSendingOtp
+                              ? null
+                              : _sendOtp,
                           style: OutlinedButton.styleFrom(
                             side: BorderSide(
-                              color: _timerSeconds > 0 ? AppColors.textDisabled : AppColors.primary,
+                              color: _timerSeconds > 0
+                                  ? AppColors.textDisabled
+                                  : AppColors.primary,
                               width: 1.5,
                             ),
                             shape: RoundedRectangleBorder(
@@ -529,12 +575,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               ? const SizedBox(
                                   width: 20,
                                   height: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2, color: AppColors.primary),
                                 )
                               : Text(
-                                  _timerSeconds > 0 ? '${_timerSeconds}s' : 'Send OTP',
+                                  _timerSeconds > 0
+                                      ? '${_timerSeconds}s'
+                                      : 'Send OTP',
                                   style: TextStyle(
-                                    color: _timerSeconds > 0 ? AppColors.textDisabled : AppColors.primary,
+                                    color: _timerSeconds > 0
+                                        ? AppColors.textDisabled
+                                        : AppColors.primary,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -577,7 +628,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   },
                 ),
                 const SizedBox(height: AppSpacing.m),
-                
+
                 // Form Inline Error Display
                 if (state.errorMessage != null) ...[
                   const SizedBox(height: AppSpacing.s),
@@ -586,11 +637,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     decoration: BoxDecoration(
                       color: AppColors.error.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+                      border: Border.all(
+                          color: AppColors.error.withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 18),
+                        const Icon(Icons.error_outline_rounded,
+                            color: AppColors.error, size: 18),
                         const SizedBox(width: AppSpacing.s),
                         Expanded(
                           child: Text(
