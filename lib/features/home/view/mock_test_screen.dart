@@ -9,6 +9,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/services/question_repository.dart';
 import '../../../core/services/service_providers.dart';
 import '../../../core/services/firebase_service.dart';
+import '../../../core/services/remote_config_service.dart';
 import '../../../core/utils/rank_utils.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
@@ -50,7 +51,8 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
     super.initState();
     // 1. Initial quick load
     final all = QuestionRepository.allQuestions;
-    _testQuestions = all.take(10).toList();
+    final initialCount = RemoteConfigService.instance.dailyTestQuestionCount;
+    _testQuestions = all.take(initialCount).toList();
     _initialSeconds = _secondsRemaining;
 
     // 2. Fetch live mock test questions from Firestore
@@ -81,12 +83,13 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
       }
 
       if (pool.isNotEmpty && mounted) {
+        final count = RemoteConfigService.instance.dailyTestQuestionCount;
         // Randomize so every session gets a fresh mix of PYQ and MOCK questions
         final shuffled = List<Question>.from(pool)..shuffle(math.Random());
         setState(() {
-          _testQuestions = shuffled.take(10).toList();
+          _testQuestions = shuffled.take(count).toList();
           _isLoadingQuestions = false;
-          if (_testQuestions.first.timeLimitMins > 0) {
+          if (_testQuestions.isNotEmpty && _testQuestions.first.timeLimitMins > 0) {
             _secondsRemaining = _testQuestions.first.timeLimitMins * 60;
             _initialSeconds = _secondsRemaining;
           }
@@ -186,7 +189,9 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
           (_secondsRemaining / _initialSeconds.toDouble());
       speedBonus = (timeLeftRatio * 10).round();
     }
-    final int totalChange = ratingChange + speedBonus;
+    final double multiplier = RemoteConfigService.instance.trophiesMultiplier;
+    final int rawChange = ratingChange + speedBonus;
+    final int totalChange = (rawChange * multiplier).round();
 
     // Persist new rating (score + speed)
     if (user != null) {

@@ -526,6 +526,10 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                   const WordOfDayCard(),
                   const SizedBox(height: AppSpacing.m),
 
+                  // Dynamic Daily Sprint / Weekend Mega Mock Card (Remote Config & A/B Testing)
+                  const _DailyChallengeCard(),
+                  const SizedBox(height: AppSpacing.m),
+
                   // 3. Current Affairs & GK
                   const _CurrentAffairsSection(),
                   const SizedBox(height: AppSpacing.l),
@@ -1176,6 +1180,161 @@ class _CurrentAffairsSection extends ConsumerWidget {
           error: (_, __) => const SizedBox.shrink(),
         ),
       ],
+    );
+  }
+}
+
+// -------------------------------------------------------------
+// Dynamic Daily Challenge / Weekly Mega Mock Card
+// Driven by Firebase Remote Config & A/B Testing
+// -------------------------------------------------------------
+class _DailyChallengeCard extends ConsumerWidget {
+  const _DailyChallengeCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final remoteConfig = ref.watch(remoteConfigServiceProvider);
+    final isMegaMock = remoteConfig.weeklyMegaMockActive;
+    final title = isMegaMock
+        ? remoteConfig.weeklyMegaMockTitle
+        : remoteConfig.dailyChallengeTheme;
+    final questionCount = remoteConfig.dailyTestQuestionCount;
+    final multiplier = remoteConfig.trophiesMultiplier;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isMegaMock
+              ? const [Color(0xFF6A1B9A), Color(0xFF8E24AA)]
+              : const [Color(0xFF004D40), Color(0xFF00796B)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusL),
+        boxShadow: [
+          BoxShadow(
+            color: (isMegaMock
+                    ? const Color(0xFF6A1B9A)
+                    : const Color(0xFF004D40))
+                .withValues(alpha: 0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusL),
+          onTap: () {
+            context.push('/mock-test/APSSB-MOCK/daily');
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.m),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    isMegaMock
+                        ? Icons.emoji_events_rounded
+                        : Icons.bolt_rounded,
+                    color: Colors.amberAccent,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.m),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              title,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (multiplier > 1.0) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.amber,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                '${multiplier}x XP',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        '$questionCount Questions • 5 Mins • Live Ranking',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.85),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Start',
+                        style: TextStyle(
+                          color: isMegaMock
+                              ? const Color(0xFF6A1B9A)
+                              : const Color(0xFF004D40),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 14,
+                        color: isMegaMock
+                            ? const Color(0xFF6A1B9A)
+                            : const Color(0xFF004D40),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

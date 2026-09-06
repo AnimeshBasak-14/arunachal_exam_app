@@ -21,6 +21,12 @@ class RemoteConfigService {
   static const String keyExamBannerActionUrl = 'exam_banner_action_url';
   static const String keyDailyChallengeSubject = 'daily_challenge_subject';
   static const String keyMinAppVersion = 'min_app_version';
+  static const String keyDailyTestQuestionCount = 'daily_test_question_count';
+  static const String keyDailyChallengeTheme = 'daily_challenge_theme';
+  static const String keyDailyMockLimit = 'daily_mock_limit';
+  static const String keyWeeklyMegaMockActive = 'weekly_mega_mock_active';
+  static const String keyWeeklyMegaMockTitle = 'weekly_mega_mock_title';
+  static const String keyTrophiesMultiplier = 'trophies_multiplier';
 
   // In-app defaults
   static const Map<String, dynamic> _defaults = {
@@ -31,6 +37,12 @@ class RemoteConfigService {
     keyExamBannerActionUrl: '',
     keyDailyChallengeSubject: 'General Knowledge & Current Affairs',
     keyMinAppVersion: '1.0.0',
+    keyDailyTestQuestionCount: 10,
+    keyDailyChallengeTheme: 'Daily APSSB Sprint',
+    keyDailyMockLimit: 3,
+    keyWeeklyMegaMockActive: false,
+    keyWeeklyMegaMockTitle: '🎯 Weekend APSSB Grand Mock Challenge',
+    keyTrophiesMultiplier: 1.0,
   };
 
   Future<void> initialize() async {
@@ -51,7 +63,7 @@ class RemoteConfigService {
       await _remoteConfig!.fetchAndActivate();
 
       debugPrint(
-          '[RemoteConfig] Initialized & fetched successfully. show_exam_banner: $showExamBanner');
+          '[RemoteConfig] Initialized & fetched successfully. show_exam_banner: $showExamBanner, qCount: $dailyTestQuestionCount');
     } catch (e) {
       debugPrint('[RemoteConfig] Initialization error (using defaults): $e');
     }
@@ -104,6 +116,70 @@ class RemoteConfigService {
           : (_defaults[keyDailyChallengeSubject] as String);
     } catch (_) {
       return _defaults[keyDailyChallengeSubject] as String;
+    }
+  }
+
+  int get dailyTestQuestionCount {
+    try {
+      final val = _remoteConfig?.getInt(keyDailyTestQuestionCount);
+      return (val != null && val > 0)
+          ? val
+          : (_defaults[keyDailyTestQuestionCount] as int);
+    } catch (_) {
+      return _defaults[keyDailyTestQuestionCount] as int;
+    }
+  }
+
+  String get dailyChallengeTheme {
+    try {
+      final theme = _remoteConfig?.getString(keyDailyChallengeTheme);
+      return (theme != null && theme.isNotEmpty)
+          ? theme
+          : (_defaults[keyDailyChallengeTheme] as String);
+    } catch (_) {
+      return _defaults[keyDailyChallengeTheme] as String;
+    }
+  }
+
+  int get dailyMockLimit {
+    try {
+      final val = _remoteConfig?.getInt(keyDailyMockLimit);
+      return (val != null && val > 0)
+          ? val
+          : (_defaults[keyDailyMockLimit] as int);
+    } catch (_) {
+      return _defaults[keyDailyMockLimit] as int;
+    }
+  }
+
+  bool get weeklyMegaMockActive {
+    try {
+      return _remoteConfig?.getBool(keyWeeklyMegaMockActive) ??
+          (_defaults[keyWeeklyMegaMockActive] as bool);
+    } catch (_) {
+      return _defaults[keyWeeklyMegaMockActive] as bool;
+    }
+  }
+
+  String get weeklyMegaMockTitle {
+    try {
+      final title = _remoteConfig?.getString(keyWeeklyMegaMockTitle);
+      return (title != null && title.isNotEmpty)
+          ? title
+          : (_defaults[keyWeeklyMegaMockTitle] as String);
+    } catch (_) {
+      return _defaults[keyWeeklyMegaMockTitle] as String;
+    }
+  }
+
+  double get trophiesMultiplier {
+    try {
+      final val = _remoteConfig?.getDouble(keyTrophiesMultiplier);
+      return (val != null && val > 0.0)
+          ? val
+          : (_defaults[keyTrophiesMultiplier] as double);
+    } catch (_) {
+      return _defaults[keyTrophiesMultiplier] as double;
     }
   }
 }
