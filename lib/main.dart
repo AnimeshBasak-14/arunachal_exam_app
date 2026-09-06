@@ -44,6 +44,7 @@ import 'features/home/view/state_gk_screen.dart';
 import 'features/home/view/current_affairs_gk_screen.dart';
 import 'core/services/current_affairs_service.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:firebase_performance/firebase_performance.dart';
 import 'core/services/remote_config_service.dart';
 import 'core/services/fcm_service.dart';
 
@@ -81,6 +82,13 @@ void main() async {
 
   // ─── CRASHLYTICS OBSERVABILITY ──────────────────────────────────────────
   if (!kIsWeb && Firebase.apps.isNotEmpty) {
+    try {
+      await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
+      // Handshake log so Firebase Console immediately verifies the SDK installation
+      await FirebaseCrashlytics.instance
+          .log("Arunachal Exam Prep started (v1.0.1)");
+    } catch (_) {}
+
     FlutterError.onError = (errorDetails) {
       FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
     };
@@ -88,6 +96,16 @@ void main() async {
       FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
       return true;
     };
+  }
+
+  // ─── PERFORMANCE MONITORING ─────────────────────────────────────────────
+  try {
+    if (!kIsWeb && Firebase.apps.isNotEmpty) {
+      await FirebasePerformance.instance.setPerformanceCollectionEnabled(true);
+      debugPrint("[Performance] Firebase Performance Monitoring active");
+    }
+  } catch (e) {
+    debugPrint("Performance monitoring initialization skipped: $e");
   }
 
   // ─── REMOTE CONFIG & CLOUD MESSAGING ───────────────────────────────────

@@ -12,7 +12,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
 
     <application
-        android:label="arunachal_exam_app"
+        android:label="Arunachal Exam Prep"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
