@@ -20,6 +20,11 @@
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="Arunachal Exam Prep - Comprehensive preparation portal for APSSB, APPSC and Arunachal Pradesh state competitive examinations.">
 
+  <!-- Cache control headers to prevent stale JS caching -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -31,16 +36,40 @@
 
   <title>Arunachal Exam Prep - APSSB & APPSC Preparation</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- Firebase Web SDK Compat (Ensures authDomain is always provided to Firebase Auth) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script>
+    // Force unregister any legacy service workers so web clients always run the latest build
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for (let registration of registrations) {
+          registration.unregister();
+        }
+      });
+    }
+
+    // Global Firebase configuration
+    window.firebaseConfig = {
+      apiKey: "AIzaSyC8KsvkrcI1RkelPfPxqeHzzC8H-PBENPk",
+      authDomain: "arunachal-exam-app.firebaseapp.com",
+      projectId: "arunachal-exam-app",
+      storageBucket: "arunachal-exam-app.firebasestorage.app",
+      messagingSenderId: "646900488202",
+      appId: "1:646900488202:web:2d474107c037f4d34e67f3"
+    };
+
+    if (typeof firebase !== 'undefined' && (!firebase.apps || !firebase.apps.length)) {
+      try {
+        firebase.initializeApp(window.firebaseConfig);
+      } catch (e) {
+        console.warn("Firebase JS init:", e);
+      }
+    }
+  </script>
 </head>
 <body>
-  <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
-
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
-  -->
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
