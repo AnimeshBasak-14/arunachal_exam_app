@@ -15,6 +15,7 @@ import 'features/onboarding/viewmodel/onboarding_viewmodel.dart';
 import 'features/auth/view/welcome_screen.dart';
 import 'features/auth/view/login_screen.dart';
 import 'features/auth/view/register_screen.dart';
+import 'features/auth/view/forgot_password_screen.dart';
 import 'features/auth/viewmodel/auth_viewmodel.dart';
 import 'features/home/view/home_screen.dart';
 import 'features/home/view/appsc_categories.dart';
@@ -54,6 +55,7 @@ void main() async {
           appId: '1:646900488202:web:2d474107c037f4d34e67f3',
           messagingSenderId: '646900488202',
           projectId: 'arunachal-exam-app',
+          authDomain: 'arunachal-exam-app.firebaseapp.com',
           storageBucket: 'arunachal-exam-app.firebasestorage.app',
         ),
       );
@@ -116,9 +118,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isGoingToWelcome = state.matchedLocation == '/welcome';
       final isGoingToLogin = state.matchedLocation == '/login';
       final isGoingToRegister = state.matchedLocation == '/register';
+      final isGoingToForgotPassword =
+          state.matchedLocation == '/forgot-password';
 
-      final isAuthRoute =
-          isGoingToWelcome || isGoingToLogin || isGoingToRegister;
+      final isAuthRoute = isGoingToWelcome ||
+          isGoingToLogin ||
+          isGoingToRegister ||
+          isGoingToForgotPassword;
 
       // Allow public direct access to news articles via deep-link
       final isPublicRoute = state.matchedLocation.startsWith('/news-details');
@@ -177,6 +183,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        builder: (context, state) => const ForgotPasswordScreen(),
       ),
       GoRoute(
         path: '/home',
@@ -319,9 +329,7 @@ class MyApp extends ConsumerWidget {
         },
       ),
       builder: (context, child) {
-        return SelectionArea(
-          child: child ?? const SizedBox.shrink(),
-        );
+        return child ?? const SizedBox.shrink();
       },
     );
   }
