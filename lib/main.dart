@@ -43,6 +43,9 @@ import 'features/profile/view/public_profile_screen.dart';
 import 'features/home/view/state_gk_screen.dart';
 import 'features/home/view/current_affairs_gk_screen.dart';
 import 'core/services/current_affairs_service.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'core/services/remote_config_service.dart';
+import 'core/services/fcm_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -75,6 +78,27 @@ void main() async {
       );
     }
   } catch (_) {}
+
+  // ─── CRASHLYTICS OBSERVABILITY ──────────────────────────────────────────
+  if (!kIsWeb && Firebase.apps.isNotEmpty) {
+    FlutterError.onError = (errorDetails) {
+      FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+    };
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
+  }
+
+  // ─── REMOTE CONFIG & CLOUD MESSAGING ───────────────────────────────────
+  try {
+    if (Firebase.apps.isNotEmpty) {
+      await RemoteConfigService.instance.initialize();
+      await FcmService.instance.initialize();
+    }
+  } catch (e) {
+    debugPrint("DevOps services initialization skipped or error: $e");
+  }
 
   // Initialize notifications (skip on web where native notifications plugin is unsupported)
   if (!kIsWeb) {

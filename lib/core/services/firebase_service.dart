@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -179,6 +180,43 @@ class FirebaseService {
     } catch (e) {
       debugPrint('[Firestore Error] saveQuizResultToFirestore: $e');
     }
+  }
+
+  // ─── CRASHLYTICS OBSERVABILITY ──────────────────────────────────────────
+  Future<void> recordError(
+    dynamic exception,
+    StackTrace? stack, {
+    dynamic reason,
+    bool fatal = false,
+  }) async {
+    try {
+      if (!kIsWeb && Firebase.apps.isNotEmpty) {
+        await FirebaseCrashlytics.instance.recordError(
+          exception,
+          stack,
+          reason: reason,
+          fatal: fatal,
+        );
+      }
+    } catch (e) {
+      debugPrint('[Crashlytics Error] recordError: $e');
+    }
+  }
+
+  Future<void> logCrashlytics(String message) async {
+    try {
+      if (!kIsWeb && Firebase.apps.isNotEmpty) {
+        await FirebaseCrashlytics.instance.log(message);
+      }
+    } catch (_) {}
+  }
+
+  Future<void> setCrashlyticsUser(String userId) async {
+    try {
+      if (!kIsWeb && Firebase.apps.isNotEmpty) {
+        await FirebaseCrashlytics.instance.setUserIdentifier(userId);
+      }
+    } catch (_) {}
   }
 }
 

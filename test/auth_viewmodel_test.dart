@@ -42,6 +42,15 @@ class MockFirebaseService implements FirebaseService {
 
   @override
   Future<void> saveQuizResultToFirestore(String userEmail, Map<String, dynamic> resultData) async {}
+
+  @override
+  Future<void> recordError(dynamic exception, StackTrace? stack, {dynamic reason, bool fatal = false}) async {}
+
+  @override
+  Future<void> logCrashlytics(String message) async {}
+
+  @override
+  Future<void> setCrashlyticsUser(String userId) async {}
 }
 
 void main() {

@@ -15,6 +15,7 @@ import 'notifications_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../widgets/word_of_day_card.dart';
 import '../../../core/services/current_affairs_service.dart';
+import '../../../core/services/remote_config_service.dart';
 
 final currentTabProvider = StateProvider<int>((ref) => 0);
 
@@ -324,6 +325,66 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // Remote Config Live Announcement Banner
+                Consumer(
+                  builder: (context, ref, _) {
+                    final remoteConfig = ref.watch(remoteConfigServiceProvider);
+                    if (!remoteConfig.showExamBanner) return const SizedBox.shrink();
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: AppSpacing.m),
+                      padding: const EdgeInsets.all(AppSpacing.m),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFE8F5E9), Color(0xFFC8E6C9)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusL),
+                        border: Border.all(
+                            color: const Color(0xFFA5D6A7), width: 1.2),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF2E7D32),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.campaign_rounded,
+                                color: Colors.white, size: 20),
+                          ),
+                          const SizedBox(width: AppSpacing.s),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  remoteConfig.examBannerTitle,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                    color: Color(0xFF1B5E20),
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  remoteConfig.examBannerSubtitle,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: Color(0xFF2E7D32),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+
                 // 2. Search & Filter Bar (Page 2 & 11)
                 Row(
                   children: [
