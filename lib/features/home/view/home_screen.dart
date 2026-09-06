@@ -15,6 +15,7 @@ import 'notifications_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../widgets/word_of_day_card.dart';
 import '../../../core/services/current_affairs_service.dart';
+import '../../../core/theme/theme_provider.dart';
 
 final currentTabProvider = StateProvider<int>((ref) => 0);
 
@@ -218,6 +219,22 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                     // Profile & Notification Badge
                     Row(
                       children: [
+                        Consumer(
+                          builder: (context, ref, _) {
+                            final themeMode = ref.watch(themeModeProvider);
+                            final isDark = themeMode == ThemeMode.dark;
+                            return IconButton(
+                              onPressed: () {
+                                ref.read(themeModeProvider.notifier).toggleTheme();
+                              },
+                              icon: Icon(
+                                isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                                color: AppColors.textWhite,
+                                size: 24,
+                              ),
+                            );
+                          },
+                        ),
                         Consumer(
                           builder: (context, ref, _) {
                             final hasUnread = ref.watch(hasUnreadNotifProvider);
@@ -901,17 +918,34 @@ class _CurrentAffairsSection extends ConsumerWidget {
                             style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                           ),
                         ),
-                        Align(
-                          alignment: Alignment.bottomRight,
-                          child: InkWell(
-                            onTap: () {
-                              context.push('/chatbot', extra: 'Explain more about: ${item.title}');
-                            },
-                            child: const Text(
-                              'Ask AI Tutor →',
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            InkWell(
+                              onTap: () {
+                                context.push('/news-details', extra: {
+                                  'title': item.title,
+                                  'source': item.source,
+                                  'date': item.dateStr,
+                                  'description': item.summary,
+                                  'keyPoints': ['Important for state exams.'],
+                                });
+                              },
+                              child: const Text(
+                                'More Info →',
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary),
+                              ),
                             ),
-                          ),
+                            InkWell(
+                              onTap: () {
+                                context.push('/chatbot', extra: 'Explain more about: ${item.title}');
+                              },
+                              child: const Text(
+                                'Ask AI Tutor →',
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),

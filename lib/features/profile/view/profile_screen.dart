@@ -8,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/services/service_providers.dart';
 import '../../../core/utils/rank_utils.dart';
+import '../../../core/theme/theme_provider.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -216,6 +217,25 @@ class ProfileScreen extends ConsumerWidget {
                       size: 16, color: AppColors.textHint),
                   onTap: () {
                     context.push('/edit-profile');
+                  },
+                ),
+                const Divider(height: 1, color: AppColors.divider),
+                Consumer(
+                  builder: (context, ref, _) {
+                    final themeMode = ref.watch(themeModeProvider);
+                    final isDark = themeMode == ThemeMode.dark;
+                    return SwitchListTile(
+                      secondary: Icon(
+                        isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                        color: AppColors.primary,
+                      ),
+                      title: const Text('DARK MODE', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                      value: isDark,
+                      activeThumbColor: AppColors.primary,
+                      onChanged: (val) {
+                        ref.read(themeModeProvider.notifier).toggleTheme();
+                      },
+                    );
                   },
                 ),
                 const Divider(height: 1, color: AppColors.divider),

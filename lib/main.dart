@@ -7,6 +7,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'core/services/firebase_service.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_provider.dart';
 import 'core/services/service_providers.dart';
 import 'features/onboarding/view/onboarding_screen.dart';
 import 'features/onboarding/viewmodel/onboarding_viewmodel.dart';
@@ -35,6 +36,7 @@ import 'core/services/streak_service.dart';
 import 'core/services/notification_service.dart';
 import 'features/chatbot/view/chatbot_screen.dart';
 import 'features/home/view/streak_calendar_screen.dart';
+import 'features/home/view/news_details_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -231,6 +233,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/streak-calendar',
         builder: (context, state) => const StreakCalendarScreen(),
       ),
+      GoRoute(
+        path: '/news-details',
+        builder: (context, state) {
+          final article = state.extra as Map<String, dynamic>? ?? {};
+          return NewsDetailsScreen(article: article);
+        },
+      ),
     ],
   );
 });
@@ -241,11 +250,14 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
       title: 'Arunachal Exam Prep',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeMode,
       routerConfig: router,
     );
   }

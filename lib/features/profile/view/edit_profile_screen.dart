@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/primary_button.dart';
@@ -80,29 +81,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Future<void> _pickImage(ImageSource source) async {
-    final shouldContinue = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Permission Required'),
-          content: Text(
-            'Arunachal Exam Prep needs access to your ${source == ImageSource.camera ? 'Camera' : 'Photo Gallery'} to set your profile picture.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Continue'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (shouldContinue != true) return;
+    if (source == ImageSource.camera) {
+      final status = await Permission.camera.request();
+      if (!status.isGranted) return;
+    } else {
+      final photosStatus = await Permission.photos.request();
+      final storageStatus = await Permission.storage.request();
+      if (!photosStatus.isGranted && !storageStatus.isGranted) return;
+    }
 
     try {
       final picker = ImagePicker();

@@ -143,6 +143,10 @@ class NotificationsNotifier extends StateNotifier<List<AppNotification>> {
       await prefs.setStringList('dismissed_notification_ids', dismissed);
     }
   }
+
+  void addNotification(AppNotification notification) {
+    state = [notification, ...state];
+  }
 }
 
 // ─── Notifications Screen ─────────────────────────────────────────────────

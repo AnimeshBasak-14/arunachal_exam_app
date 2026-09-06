@@ -121,6 +121,7 @@ final globalLeaderboardStreamProvider = StreamProvider<List<Map<String, dynamic>
         'email': data['email'] ?? '',
         'rating': data['rating'] ?? 0,
         'state': data['city'] ?? 'Unknown',
+        'profilePic': data['profilePic'] ?? '',
       };
     }).toList();
   });
@@ -149,15 +150,16 @@ final leaderboardProvider = Provider.autoDispose<LeaderboardData>((ref) {
   
   List<Map<String, dynamic>> rawEntries = asyncLeaderboard.value ?? _mockCompetitors;
 
-  // Add myself if I am not in the top 50, or find myself and mark isMe
   bool foundMe = false;
   final allEntries = rawEntries.map((e) {
     final entry = Map<String, dynamic>.from(e);
     if (entry['email'] == userEmail && userEmail.isNotEmpty) {
       entry['isMe'] = true;
       foundMe = true;
+      entry['profilePic'] = currentUser?.profilePic ?? entry['profilePic'] ?? '';
     } else {
       entry['isMe'] = false;
+      entry['profilePic'] = entry['profilePic'] ?? '';
     }
     return entry;
   }).toList();
@@ -168,7 +170,8 @@ final leaderboardProvider = Provider.autoDispose<LeaderboardData>((ref) {
       'email': userEmail,
       'rating': userRating,
       'state': currentUser?.city ?? 'Me',
-      'isMe': true
+      'isMe': true,
+      'profilePic': currentUser?.profilePic ?? '',
     });
   }
 

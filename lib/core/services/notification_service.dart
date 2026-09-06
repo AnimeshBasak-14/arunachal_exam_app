@@ -20,10 +20,17 @@ class NotificationService {
       const initSettings = InitializationSettings(android: androidSettings);
       await _plugin.initialize(settings: initSettings);
       
-      await _plugin
-          .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>()
-          ?.requestNotificationsPermission();
+      final androidImplementation = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+      
+      await androidImplementation?.requestNotificationsPermission();
+      
+      const channel = AndroidNotificationChannel(
+        'daily_streak_channel',
+        'Daily Study Reminder',
+        importance: Importance.high,
+      );
+      
+      await androidImplementation?.createNotificationChannel(channel);
           
       _initialized = true;
 
@@ -58,6 +65,29 @@ class NotificationService {
       );
     } catch (e) {
       debugPrint('[NotificationService] Schedule error: $e');
+    }
+  }
+
+  static Future<void> showNotification(int id, String title, String body) async {
+    try {
+      const androidDetails = AndroidNotificationDetails(
+        'daily_streak_channel',
+        'Daily Study Reminder',
+        channelDescription: 'Daily reminder to keep your study streak alive',
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: '@mipmap/ic_launcher',
+      );
+      const notifDetails = NotificationDetails(android: androidDetails);
+      
+      await _plugin.show(
+        id: id,
+        title: title,
+        body: body,
+        notificationDetails: notifDetails,
+      );
+    } catch (e) {
+      debugPrint('[NotificationService] Show error: $e');
     }
   }
 
