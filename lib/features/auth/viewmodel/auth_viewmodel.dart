@@ -99,8 +99,8 @@ class AuthViewModel extends StateNotifier<AuthState> {
     final user = existingAccount ??
         UserModel(
           name: _storage.getRegisteredName(cleanInput) ?? 'Student Name',
-          email: isGmail ? cleanInput : 'candidate.google@gmail.com',
-          phone: isPhone ? cleanInput : '9876543210',
+          email: isGmail ? cleanInput : '',
+          phone: isPhone ? cleanInput : '',
           profilePic: _storage.userProfilePic,
           dob: _storage.getRegisteredDob(cleanInput) ?? '2000-01-01',
           rating: _storage.getRegisteredRating(cleanInput),
@@ -201,8 +201,8 @@ class AuthViewModel extends StateNotifier<AuthState> {
 
     final user = UserModel(
       name: name,
-      email: isGmail ? cleanInput : 'candidate.google@gmail.com',
-      phone: isPhone ? cleanInput : '9876543210',
+      email: isGmail ? cleanInput : '',
+      phone: isPhone ? cleanInput : '',
       profilePic: 'avatar_green',
       dob: dob,
       rating: 1200,
@@ -245,26 +245,26 @@ class AuthViewModel extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, errorMessage: null);
     await Future.delayed(const Duration(milliseconds: 400));
 
-    final selectedEmail = (email ?? 'candidate.google@gmail.com').trim().toLowerCase();
+    final selectedEmail = (email ?? '').trim().toLowerCase();
 
     // Check if user previously existed with this email
-    final savedAccount = _storage.getAccountData(selectedEmail);
+    final savedAccount = selectedEmail.isNotEmpty ? _storage.getAccountData(selectedEmail) : null;
 
     final UserModel user;
     if (savedAccount != null) {
       // Restore previously saved profile, rating, and city!
       user = savedAccount;
     } else {
-      final parts = selectedEmail.split('@')[0].split('.');
+      final parts = selectedEmail.isNotEmpty ? selectedEmail.split('@')[0].split('.') : ['Social', 'User'];
       final capName = parts.map((w) {
         if (w.isEmpty) return '';
         return w[0].toUpperCase() + w.substring(1);
       }).join(' ');
 
       user = UserModel(
-        name: capName.isNotEmpty ? capName : 'Google Candidate',
+        name: capName.isNotEmpty ? capName : 'Social User',
         email: selectedEmail,
-        phone: '9876543210',
+        phone: '',
         profilePic: 'avatar_gold',
         dob: '2000-01-01',
         rating: 1200,
@@ -272,14 +272,16 @@ class AuthViewModel extends StateNotifier<AuthState> {
       );
 
       // Register account credentials if new
-      await _storage.registerUserAccount(
-        emailOrPhone: user.email,
-        password: 'socialpassword',
-        name: user.name,
-        dob: user.dob,
-        rating: 1200,
-        city: 'Itanagar',
-      );
+      if (selectedEmail.isNotEmpty) {
+        await _storage.registerUserAccount(
+          emailOrPhone: user.email,
+          password: 'socialpassword',
+          name: user.name,
+          dob: user.dob,
+          rating: 1200,
+          city: 'Itanagar',
+        );
+      }
     }
 
     await _storage.saveUser(

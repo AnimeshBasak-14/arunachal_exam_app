@@ -7,9 +7,17 @@
  * - Creates Test metadata in collection 'mock_test_series'
  */
 
+/**
+ * Configuration Options
+ *
+ * NOTE: For security, store your Firebase API Key in Google Apps Script Properties:
+ * Go to Project Settings (gear icon) -> Script Properties -> Add script property:
+ * Name: FIREBASE_API_KEY
+ * Value: <your-firebase-api-key>
+ */
 const CONFIG = {
-  PROJECT_ID: "arunachal-exam-app", // From your google-services.json
-  API_KEY: "AIzaSyC8KsvkrcI1RkelPfPxqeHzzC8H-PBENPk", // From your google-services.json
+  PROJECT_ID: PropertiesService.getScriptProperties().getProperty("FIREBASE_PROJECT_ID") || "arunachal-exam-app",
+  API_KEY: PropertiesService.getScriptProperties().getProperty("FIREBASE_API_KEY") || "YOUR_FIREBASE_API_KEY",
   COLLECTION: "questions"
 };
 
