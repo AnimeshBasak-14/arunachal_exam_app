@@ -123,12 +123,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Allow public direct access to news articles via deep-link
       final isPublicRoute = state.matchedLocation.startsWith('/news-details');
 
-      // 1. If onboarding is not completed, force onboarding screen (unless viewing a shared public article)
-      if (!onboardingCompleted && !isPublicRoute) {
-        return isGoingToOnboarding ? null : '/onboarding';
-      }
-
-      // 2. If logged in but on auth/onboarding routes, go to home
+      // 1. If logged in, go to /home from any auth, onboarding, or root route
       if (isLoggedIn) {
         if (isAuthRoute ||
             isGoingToOnboarding ||
@@ -138,7 +133,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      // 3. If not logged in and not on auth routes or public news route, redirect to welcome page
+      // 2. On Web, bypass mobile onboarding slides completely
+      if (kIsWeb) {
+        if (!isAuthRoute && !isPublicRoute) {
+          return '/welcome';
+        }
+        return null;
+      }
+
+      // 3. If onboarding is not completed on mobile, force onboarding screen
+      if (!onboardingCompleted && !isPublicRoute) {
+        return isGoingToOnboarding ? null : '/onboarding';
+      }
+
+      // 4. If not logged in and not on auth routes or public news route, redirect to welcome page
       if (!isLoggedIn && !isAuthRoute && !isPublicRoute) {
         return '/welcome';
       }

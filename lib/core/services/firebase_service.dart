@@ -98,7 +98,11 @@ class FirebaseService {
       final docId = email.trim().toLowerCase();
       if (docId.isEmpty) return null;
 
-      final doc = await _firestore.collection('users').doc(docId).get();
+      final doc = await _firestore
+          .collection('users')
+          .doc(docId)
+          .get()
+          .timeout(const Duration(seconds: 4));
       if (doc.exists && doc.data() != null) {
         final data = doc.data()!;
         final name = (data['name'] as String?)?.trim() ?? '';
@@ -140,10 +144,14 @@ class FirebaseService {
         updateData['profilePic'] = user.profilePic;
       }
 
-      await _firestore.collection('users').doc(docId).set(
+      await _firestore
+          .collection('users')
+          .doc(docId)
+          .set(
             updateData,
             SetOptions(merge: true),
-          );
+          )
+          .timeout(const Duration(seconds: 4));
 
       debugPrint('[Firestore] User profile synced for ${user.email}');
     } catch (e) {

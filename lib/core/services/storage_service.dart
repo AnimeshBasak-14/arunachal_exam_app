@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/user_model.dart';
@@ -31,6 +32,9 @@ class StorageService {
 
   Future<void> setLoggedIn(bool value) async {
     await _prefs.setBool(_keyIsLoggedIn, value);
+    if (value) {
+      await _prefs.setBool(_keyOnboardingCompleted, true);
+    }
   }
 
   String get userEmail =>
@@ -169,7 +173,11 @@ class StorageService {
     String city = 'Itanagar',
   }) async {
     final key = emailOrPhone.trim().toLowerCase();
-    await _secureStorage.write(key: 'reg_pwd_$key', value: password);
+    try {
+      await _secureStorage.write(key: 'reg_pwd_$key', value: password);
+    } catch (e) {
+      debugPrint('[Storage] Secure storage write note: $e');
+    }
     // Remove legacy unencrypted password if present in SharedPreferences
     await _prefs.remove('reg_pwd_$key');
 
@@ -181,16 +189,22 @@ class StorageService {
 
   Future<String?> getRegisteredPassword(String emailOrPhone) async {
     final key = emailOrPhone.trim().toLowerCase();
-    final securePwd = await _secureStorage.read(key: 'reg_pwd_$key');
-    if (securePwd != null) {
-      return securePwd;
+    try {
+      final securePwd = await _secureStorage.read(key: 'reg_pwd_$key');
+      if (securePwd != null) {
+        return securePwd;
+      }
+    } catch (e) {
+      debugPrint('[Storage] Secure storage read note: $e');
     }
 
     // Check legacy SharedPreferences for backwards compatibility migration
     final legacyPwd = _prefs.getString('reg_pwd_$key');
     if (legacyPwd != null) {
-      await _secureStorage.write(key: 'reg_pwd_$key', value: legacyPwd);
-      await _prefs.remove('reg_pwd_$key');
+      try {
+        await _secureStorage.write(key: 'reg_pwd_$key', value: legacyPwd);
+        await _prefs.remove('reg_pwd_$key');
+      } catch (_) {}
       return legacyPwd;
     }
 
@@ -223,12 +237,18 @@ class StorageService {
     final newK = newKey.trim().toLowerCase();
     final pwd = await getRegisteredPassword(oldK);
     if (pwd != null) {
-      await _secureStorage.write(key: 'reg_pwd_$newK', value: pwd);
+      try {
+        await _secureStorage.write(key: 'reg_pwd_$newK', value: pwd);
+      } catch (e) {
+        debugPrint('[Storage] Secure storage write error: $e');
+      }
       await _prefs.setString('reg_name_$newK', name);
       await _prefs.setString('reg_dob_$newK', dob);
       await _prefs.setInt('reg_rating_$newK', rating);
       if (oldK != newK) {
-        await _secureStorage.delete(key: 'reg_pwd_$oldK');
+        try {
+          await _secureStorage.delete(key: 'reg_pwd_$oldK');
+        } catch (_) {}
         await _prefs.remove('reg_pwd_$oldK');
         await _prefs.remove('reg_name_$oldK');
         await _prefs.remove('reg_dob_$oldK');
@@ -240,7 +260,11 @@ class StorageService {
   Future<void> updateRegisteredPassword(
       String emailOrPhone, String newPassword) async {
     final key = emailOrPhone.trim().toLowerCase();
-    await _secureStorage.write(key: 'reg_pwd_$key', value: newPassword);
+    try {
+      await _secureStorage.write(key: 'reg_pwd_$key', value: newPassword);
+    } catch (e) {
+      debugPrint('[Storage] Secure storage write error: $e');
+    }
     await _prefs.remove('reg_pwd_$key');
   }
 
