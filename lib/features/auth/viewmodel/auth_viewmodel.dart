@@ -79,7 +79,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
       return false;
     }
 
-    final registeredPassword = _storage.getRegisteredPassword(cleanInput);
+    final registeredPassword = await _storage.getRegisteredPassword(cleanInput);
     if (registeredPassword == null) {
       state = state.copyWith(
         isLoading: false,
@@ -177,7 +177,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
     }
 
     // Check if account already exists
-    final existingPwd = _storage.getRegisteredPassword(cleanInput);
+    final existingPwd = await _storage.getRegisteredPassword(cleanInput);
     if (existingPwd != null) {
       state = state.copyWith(
         isLoading: false,

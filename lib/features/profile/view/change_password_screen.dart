@@ -7,6 +7,8 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/services/service_providers.dart';
+import '../../../core/services/storage_service.dart';
+import '../../../models/user_model.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 
 class ChangePasswordScreen extends ConsumerStatefulWidget {
@@ -180,16 +182,28 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
     }
   }
 
+  Future<bool> _checkHasExistingPassword(UserModel? user, StorageService storage) async {
+    if (user == null) return false;
+    final pwdEmail = await storage.getRegisteredPassword(user.email);
+    if (pwdEmail != null) return true;
+    if (user.phone.isNotEmpty) {
+      final pwdPhone = await storage.getRegisteredPassword(user.phone);
+      if (pwdPhone != null) return true;
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(authViewModelProvider).user;
     final storage = ref.watch(storageServiceProvider);
-    final hasExistingPassword = user != null && 
-        (storage.getRegisteredPassword(user.email) != null || 
-         (user.phone.isNotEmpty && storage.getRegisteredPassword(user.phone) != null));
 
-    final isGoogleAccount = user?.email.endsWith('candidate.google@gmail.com') == true ||
-        (user?.email.endsWith('@gmail.com') == true && !hasExistingPassword);
+    return FutureBuilder<bool>(
+      future: _checkHasExistingPassword(user, storage),
+      builder: (context, snapshot) {
+        final hasExistingPassword = snapshot.data ?? false;
+        final isGoogleAccount = user?.email.endsWith('candidate.google@gmail.com') == true ||
+            (user?.email.endsWith('@gmail.com') == true && !hasExistingPassword);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -349,5 +363,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
         ),
       ),
     );
+  },
+);
   }
 }
