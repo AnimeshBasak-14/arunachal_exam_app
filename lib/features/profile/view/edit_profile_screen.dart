@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/primary_button.dart';
@@ -556,6 +558,54 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               _phoneController.text = result;
                             });
                           }
+                        },
+                      ),
+                      const Divider(height: 1),
+                      ListTile(
+                        leading: const Icon(Icons.bug_report_outlined,
+                            color: AppColors.accent),
+                        title: const Text('Verify Crashlytics Dashboard',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: const Text(
+                            'Sends a test crash to activate Firebase Console',
+                            style: TextStyle(fontSize: 12)),
+                        trailing: const Icon(Icons.send_rounded,
+                            size: 18, color: AppColors.accent),
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Trigger Test Crash'),
+                              content: const Text(
+                                  'This will trigger a test crash so Firebase Crashlytics detects it and activates your dashboard.\n\nAfter the app closes, simply re-open it to transmit the report to Firebase!'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx),
+                                  child: const Text('Cancel'),
+                                ),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.error),
+                                  onPressed: () {
+                                    Navigator.pop(ctx);
+                                    if (!kIsWeb) {
+                                      FirebaseCrashlytics.instance.crash();
+                                    } else {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                              'Crashlytics test crashes run on Android, not Web.'),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  child: const Text('Trigger Test Crash',
+                                      style: TextStyle(color: Colors.white)),
+                                ),
+                              ],
+                            ),
+                          );
                         },
                       ),
                     ],
