@@ -8,21 +8,96 @@ import '../../auth/viewmodel/auth_viewmodel.dart';
 
 // Simulated global competitors
 final _mockCompetitors = [
-  {'name': 'Tenzin Dorje', 'email': 'tenzin@gmail.com', 'rating': 1580, 'state': 'Tawang'},
-  {'name': 'Mepung Loyi', 'email': 'mepung@gmail.com', 'rating': 1540, 'state': 'Itanagar'},
-  {'name': 'Geyum Riba', 'email': 'geyum@gmail.com', 'rating': 1510, 'state': 'Pasighat'},
-  {'name': 'Chukhu Takia', 'email': 'chukhu@gmail.com', 'rating': 1490, 'state': 'Naharlagun'},
-  {'name': 'Nabam Riram', 'email': 'nabam@gmail.com', 'rating': 1465, 'state': 'Ziro'},
-  {'name': 'Koj Naro', 'email': 'koj@gmail.com', 'rating': 1440, 'state': 'Along'},
-  {'name': 'Bamang Tago', 'email': 'bamang@gmail.com', 'rating': 1420, 'state': 'Bomdila'},
-  {'name': 'Likha Pul', 'email': 'likha@gmail.com', 'rating': 1395, 'state': 'Roing'},
-  {'name': 'Talom Rupam', 'email': 'talom@gmail.com', 'rating': 1370, 'state': 'Seppa'},
-  {'name': 'Dungey Karga', 'email': 'dungey@gmail.com', 'rating': 1340, 'state': 'Tezu'},
-  {'name': 'Yomge Ete', 'email': 'yomge@gmail.com', 'rating': 1315, 'state': 'Daporijo'},
-  {'name': 'Oken Tayeng', 'email': 'oken@gmail.com', 'rating': 1290, 'state': 'Changlang'},
-  {'name': 'Mudang Komo', 'email': 'mudang@gmail.com', 'rating': 1260, 'state': 'Longding'},
-  {'name': 'Hano Tara', 'email': 'hano@gmail.com', 'rating': 1235, 'state': 'Yupia'},
-  {'name': 'Jorum Bam', 'email': 'jorum@gmail.com', 'rating': 1210, 'state': 'Basar'},
+  {
+    'name': 'Tenzin Dorje',
+    'email': 'tenzin@gmail.com',
+    'rating': 1580,
+    'state': 'Tawang'
+  },
+  {
+    'name': 'Mepung Loyi',
+    'email': 'mepung@gmail.com',
+    'rating': 1540,
+    'state': 'Itanagar'
+  },
+  {
+    'name': 'Geyum Riba',
+    'email': 'geyum@gmail.com',
+    'rating': 1510,
+    'state': 'Pasighat'
+  },
+  {
+    'name': 'Chukhu Takia',
+    'email': 'chukhu@gmail.com',
+    'rating': 1490,
+    'state': 'Naharlagun'
+  },
+  {
+    'name': 'Nabam Riram',
+    'email': 'nabam@gmail.com',
+    'rating': 1465,
+    'state': 'Ziro'
+  },
+  {
+    'name': 'Koj Naro',
+    'email': 'koj@gmail.com',
+    'rating': 1440,
+    'state': 'Along'
+  },
+  {
+    'name': 'Bamang Tago',
+    'email': 'bamang@gmail.com',
+    'rating': 1420,
+    'state': 'Bomdila'
+  },
+  {
+    'name': 'Likha Pul',
+    'email': 'likha@gmail.com',
+    'rating': 1395,
+    'state': 'Roing'
+  },
+  {
+    'name': 'Talom Rupam',
+    'email': 'talom@gmail.com',
+    'rating': 1370,
+    'state': 'Seppa'
+  },
+  {
+    'name': 'Dungey Karga',
+    'email': 'dungey@gmail.com',
+    'rating': 1340,
+    'state': 'Tezu'
+  },
+  {
+    'name': 'Yomge Ete',
+    'email': 'yomge@gmail.com',
+    'rating': 1315,
+    'state': 'Daporijo'
+  },
+  {
+    'name': 'Oken Tayeng',
+    'email': 'oken@gmail.com',
+    'rating': 1290,
+    'state': 'Changlang'
+  },
+  {
+    'name': 'Mudang Komo',
+    'email': 'mudang@gmail.com',
+    'rating': 1260,
+    'state': 'Longding'
+  },
+  {
+    'name': 'Hano Tara',
+    'email': 'hano@gmail.com',
+    'rating': 1235,
+    'state': 'Yupia'
+  },
+  {
+    'name': 'Jorum Bam',
+    'email': 'jorum@gmail.com',
+    'rating': 1210,
+    'state': 'Basar'
+  },
 ];
 
 /// Helper data class for sorted leaderboard state
@@ -49,7 +124,13 @@ final leaderboardProvider = Provider.autoDispose<LeaderboardData>((ref) {
 
   final allEntries = [
     ..._mockCompetitors,
-    {'name': userName, 'email': currentUser?.email ?? '', 'rating': userRating, 'state': 'Me', 'isMe': true},
+    {
+      'name': userName,
+      'email': currentUser?.email ?? '',
+      'rating': userRating,
+      'state': 'Me',
+      'isMe': true
+    },
   ];
 
   // O(N log N) sort operation offloaded from Widget.build()
@@ -122,7 +203,11 @@ class ScoreboardScreen extends ConsumerWidget {
               children: [
                 const Text(
                   'TOP COMPETITORS',
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white70, letterSpacing: 1.4),
+                  style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white70,
+                      letterSpacing: 1.4),
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -130,11 +215,14 @@ class ScoreboardScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     // 2nd place
-                    if (topThree.length > 1) _buildPodiumEntry(topThree[1], 2, 70),
+                    if (topThree.length > 1)
+                      _buildPodiumEntry(topThree[1], 2, 70),
                     // 1st place
-                    if (topThree.isNotEmpty) _buildPodiumEntry(topThree[0], 1, 90),
+                    if (topThree.isNotEmpty)
+                      _buildPodiumEntry(topThree[0], 1, 90),
                     // 3rd place
-                    if (topThree.length > 2) _buildPodiumEntry(topThree[2], 3, 55),
+                    if (topThree.length > 2)
+                      _buildPodiumEntry(topThree[2], 3, 55),
                   ],
                 ),
               ],
@@ -147,26 +235,35 @@ class ScoreboardScreen extends ConsumerWidget {
             decoration: BoxDecoration(
               color: AppColors.primaryLight,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+              border:
+                  Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
                 Text(
                   'Rank #$myRank',
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryDark, fontSize: 13.5),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primaryDark,
+                      fontSize: 13.5),
                 ),
                 const SizedBox(width: 8),
                 Flexible(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
                       color: userTier.color.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: userTier.color.withValues(alpha: 0.4)),
+                      border: Border.all(
+                          color: userTier.color.withValues(alpha: 0.4)),
                     ),
                     child: Text(
                       userTier.title,
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: userTier.color),
+                      style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: userTier.color),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                     ),
@@ -176,11 +273,15 @@ class ScoreboardScreen extends ConsumerWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.emoji_events_rounded, color: AppColors.accent, size: 16),
+                    const Icon(Icons.emoji_events_rounded,
+                        color: AppColors.accent, size: 16),
                     const SizedBox(width: 4),
                     Text(
                       '$userRating 🏆',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          color: AppColors.textPrimary),
                     ),
                   ],
                 ),
@@ -202,12 +303,17 @@ class ScoreboardScreen extends ConsumerWidget {
 
                 return AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   decoration: BoxDecoration(
-                    color: isMe ? AppColors.primaryLight.withValues(alpha: 0.6) : AppColors.surface,
+                    color: isMe
+                        ? AppColors.primaryLight.withValues(alpha: 0.6)
+                        : AppColors.surface,
                     borderRadius: BorderRadius.circular(AppSpacing.radiusL),
                     border: Border.all(
-                      color: isMe ? AppColors.primary.withValues(alpha: 0.4) : AppColors.divider,
+                      color: isMe
+                          ? AppColors.primary.withValues(alpha: 0.4)
+                          : AppColors.divider,
                       width: isMe ? 1.5 : 1,
                     ),
                   ),
@@ -227,7 +333,9 @@ class ScoreboardScreen extends ConsumerWidget {
                                 style: TextStyle(
                                   fontSize: 12.5,
                                   fontWeight: FontWeight.bold,
-                                  color: isMe ? AppColors.primary : AppColors.textSecondary,
+                                  color: isMe
+                                      ? AppColors.primary
+                                      : AppColors.textSecondary,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
@@ -236,7 +344,9 @@ class ScoreboardScreen extends ConsumerWidget {
                       // Avatar
                       CircleAvatar(
                         radius: 17,
-                        backgroundColor: isMe ? AppColors.primary : tier.color.withValues(alpha: 0.22),
+                        backgroundColor: isMe
+                            ? AppColors.primary
+                            : tier.color.withValues(alpha: 0.22),
                         child: Text(
                           (entry['name'] as String).substring(0, 1),
                           style: TextStyle(
@@ -253,11 +363,15 @@ class ScoreboardScreen extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              isMe ? '${currentUser?.name ?? 'You'} (You)' : entry['name'] as String,
+                              isMe
+                                  ? '${currentUser?.name ?? 'You'} (You)'
+                                  : entry['name'] as String,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13.5,
-                                color: isMe ? AppColors.primaryDark : AppColors.textPrimary,
+                                color: isMe
+                                    ? AppColors.primaryDark
+                                    : AppColors.textPrimary,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -266,21 +380,27 @@ class ScoreboardScreen extends ConsumerWidget {
                             Row(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 5, vertical: 1),
                                   decoration: BoxDecoration(
                                     color: tier.color.withValues(alpha: 0.12),
                                     borderRadius: BorderRadius.circular(5),
                                   ),
                                   child: Text(
                                     tier.title,
-                                    style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: tier.color),
+                                    style: TextStyle(
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.bold,
+                                        color: tier.color),
                                   ),
                                 ),
                                 const SizedBox(width: 6),
                                 Flexible(
                                   child: Text(
                                     entry['state'] as String,
-                                    style: const TextStyle(fontSize: 11, color: AppColors.textHint),
+                                    style: const TextStyle(
+                                        fontSize: 11,
+                                        color: AppColors.textHint),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -298,15 +418,21 @@ class ScoreboardScreen extends ConsumerWidget {
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.emoji_events_rounded, color: AppColors.accent, size: 14),
+                              const Icon(Icons.emoji_events_rounded,
+                                  color: AppColors.accent, size: 14),
                               const SizedBox(width: 2),
                               Text(
                                 '$rating',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.textPrimary),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                    color: AppColors.textPrimary),
                               ),
                             ],
                           ),
-                          const Text('Trophies', style: TextStyle(fontSize: 9.5, color: AppColors.textHint)),
+                          const Text('Trophies',
+                              style: TextStyle(
+                                  fontSize: 9.5, color: AppColors.textHint)),
                         ],
                       ),
                     ],
@@ -320,7 +446,8 @@ class ScoreboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPodiumEntry(Map<String, dynamic> entry, int rank, double height) {
+  Widget _buildPodiumEntry(
+      Map<String, dynamic> entry, int rank, double height) {
     final isMe = entry['isMe'] == true;
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -330,17 +457,22 @@ class ScoreboardScreen extends ConsumerWidget {
           backgroundColor: Colors.white.withValues(alpha: 0.2),
           child: Text(
             (entry['name'] as String).substring(0, 1),
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: rank == 1 ? 20 : 16, color: Colors.white),
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: rank == 1 ? 20 : 16,
+                color: Colors.white),
           ),
         ),
         const SizedBox(height: 4),
         Text(
           isMe ? 'You' : (entry['name'] as String).split(' ').first,
-          style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+              fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold),
         ),
         Text(
           '${entry['rating']}',
-          style: TextStyle(fontSize: 10, color: Colors.white.withValues(alpha: 0.75)),
+          style: TextStyle(
+              fontSize: 10, color: Colors.white.withValues(alpha: 0.75)),
         ),
         const SizedBox(height: 4),
         Container(

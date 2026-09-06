@@ -41,7 +41,8 @@ class NotificationsNotifier extends StateNotifier<List<AppNotification>> {
           AppNotification(
             id: 'n1',
             title: '🆕 New PYQ Papers Available',
-            body: 'APPSC 2024 Previous Year Papers have been added. Start practising now!',
+            body:
+                'APPSC 2024 Previous Year Papers have been added. Start practising now!',
             icon: Icons.article_rounded,
             color: AppColors.primary,
             time: DateTime.now().subtract(const Duration(minutes: 15)),
@@ -49,7 +50,8 @@ class NotificationsNotifier extends StateNotifier<List<AppNotification>> {
           AppNotification(
             id: 'n2',
             title: '🏆 Rank Progression Update!',
-            body: 'You\'re climbing the MLBB-style ranks! Keep practicing to reach Grandmaster & Mythic status.',
+            body:
+                'You\'re climbing the MLBB-style ranks! Keep practicing to reach Grandmaster & Mythic status.',
             icon: Icons.emoji_events_rounded,
             color: AppColors.accent,
             time: DateTime.now().subtract(const Duration(hours: 1)),
@@ -57,7 +59,8 @@ class NotificationsNotifier extends StateNotifier<List<AppNotification>> {
           AppNotification(
             id: 'n3',
             title: '📅 Mock Test Reminder',
-            body: 'You haven\'t taken a mock test today. Consistency is key to APPSC/APSSB success!',
+            body:
+                'You haven\'t taken a mock test today. Consistency is key to APPSC/APSSB success!',
             icon: Icons.timer_rounded,
             color: AppColors.secondary,
             time: DateTime.now().subtract(const Duration(hours: 3)),
@@ -66,7 +69,8 @@ class NotificationsNotifier extends StateNotifier<List<AppNotification>> {
           AppNotification(
             id: 'n4',
             title: '💬 New Discussion in Bookmarks',
-            body: 'Check out new explanations added for General English questions.',
+            body:
+                'Check out new explanations added for General English questions.',
             icon: Icons.comment_rounded,
             color: const Color(0xFF8B5CF6),
             time: DateTime.now().subtract(const Duration(days: 1)),
@@ -75,7 +79,8 @@ class NotificationsNotifier extends StateNotifier<List<AppNotification>> {
           AppNotification(
             id: 'n5',
             title: '📢 Welcome to Arunachal Exam Prep!',
-            body: 'Start with APPSC or APSSB exams. Bookmark questions, track your rank globally.',
+            body:
+                'Start with APPSC or APSSB exams. Bookmark questions, track your rank globally.',
             icon: Icons.campaign_rounded,
             color: AppColors.primary,
             time: DateTime.now().subtract(const Duration(days: 3)),
@@ -84,15 +89,17 @@ class NotificationsNotifier extends StateNotifier<List<AppNotification>> {
         ]);
 
   void markAllRead() {
-    state = state.map((n) => AppNotification(
-          id: n.id,
-          title: n.title,
-          body: n.body,
-          icon: n.icon,
-          color: n.color,
-          time: n.time,
-          isRead: true,
-        )).toList();
+    state = state
+        .map((n) => AppNotification(
+              id: n.id,
+              title: n.title,
+              body: n.body,
+              icon: n.icon,
+              color: n.color,
+              time: n.time,
+              isRead: true,
+            ))
+        .toList();
   }
 
   void markRead(String id) {
@@ -149,7 +156,8 @@ class NotificationsScreen extends ConsumerWidget {
         actions: [
           if (hasUnread)
             TextButton(
-              onPressed: () => ref.read(notificationsProvider.notifier).markAllRead(),
+              onPressed: () =>
+                  ref.read(notificationsProvider.notifier).markAllRead(),
               child: const Text(
                 'Mark all read',
                 style: TextStyle(
@@ -166,11 +174,16 @@ class NotificationsScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.notifications_off_outlined, size: 64, color: AppColors.textHint.withValues(alpha: 0.4)),
+                  Icon(Icons.notifications_off_outlined,
+                      size: 64,
+                      color: AppColors.textHint.withValues(alpha: 0.4)),
                   const SizedBox(height: 16),
                   const Text(
                     'No notifications yet',
-                    style: TextStyle(fontSize: 16, color: AppColors.textSecondary, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   const Text(
@@ -196,13 +209,19 @@ class NotificationsScreen extends ConsumerWidget {
                     alignment: Alignment.centerRight,
                     padding: const EdgeInsets.only(right: 20),
                     color: AppColors.error.withValues(alpha: 0.12),
-                    child: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
+                    child: const Icon(Icons.delete_outline_rounded,
+                        color: AppColors.error),
                   ),
                   child: InkWell(
-                    onTap: () => ref.read(notificationsProvider.notifier).markRead(notif.id),
+                    onTap: () => ref
+                        .read(notificationsProvider.notifier)
+                        .markRead(notif.id),
                     child: Container(
-                      color: notif.isRead ? Colors.transparent : notif.color.withValues(alpha: 0.05),
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: 14),
+                      color: notif.isRead
+                          ? Colors.transparent
+                          : notif.color.withValues(alpha: 0.05),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.m, vertical: 14),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -214,7 +233,8 @@ class NotificationsScreen extends ConsumerWidget {
                               color: notif.color.withValues(alpha: 0.12),
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(notif.icon, color: notif.color, size: 22),
+                            child:
+                                Icon(notif.icon, color: notif.color, size: 22),
                           ),
                           const SizedBox(width: 12),
                           // Content
@@ -229,7 +249,9 @@ class NotificationsScreen extends ConsumerWidget {
                                         notif.title,
                                         style: TextStyle(
                                           fontSize: 13.5,
-                                          fontWeight: notif.isRead ? FontWeight.w600 : FontWeight.bold,
+                                          fontWeight: notif.isRead
+                                              ? FontWeight.w600
+                                              : FontWeight.bold,
                                           color: AppColors.textPrimary,
                                         ),
                                       ),
@@ -268,11 +290,15 @@ class NotificationsScreen extends ConsumerWidget {
                           ),
                           // Dismiss button
                           IconButton(
-                            icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.textHint),
-                            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                            icon: const Icon(Icons.close_rounded,
+                                size: 18, color: AppColors.textHint),
+                            constraints: const BoxConstraints(
+                                minWidth: 32, minHeight: 32),
                             padding: EdgeInsets.zero,
                             onPressed: () {
-                              ref.read(notificationsProvider.notifier).dismiss(notif.id);
+                              ref
+                                  .read(notificationsProvider.notifier)
+                                  .dismiss(notif.id);
                             },
                           ),
                         ],

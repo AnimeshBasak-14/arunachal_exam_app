@@ -37,7 +37,8 @@ class ProfileScreen extends ConsumerWidget {
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l, vertical: AppSpacing.xl),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.l, vertical: AppSpacing.xl),
       child: Column(
         children: [
           // Clickable profile section leading to Bio
@@ -59,7 +60,9 @@ class ProfileScreen extends ConsumerWidget {
                         child: isFile
                             ? null
                             : Text(
-                                userName.isNotEmpty ? userName[0].toUpperCase() : 'S',
+                                userName.isNotEmpty
+                                    ? userName[0].toUpperCase()
+                                    : 'S',
                                 style: const TextStyle(
                                   color: AppColors.textWhite,
                                   fontSize: 54,
@@ -94,11 +97,14 @@ class ProfileScreen extends ConsumerWidget {
                       return GestureDetector(
                         onTap: () => context.push('/scoreboard'),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.m, vertical: 6),
                           decoration: BoxDecoration(
                             color: tier.color.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: tier.color.withValues(alpha: 0.5), width: 1.5),
+                            border: Border.all(
+                                color: tier.color.withValues(alpha: 0.5),
+                                width: 1.5),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -114,7 +120,8 @@ class ProfileScreen extends ConsumerWidget {
                                 ),
                               ),
                               const SizedBox(width: 4),
-                              Icon(Icons.leaderboard_rounded, color: tier.color, size: 14),
+                              Icon(Icons.leaderboard_rounded,
+                                  color: tier.color, size: 14),
                             ],
                           ),
                         ),
@@ -139,7 +146,8 @@ class ProfileScreen extends ConsumerWidget {
               onTap: () => context.push('/streak-calendar'),
               child: Card(
                 margin: const EdgeInsets.only(bottom: AppSpacing.m),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusL)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusL)),
                 child: Padding(
                   padding: const EdgeInsets.all(AppSpacing.m),
                   child: Column(
@@ -149,16 +157,25 @@ class ProfileScreen extends ConsumerWidget {
                         children: [
                           Text('🔥', style: TextStyle(fontSize: 18)),
                           SizedBox(width: 6),
-                          Text('Study Streak', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                          Text('Study Streak',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 15)),
                         ],
                       ),
                       const SizedBox(height: AppSpacing.m),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          _buildStreakStat('Current', '$streak days', AppColors.primary),
-                          _buildStreakStat('Best', '$longest days', AppColors.accent),
-                          _buildStreakStat('Last Active', lastDate.length > 10 ? lastDate.substring(5) : lastDate, AppColors.textSecondary),
+                          _buildStreakStat(
+                              'Current', '$streak days', AppColors.primary),
+                          _buildStreakStat(
+                              'Best', '$longest days', AppColors.accent),
+                          _buildStreakStat(
+                              'Last Active',
+                              lastDate.length > 10
+                                  ? lastDate.substring(5)
+                                  : lastDate,
+                              AppColors.textSecondary),
                         ],
                       ),
                     ],
@@ -178,26 +195,35 @@ class ProfileScreen extends ConsumerWidget {
             child: Column(
               children: [
                 ListTile(
-                  leading: const Icon(Icons.book_rounded, color: AppColors.primary),
-                  title: const Text('MY COURSE', style: TextStyle(fontWeight: FontWeight.bold)),
-                  trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: AppColors.textHint),
+                  leading:
+                      const Icon(Icons.book_rounded, color: AppColors.primary),
+                  title: const Text('MY COURSE',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  trailing: const Icon(Icons.arrow_forward_ios_rounded,
+                      size: 16, color: AppColors.textHint),
                   onTap: () {
                     context.push('/my-courses');
                   },
                 ),
                 const Divider(height: 1, color: AppColors.divider),
                 ListTile(
-                  leading: const Icon(Icons.settings_outlined, color: AppColors.primary),
-                  title: const Text('SETTING', style: TextStyle(fontWeight: FontWeight.bold)),
-                  trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: AppColors.textHint),
+                  leading: const Icon(Icons.settings_outlined,
+                      color: AppColors.primary),
+                  title: const Text('SETTING',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  trailing: const Icon(Icons.arrow_forward_ios_rounded,
+                      size: 16, color: AppColors.textHint),
                   onTap: () {
                     context.push('/edit-profile');
                   },
                 ),
                 const Divider(height: 1, color: AppColors.divider),
                 ListTile(
-                  leading: const Icon(Icons.logout_rounded, color: AppColors.error),
-                  title: const Text('SIGN OUT', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold)),
+                  leading:
+                      const Icon(Icons.logout_rounded, color: AppColors.error),
+                  title: const Text('SIGN OUT',
+                      style: TextStyle(
+                          color: AppColors.error, fontWeight: FontWeight.bold)),
                   onTap: () async {
                     await ref.read(authViewModelProvider.notifier).logout();
                     if (context.mounted) {
@@ -231,10 +257,16 @@ class ProfileScreen extends ConsumerWidget {
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.emoji_events_rounded, color: AppColors.accent, size: 14),
+                    Icon(Icons.emoji_events_rounded,
+                        color: AppColors.accent, size: 14),
                     SizedBox(width: 4),
-                    Text('Trophies', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary)),
-                    Icon(Icons.arrow_forward_ios_rounded, size: 10, color: AppColors.primary),
+                    Text('Trophies',
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary)),
+                    Icon(Icons.arrow_forward_ios_rounded,
+                        size: 10, color: AppColors.primary),
                   ],
                 ),
               ),
@@ -251,9 +283,13 @@ class ProfileScreen extends ConsumerWidget {
   Widget _buildStreakStat(String label, String value, Color color) {
     return Column(
       children: [
-        Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color)),
+        Text(value,
+            style: TextStyle(
+                fontSize: 16, fontWeight: FontWeight.bold, color: color)),
         const SizedBox(height: 2),
-        Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+        Text(label,
+            style:
+                const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
       ],
     );
   }
@@ -273,7 +309,10 @@ class ProfileScreen extends ConsumerWidget {
         child: const Center(
           child: Text(
             'No quiz history found. Take a mock test to see your score history!',
-            style: TextStyle(color: AppColors.textHint, fontSize: 13, fontStyle: FontStyle.italic),
+            style: TextStyle(
+                color: AppColors.textHint,
+                fontSize: 13,
+                fontStyle: FontStyle.italic),
             textAlign: TextAlign.center,
           ),
         ),
@@ -297,12 +336,17 @@ class ProfileScreen extends ConsumerWidget {
             final examCode = _parseJsonVal(jsonStr, 'examCode');
             final score = _parseJsonVal(jsonStr, 'score');
             final maxScore = _parseJsonVal(jsonStr, 'maxScore');
-            final ratingChange = int.tryParse(_parseJsonVal(jsonStr, 'ratingChange')) ?? 0;
+            final ratingChange =
+                int.tryParse(_parseJsonVal(jsonStr, 'ratingChange')) ?? 0;
             final date = _parseJsonVal(jsonStr, 'date');
 
             return ListTile(
-              title: Text('$examCode Mock Test', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-              subtitle: Text(date, style: const TextStyle(fontSize: 12, color: AppColors.textHint)),
+              title: Text('$examCode Mock Test',
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 14)),
+              subtitle: Text(date,
+                  style:
+                      const TextStyle(fontSize: 12, color: AppColors.textHint)),
               onTap: () {
                 try {
                   final decoded = jsonDecode(jsonStr) as Map<String, dynamic>;
@@ -317,7 +361,8 @@ class ProfileScreen extends ConsumerWidget {
                 children: [
                   Text(
                     'Score: $score / $maxScore',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 13),
                   ),
                   const SizedBox(height: 2),
                   Row(
@@ -328,11 +373,14 @@ class ProfileScreen extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: ratingChange >= 0 ? AppColors.success : AppColors.error,
+                          color: ratingChange >= 0
+                              ? AppColors.success
+                              : AppColors.error,
                         ),
                       ),
                       const SizedBox(width: 2),
-                      const Icon(Icons.emoji_events_rounded, color: AppColors.accent, size: 14),
+                      const Icon(Icons.emoji_events_rounded,
+                          color: AppColors.accent, size: 14),
                     ],
                   ),
                 ],

@@ -8,9 +8,11 @@ class StreakService {
 
   int getCurrentStreak() => _prefs.getInt(AppConstants.streakCountKey) ?? 0;
   int getLongestStreak() => _prefs.getInt(AppConstants.streakLongestKey) ?? 0;
-  String? getLastActiveDate() => _prefs.getString(AppConstants.streakLastDateKey);
+  String? getLastActiveDate() =>
+      _prefs.getString(AppConstants.streakLastDateKey);
 
-  List<String> getActiveDatesHistory() => _prefs.getStringList('streak_active_dates_history') ?? [];
+  List<String> getActiveDatesHistory() =>
+      _prefs.getStringList('streak_active_dates_history') ?? [];
 
   Future<void> checkAndUpdateStreak() async {
     final today = _todayString();
@@ -37,7 +39,9 @@ class StreakService {
       final last = DateTime.tryParse(lastDate);
       final todayDt = DateTime.now();
       if (last != null) {
-        final diff = todayDt.difference(DateTime(last.year, last.month, last.day)).inDays;
+        final diff = todayDt
+            .difference(DateTime(last.year, last.month, last.day))
+            .inDays;
         if (diff == 1) {
           // Consecutive day
           currentStreak += 1;
@@ -50,11 +54,14 @@ class StreakService {
     }
 
     final longest = getLongestStreak();
-    await _prefs.setInt(AppConstants.streakCountKey, currentStreak);
-    await _prefs.setString(AppConstants.streakLastDateKey, today);
+    final writes = <Future<bool>>[
+      _prefs.setInt(AppConstants.streakCountKey, currentStreak),
+      _prefs.setString(AppConstants.streakLastDateKey, today),
+    ];
     if (currentStreak > longest) {
-      await _prefs.setInt(AppConstants.streakLongestKey, currentStreak);
+      writes.add(_prefs.setInt(AppConstants.streakLongestKey, currentStreak));
     }
+    await Future.wait(writes);
   }
 
   String _todayString() {

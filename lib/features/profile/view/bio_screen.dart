@@ -18,9 +18,13 @@ class BioScreen extends ConsumerWidget {
     final user = authState.user;
     final userName = user?.name ?? 'Student Name';
     final userEmail = user?.email ?? 'student@arunachal.in';
-    final userPhone = (user?.phone != null && user!.phone.isNotEmpty) ? user.phone : '9876543210';
+    final userPhone = (user?.phone != null && user!.phone.isNotEmpty)
+        ? user.phone
+        : '9876543210';
     final userDob = user?.dob ?? '2000-01-01';
-    final userCity = (user?.city != null && user!.city.isNotEmpty) ? user.city : 'Itanagar, Arunachal Pradesh';
+    final userCity = (user?.city != null && user!.city.isNotEmpty)
+        ? user.city
+        : 'Itanagar, Arunachal Pradesh';
     final rating = user?.rating ?? 1200;
 
     final rankTier = RankUtils.getTier(rating);
@@ -47,7 +51,8 @@ class BioScreen extends ConsumerWidget {
       } catch (_) {}
     }
 
-    final double avgAccuracy = totalMaxScore > 0 ? (totalScore / totalMaxScore * 100) : 0.0;
+    final double avgAccuracy =
+        totalMaxScore > 0 ? (totalScore / totalMaxScore * 100) : 0.0;
 
     Color getAvatarColor(String? avatarName) {
       switch (avatarName) {
@@ -89,7 +94,7 @@ class BioScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: AppSpacing.m),
-              
+
               // Bio Card Header
               Card(
                 elevation: 0,
@@ -104,17 +109,21 @@ class BioScreen extends ConsumerWidget {
                     children: [
                       (() {
                         final pic = user?.profilePic;
-                        final isFile = pic != null && !pic.startsWith('avatar_');
+                        final isFile =
+                            pic != null && !pic.startsWith('avatar_');
                         return Hero(
                           tag: 'profile_avatar_hero',
                           child: CircleAvatar(
                             radius: 54,
                             backgroundColor: getAvatarColor(pic),
-                            backgroundImage: isFile ? FileImage(File(pic)) : null,
+                            backgroundImage:
+                                isFile ? FileImage(File(pic)) : null,
                             child: isFile
                                 ? null
                                 : Text(
-                                    userName.isNotEmpty ? userName[0].toUpperCase() : 'S',
+                                    userName.isNotEmpty
+                                        ? userName[0].toUpperCase()
+                                        : 'S',
                                     style: const TextStyle(
                                       color: AppColors.textWhite,
                                       fontSize: 48,
@@ -136,7 +145,8 @@ class BioScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: AppSpacing.xs),
                       Text(
-                        userEmail.endsWith('candidate.google@gmail.com') || userEmail.endsWith('@gmail.com')
+                        userEmail.endsWith('candidate.google@gmail.com') ||
+                                userEmail.endsWith('@gmail.com')
                             ? 'Connected via Google'
                             : 'Local Account',
                         style: const TextStyle(
@@ -158,7 +168,9 @@ class BioScreen extends ConsumerWidget {
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppSpacing.radiusL),
-                    side: BorderSide(color: rankTier.color.withValues(alpha: 0.4), width: 1.5),
+                    side: BorderSide(
+                        color: rankTier.color.withValues(alpha: 0.4),
+                        width: 1.5),
                   ),
                   color: rankTier.color.withValues(alpha: 0.06),
                   child: Padding(
@@ -171,7 +183,8 @@ class BioScreen extends ConsumerWidget {
                             color: rankTier.color.withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(rankTier.icon, color: rankTier.color, size: 36),
+                          child: Icon(rankTier.icon,
+                              color: rankTier.color, size: 36),
                         ),
                         const SizedBox(width: AppSpacing.m),
                         Expanded(
@@ -190,9 +203,11 @@ class BioScreen extends ConsumerWidget {
                                   ),
                                   const SizedBox(width: 8),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: rankTier.color.withValues(alpha: 0.18),
+                                      color: rankTier.color
+                                          .withValues(alpha: 0.18),
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: Text(
@@ -218,7 +233,8 @@ class BioScreen extends ConsumerWidget {
                             ],
                           ),
                         ),
-                        const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.textHint),
+                        const Icon(Icons.arrow_forward_ios_rounded,
+                            size: 14, color: AppColors.textHint),
                       ],
                     ),
                   ),
@@ -235,15 +251,20 @@ class BioScreen extends ConsumerWidget {
                 ),
                 child: Column(
                   children: [
-                    _buildBioItem(Icons.person_pin_rounded, 'Full Name', userName),
+                    _buildBioItem(
+                        Icons.person_pin_rounded, 'Full Name', userName),
                     const Divider(height: 1, color: AppColors.divider),
-                    _buildBioItem(Icons.location_city_rounded, 'City / District', userCity),
+                    _buildBioItem(Icons.location_city_rounded,
+                        'City / District', userCity),
                     const Divider(height: 1, color: AppColors.divider),
-                    _buildBioItem(Icons.calendar_month_rounded, 'Date of Birth (DOB)', userDob),
+                    _buildBioItem(Icons.calendar_month_rounded,
+                        'Date of Birth (DOB)', userDob),
                     const Divider(height: 1, color: AppColors.divider),
-                    _buildBioItem(Icons.email_outlined, 'Gmail Address', userEmail),
+                    _buildBioItem(
+                        Icons.email_outlined, 'Gmail Address', userEmail),
                     const Divider(height: 1, color: AppColors.divider),
-                    _buildBioItem(Icons.phone_android_rounded, 'Phone Number', userPhone),
+                    _buildBioItem(
+                        Icons.phone_android_rounded, 'Phone Number', userPhone),
                   ],
                 ),
               ),
@@ -265,12 +286,18 @@ class BioScreen extends ConsumerWidget {
                       children: [
                         const Text(
                           'Exam Statistics',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary),
                         ),
                         if (mocksTaken > 0)
                           const Text(
                             'Live Updated',
-                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.success),
+                            style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.success),
                           ),
                       ],
                     ),
@@ -279,8 +306,16 @@ class BioScreen extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         _buildStatMetric('Mocks Taken', '$mocksTaken'),
-                        _buildStatMetric('Avg Accuracy', mocksTaken > 0 ? '${avgAccuracy.toStringAsFixed(0)}%' : '--'),
-                        _buildStatMetric('Best Score', mocksTaken > 0 ? bestScore.toStringAsFixed(1) : '--'),
+                        _buildStatMetric(
+                            'Avg Accuracy',
+                            mocksTaken > 0
+                                ? '${avgAccuracy.toStringAsFixed(0)}%'
+                                : '--'),
+                        _buildStatMetric(
+                            'Best Score',
+                            mocksTaken > 0
+                                ? bestScore.toStringAsFixed(1)
+                                : '--'),
                       ],
                     ),
                   ],
@@ -307,12 +342,18 @@ class BioScreen extends ConsumerWidget {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+                  style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   value,
-                  style: const TextStyle(fontSize: 14, color: AppColors.textPrimary, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -327,12 +368,18 @@ class BioScreen extends ConsumerWidget {
       children: [
         Text(
           value,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primary),
+          style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: AppColors.primary),
         ),
         const SizedBox(height: 4),
         Text(
           label,
-          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+          style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w500),
         ),
       ],
     );

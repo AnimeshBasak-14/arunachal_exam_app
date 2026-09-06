@@ -182,7 +182,8 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
     // Formula: timeLeft ratio × 10, rounded. Faster completion = higher bonus.
     int speedBonus = 0;
     if (actualScore >= 0.40 && timeTaken < _initialSeconds) {
-      final double timeLeftRatio = (_secondsRemaining / _initialSeconds.toDouble());
+      final double timeLeftRatio =
+          (_secondsRemaining / _initialSeconds.toDouble());
       speedBonus = (timeLeftRatio * 10).round();
     }
     final int totalChange = ratingChange + speedBonus;
@@ -193,7 +194,8 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
     }
 
     final now = DateTime.now();
-    final dateStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}";
+    final dateStr =
+        "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}";
 
     // Save attempts history
     _saveHistoryToPrefs(
@@ -307,7 +309,8 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
       children: [
         Text(
           '$val',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color),
+          style: TextStyle(
+              fontSize: 16, fontWeight: FontWeight.bold, color: color),
         ),
         const SizedBox(height: 2),
         Text(
@@ -636,7 +639,8 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
               context: context,
               builder: (context) => AlertDialog(
                 title: const Text('Quit Test?'),
-                content: const Text('Are you sure you want to exit? Your progress will not be saved.'),
+                content: const Text(
+                    'Are you sure you want to exit? Your progress will not be saved.'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
@@ -647,7 +651,8 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                       Navigator.pop(context);
                       context.pop();
                     },
-                    child: const Text('QUIT', style: TextStyle(color: AppColors.error)),
+                    child: const Text('QUIT',
+                        style: TextStyle(color: AppColors.error)),
                   ),
                 ],
               ),
@@ -660,23 +665,30 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
             child: Padding(
               padding: const EdgeInsets.only(right: AppSpacing.m),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: _secondsRemaining < 60 ? AppColors.error.withValues(alpha: 0.12) : AppColors.primaryLight,
+                  color: _secondsRemaining < 60
+                      ? AppColors.error.withValues(alpha: 0.12)
+                      : AppColors.primaryLight,
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       Icons.timer_outlined,
-                      color: _secondsRemaining < 60 ? AppColors.error : AppColors.primary,
+                      color: _secondsRemaining < 60
+                          ? AppColors.error
+                          : AppColors.primary,
                       size: 16,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       _formatTime(_secondsRemaining),
                       style: TextStyle(
-                        color: _secondsRemaining < 60 ? AppColors.error : AppColors.primary,
+                        color: _secondsRemaining < 60
+                            ? AppColors.error
+                            : AppColors.primary,
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
                       ),
@@ -691,202 +703,236 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
       body: _isLoadingQuestions
           ? const Center(child: CircularProgressIndicator())
           : _testQuestions.isEmpty
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.xl),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.error_outline_rounded, size: 54, color: AppColors.textHint),
-                    const SizedBox(height: AppSpacing.m),
-                    Text('No questions found for ${widget.examCode}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    const SizedBox(height: AppSpacing.s),
-                    const Text('Check your internet connection and tap retry.', textAlign: TextAlign.center, style: TextStyle(color: AppColors.textSecondary)),
-                    const SizedBox(height: AppSpacing.m),
-                    ElevatedButton.icon(
-                      onPressed: _loadLiveMockQuestions,
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('RETRY LOADING'),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  child: ListView.builder(
-                    physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.all(AppSpacing.m),
-              itemCount: _testQuestions.length,
-              itemBuilder: (context, index) {
-                final question = _testQuestions[index];
-                final selectedOption = _selectedAnswers[question.id];
-
-                return Card(
-                  key: ValueKey(question.id),
-                  margin: const EdgeInsets.only(bottom: AppSpacing.m),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusL),
-                    side: const BorderSide(color: AppColors.divider),
-                  ),
+              ? Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.m),
+                    padding: const EdgeInsets.all(AppSpacing.xl),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Flexible(
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primaryLight,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  question.subject,
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.primary,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                              ),
-                            ),
-                            (() {
-                              final isPyq = question.paperType.toUpperCase() == 'PYQ' && question.year > 2000;
-                              if (isPyq) {
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.amber.shade100,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    'PYQ ${question.year}',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.amber.shade800,
-                                    ),
-                                  ),
-                                );
-                              } else {
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue.shade100,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: const Text(
-                                    'MOCK QUESTION',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF1E40AF),
-                                    ),
-                                  ),
-                                );
-                              }
-                            })(),
-                          ],
-                        ),
-                        const SizedBox(height: AppSpacing.s),
-                        Text(
-                          'Q${index + 1}. ${question.questionText}',
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
+                        const Icon(Icons.error_outline_rounded,
+                            size: 54, color: AppColors.textHint),
                         const SizedBox(height: AppSpacing.m),
+                        Text('No questions found for ${widget.examCode}',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 16)),
+                        const SizedBox(height: AppSpacing.s),
+                        const Text(
+                            'Check your internet connection and tap retry.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: AppColors.textSecondary)),
+                        const SizedBox(height: AppSpacing.m),
+                        ElevatedButton.icon(
+                          onPressed: _loadLiveMockQuestions,
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('RETRY LOADING'),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.all(AppSpacing.m),
+                        itemCount: _testQuestions.length,
+                        itemBuilder: (context, index) {
+                          final question = _testQuestions[index];
+                          final selectedOption = _selectedAnswers[question.id];
 
-                        ...List.generate(question.options.length, (optIdx) {
-                          final option = question.options[optIdx];
-                          final optionChar = _extractOptionChar(option, optIdx);
-                          final isSelected = selectedOption == optionChar;
-
-                          return Container(
-                            key: ValueKey('${question.id}_opt_$optIdx'),
-                            margin: const EdgeInsets.only(bottom: AppSpacing.s),
-                            decoration: BoxDecoration(
-                              color: isSelected ? AppColors.primary.withValues(alpha: 0.06) : Colors.transparent,
-                              border: Border.all(
-                                color: isSelected ? AppColors.primary : AppColors.divider,
-                                width: isSelected ? 2.0 : 1.0,
-                              ),
-                              borderRadius: BorderRadius.circular(12),
+                          return Card(
+                            key: ValueKey(question.id),
+                            margin: const EdgeInsets.only(bottom: AppSpacing.m),
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(AppSpacing.radiusL),
+                              side: const BorderSide(color: AppColors.divider),
                             ),
-                            child: InkWell(
-                              onTap: _isSubmitted
-                                  ? null
-                                  : () {
-                                      setState(() {
-                                        _selectedAnswers[question.id] = optionChar;
-                                      });
-                                    },
-                              borderRadius: BorderRadius.circular(12),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: 14),
-                                child: Text(
-                                  option,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: AppColors.textPrimary,
-                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            child: Padding(
+                              padding: const EdgeInsets.all(AppSpacing.m),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Flexible(
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.primaryLight,
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                          child: Text(
+                                            question.subject,
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                              color: AppColors.primary,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                          ),
+                                        ),
+                                      ),
+                                      (() {
+                                        final isPyq =
+                                            question.paperType.toUpperCase() ==
+                                                    'PYQ' &&
+                                                question.year > 2000;
+                                        if (isPyq) {
+                                          return Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 10, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: Colors.amber.shade100,
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Text(
+                                              'PYQ ${question.year}',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.amber.shade800,
+                                              ),
+                                            ),
+                                          );
+                                        } else {
+                                          return Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 10, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: Colors.blue.shade100,
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: const Text(
+                                              'MOCK QUESTION',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                                color: Color(0xFF1E40AF),
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      })(),
+                                    ],
                                   ),
-                                ),
+                                  const SizedBox(height: AppSpacing.s),
+                                  Text(
+                                    'Q${index + 1}. ${question.questionText}',
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: AppSpacing.m),
+                                  ...List.generate(question.options.length,
+                                      (optIdx) {
+                                    final option = question.options[optIdx];
+                                    final optionChar =
+                                        _extractOptionChar(option, optIdx);
+                                    final isSelected =
+                                        selectedOption == optionChar;
+
+                                    return Container(
+                                      key: ValueKey(
+                                          '${question.id}_opt_$optIdx'),
+                                      margin: const EdgeInsets.only(
+                                          bottom: AppSpacing.s),
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? AppColors.primary
+                                                .withValues(alpha: 0.06)
+                                            : Colors.transparent,
+                                        border: Border.all(
+                                          color: isSelected
+                                              ? AppColors.primary
+                                              : AppColors.divider,
+                                          width: isSelected ? 2.0 : 1.0,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: InkWell(
+                                        onTap: _isSubmitted
+                                            ? null
+                                            : () {
+                                                setState(() {
+                                                  _selectedAnswers[
+                                                      question.id] = optionChar;
+                                                });
+                                              },
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: AppSpacing.m,
+                                              vertical: 14),
+                                          child: Text(
+                                            option,
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: AppColors.textPrimary,
+                                              fontWeight: isSelected
+                                                  ? FontWeight.bold
+                                                  : FontWeight.normal,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                ],
                               ),
                             ),
                           );
-                        }),
-                      ],
+                        },
+                      ),
                     ),
-                  ),
-                );
 
-              },
-            ),
-          ),
-          
-          // Submit Button
-          if (!_isSubmitted)
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.m),
-              child: PrimaryButton(
-                text: 'SUBMIT MOCK TEST',
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Submit Test?'),
-                      content: Text('You have answered ${_selectedAnswers.length} of ${_testQuestions.length} questions. Do you want to submit?'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('CANCEL'),
-                        ),
-                        TextButton(
+                    // Submit Button
+                    if (!_isSubmitted)
+                      Padding(
+                        padding: const EdgeInsets.all(AppSpacing.m),
+                        child: PrimaryButton(
+                          text: 'SUBMIT MOCK TEST',
                           onPressed: () {
-                            Navigator.pop(context);
-                            _submitTest();
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Submit Test?'),
+                                content: Text(
+                                    'You have answered ${_selectedAnswers.length} of ${_testQuestions.length} questions. Do you want to submit?'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text('CANCEL'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                      _submitTest();
+                                    },
+                                    child: const Text('SUBMIT',
+                                        style: TextStyle(
+                                            color: AppColors.primary,
+                                            fontWeight: FontWeight.bold)),
+                                  ),
+                                ],
+                              ),
+                            );
                           },
-                          child: const Text('SUBMIT', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
                         ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-        ],
-      ),
+                      ),
+                  ],
+                ),
     );
   }
 }

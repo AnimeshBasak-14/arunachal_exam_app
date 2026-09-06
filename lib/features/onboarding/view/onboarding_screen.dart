@@ -124,7 +124,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         Text(
                           pageData.title,
                           textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineMedium
+                              ?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
                         ),
@@ -132,10 +135,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         Text(
                           pageData.description,
                           textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: AppColors.textSecondary,
-                                height: 1.5,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: AppColors.textSecondary,
+                                    height: 1.5,
+                                  ),
                         ),
                       ],
                     ),
@@ -157,7 +161,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         width: _currentPage == index ? 24 : 8,
                         height: 8,
                         decoration: BoxDecoration(
-                          color: _currentPage == index ? AppColors.primary : AppColors.border,
+                          color: _currentPage == index
+                              ? AppColors.primary
+                              : AppColors.border,
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
@@ -165,7 +171,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ),
                   const SizedBox(height: AppSpacing.xl),
                   PrimaryButton(
-                    text: _currentPage == _pages.length - 1 ? 'Get Started' : 'Next',
+                    text: _currentPage == _pages.length - 1
+                        ? 'Get Started'
+                        : 'Next',
                     onPressed: _onNextPage,
                   ),
                 ],

@@ -94,7 +94,8 @@ class FirebaseService {
     }
   }
 
-  Future<void> saveQuizResultToFirestore(String userEmail, Map<String, dynamic> resultData) async {
+  Future<void> saveQuizResultToFirestore(
+      String userEmail, Map<String, dynamic> resultData) async {
     try {
       final cleanEmail = userEmail.trim().toLowerCase();
       if (cleanEmail.isEmpty) return;

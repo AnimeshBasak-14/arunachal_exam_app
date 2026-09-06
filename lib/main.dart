@@ -37,11 +37,12 @@ import 'features/home/view/streak_calendar_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   try {
     await Firebase.initializeApp();
   } catch (e) {
-    debugPrint("Firebase initialization skipped (google-services.json not found yet): $e");
+    debugPrint(
+        "Firebase initialization skipped (google-services.json not found yet): $e");
   }
 
   // Enable Firestore offline persistence
@@ -60,7 +61,7 @@ void main() async {
   // Update streak
   final streakService = StreakService(prefs);
   await streakService.checkAndUpdateStreak();
-  
+
   runApp(
     ProviderScope(
       overrides: [
@@ -92,7 +93,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isGoingToLogin = state.matchedLocation == '/login';
       final isGoingToRegister = state.matchedLocation == '/register';
 
-      final isAuthRoute = isGoingToWelcome || isGoingToLogin || isGoingToRegister;
+      final isAuthRoute =
+          isGoingToWelcome || isGoingToLogin || isGoingToRegister;
 
       // 1. If onboarding is not completed, force onboarding screen
       if (!onboardingCompleted) {
@@ -101,7 +103,9 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // 2. If logged in but on auth/onboarding routes, go to home
       if (isLoggedIn) {
-        if (isAuthRoute || isGoingToOnboarding || state.matchedLocation == '/') {
+        if (isAuthRoute ||
+            isGoingToOnboarding ||
+            state.matchedLocation == '/') {
           return '/home';
         }
         return null;

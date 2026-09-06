@@ -20,7 +20,8 @@ class StorageService {
   static const String _keyUserRating = 'user_rating';
   static const String _keyUserCity = 'user_city';
 
-  bool get isOnboardingCompleted => _prefs.getBool(_keyOnboardingCompleted) ?? false;
+  bool get isOnboardingCompleted =>
+      _prefs.getBool(_keyOnboardingCompleted) ?? false;
 
   Future<void> setOnboardingCompleted(bool value) async {
     await _prefs.setBool(_keyOnboardingCompleted, value);
@@ -32,10 +33,12 @@ class StorageService {
     await _prefs.setBool(_keyIsLoggedIn, value);
   }
 
-  String get userEmail => _prefs.getString(_keyUserEmail) ?? 'student@arunachal.in';
+  String get userEmail =>
+      _prefs.getString(_keyUserEmail) ?? 'student@arunachal.in';
   String get userName => _prefs.getString(_keyUserName) ?? 'Student Name';
   String get userPhone => _prefs.getString(_keyUserPhone) ?? '9876543210';
-  String get userProfilePic => _prefs.getString(_keyUserProfilePic) ?? 'avatar_green';
+  String get userProfilePic =>
+      _prefs.getString(_keyUserProfilePic) ?? 'avatar_green';
   String get userDob => _prefs.getString(_keyUserDob) ?? '2000-01-01';
   int get userRating => _prefs.getInt(_keyUserRating) ?? 1200;
   String get userCity => _prefs.getString(_keyUserCity) ?? 'Itanagar';
@@ -60,14 +63,15 @@ class StorageService {
     final currentRating = rating ?? userRating;
     final currentCity = city ?? (userCity.isNotEmpty ? userCity : 'Itanagar');
 
-    // Save active session
-    await _prefs.setString(_keyUserName, name);
-    await _prefs.setString(_keyUserEmail, email);
-    await _prefs.setString(_keyUserPhone, phone);
-    await _prefs.setString(_keyUserProfilePic, pic);
-    await _prefs.setString(_keyUserDob, birthDate);
-    await _prefs.setInt(_keyUserRating, currentRating);
-    await _prefs.setString(_keyUserCity, currentCity);
+    final writes = <Future<bool>>[
+      _prefs.setString(_keyUserName, name),
+      _prefs.setString(_keyUserEmail, email),
+      _prefs.setString(_keyUserPhone, phone),
+      _prefs.setString(_keyUserProfilePic, pic),
+      _prefs.setString(_keyUserDob, birthDate),
+      _prefs.setInt(_keyUserRating, currentRating),
+      _prefs.setString(_keyUserCity, currentCity),
+    ];
 
     // Save per-account reserved model
     final userMap = {
@@ -81,11 +85,13 @@ class StorageService {
     };
     final encoded = jsonEncode(userMap);
     if (cleanEmail.isNotEmpty) {
-      await _prefs.setString('account_data_$cleanEmail', encoded);
+      writes.add(_prefs.setString('account_data_$cleanEmail', encoded));
     }
     if (cleanPhone.isNotEmpty) {
-      await _prefs.setString('account_data_$cleanPhone', encoded);
+      writes.add(_prefs.setString('account_data_$cleanPhone', encoded));
     }
+
+    await Future.wait(writes);
   }
 
   UserModel? getAccountData(String emailOrPhone) {
@@ -182,7 +188,8 @@ class StorageService {
     return _prefs.getString('reg_city_$key') ?? 'Itanagar';
   }
 
-  Future<void> updateRegisteredAccount(String oldKey, String newKey, String name, String dob, int rating) async {
+  Future<void> updateRegisteredAccount(
+      String oldKey, String newKey, String name, String dob, int rating) async {
     final oldK = oldKey.trim().toLowerCase();
     final newK = newKey.trim().toLowerCase();
     final pwd = await getRegisteredPassword(oldK);
@@ -198,10 +205,12 @@ class StorageService {
         await _prefs.remove('reg_dob_$oldK');
         await _prefs.remove('reg_rating_$oldK');
       }
+      await Future.wait(writes);
     }
   }
 
-  Future<void> updateRegisteredPassword(String emailOrPhone, String newPassword) async {
+  Future<void> updateRegisteredPassword(
+      String emailOrPhone, String newPassword) async {
     final key = emailOrPhone.trim().toLowerCase();
     await _secureStorage.write(key: 'reg_pwd_$key', value: newPassword);
     await _prefs.remove('reg_pwd_$key');
@@ -216,11 +225,13 @@ class StorageService {
     return _prefs.getStringList('quiz_history') ?? [];
   }
 
-  Future<void> saveQuizHistory(List<String> history, [String? emailOrPhone]) async {
+  Future<void> saveQuizHistory(List<String> history,
+      [String? emailOrPhone]) async {
     final key = _cleanKey(emailOrPhone);
-    await _prefs.setStringList('quiz_history_$key', history);
-    // Also mirror to global for backwards compatibility
-    await _prefs.setStringList('quiz_history', history);
+    await Future.wait([
+      _prefs.setStringList('quiz_history_$key', history),
+      _prefs.setStringList('quiz_history', history),
+    ]);
   }
 
   // Per-User Question Bookmarks
@@ -231,7 +242,8 @@ class StorageService {
     return _prefs.getStringList('bookmarked_questions') ?? [];
   }
 
-  Future<void> toggleQuestionBookmark(String questionId, [String? emailOrPhone]) async {
+  Future<void> toggleQuestionBookmark(String questionId,
+      [String? emailOrPhone]) async {
     final key = _cleanKey(emailOrPhone);
     final list = getBookmarkedQuestions(key);
     if (list.contains(questionId)) {
@@ -239,8 +251,10 @@ class StorageService {
     } else {
       list.add(questionId);
     }
-    await _prefs.setStringList('bookmarked_questions_$key', list);
-    await _prefs.setStringList('bookmarked_questions', list);
+    await Future.wait([
+      _prefs.setStringList('bookmarked_questions_$key', list),
+      _prefs.setStringList('bookmarked_questions', list),
+    ]);
   }
 
   // Question Comments
@@ -255,13 +269,15 @@ class StorageService {
   }
 
   Future<void> clearUser() async {
-    await _prefs.remove(_keyUserName);
-    await _prefs.remove(_keyUserEmail);
-    await _prefs.remove(_keyUserPhone);
-    await _prefs.remove(_keyUserProfilePic);
-    await _prefs.remove(_keyUserDob);
-    await _prefs.remove(_keyUserRating);
-    await _prefs.remove(_keyUserCity);
-    await _prefs.setBool(_keyIsLoggedIn, false);
+    await Future.wait([
+      _prefs.remove(_keyUserName),
+      _prefs.remove(_keyUserEmail),
+      _prefs.remove(_keyUserPhone),
+      _prefs.remove(_keyUserProfilePic),
+      _prefs.remove(_keyUserDob),
+      _prefs.remove(_keyUserRating),
+      _prefs.remove(_keyUserCity),
+      _prefs.setBool(_keyIsLoggedIn, false),
+    ]);
   }
 }

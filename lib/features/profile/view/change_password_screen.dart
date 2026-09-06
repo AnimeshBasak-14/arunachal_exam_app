@@ -15,7 +15,8 @@ class ChangePasswordScreen extends ConsumerStatefulWidget {
   const ChangePasswordScreen({super.key});
 
   @override
-  ConsumerState<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
+  ConsumerState<ChangePasswordScreen> createState() =>
+      _ChangePasswordScreenState();
 }
 
 class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
@@ -62,7 +63,10 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
     });
 
     Future.delayed(const Duration(milliseconds: 400), () {
-      final randomOtp = (100000 + (899999 * (DateTime.now().microsecond / 1000000))).round().toString();
+      final randomOtp =
+          (100000 + (899999 * (DateTime.now().microsecond / 1000000)))
+              .round()
+              .toString();
       setState(() {
         _sentOtp = randomOtp;
         _isSendingOtp = false;
@@ -73,12 +77,15 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusXL)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusXL)),
           title: const Row(
             children: [
-              Icon(Icons.lock_reset_rounded, color: AppColors.primary, size: 22),
+              Icon(Icons.lock_reset_rounded,
+                  color: AppColors.primary, size: 22),
               SizedBox(width: 8),
-              Text('Security Verification Code', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text('Security Verification Code',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ],
           ),
           content: Column(
@@ -91,11 +98,13 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
               ),
               const SizedBox(height: 14),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 decoration: BoxDecoration(
                   color: AppColors.primaryLight,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                  border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.3)),
                 ),
                 child: Text(
                   randomOtp,
@@ -121,14 +130,16 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                 _otpController.text = randomOtp;
                 Navigator.pop(ctx);
               },
-              child: const Text('Auto-fill Code', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text('Auto-fill Code',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(ctx),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
               ),
               child: const Text('OK'),
             ),
@@ -146,7 +157,8 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
       if (_sentOtp == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Please click "Request OTP" first to verify your identity'),
+            content: Text(
+                'Please click "Request OTP" first to verify your identity'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -165,9 +177,11 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
 
       // Update registry and save password
       final storage = ref.read(storageServiceProvider);
-      await storage.updateRegisteredPassword(user.email, _newPasswordController.text);
+      await storage.updateRegisteredPassword(
+          user.email, _newPasswordController.text);
       if (user.phone.isNotEmpty) {
-        await storage.updateRegisteredPassword(user.phone, _newPasswordController.text);
+        await storage.updateRegisteredPassword(
+            user.phone, _newPasswordController.text);
       }
 
       if (mounted) {
@@ -212,7 +226,9 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => context.pop(),
         ),
-        title: Text(isGoogleAccount && !hasExistingPassword ? 'SET PASSWORD' : 'SET / RESET PASSWORD'),
+        title: Text(isGoogleAccount && !hasExistingPassword
+            ? 'SET PASSWORD'
+            : 'SET / RESET PASSWORD'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -228,11 +244,13 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                   decoration: BoxDecoration(
                     color: AppColors.primaryLight.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(AppSpacing.radiusL),
-                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+                    border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.25)),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.shield_outlined, color: AppColors.primary, size: 28),
+                      const Icon(Icons.shield_outlined,
+                          color: AppColors.primary, size: 28),
                       const SizedBox(width: AppSpacing.m),
                       Expanded(
                         child: Column(
@@ -251,7 +269,9 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                             const SizedBox(height: 2),
                             const Text(
                               'Verify with 6-digit OTP code to safely save your new password.',
-                              style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+                              style: TextStyle(
+                                  fontSize: 11.5,
+                                  color: AppColors.textSecondary),
                             ),
                           ],
                         ),
@@ -260,7 +280,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.l),
-                
+
                 CustomTextField(
                   label: 'New Password',
                   controller: _newPasswordController,
@@ -277,7 +297,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                   },
                 ),
                 const SizedBox(height: AppSpacing.m),
-                
+
                 CustomTextField(
                   label: 'Confirm New Password',
                   controller: _confirmPasswordController,
@@ -322,10 +342,14 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                       child: SizedBox(
                         height: 52,
                         child: OutlinedButton(
-                          onPressed: _timerSeconds > 0 || _isSendingOtp ? null : _sendOtp,
+                          onPressed: _timerSeconds > 0 || _isSendingOtp
+                              ? null
+                              : _sendOtp,
                           style: OutlinedButton.styleFrom(
                             side: BorderSide(
-                              color: _timerSeconds > 0 ? AppColors.textDisabled : AppColors.primary,
+                              color: _timerSeconds > 0
+                                  ? AppColors.textDisabled
+                                  : AppColors.primary,
                               width: 1.5,
                             ),
                             shape: RoundedRectangleBorder(
@@ -336,12 +360,17 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                               ? const SizedBox(
                                   width: 20,
                                   height: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2, color: AppColors.primary),
                                 )
                               : Text(
-                                  _timerSeconds > 0 ? '${_timerSeconds}s' : 'Request OTP',
+                                  _timerSeconds > 0
+                                      ? '${_timerSeconds}s'
+                                      : 'Request OTP',
                                   style: TextStyle(
-                                    color: _timerSeconds > 0 ? AppColors.textDisabled : AppColors.primary,
+                                    color: _timerSeconds > 0
+                                        ? AppColors.textDisabled
+                                        : AppColors.primary,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 12,
                                   ),
@@ -352,7 +381,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                   ],
                 ),
                 const SizedBox(height: AppSpacing.xl),
-                
+
                 PrimaryButton(
                   text: 'SAVE PASSWORD',
                   onPressed: _submit,

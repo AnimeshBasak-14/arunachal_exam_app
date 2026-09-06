@@ -9,7 +9,8 @@ class AppscCategoriesScreen extends ConsumerStatefulWidget {
   const AppscCategoriesScreen({super.key});
 
   @override
-  ConsumerState<AppscCategoriesScreen> createState() => _AppscCategoriesScreenState();
+  ConsumerState<AppscCategoriesScreen> createState() =>
+      _AppscCategoriesScreenState();
 }
 
 class _AppscCategoriesScreenState extends ConsumerState<AppscCategoriesScreen> {
@@ -39,7 +40,8 @@ class _AppscCategoriesScreenState extends ConsumerState<AppscCategoriesScreen> {
         children: [
           // Header Card
           Container(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.s, AppSpacing.xl, AppSpacing.m, AppSpacing.l),
+            padding: const EdgeInsets.fromLTRB(
+                AppSpacing.s, AppSpacing.xl, AppSpacing.m, AppSpacing.l),
             decoration: const BoxDecoration(
               gradient: AppColors.appscGradient,
               borderRadius: BorderRadius.only(
@@ -53,7 +55,8 @@ class _AppscCategoriesScreenState extends ConsumerState<AppscCategoriesScreen> {
                 Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textWhite),
+                      icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                          color: AppColors.textWhite),
                       onPressed: () => context.pop(),
                     ),
                     const Text(
@@ -68,7 +71,8 @@ class _AppscCategoriesScreenState extends ConsumerState<AppscCategoriesScreen> {
                   ],
                 ),
                 const Padding(
-                  padding: EdgeInsets.only(left: AppSpacing.xl, top: AppSpacing.xs),
+                  padding:
+                      EdgeInsets.only(left: AppSpacing.xl, top: AppSpacing.xs),
                   child: Text(
                     'Arunachal Pradesh Public Service Commission',
                     style: TextStyle(
@@ -81,12 +85,13 @@ class _AppscCategoriesScreenState extends ConsumerState<AppscCategoriesScreen> {
               ],
             ),
           ),
-          
+
           const SizedBox(height: AppSpacing.s),
-          
+
           // Search Input
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: AppSpacing.s),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.m, vertical: AppSpacing.s),
             child: TextField(
               controller: _searchController,
               onChanged: (val) {
@@ -96,7 +101,8 @@ class _AppscCategoriesScreenState extends ConsumerState<AppscCategoriesScreen> {
               },
               decoration: InputDecoration(
                 hintText: 'Search exam',
-                prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSecondary),
+                prefixIcon: const Icon(Icons.search_rounded,
+                    color: AppColors.textSecondary),
                 suffixIcon: _query.isNotEmpty
                     ? IconButton(
                         icon: const Icon(Icons.clear, size: 18),
@@ -118,9 +124,9 @@ class _AppscCategoriesScreenState extends ConsumerState<AppscCategoriesScreen> {
               ),
             ),
           ),
-          
+
           const SizedBox(height: AppSpacing.s),
-          
+
           // Exams List View
           Expanded(
             child: appscExams.isEmpty
@@ -132,7 +138,8 @@ class _AppscCategoriesScreenState extends ConsumerState<AppscCategoriesScreen> {
                   )
                 : ListView.builder(
                     physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: AppSpacing.m),
                     itemCount: appscExams.length,
                     itemBuilder: (context, index) {
                       final exam = appscExams[index];
@@ -140,13 +147,16 @@ class _AppscCategoriesScreenState extends ConsumerState<AppscCategoriesScreen> {
                         margin: const EdgeInsets.only(bottom: AppSpacing.s),
                         decoration: BoxDecoration(
                           color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(AppSpacing.radiusL),
-                          border: Border.all(color: AppColors.divider, width: 1),
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.radiusL),
+                          border:
+                              Border.all(color: AppColors.divider, width: 1),
                         ),
                         child: ListTile(
                           leading: CircleAvatar(
                             backgroundColor: AppColors.primaryLight,
-                            child: Icon(exam.icon, color: AppColors.primary, size: 22),
+                            child: Icon(exam.icon,
+                                color: AppColors.primary, size: 22),
                           ),
                           title: Text(
                             exam.code,
@@ -170,14 +180,21 @@ class _AppscCategoriesScreenState extends ConsumerState<AppscCategoriesScreen> {
                             children: [
                               IconButton(
                                 icon: Icon(
-                                  exam.isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-                                  color: exam.isBookmarked ? AppColors.primary : AppColors.textHint,
+                                  exam.isBookmarked
+                                      ? Icons.bookmark_rounded
+                                      : Icons.bookmark_border_rounded,
+                                  color: exam.isBookmarked
+                                      ? AppColors.primary
+                                      : AppColors.textHint,
                                 ),
                                 onPressed: () {
-                                  ref.read(examViewModelProvider.notifier).toggleBookmark(exam.id);
+                                  ref
+                                      .read(examViewModelProvider.notifier)
+                                      .toggleBookmark(exam.id);
                                 },
                               ),
-                              const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: AppColors.textHint),
+                              const Icon(Icons.arrow_forward_ios_rounded,
+                                  size: 16, color: AppColors.textHint),
                             ],
                           ),
                           onTap: () {

@@ -11,7 +11,7 @@ class AppSpacing {
 
   // Corner radius
   static const double radiusS = 8.0;
-  static const double radiusM = 12.0;  // Button corners
-  static const double radiusL = 16.0;  // Core cards
+  static const double radiusM = 12.0; // Button corners
+  static const double radiusL = 16.0; // Core cards
   static const double radiusXL = 20.0; // Bottom nav indicators, premium panels
 }

@@ -18,7 +18,8 @@ class WordEntry {
 
 class WordOfTheDayData {
   static WordEntry getTodaysWord() {
-    final dayIndex = DateTime.now().difference(DateTime(2024, 1, 1)).inDays % words.length;
+    final dayIndex =
+        DateTime.now().difference(DateTime(2024, 1, 1)).inDays % words.length;
     return words[dayIndex];
   }
 
@@ -27,7 +28,8 @@ class WordOfTheDayData {
       word: 'Aberrant',
       partOfSpeech: 'Adjective',
       meaning: 'Departing from an accepted standard; abnormal.',
-      exampleSentence: 'The committee investigated the aberrant behavior of the official.',
+      exampleSentence:
+          'The committee investigated the aberrant behavior of the official.',
       synonyms: ['deviant', 'anomalous', 'abnormal'],
       antonyms: ['normal', 'typical', 'standard'],
     ),
@@ -35,7 +37,8 @@ class WordOfTheDayData {
       word: 'Benevolent',
       partOfSpeech: 'Adjective',
       meaning: 'Well-meaning and kindly; generous in spirit.',
-      exampleSentence: 'The benevolent administrator donated funds for the school.',
+      exampleSentence:
+          'The benevolent administrator donated funds for the school.',
       synonyms: ['kind', 'generous', 'charitable'],
       antonyms: ['malevolent', 'selfish', 'cruel'],
     ),
@@ -43,7 +46,8 @@ class WordOfTheDayData {
       word: 'Cacophony',
       partOfSpeech: 'Noun',
       meaning: 'A harsh, discordant mixture of sounds.',
-      exampleSentence: 'The cacophony of the marketplace made it hard to concentrate.',
+      exampleSentence:
+          'The cacophony of the marketplace made it hard to concentrate.',
       synonyms: ['discord', 'noise', 'din'],
       antonyms: ['harmony', 'melody', 'euphony'],
     ),
@@ -51,7 +55,8 @@ class WordOfTheDayData {
       word: 'Dauntless',
       partOfSpeech: 'Adjective',
       meaning: 'Showing fearlessness and determination.',
-      exampleSentence: 'The dauntless officer faced the challenge with courage.',
+      exampleSentence:
+          'The dauntless officer faced the challenge with courage.',
       synonyms: ['fearless', 'brave', 'intrepid'],
       antonyms: ['timid', 'cowardly', 'fearful'],
     ),
@@ -59,7 +64,8 @@ class WordOfTheDayData {
       word: 'Ebullient',
       partOfSpeech: 'Adjective',
       meaning: 'Cheerful and full of energy.',
-      exampleSentence: 'Her ebullient personality made her popular among peers.',
+      exampleSentence:
+          'Her ebullient personality made her popular among peers.',
       synonyms: ['enthusiastic', 'exuberant', 'vivacious'],
       antonyms: ['gloomy', 'lethargic', 'depressed'],
     ),
@@ -75,7 +81,8 @@ class WordOfTheDayData {
       word: 'Garrulous',
       partOfSpeech: 'Adjective',
       meaning: 'Excessively talkative, especially on trivial matters.',
-      exampleSentence: 'The garrulous witness delayed the proceedings considerably.',
+      exampleSentence:
+          'The garrulous witness delayed the proceedings considerably.',
       synonyms: ['talkative', 'loquacious', 'verbose'],
       antonyms: ['taciturn', 'silent', 'reticent'],
     ),
@@ -83,7 +90,8 @@ class WordOfTheDayData {
       word: 'Hapless',
       partOfSpeech: 'Adjective',
       meaning: 'Unlucky; unfortunate.',
-      exampleSentence: 'The hapless candidate failed despite months of preparation.',
+      exampleSentence:
+          'The hapless candidate failed despite months of preparation.',
       synonyms: ['unfortunate', 'unlucky', 'wretched'],
       antonyms: ['fortunate', 'lucky', 'blessed'],
     ),
@@ -107,7 +115,8 @@ class WordOfTheDayData {
       word: 'Laconic',
       partOfSpeech: 'Adjective',
       meaning: 'Using very few words; brief and concise.',
-      exampleSentence: 'His laconic reply surprised everyone who expected an explanation.',
+      exampleSentence:
+          'His laconic reply surprised everyone who expected an explanation.',
       synonyms: ['brief', 'concise', 'succinct'],
       antonyms: ['verbose', 'wordy', 'garrulous'],
     ),
@@ -115,7 +124,8 @@ class WordOfTheDayData {
       word: 'Magnanimous',
       partOfSpeech: 'Adjective',
       meaning: 'Very generous and forgiving; noble in mind and heart.',
-      exampleSentence: 'The magnanimous leader forgave his opponents after winning.',
+      exampleSentence:
+          'The magnanimous leader forgave his opponents after winning.',
       synonyms: ['generous', 'noble', 'benevolent'],
       antonyms: ['selfish', 'petty', 'mean'],
     ),
@@ -123,7 +133,8 @@ class WordOfTheDayData {
       word: 'Nefarious',
       partOfSpeech: 'Adjective',
       meaning: 'Wicked or criminal in nature.',
-      exampleSentence: 'The nefarious scheme was exposed by the vigilant officer.',
+      exampleSentence:
+          'The nefarious scheme was exposed by the vigilant officer.',
       synonyms: ['wicked', 'villainous', 'criminal'],
       antonyms: ['virtuous', 'good', 'honest'],
     ),
@@ -139,7 +150,8 @@ class WordOfTheDayData {
       word: 'Perspicacious',
       partOfSpeech: 'Adjective',
       meaning: 'Having a ready insight into things; shrewd.',
-      exampleSentence: 'A perspicacious student can identify the main idea quickly.',
+      exampleSentence:
+          'A perspicacious student can identify the main idea quickly.',
       synonyms: ['astute', 'shrewd', 'perceptive'],
       antonyms: ['obtuse', 'dull', 'imperceptive'],
     ),
@@ -147,7 +159,8 @@ class WordOfTheDayData {
       word: 'Quixotic',
       partOfSpeech: 'Adjective',
       meaning: 'Exceedingly idealistic; unrealistic and impractical.',
-      exampleSentence: 'His quixotic plan to reform the entire system overnight was rejected.',
+      exampleSentence:
+          'His quixotic plan to reform the entire system overnight was rejected.',
       synonyms: ['idealistic', 'impractical', 'utopian'],
       antonyms: ['practical', 'pragmatic', 'realistic'],
     ),
@@ -155,7 +168,8 @@ class WordOfTheDayData {
       word: 'Recalcitrant',
       partOfSpeech: 'Adjective',
       meaning: 'Having an obstinately uncooperative attitude.',
-      exampleSentence: 'The recalcitrant officer refused to follow the new protocol.',
+      exampleSentence:
+          'The recalcitrant officer refused to follow the new protocol.',
       synonyms: ['defiant', 'obstinate', 'stubborn'],
       antonyms: ['obedient', 'cooperative', 'compliant'],
     ),
@@ -163,7 +177,8 @@ class WordOfTheDayData {
       word: 'Sagacious',
       partOfSpeech: 'Adjective',
       meaning: 'Having keen mental discernment; wise.',
-      exampleSentence: 'The sagacious administrator made decisions that benefited all.',
+      exampleSentence:
+          'The sagacious administrator made decisions that benefited all.',
       synonyms: ['wise', 'shrewd', 'perceptive'],
       antonyms: ['foolish', 'unwise', 'obtuse'],
     ),
@@ -171,7 +186,8 @@ class WordOfTheDayData {
       word: 'Tenacious',
       partOfSpeech: 'Adjective',
       meaning: 'Holding firm to something; persistent and determined.',
-      exampleSentence: 'Tenacious preparation is the key to cracking the APSSB exam.',
+      exampleSentence:
+          'Tenacious preparation is the key to cracking the APSSB exam.',
       synonyms: ['persistent', 'determined', 'resolute'],
       antonyms: ['weak', 'irresolute', 'yielding'],
     ),
@@ -179,7 +195,8 @@ class WordOfTheDayData {
       word: 'Ubiquitous',
       partOfSpeech: 'Adjective',
       meaning: 'Present, appearing, or found everywhere.',
-      exampleSentence: 'Mobile phones have become ubiquitous in modern society.',
+      exampleSentence:
+          'Mobile phones have become ubiquitous in modern society.',
       synonyms: ['omnipresent', 'universal', 'pervasive'],
       antonyms: ['rare', 'scarce', 'absent'],
     ),
@@ -187,7 +204,8 @@ class WordOfTheDayData {
       word: 'Verbose',
       partOfSpeech: 'Adjective',
       meaning: 'Using or expressed in more words than are needed.',
-      exampleSentence: 'The verbose report could have been summarized in one page.',
+      exampleSentence:
+          'The verbose report could have been summarized in one page.',
       synonyms: ['wordy', 'long-winded', 'prolix'],
       antonyms: ['concise', 'brief', 'laconic'],
     ),
@@ -195,7 +213,8 @@ class WordOfTheDayData {
       word: 'Whimsical',
       partOfSpeech: 'Adjective',
       meaning: 'Playfully quaint or fanciful, especially in an appealing way.',
-      exampleSentence: 'Her whimsical essay stood out from the serious submissions.',
+      exampleSentence:
+          'Her whimsical essay stood out from the serious submissions.',
       synonyms: ['fanciful', 'playful', 'capricious'],
       antonyms: ['serious', 'practical', 'solemn'],
     ),
@@ -203,7 +222,8 @@ class WordOfTheDayData {
       word: 'Xenophobia',
       partOfSpeech: 'Noun',
       meaning: 'Dislike or prejudice against people from other countries.',
-      exampleSentence: 'Xenophobia undermines national unity and social harmony.',
+      exampleSentence:
+          'Xenophobia undermines national unity and social harmony.',
       synonyms: ['intolerance', 'bigotry', 'prejudice'],
       antonyms: ['tolerance', 'acceptance', 'openness'],
     ),
@@ -211,15 +231,21 @@ class WordOfTheDayData {
       word: 'Zealous',
       partOfSpeech: 'Adjective',
       meaning: 'Having or showing great energy in pursuit of a cause.',
-      exampleSentence: 'A zealous student leaves no topic unprepared before the exam.',
-      synonyms: ['enthusiasm', 'fervent', 'passionate'], // Changed to match prompt: ['enthusiastic', 'fervent', 'passionate']
+      exampleSentence:
+          'A zealous student leaves no topic unprepared before the exam.',
+      synonyms: [
+        'enthusiasm',
+        'fervent',
+        'passionate'
+      ], // Changed to match prompt: ['enthusiastic', 'fervent', 'passionate']
       antonyms: ['apathetic', 'indifferent', 'unenthusiastic'],
     ),
     WordEntry(
       word: 'Ameliorate',
       partOfSpeech: 'Verb',
       meaning: 'To make something bad or unsatisfactory better.',
-      exampleSentence: 'New policies were introduced to ameliorate the unemployment situation.',
+      exampleSentence:
+          'New policies were introduced to ameliorate the unemployment situation.',
       synonyms: ['improve', 'better', 'enhance'],
       antonyms: ['worsen', 'deteriorate', 'aggravate'],
     ),
@@ -235,7 +261,8 @@ class WordOfTheDayData {
       word: 'Conundrum',
       partOfSpeech: 'Noun',
       meaning: 'A confusing and difficult problem or question.',
-      exampleSentence: 'The paper presented a conundrum that stumped even toppers.',
+      exampleSentence:
+          'The paper presented a conundrum that stumped even toppers.',
       synonyms: ['puzzle', 'riddle', 'dilemma'],
       antonyms: ['solution', 'answer', 'clarity'],
     ),
@@ -243,7 +270,8 @@ class WordOfTheDayData {
       word: 'Diffident',
       partOfSpeech: 'Adjective',
       meaning: 'Modest or shy due to lack of self-confidence.',
-      exampleSentence: 'The diffident candidate spoke too quietly during the interview.',
+      exampleSentence:
+          'The diffident candidate spoke too quietly during the interview.',
       synonyms: ['shy', 'timid', 'modest'],
       antonyms: ['confident', 'bold', 'assertive'],
     ),
@@ -251,7 +279,8 @@ class WordOfTheDayData {
       word: 'Equivocal',
       partOfSpeech: 'Adjective',
       meaning: 'Open to more than one interpretation; ambiguous.',
-      exampleSentence: 'The minister gave an equivocal answer to avoid controversy.',
+      exampleSentence:
+          'The minister gave an equivocal answer to avoid controversy.',
       synonyms: ['ambiguous', 'unclear', 'vague'],
       antonyms: ['clear', 'unambiguous', 'definite'],
     ),
@@ -267,7 +296,8 @@ class WordOfTheDayData {
       word: 'Gregarious',
       partOfSpeech: 'Adjective',
       meaning: 'Fond of company; sociable.',
-      exampleSentence: 'Her gregarious nature helped her form study groups quickly.',
+      exampleSentence:
+          'Her gregarious nature helped her form study groups quickly.',
       synonyms: ['sociable', 'outgoing', 'convivial'],
       antonyms: ['solitary', 'introverted', 'reclusive'],
     ),
@@ -275,7 +305,8 @@ class WordOfTheDayData {
       word: 'Heresy',
       partOfSpeech: 'Noun',
       meaning: 'Opinion profoundly at odds with established belief or custom.',
-      exampleSentence: 'Suggesting a shorter exam was considered heresy by the board.',
+      exampleSentence:
+          'Suggesting a shorter exam was considered heresy by the board.',
       synonyms: ['dissent', 'heterodoxy', 'nonconformity'],
       antonyms: ['orthodoxy', 'conformity', 'acceptance'],
     ),
@@ -290,8 +321,10 @@ class WordOfTheDayData {
     WordEntry(
       word: 'Jargon',
       partOfSpeech: 'Noun',
-      meaning: 'Special words used by a profession that are difficult for others.',
-      exampleSentence: 'Legal jargon in the notification confused many applicants.',
+      meaning:
+          'Special words used by a profession that are difficult for others.',
+      exampleSentence:
+          'Legal jargon in the notification confused many applicants.',
       synonyms: ['terminology', 'lingo', 'parlance'],
       antonyms: ['plain language', 'clarity'],
     ),
@@ -299,7 +332,8 @@ class WordOfTheDayData {
       word: 'Kindle',
       partOfSpeech: 'Verb',
       meaning: 'To arouse or inspire a feeling or emotion.',
-      exampleSentence: 'Success in the mock test kindled her confidence for the real exam.',
+      exampleSentence:
+          'Success in the mock test kindled her confidence for the real exam.',
       synonyms: ['ignite', 'inspire', 'awaken'],
       antonyms: ['extinguish', 'dampen', 'suppress'],
     ),
@@ -315,7 +349,8 @@ class WordOfTheDayData {
       word: 'Meticulous',
       partOfSpeech: 'Adjective',
       meaning: 'Showing great attention to detail; very careful and precise.',
-      exampleSentence: 'Meticulous revision is what separates toppers from the rest.',
+      exampleSentence:
+          'Meticulous revision is what separates toppers from the rest.',
       synonyms: ['careful', 'precise', 'thorough'],
       antonyms: ['careless', 'negligent', 'sloppy'],
     ),
@@ -323,15 +358,18 @@ class WordOfTheDayData {
       word: 'Nadir',
       partOfSpeech: 'Noun',
       meaning: 'The lowest or most unsuccessful point; the bottom.',
-      exampleSentence: 'His confidence reached its nadir after repeated failures.',
+      exampleSentence:
+          'His confidence reached its nadir after repeated failures.',
       synonyms: ['bottom', 'low point', 'pit'],
       antonyms: ['zenith', 'peak', 'summit'],
     ),
     WordEntry(
       word: 'Ostentatious',
       partOfSpeech: 'Adjective',
-      meaning: 'Characterized by a vulgar or pretentious display; designed to impress.',
-      exampleSentence: 'His ostentatious lifestyle was inappropriate for a public servant.',
+      meaning:
+          'Characterized by a vulgar or pretentious display; designed to impress.',
+      exampleSentence:
+          'His ostentatious lifestyle was inappropriate for a public servant.',
       synonyms: ['showy', 'flashy', 'pretentious'],
       antonyms: ['modest', 'humble', 'understated'],
     ),
@@ -339,7 +377,8 @@ class WordOfTheDayData {
       word: 'Pragmatic',
       partOfSpeech: 'Adjective',
       meaning: 'Dealing with things sensibly and realistically.',
-      exampleSentence: 'A pragmatic approach to exam prep focuses on high-yield topics.',
+      exampleSentence:
+          'A pragmatic approach to exam prep focuses on high-yield topics.',
       synonyms: ['practical', 'realistic', 'sensible'],
       antonyms: ['idealistic', 'impractical', 'unrealistic'],
     ),
@@ -354,8 +393,10 @@ class WordOfTheDayData {
     WordEntry(
       word: 'Resilient',
       partOfSpeech: 'Adjective',
-      meaning: 'Able to withstand or recover quickly from difficult conditions.',
-      exampleSentence: 'Resilient candidates bounce back from failure and try again.',
+      meaning:
+          'Able to withstand or recover quickly from difficult conditions.',
+      exampleSentence:
+          'Resilient candidates bounce back from failure and try again.',
       synonyms: ['tough', 'adaptable', 'hardy'],
       antonyms: ['fragile', 'weak', 'vulnerable'],
     ),
@@ -371,7 +412,8 @@ class WordOfTheDayData {
       word: 'Transient',
       partOfSpeech: 'Adjective',
       meaning: 'Lasting only for a short time; impermanent.',
-      exampleSentence: 'Exam stress is transient; hard work leads to lasting success.',
+      exampleSentence:
+          'Exam stress is transient; hard work leads to lasting success.',
       synonyms: ['temporary', 'fleeting', 'brief'],
       antonyms: ['permanent', 'lasting', 'enduring'],
     ),
@@ -379,15 +421,18 @@ class WordOfTheDayData {
       word: 'Unprecedented',
       partOfSpeech: 'Adjective',
       meaning: 'Never done or known before.',
-      exampleSentence: 'The unprecedented number of applicants overwhelmed the system.',
+      exampleSentence:
+          'The unprecedented number of applicants overwhelmed the system.',
       synonyms: ['unparalleled', 'novel', 'new'],
       antonyms: ['familiar', 'ordinary', 'common'],
     ),
     WordEntry(
       word: 'Vindictive',
       partOfSpeech: 'Adjective',
-      meaning: 'Having or showing a strong desire to harm someone who has harmed you.',
-      exampleSentence: 'A vindictive attitude has no place in a professional setting.',
+      meaning:
+          'Having or showing a strong desire to harm someone who has harmed you.',
+      exampleSentence:
+          'A vindictive attitude has no place in a professional setting.',
       synonyms: ['vengeful', 'spiteful', 'revengeful'],
       antonyms: ['forgiving', 'magnanimous', 'merciful'],
     ),
@@ -395,7 +440,8 @@ class WordOfTheDayData {
       word: 'Wane',
       partOfSpeech: 'Verb',
       meaning: 'To decrease in vigour, power, or extent.',
-      exampleSentence: 'Motivation tends to wane without a structured study plan.',
+      exampleSentence:
+          'Motivation tends to wane without a structured study plan.',
       synonyms: ['diminish', 'decline', 'decrease'],
       antonyms: ['wax', 'grow', 'increase'],
     ),
@@ -403,7 +449,8 @@ class WordOfTheDayData {
       word: 'Zenith',
       partOfSpeech: 'Noun',
       meaning: 'The time at which something is most powerful or successful.',
-      exampleSentence: 'She reached the zenith of her preparation a week before the exam.',
+      exampleSentence:
+          'She reached the zenith of her preparation a week before the exam.',
       synonyms: ['peak', 'pinnacle', 'apex'],
       antonyms: ['nadir', 'low point', 'bottom'],
     ),
@@ -411,7 +458,8 @@ class WordOfTheDayData {
       word: 'Alacrity',
       partOfSpeech: 'Noun',
       meaning: 'Brisk and cheerful readiness.',
-      exampleSentence: 'He accepted the challenge with alacrity and began at once.',
+      exampleSentence:
+          'He accepted the challenge with alacrity and began at once.',
       synonyms: ['eagerness', 'enthusiasm', 'willingness'],
       antonyms: ['reluctance', 'hesitation', 'unwillingness'],
     ),
@@ -419,7 +467,8 @@ class WordOfTheDayData {
       word: 'Belligerent',
       partOfSpeech: 'Adjective',
       meaning: 'Hostile and aggressive; inclined to start quarrels.',
-      exampleSentence: 'A belligerent attitude during the interview ruined his chances.',
+      exampleSentence:
+          'A belligerent attitude during the interview ruined his chances.',
       synonyms: ['aggressive', 'hostile', 'combative'],
       antonyms: ['peaceful', 'friendly', 'amicable'],
     ),
@@ -435,7 +484,8 @@ class WordOfTheDayData {
       word: 'Deference',
       partOfSpeech: 'Noun',
       meaning: 'Humble submission and respect shown to a superior.',
-      exampleSentence: 'In deference to tradition, the ceremony followed old customs.',
+      exampleSentence:
+          'In deference to tradition, the ceremony followed old customs.',
       synonyms: ['respect', 'reverence', 'submission'],
       antonyms: ['disrespect', 'defiance', 'insolence'],
     ),
@@ -443,7 +493,8 @@ class WordOfTheDayData {
       word: 'Eminent',
       partOfSpeech: 'Adjective',
       meaning: 'Famous and respected within a particular sphere.',
-      exampleSentence: 'An eminent scholar was invited to deliver the convocation address.',
+      exampleSentence:
+          'An eminent scholar was invited to deliver the convocation address.',
       synonyms: ['distinguished', 'notable', 'renowned'],
       antonyms: ['unknown', 'obscure', 'insignificant'],
     ),
@@ -483,7 +534,8 @@ class WordOfTheDayData {
       word: 'Jingoism',
       partOfSpeech: 'Noun',
       meaning: 'Extreme patriotism in the form of aggressive foreign policy.',
-      exampleSentence: 'Jingoism can distort a country\'s approach to diplomacy.',
+      exampleSentence:
+          'Jingoism can distort a country\'s approach to diplomacy.',
       synonyms: ['chauvinism', 'nationalism', 'flag-waving'],
       antonyms: ['pacifism', 'internationalism'],
     ),

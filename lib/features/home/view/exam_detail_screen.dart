@@ -18,7 +18,8 @@ class ExamDetailScreen extends ConsumerStatefulWidget {
 class _ExamDetailScreenState extends ConsumerState<ExamDetailScreen> {
   int? _expandedIndex;
 
-  List<Widget> _buildModuleContent(BuildContext context, Exam exam, ExamSpec spec, ModuleItem module) {
+  List<Widget> _buildModuleContent(
+      BuildContext context, Exam exam, ExamSpec spec, ModuleItem module) {
     if (module.title == 'Syllabus') {
       return spec.syllabusDetails.map((detail) {
         return Padding(
@@ -55,13 +56,16 @@ class _ExamDetailScreenState extends ConsumerState<ExamDetailScreen> {
           ),
           child: ListTile(
             dense: true,
-            leading: const Icon(Icons.article_rounded, color: AppColors.primary, size: 20),
+            leading: const Icon(Icons.article_rounded,
+                color: AppColors.primary, size: 20),
             title: Text(
               p.name,
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
             ),
-            subtitle: const Text('Tap to solve full paper with solutions', style: TextStyle(fontSize: 10, color: AppColors.textSecondary)),
-            trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: AppColors.textHint),
+            subtitle: const Text('Tap to solve full paper with solutions',
+                style: TextStyle(fontSize: 10, color: AppColors.textSecondary)),
+            trailing: const Icon(Icons.arrow_forward_ios_rounded,
+                size: 12, color: AppColors.textHint),
             onTap: () {
               context.push('/pyqs/${p.code}/${p.year}');
             },
@@ -78,13 +82,17 @@ class _ExamDetailScreenState extends ConsumerState<ExamDetailScreen> {
           ),
           child: ListTile(
             dense: true,
-            leading: const Icon(Icons.quiz_rounded, color: AppColors.primary, size: 20),
+            leading: const Icon(Icons.quiz_rounded,
+                color: AppColors.primary, size: 20),
             title: Text(
               q.name,
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
             ),
-            subtitle: Text(q.desc, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-            trailing: const Icon(Icons.play_arrow_rounded, color: AppColors.primary),
+            subtitle: Text(q.desc,
+                style: const TextStyle(
+                    fontSize: 11, color: AppColors.textSecondary)),
+            trailing:
+                const Icon(Icons.play_arrow_rounded, color: AppColors.primary),
             onTap: () {
               context.push('/mock-test/${exam.code}/${q.type}');
             },
@@ -98,11 +106,13 @@ class _ExamDetailScreenState extends ConsumerState<ExamDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final exams = ref.watch(examViewModelProvider);
-    final exam = exams.firstWhere((e) => e.id == widget.examId, orElse: () => exams.first);
+    final exam = exams.firstWhere((e) => e.id == widget.examId,
+        orElse: () => exams.first);
     final spec = ExamSpecData.getSpec(exam.id, exam.code);
 
     final isAppsc = exam.categoryId == 'appsc';
-    final themeGradient = isAppsc ? AppColors.appscGradient : AppColors.apssbGradient;
+    final themeGradient =
+        isAppsc ? AppColors.appscGradient : AppColors.apssbGradient;
 
     final modules = [
       ModuleItem(
@@ -126,7 +136,8 @@ class _ExamDetailScreenState extends ConsumerState<ExamDetailScreen> {
         children: [
           // Header Card
           Container(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.s, AppSpacing.xl, AppSpacing.m, AppSpacing.l),
+            padding: const EdgeInsets.fromLTRB(
+                AppSpacing.s, AppSpacing.xl, AppSpacing.m, AppSpacing.l),
             decoration: BoxDecoration(
               gradient: themeGradient,
               borderRadius: const BorderRadius.only(
@@ -143,7 +154,8 @@ class _ExamDetailScreenState extends ConsumerState<ExamDetailScreen> {
                     Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textWhite),
+                          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                              color: AppColors.textWhite),
                           onPressed: () => context.pop(),
                         ),
                         Text(
@@ -159,17 +171,22 @@ class _ExamDetailScreenState extends ConsumerState<ExamDetailScreen> {
                     ),
                     IconButton(
                       icon: Icon(
-                        exam.isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                        exam.isBookmarked
+                            ? Icons.bookmark_rounded
+                            : Icons.bookmark_border_rounded,
                         color: AppColors.textWhite,
                       ),
                       onPressed: () {
-                        ref.read(examViewModelProvider.notifier).toggleBookmark(exam.id);
+                        ref
+                            .read(examViewModelProvider.notifier)
+                            .toggleBookmark(exam.id);
                       },
                     ),
                   ],
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(left: AppSpacing.xl, top: AppSpacing.xs),
+                  padding: const EdgeInsets.only(
+                      left: AppSpacing.xl, top: AppSpacing.xs),
                   child: Text(
                     exam.name,
                     style: const TextStyle(
@@ -182,9 +199,9 @@ class _ExamDetailScreenState extends ConsumerState<ExamDetailScreen> {
               ],
             ),
           ),
-          
+
           const SizedBox(height: AppSpacing.m),
-          
+
           // Modules List (Syllabus, PYQ, Quiz)
           Expanded(
             child: ListView.builder(
@@ -207,7 +224,8 @@ class _ExamDetailScreenState extends ConsumerState<ExamDetailScreen> {
                       ListTile(
                         leading: CircleAvatar(
                           backgroundColor: AppColors.primaryLight,
-                          child: Icon(module.icon, color: AppColors.primary, size: 22),
+                          child: Icon(module.icon,
+                              color: AppColors.primary, size: 22),
                         ),
                         title: Text(
                           module.title,
@@ -218,7 +236,9 @@ class _ExamDetailScreenState extends ConsumerState<ExamDetailScreen> {
                           ),
                         ),
                         trailing: Icon(
-                          isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                          isExpanded
+                              ? Icons.keyboard_arrow_up_rounded
+                              : Icons.keyboard_arrow_down_rounded,
                           color: AppColors.textHint,
                         ),
                         onTap: () {
@@ -233,7 +253,8 @@ class _ExamDetailScreenState extends ConsumerState<ExamDetailScreen> {
                           padding: const EdgeInsets.all(AppSpacing.m),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: _buildModuleContent(context, exam, spec, module),
+                            children: _buildModuleContent(
+                                context, exam, spec, module),
                           ),
                         ),
                       ],

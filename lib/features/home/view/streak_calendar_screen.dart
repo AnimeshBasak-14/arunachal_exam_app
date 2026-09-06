@@ -9,7 +9,8 @@ class StreakCalendarScreen extends ConsumerStatefulWidget {
   const StreakCalendarScreen({super.key});
 
   @override
-  ConsumerState<StreakCalendarScreen> createState() => _StreakCalendarScreenState();
+  ConsumerState<StreakCalendarScreen> createState() =>
+      _StreakCalendarScreenState();
 }
 
 class _StreakCalendarScreenState extends ConsumerState<StreakCalendarScreen> {
@@ -17,7 +18,7 @@ class _StreakCalendarScreenState extends ConsumerState<StreakCalendarScreen> {
   int _currentStreak = 0;
   int _longestStreak = 0;
   List<String> _activeDates = [];
-  
+
   late DateTime _selectedMonth;
 
   @override
@@ -35,8 +36,10 @@ class _StreakCalendarScreenState extends ConsumerState<StreakCalendarScreen> {
     final now = DateTime.now();
     final minAllowed = DateTime(now.year - 1, now.month);
     final newMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1, 1);
-    
-    if (newMonth.isAfter(minAllowed) || (newMonth.year == minAllowed.year && newMonth.month == minAllowed.month)) {
+
+    if (newMonth.isAfter(minAllowed) ||
+        (newMonth.year == minAllowed.year &&
+            newMonth.month == minAllowed.month)) {
       setState(() {
         _selectedMonth = newMonth;
       });
@@ -46,18 +49,29 @@ class _StreakCalendarScreenState extends ConsumerState<StreakCalendarScreen> {
   void _nextMonth() {
     final now = DateTime.now();
     final newMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1, 1);
-    
-    if (newMonth.isBefore(now) || (newMonth.year == now.year && newMonth.month == now.month)) {
+
+    if (newMonth.isBefore(now) ||
+        (newMonth.year == now.year && newMonth.month == now.month)) {
       setState(() {
         _selectedMonth = newMonth;
       });
     }
   }
-  
+
   String _getMonthName(int month) {
     const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
     ];
     return months[month - 1];
   }
@@ -80,7 +94,8 @@ class _StreakCalendarScreenState extends ConsumerState<StreakCalendarScreen> {
             const SizedBox(height: AppSpacing.s),
             _buildCalendarGrid(),
             const SizedBox(height: AppSpacing.l),
-            const Text('Achievements', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text('Achievements',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: AppSpacing.s),
             _buildAchievements(),
           ],
@@ -91,10 +106,12 @@ class _StreakCalendarScreenState extends ConsumerState<StreakCalendarScreen> {
 
   Widget _buildCalendarHeader() {
     final now = DateTime.now();
-    final isCurrentMonth = _selectedMonth.year == now.year && _selectedMonth.month == now.month;
+    final isCurrentMonth =
+        _selectedMonth.year == now.year && _selectedMonth.month == now.month;
     final minAllowed = DateTime(now.year - 1, now.month);
-    final isMinMonth = _selectedMonth.year == minAllowed.year && _selectedMonth.month == minAllowed.month;
-    
+    final isMinMonth = _selectedMonth.year == minAllowed.year &&
+        _selectedMonth.month == minAllowed.month;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -138,14 +155,18 @@ class _StreakCalendarScreenState extends ConsumerState<StreakCalendarScreen> {
           const SizedBox(height: AppSpacing.s),
           Text(
             '$_currentStreak Day Streak',
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+            style: const TextStyle(
+                fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           const SizedBox(height: AppSpacing.m),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _buildHeroStat('Longest Streak', '$_longestStreak'),
-              Container(width: 1, height: 40, color: Colors.white.withValues(alpha: 0.3)),
+              Container(
+                  width: 1,
+                  height: 40,
+                  color: Colors.white.withValues(alpha: 0.3)),
               _buildHeroStat('Total Active', '${_activeDates.length}'),
             ],
           ),
@@ -159,20 +180,24 @@ class _StreakCalendarScreenState extends ConsumerState<StreakCalendarScreen> {
       children: [
         Text(
           value,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+          style: const TextStyle(
+              fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         const SizedBox(height: 4),
         Text(
           label,
-          style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.8)),
+          style: TextStyle(
+              fontSize: 12, color: Colors.white.withValues(alpha: 0.8)),
         ),
       ],
     );
   }
 
   Widget _buildCalendarGrid() {
-    final daysInMonth = DateUtils.getDaysInMonth(_selectedMonth.year, _selectedMonth.month);
-    final firstDayOffset = DateTime(_selectedMonth.year, _selectedMonth.month, 1).weekday - 1;
+    final daysInMonth =
+        DateUtils.getDaysInMonth(_selectedMonth.year, _selectedMonth.month);
+    final firstDayOffset =
+        DateTime(_selectedMonth.year, _selectedMonth.month, 1).weekday - 1;
     final totalCells = daysInMonth + firstDayOffset;
     final now = DateTime.now();
 
@@ -194,8 +219,13 @@ class _StreakCalendarScreenState extends ConsumerState<StreakCalendarScreen> {
           const Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              Text('Mon'), Text('Tue'), Text('Wed'), Text('Thu'),
-              Text('Fri'), Text('Sat'), Text('Sun'),
+              Text('Mon'),
+              Text('Tue'),
+              Text('Wed'),
+              Text('Thu'),
+              Text('Fri'),
+              Text('Sat'),
+              Text('Sun'),
             ],
           ),
           const SizedBox(height: AppSpacing.s),
@@ -212,31 +242,40 @@ class _StreakCalendarScreenState extends ConsumerState<StreakCalendarScreen> {
               if (index < firstDayOffset) {
                 return const SizedBox();
               }
-              
+
               final day = index - firstDayOffset + 1;
-              final dateStr = '${_selectedMonth.year}-${_selectedMonth.month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}';
+              final dateStr =
+                  '${_selectedMonth.year}-${_selectedMonth.month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}';
               final isActive = _activeDates.contains(dateStr);
-              final isToday = now.year == _selectedMonth.year && now.month == _selectedMonth.month && now.day == day;
-              
+              final isToday = now.year == _selectedMonth.year &&
+                  now.month == _selectedMonth.month &&
+                  now.day == day;
+
               return Container(
                 decoration: BoxDecoration(
-                  color: isActive ? Colors.green.shade500 : Colors.grey.shade200,
+                  color:
+                      isActive ? Colors.green.shade500 : Colors.grey.shade200,
                   borderRadius: BorderRadius.circular(8),
-                  border: isToday ? Border.all(color: Colors.blue, width: 2) : null,
-                  boxShadow: isActive ? [
-                    BoxShadow(
-                      color: Colors.green.shade400.withValues(alpha: 0.6),
-                      blurRadius: 6,
-                      spreadRadius: 1,
-                    )
-                  ] : null,
+                  border:
+                      isToday ? Border.all(color: Colors.blue, width: 2) : null,
+                  boxShadow: isActive
+                      ? [
+                          BoxShadow(
+                            color: Colors.green.shade400.withValues(alpha: 0.6),
+                            blurRadius: 6,
+                            spreadRadius: 1,
+                          )
+                        ]
+                      : null,
                 ),
                 alignment: Alignment.center,
                 child: Text(
                   '$day',
                   style: TextStyle(
                     color: isActive ? Colors.white : Colors.grey.shade600,
-                    fontWeight: (isActive || isToday) ? FontWeight.bold : FontWeight.normal,
+                    fontWeight: (isActive || isToday)
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                   ),
                 ),
               );
@@ -283,14 +322,18 @@ class _StreakCalendarScreenState extends ConsumerState<StreakCalendarScreen> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: isUnlocked ? Colors.orange.shade900 : AppColors.textPrimary,
+                    color: isUnlocked
+                        ? Colors.orange.shade900
+                        : AppColors.textPrimary,
                   ),
                 ),
                 Text(
                   'Reach a $requiredStreak-day streak',
                   style: TextStyle(
                     fontSize: 12,
-                    color: isUnlocked ? Colors.orange.shade700 : AppColors.textSecondary,
+                    color: isUnlocked
+                        ? Colors.orange.shade700
+                        : AppColors.textSecondary,
                   ),
                 ),
               ],

@@ -2,7 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../core/services/service_providers.dart';
 
-final onboardingViewModelProvider = StateNotifierProvider<OnboardingViewModel, bool>((ref) {
+final onboardingViewModelProvider =
+    StateNotifierProvider<OnboardingViewModel, bool>((ref) {
   final storage = ref.watch(storageServiceProvider);
   return OnboardingViewModel(storage);
 });

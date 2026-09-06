@@ -37,13 +37,16 @@ class TrophyHistoryScreen extends ConsumerWidget {
       final jsonStr = historyJsonList[i];
       try {
         final examCode = _parseJsonVal(jsonStr, 'examCode');
-        final ratingChange = int.tryParse(_parseJsonVal(jsonStr, 'ratingChange')) ?? 0;
-        final speedBonus = int.tryParse(_parseJsonVal(jsonStr, 'speedBonus')) ?? 0;
+        final ratingChange =
+            int.tryParse(_parseJsonVal(jsonStr, 'ratingChange')) ?? 0;
+        final speedBonus =
+            int.tryParse(_parseJsonVal(jsonStr, 'speedBonus')) ?? 0;
         final totalChange = ratingChange + speedBonus;
         final score = _parseJsonVal(jsonStr, 'score');
         final maxScore = _parseJsonVal(jsonStr, 'maxScore');
         final date = _parseJsonVal(jsonStr, 'date');
-        final timeTaken = int.tryParse(_parseJsonVal(jsonStr, 'timeTaken')) ?? 0;
+        final timeTaken =
+            int.tryParse(_parseJsonVal(jsonStr, 'timeTaken')) ?? 0;
 
         final ratingAfter = runningRating;
         final ratingBefore = runningRating - totalChange;
@@ -88,27 +91,34 @@ class TrophyHistoryScreen extends ConsumerWidget {
             padding: const EdgeInsets.only(right: 16),
             child: Row(
               children: [
-                const Icon(Icons.emoji_events_rounded, color: AppColors.accent, size: 18),
+                const Icon(Icons.emoji_events_rounded,
+                    color: AppColors.accent, size: 18),
                 const SizedBox(width: 4),
                 Text(
                   '$currentRating',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 15),
                 ),
               ],
             ),
           ),
         ],
       ),
-      body: events.isEmpty || (events.length == 1 && events[0]['type'] == 'account')
+      body: events.isEmpty ||
+              (events.length == 1 && events[0]['type'] == 'account')
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.emoji_events_outlined, size: 64, color: AppColors.textHint),
+                  const Icon(Icons.emoji_events_outlined,
+                      size: 64, color: AppColors.textHint),
                   const SizedBox(height: 16),
                   const Text(
                     'No trophy history yet.',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textSecondary),
                   ),
                   const SizedBox(height: 8),
                   const Text(
@@ -162,9 +172,13 @@ class TrophyHistoryScreen extends ConsumerWidget {
                             height: 36,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: isGain ? AppColors.success.withValues(alpha: 0.12) : AppColors.error.withValues(alpha: 0.12),
+                              color: isGain
+                                  ? AppColors.success.withValues(alpha: 0.12)
+                                  : AppColors.error.withValues(alpha: 0.12),
                               border: Border.all(
-                                color: isGain ? AppColors.success.withValues(alpha: 0.4) : AppColors.error.withValues(alpha: 0.4),
+                                color: isGain
+                                    ? AppColors.success.withValues(alpha: 0.4)
+                                    : AppColors.error.withValues(alpha: 0.4),
                                 width: 1.5,
                               ),
                             ),
@@ -174,7 +188,9 @@ class TrophyHistoryScreen extends ConsumerWidget {
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w900,
-                                  color: isGain ? AppColors.success : AppColors.error,
+                                  color: isGain
+                                      ? AppColors.success
+                                      : AppColors.error,
                                 ),
                               ),
                             ),
@@ -194,7 +210,8 @@ class TrophyHistoryScreen extends ConsumerWidget {
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(AppSpacing.radiusL),
+                            borderRadius:
+                                BorderRadius.circular(AppSpacing.radiusL),
                             border: Border.all(color: AppColors.divider),
                           ),
                           child: Column(
@@ -202,16 +219,21 @@ class TrophyHistoryScreen extends ConsumerWidget {
                             children: [
                               Row(
                                 children: [
-                                  const Icon(Icons.task_alt_rounded, color: AppColors.primary, size: 14),
+                                  const Icon(Icons.task_alt_rounded,
+                                      color: AppColors.primary, size: 14),
                                   const SizedBox(width: 6),
                                   Text(
                                     '$examCode Mock Test',
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13),
                                   ),
                                   const Spacer(),
                                   Text(
                                     date,
-                                    style: const TextStyle(fontSize: 10, color: AppColors.textHint),
+                                    style: const TextStyle(
+                                        fontSize: 10,
+                                        color: AppColors.textHint),
                                   ),
                                 ],
                               ),
@@ -222,8 +244,12 @@ class TrophyHistoryScreen extends ConsumerWidget {
                                 runSpacing: 4,
                                 crossAxisAlignment: WrapCrossAlignment.center,
                                 children: [
-                                  _infoChip(Icons.equalizer_rounded, 'Score $score / $maxScore', AppColors.primary),
-                                  _infoChip(Icons.timer_outlined, '${mins}m ${secs}s', AppColors.secondary),
+                                  _infoChip(
+                                      Icons.equalizer_rounded,
+                                      'Score $score / $maxScore',
+                                      AppColors.primary),
+                                  _infoChip(Icons.timer_outlined,
+                                      '${mins}m ${secs}s', AppColors.secondary),
                                 ],
                               ),
                               const SizedBox(height: 8),
@@ -236,9 +262,15 @@ class TrophyHistoryScreen extends ConsumerWidget {
                                       spacing: 4,
                                       runSpacing: 4,
                                       children: [
-                                        _trophyTag('Score', ratingChange, AppColors.textPrimary),
+                                        _trophyTag('Score', ratingChange,
+                                            AppColors.textPrimary),
                                         if (speedBonus != 0)
-                                          _trophyTag('Speed', speedBonus, speedBonus > 0 ? AppColors.accent : AppColors.error),
+                                          _trophyTag(
+                                              'Speed',
+                                              speedBonus,
+                                              speedBonus > 0
+                                                  ? AppColors.accent
+                                                  : AppColors.error),
                                       ],
                                     ),
                                   ),
@@ -249,22 +281,30 @@ class TrophyHistoryScreen extends ConsumerWidget {
                                     children: [
                                       Text(
                                         '$ratingBefore',
-                                        style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                                        style: const TextStyle(
+                                            fontSize: 11,
+                                            color: AppColors.textSecondary),
                                       ),
                                       const Padding(
-                                        padding: EdgeInsets.symmetric(horizontal: 2),
-                                        child: Icon(Icons.arrow_forward_rounded, size: 11, color: AppColors.textHint),
+                                        padding:
+                                            EdgeInsets.symmetric(horizontal: 2),
+                                        child: Icon(Icons.arrow_forward_rounded,
+                                            size: 11,
+                                            color: AppColors.textHint),
                                       ),
                                       Text(
                                         '$ratingAfter',
                                         style: TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
-                                          color: isGain ? AppColors.success : AppColors.error,
+                                          color: isGain
+                                              ? AppColors.success
+                                              : AppColors.error,
                                         ),
                                       ),
                                       const SizedBox(width: 2),
-                                      const Icon(Icons.emoji_events_rounded, color: AppColors.accent, size: 12),
+                                      const Icon(Icons.emoji_events_rounded,
+                                          color: AppColors.accent, size: 12),
                                     ],
                                   ),
                                 ],
@@ -293,7 +333,9 @@ class TrophyHistoryScreen extends ConsumerWidget {
         children: [
           Icon(icon, color: color, size: 11),
           const SizedBox(width: 4),
-          Text(label, style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w600)),
+          Text(label,
+              style: TextStyle(
+                  fontSize: 11, color: color, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -309,7 +351,8 @@ class TrophyHistoryScreen extends ConsumerWidget {
       ),
       child: Text(
         '$label: $str 🏆',
-        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: color),
+        style:
+            TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: color),
       ),
     );
   }
@@ -327,7 +370,8 @@ class TrophyHistoryScreen extends ConsumerWidget {
             border: Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
           ),
           child: const Center(
-            child: Icon(Icons.person_add_alt_1_rounded, color: AppColors.primary, size: 18),
+            child: Icon(Icons.person_add_alt_1_rounded,
+                color: AppColors.primary, size: 18),
           ),
         ),
         const SizedBox(width: 12),
@@ -337,7 +381,8 @@ class TrophyHistoryScreen extends ConsumerWidget {
             decoration: BoxDecoration(
               color: AppColors.primaryLight.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(AppSpacing.radiusL),
-              border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+              border:
+                  Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
             ),
             child: const Row(
               children: [
@@ -346,7 +391,10 @@ class TrophyHistoryScreen extends ConsumerWidget {
                 Flexible(
                   child: Text(
                     'Account Created · Started with 1200 🏆',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primaryDark),
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryDark),
                   ),
                 ),
               ],

@@ -3,7 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:arunachal_exam_app/core/widgets/custom_text_field.dart';
 
 void main() {
-  testWidgets('CustomTextField password field shows tooltip and toggles obscure text', (WidgetTester tester) async {
+  testWidgets(
+      'CustomTextField password field shows tooltip and toggles obscure text',
+      (WidgetTester tester) async {
     final controller = TextEditingController();
 
     await tester.pumpWidget(

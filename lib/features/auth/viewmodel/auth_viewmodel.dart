@@ -74,7 +74,8 @@ class AuthViewModel extends StateNotifier<AuthState> {
     if (!isGmail && !isPhone) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: 'Invalid ID. Only Gmail (@gmail.com) or 10-digit Phone numbers allowed.',
+        errorMessage:
+            'Invalid ID. Only Gmail (@gmail.com) or 10-digit Phone numbers allowed.',
       );
       return false;
     }
@@ -164,14 +165,16 @@ class AuthViewModel extends StateNotifier<AuthState> {
     final isPhone = RegExp(r'^\d{10}$').hasMatch(cleanInput);
 
     if (name.trim().isEmpty) {
-      state = state.copyWith(isLoading: false, errorMessage: 'Please enter your name');
+      state = state.copyWith(
+          isLoading: false, errorMessage: 'Please enter your name');
       return false;
     }
 
     if (!isGmail && !isPhone) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: 'Only Gmail (@gmail.com) or 10-digit Phone numbers are allowed.',
+        errorMessage:
+            'Only Gmail (@gmail.com) or 10-digit Phone numbers are allowed.',
       );
       return false;
     }
@@ -181,23 +184,29 @@ class AuthViewModel extends StateNotifier<AuthState> {
     if (existingPwd != null) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: 'An account already exists for this Gmail/Phone. Please log in.',
+        errorMessage:
+            'An account already exists for this Gmail/Phone. Please log in.',
       );
       return false;
     }
 
     if (otpEntered.isEmpty || otpEntered != otpSent) {
-      state = state.copyWith(isLoading: false, errorMessage: 'Wrong OTP entered. Please check and try again.');
+      state = state.copyWith(
+          isLoading: false,
+          errorMessage: 'Wrong OTP entered. Please check and try again.');
       return false;
     }
 
     if (password != confirmPassword) {
-      state = state.copyWith(isLoading: false, errorMessage: 'Passwords do not match');
+      state = state.copyWith(
+          isLoading: false, errorMessage: 'Passwords do not match');
       return false;
     }
 
     if (password.length < 6) {
-      state = state.copyWith(isLoading: false, errorMessage: 'Password must be at least 6 characters');
+      state = state.copyWith(
+          isLoading: false,
+          errorMessage: 'Password must be at least 6 characters');
       return false;
     }
 
@@ -329,9 +338,11 @@ class AuthViewModel extends StateNotifier<AuthState> {
     final selectedCity = city ?? state.user!.city;
 
     // Update registered paths
-    await _storage.updateRegisteredAccount(state.user!.email, email, name, selectedDob, selectedRating);
+    await _storage.updateRegisteredAccount(
+        state.user!.email, email, name, selectedDob, selectedRating);
     if (state.user!.phone.isNotEmpty) {
-      await _storage.updateRegisteredAccount(state.user!.phone, phone, name, selectedDob, selectedRating);
+      await _storage.updateRegisteredAccount(
+          state.user!.phone, phone, name, selectedDob, selectedRating);
     }
 
     await _storage.saveUser(
@@ -374,7 +385,8 @@ class AuthViewModel extends StateNotifier<AuthState> {
   }
 }
 
-final authViewModelProvider = StateNotifierProvider<AuthViewModel, AuthState>((ref) {
+final authViewModelProvider =
+    StateNotifierProvider<AuthViewModel, AuthState>((ref) {
   final storage = ref.watch(storageServiceProvider);
   final firebase = ref.watch(firebaseServiceProvider);
   return AuthViewModel(storage, firebase);

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../models/exam.dart';
 
-final examViewModelProvider = StateNotifierProvider<ExamViewModel, List<Exam>>((ref) {
+final examViewModelProvider =
+    StateNotifierProvider<ExamViewModel, List<Exam>>((ref) {
   return ExamViewModel();
 });
 
@@ -88,7 +89,7 @@ class ExamViewModel extends StateNotifier<List<Exam>> {
       icon: Icons.gavel_rounded,
       categoryId: 'appsc',
     ),
-    
+
     // APSSB Exams
     Exam(
       id: 'apssb_chsl',
@@ -130,7 +131,10 @@ class ExamViewModel extends StateNotifier<List<Exam>> {
   void toggleBookmark(String id) {
     state = [
       for (final exam in state)
-        if (exam.id == id) exam.copyWith(isBookmarked: !exam.isBookmarked) else exam
+        if (exam.id == id)
+          exam.copyWith(isBookmarked: !exam.isBookmarked)
+        else
+          exam
     ];
   }
 }

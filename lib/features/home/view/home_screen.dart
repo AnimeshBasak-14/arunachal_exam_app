@@ -40,7 +40,8 @@ class HomeScreen extends ConsumerWidget {
               icon: const Icon(Icons.psychology_rounded, color: Colors.white),
               label: const Text(
                 'AI Tutor',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
             )
           : null,
@@ -61,7 +62,8 @@ class HomeScreen extends ConsumerWidget {
           },
           selectedItemColor: AppColors.primary,
           unselectedItemColor: AppColors.textHint,
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+          selectedLabelStyle:
+              const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
           unselectedLabelStyle: const TextStyle(fontSize: 12),
           backgroundColor: AppColors.surface,
           items: const [
@@ -113,9 +115,11 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
     final exams = ref.watch(examViewModelProvider);
     final searchQuery = ref.watch(searchFilterProvider);
 
-    final filteredExams = exams.where((exam) =>
-        exam.code.toLowerCase().contains(searchQuery.toLowerCase()) ||
-        exam.name.toLowerCase().contains(searchQuery.toLowerCase())).toList();
+    final filteredExams = exams
+        .where((exam) =>
+            exam.code.toLowerCase().contains(searchQuery.toLowerCase()) ||
+            exam.name.toLowerCase().contains(searchQuery.toLowerCase()))
+        .toList();
 
     Color getAvatarColor(String? avatarName) {
       switch (avatarName) {
@@ -140,7 +144,8 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
         children: [
           // 1. Header Card (Page 2 & 11)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l, vertical: AppSpacing.xl),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.l, vertical: AppSpacing.xl),
             decoration: const BoxDecoration(
               gradient: AppColors.primaryGradient,
               borderRadius: BorderRadius.only(
@@ -160,7 +165,10 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                         children: [
                           Text(
                             'Hi, $userName',
-                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineMedium
+                                ?.copyWith(
                                   color: AppColors.textWhite,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -169,7 +177,8 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                           Text(
                             'What do you want to learn today?',
                             style: TextStyle(
-                              color: AppColors.textWhite.withValues(alpha: 0.85),
+                              color:
+                                  AppColors.textWhite.withValues(alpha: 0.85),
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                             ),
@@ -204,22 +213,27 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                         const SizedBox(width: AppSpacing.s),
                         GestureDetector(
                           onTap: () {
-                            ref.read(currentTabProvider.notifier).state = 2; // Profile Tab
+                            ref.read(currentTabProvider.notifier).state =
+                                2; // Profile Tab
                           },
                           child: Hero(
                             tag: 'profile_avatar_hero',
                             child: Builder(
                               builder: (context) {
                                 final pic = authState.user?.profilePic;
-                                final isFile = pic != null && !pic.startsWith('avatar_');
+                                final isFile =
+                                    pic != null && !pic.startsWith('avatar_');
                                 return CircleAvatar(
                                   radius: 22,
                                   backgroundColor: getAvatarColor(pic),
-                                  backgroundImage: isFile ? FileImage(File(pic)) : null,
+                                  backgroundImage:
+                                      isFile ? FileImage(File(pic)) : null,
                                   child: isFile
                                       ? null
                                       : Text(
-                                          userName.isNotEmpty ? userName[0].toUpperCase() : 'S',
+                                          userName.isNotEmpty
+                                              ? userName[0].toUpperCase()
+                                              : 'S',
                                           style: const TextStyle(
                                             color: AppColors.textWhite,
                                             fontWeight: FontWeight.bold,
@@ -246,7 +260,8 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                         GestureDetector(
                           onTap: () => context.push('/streak-calendar'),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(20),
@@ -254,7 +269,8 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Text('🔥', style: TextStyle(fontSize: 14)),
+                                const Text('🔥',
+                                    style: TextStyle(fontSize: 14)),
                                 const SizedBox(width: 4),
                                 Text(
                                   '$streak day streak!',
@@ -292,19 +308,23 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                         },
                         decoration: InputDecoration(
                           hintText: AppStrings.searchPlaceholder,
-                          prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSecondary),
+                          prefixIcon: const Icon(Icons.search_rounded,
+                              color: AppColors.textSecondary),
                           suffixIcon: searchQuery.isNotEmpty
                               ? IconButton(
                                   icon: const Icon(Icons.clear, size: 18),
                                   onPressed: () {
                                     _searchController.clear();
-                                    ref.read(searchFilterProvider.notifier).state = '';
+                                    ref
+                                        .read(searchFilterProvider.notifier)
+                                        .state = '';
                                   },
                                 )
                               : null,
                           fillColor: AppColors.surface,
                           filled: true,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                          contentPadding:
+                              const EdgeInsets.symmetric(vertical: 0),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -323,17 +343,23 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                       child: InkWell(
                         onTap: () {
                           // Toggle simple filter helper
-                          ref.read(searchFilterProvider.notifier).state = searchQuery.isEmpty ? 'Exam' : '';
-                          _searchController.text = ref.read(searchFilterProvider);
+                          ref.read(searchFilterProvider.notifier).state =
+                              searchQuery.isEmpty ? 'Exam' : '';
+                          _searchController.text =
+                              ref.read(searchFilterProvider);
                         },
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.filter_list_rounded, color: AppColors.textWhite, size: 18),
+                            Icon(Icons.filter_list_rounded,
+                                color: AppColors.textWhite, size: 18),
                             SizedBox(width: 4),
                             Text(
                               AppStrings.filterText,
-                              style: TextStyle(color: AppColors.textWhite, fontWeight: FontWeight.bold, fontSize: 13),
+                              style: TextStyle(
+                                  color: AppColors.textWhite,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13),
                             ),
                           ],
                         ),
@@ -374,23 +400,32 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                           margin: const EdgeInsets.only(bottom: AppSpacing.s),
                           decoration: BoxDecoration(
                             color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(AppSpacing.radiusL),
-                            border: Border.all(color: AppColors.divider, width: 1),
+                            borderRadius:
+                                BorderRadius.circular(AppSpacing.radiusL),
+                            border:
+                                Border.all(color: AppColors.divider, width: 1),
                           ),
                           child: ListTile(
                             leading: CircleAvatar(
                               backgroundColor: AppColors.primaryLight,
-                              child: Icon(exam.icon, color: AppColors.primary, size: 22),
+                              child: Icon(exam.icon,
+                                  color: AppColors.primary, size: 22),
                             ),
                             title: Text(
                               exam.code,
-                              style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textPrimary),
                             ),
                             subtitle: Text(
                               exam.name,
-                              style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                              style: const TextStyle(
+                                  color: AppColors.textSecondary, fontSize: 13),
                             ),
-                            trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: AppColors.textHint),
+                            trailing: const Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                size: 16,
+                                color: AppColors.textHint),
                             onTap: () {
                               context.push('/exam-detail/${exam.id}');
                             },
@@ -427,7 +462,10 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                               const SizedBox(height: 4),
                               Text(
                                 'General Studies:\nIntro to Arunachal',
-                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge
+                                    ?.copyWith(
                                       color: AppColors.textPrimary,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 18,
@@ -478,7 +516,8 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                             height: 110,
                             decoration: BoxDecoration(
                               gradient: AppColors.appscGradient,
-                              borderRadius: BorderRadius.circular(AppSpacing.radiusL),
+                              borderRadius:
+                                  BorderRadius.circular(AppSpacing.radiusL),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.amber.withValues(alpha: 0.25),
@@ -510,7 +549,8 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                             height: 110,
                             decoration: BoxDecoration(
                               gradient: AppColors.apssbGradient,
-                              borderRadius: BorderRadius.circular(AppSpacing.radiusL),
+                              borderRadius:
+                                  BorderRadius.circular(AppSpacing.radiusL),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.teal.withValues(alpha: 0.25),
@@ -556,7 +596,8 @@ class BookmarksTabBody extends ConsumerStatefulWidget {
   ConsumerState<BookmarksTabBody> createState() => _BookmarksTabBodyState();
 }
 
-class _BookmarksTabBodyState extends ConsumerState<BookmarksTabBody> with SingleTickerProviderStateMixin {
+class _BookmarksTabBodyState extends ConsumerState<BookmarksTabBody>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   List<Question> _bookmarkedQs = [];
   bool _loadingQs = false;
@@ -569,7 +610,10 @@ class _BookmarksTabBodyState extends ConsumerState<BookmarksTabBody> with Single
 
   Future<void> _loadBookmarkedQuestions(List<String> ids) async {
     if (ids.isEmpty) {
-      setState(() { _bookmarkedQs = []; _loadingQs = false; });
+      setState(() {
+        _bookmarkedQs = [];
+        _loadingQs = false;
+      });
       return;
     }
     setState(() => _loadingQs = true);
@@ -582,12 +626,17 @@ class _BookmarksTabBodyState extends ConsumerState<BookmarksTabBody> with Single
       }
       final results = <Question>[];
       for (final chunk in chunks) {
-        final snap = await firestore.collection('questions')
+        final snap = await firestore
+            .collection('questions')
             .where(FieldPath.documentId, whereIn: chunk)
             .get();
         results.addAll(snap.docs.map((d) => Question.fromFirestore(d)));
       }
-      if (mounted) setState(() { _bookmarkedQs = results; _loadingQs = false; });
+      if (mounted)
+        setState(() {
+          _bookmarkedQs = results;
+          _loadingQs = false;
+        });
     } catch (e) {
       if (mounted) setState(() => _loadingQs = false);
     }
@@ -605,13 +654,15 @@ class _BookmarksTabBodyState extends ConsumerState<BookmarksTabBody> with Single
 
     // Load question bookmarks
     final bookmarkedQuestionIds = ref.watch(bookmarkedQuestionsProvider);
-    
-    if (!_loadingQs && _bookmarkedQs.isEmpty && bookmarkedQuestionIds.isNotEmpty) {
+
+    if (!_loadingQs &&
+        _bookmarkedQs.isEmpty &&
+        bookmarkedQuestionIds.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _loadBookmarkedQuestions(bookmarkedQuestionIds);
       });
     }
-    
+
     final bookmarkedQuestions = _bookmarkedQs;
 
     // Group by Exam Code
@@ -669,11 +720,13 @@ class _BookmarksTabBodyState extends ConsumerState<BookmarksTabBody> with Single
                             child: ListTile(
                               leading: CircleAvatar(
                                 backgroundColor: AppColors.primaryLight,
-                                child: Icon(exam.icon, color: AppColors.primary),
+                                child:
+                                    Icon(exam.icon, color: AppColors.primary),
                               ),
                               title: Text(
                                 exam.code,
-                                style: const TextStyle(fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
                               ),
                               subtitle: Text(
                                 exam.name,
@@ -681,9 +734,12 @@ class _BookmarksTabBodyState extends ConsumerState<BookmarksTabBody> with Single
                                 overflow: TextOverflow.ellipsis,
                               ),
                               trailing: IconButton(
-                                icon: const Icon(Icons.bookmark_rounded, color: AppColors.primary),
+                                icon: const Icon(Icons.bookmark_rounded,
+                                    color: AppColors.primary),
                                 onPressed: () {
-                                  ref.read(examViewModelProvider.notifier).toggleBookmark(exam.id);
+                                  ref
+                                      .read(examViewModelProvider.notifier)
+                                      .toggleBookmark(exam.id);
                                 },
                               ),
                               onTap: () {
@@ -699,7 +755,8 @@ class _BookmarksTabBodyState extends ConsumerState<BookmarksTabBody> with Single
                     ? _buildEmptyState(
                         icon: Icons.question_answer_outlined,
                         title: 'No bookmarked questions',
-                        subtitle: 'Read through PYQs and tap bookmark to save questions here.',
+                        subtitle:
+                            'Read through PYQs and tap bookmark to save questions here.',
                       )
                     : ListView.builder(
                         itemCount: groupedByExam.keys.length,
@@ -712,7 +769,9 @@ class _BookmarksTabBodyState extends ConsumerState<BookmarksTabBody> with Single
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               Padding(
-                                padding: const EdgeInsets.symmetric(vertical: AppSpacing.s, horizontal: AppSpacing.xs),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: AppSpacing.s,
+                                    horizontal: AppSpacing.xs),
                                 child: Text(
                                   '$examCode QUESTIONS (${questions.length})',
                                   style: const TextStyle(
@@ -725,21 +784,27 @@ class _BookmarksTabBodyState extends ConsumerState<BookmarksTabBody> with Single
                               ),
                               ...questions.map((q) {
                                 return Card(
-                                  margin: const EdgeInsets.only(bottom: AppSpacing.s),
+                                  margin: const EdgeInsets.only(
+                                      bottom: AppSpacing.s),
                                   child: ListTile(
                                     title: Text(
                                       q.questionText,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                                      style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600),
                                     ),
                                     subtitle: Text(
                                       '${q.subject} • ${q.year} Paper',
                                       style: const TextStyle(fontSize: 11),
                                     ),
-                                    trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
+                                    trailing: const Icon(
+                                        Icons.arrow_forward_ios_rounded,
+                                        size: 14),
                                     onTap: () {
-                                      context.push('/pyqs/${q.examCode}/${q.year}');
+                                      context.push(
+                                          '/pyqs/${q.examCode}/${q.year}');
                                     },
                                   ),
                                 );
@@ -757,7 +822,10 @@ class _BookmarksTabBodyState extends ConsumerState<BookmarksTabBody> with Single
     );
   }
 
-  Widget _buildEmptyState({required IconData icon, required String title, required String subtitle}) {
+  Widget _buildEmptyState(
+      {required IconData icon,
+      required String title,
+      required String subtitle}) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -765,7 +833,10 @@ class _BookmarksTabBodyState extends ConsumerState<BookmarksTabBody> with Single
         const SizedBox(height: AppSpacing.m),
         Text(
           title,
-          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textSecondary, fontSize: 16),
+          style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: AppColors.textSecondary,
+              fontSize: 16),
         ),
         const SizedBox(height: AppSpacing.xs),
         Text(

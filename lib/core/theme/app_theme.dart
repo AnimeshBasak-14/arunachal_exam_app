@@ -80,7 +80,8 @@ class AppTheme {
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.textWhite,
           elevation: 0,
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.m, horizontal: AppSpacing.l),
+          padding: const EdgeInsets.symmetric(
+              vertical: AppSpacing.m, horizontal: AppSpacing.l),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSpacing.radiusM),
           ),

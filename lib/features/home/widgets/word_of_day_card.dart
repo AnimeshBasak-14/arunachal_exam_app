@@ -42,7 +42,8 @@ class _WordOfDayCardState extends State<WordOfDayCard> {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
@@ -59,7 +60,9 @@ class _WordOfDayCardState extends State<WordOfDayCard> {
                 ),
                 const Spacer(),
                 Icon(
-                  _expanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                  _expanded
+                      ? Icons.keyboard_arrow_up_rounded
+                      : Icons.keyboard_arrow_down_rounded,
                   color: Colors.white54,
                   size: 20,
                 ),
@@ -102,14 +105,19 @@ class _WordOfDayCardState extends State<WordOfDayCard> {
               const SizedBox(height: AppSpacing.s),
               const Divider(color: Colors.white24, height: 1),
               const SizedBox(height: AppSpacing.s),
-              _buildPill('Example', word.exampleSentence, Icons.format_quote_rounded),
+              _buildPill(
+                  'Example', word.exampleSentence, Icons.format_quote_rounded),
               const SizedBox(height: 6),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(child: _buildTagRow('Synonyms', word.synonyms, const Color(0xFF4CAF50))),
+                  Expanded(
+                      child: _buildTagRow(
+                          'Synonyms', word.synonyms, const Color(0xFF4CAF50))),
                   const SizedBox(width: 8),
-                  Expanded(child: _buildTagRow('Antonyms', word.antonyms, const Color(0xFFE57373))),
+                  Expanded(
+                      child: _buildTagRow(
+                          'Antonyms', word.antonyms, const Color(0xFFE57373))),
                 ],
               ),
             ],
@@ -128,7 +136,11 @@ class _WordOfDayCardState extends State<WordOfDayCard> {
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(color: Colors.white70, fontSize: 12, fontStyle: FontStyle.italic, height: 1.3),
+            style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+                height: 1.3),
           ),
         ),
       ],
@@ -139,20 +151,32 @@ class _WordOfDayCardState extends State<WordOfDayCard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.8)),
+        Text(label,
+            style: TextStyle(
+                color: color,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.8)),
         const SizedBox(height: 4),
         Wrap(
           spacing: 4,
           runSpacing: 4,
-          children: words.map((w) => Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: color.withValues(alpha: 0.4)),
-            ),
-            child: Text(w, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w600)),
-          )).toList(),
+          children: words
+              .map((w) => Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: color.withValues(alpha: 0.4)),
+                    ),
+                    child: Text(w,
+                        style: TextStyle(
+                            color: color,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600)),
+                  ))
+              .toList(),
         ),
       ],
     );

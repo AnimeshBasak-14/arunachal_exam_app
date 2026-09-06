@@ -6,7 +6,8 @@ import 'package:arunachal_exam_app/core/services/service_providers.dart';
 import 'package:arunachal_exam_app/core/constants/app_strings.dart';
 
 void main() {
-  testWidgets('App starts with onboarding screen test', (WidgetTester tester) async {
+  testWidgets('App starts with onboarding screen test',
+      (WidgetTester tester) async {
     // Setup mock values for SharedPreferences
     SharedPreferences.setMockInitialValues({
       'onboarding_completed': false,

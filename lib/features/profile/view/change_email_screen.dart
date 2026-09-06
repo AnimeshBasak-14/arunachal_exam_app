@@ -56,7 +56,8 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
     if (email.isEmpty || !email.toLowerCase().endsWith('@gmail.com')) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please enter a valid Gmail (@gmail.com) address first'),
+          content:
+              Text('Please enter a valid Gmail (@gmail.com) address first'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -68,7 +69,10 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
     });
 
     Future.delayed(const Duration(milliseconds: 400), () {
-      final randomOtp = (100000 + (899999 * (DateTime.now().microsecond / 1000000))).round().toString();
+      final randomOtp =
+          (100000 + (899999 * (DateTime.now().microsecond / 1000000)))
+              .round()
+              .toString();
       setState(() {
         _sentOtp = randomOtp;
         _isSendingOtp = false;
@@ -79,12 +83,14 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusXL)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusXL)),
           title: const Row(
             children: [
               Icon(Icons.email_outlined, color: AppColors.primary, size: 22),
               SizedBox(width: 8),
-              Text('Email Verification Code', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text('Email Verification Code',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ],
           ),
           content: Column(
@@ -92,16 +98,19 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
             children: [
               Text(
                 'Your verification code for $email is:',
-                style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                style: const TextStyle(
+                    fontSize: 13, color: AppColors.textSecondary),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 14),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 decoration: BoxDecoration(
                   color: AppColors.primaryLight,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                  border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.3)),
                 ),
                 child: Text(
                   randomOtp,
@@ -127,14 +136,16 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
                 _otpController.text = randomOtp;
                 Navigator.pop(ctx);
               },
-              child: const Text('Auto-fill Code', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text('Auto-fill Code',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(ctx),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
               ),
               child: const Text('OK'),
             ),
@@ -250,16 +261,19 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
                   padding: const EdgeInsets.all(AppSpacing.m),
                   child: Column(
                     children: [
-                      const Icon(Icons.link_rounded, size: 40, color: AppColors.primary),
+                      const Icon(Icons.link_rounded,
+                          size: 40, color: AppColors.primary),
                       const SizedBox(height: AppSpacing.s),
                       const Text(
                         'Fast Verification',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                       const SizedBox(height: AppSpacing.xs),
                       const Text(
                         'Automatically verify and update by linking your Google account',
-                        style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                        style: TextStyle(
+                            color: AppColors.textSecondary, fontSize: 12),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: AppSpacing.m),
@@ -281,10 +295,14 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
                 ),
               ),
               const SizedBox(height: AppSpacing.l),
-              
+
               const Text(
                 'OR UPDATE GMAIL MANUALLY',
-                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textSecondary, letterSpacing: 1.1),
+                style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textSecondary,
+                    letterSpacing: 1.1),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.m),
@@ -303,14 +321,16 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
                         if (value == null || value.trim().isEmpty) {
                           return 'Please enter Gmail';
                         }
-                        if (!value.trim().toLowerCase().endsWith('@gmail.com')) {
+                        if (!value
+                            .trim()
+                            .toLowerCase()
+                            .endsWith('@gmail.com')) {
                           return 'Only Gmail (@gmail.com) allowed';
                         }
                         return null;
                       },
                     ),
                     const SizedBox(height: AppSpacing.m),
-                    
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -329,10 +349,14 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
                           child: SizedBox(
                             height: 52,
                             child: OutlinedButton(
-                              onPressed: _timerSeconds > 0 || _isSendingOtp ? null : _sendOtp,
+                              onPressed: _timerSeconds > 0 || _isSendingOtp
+                                  ? null
+                                  : _sendOtp,
                               style: OutlinedButton.styleFrom(
                                 side: BorderSide(
-                                  color: _timerSeconds > 0 ? AppColors.textDisabled : AppColors.primary,
+                                  color: _timerSeconds > 0
+                                      ? AppColors.textDisabled
+                                      : AppColors.primary,
                                   width: 1.5,
                                 ),
                                 shape: RoundedRectangleBorder(
@@ -343,12 +367,18 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
                                   ? const SizedBox(
                                       width: 20,
                                       height: 20,
-                                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: AppColors.primary),
                                     )
                                   : Text(
-                                      _timerSeconds > 0 ? '${_timerSeconds}s' : 'Request OTP',
+                                      _timerSeconds > 0
+                                          ? '${_timerSeconds}s'
+                                          : 'Request OTP',
                                       style: TextStyle(
-                                        color: _timerSeconds > 0 ? AppColors.textDisabled : AppColors.primary,
+                                        color: _timerSeconds > 0
+                                            ? AppColors.textDisabled
+                                            : AppColors.primary,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 12,
                                       ),
@@ -359,7 +389,6 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
                       ],
                     ),
                     const SizedBox(height: AppSpacing.l),
-                    
                     PrimaryButton(
                       text: 'VERIFY & SAVE GMAIL',
                       onPressed: _submit,
