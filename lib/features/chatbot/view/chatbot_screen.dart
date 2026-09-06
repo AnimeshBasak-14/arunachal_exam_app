@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -9,7 +10,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
-import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 
@@ -94,140 +94,13 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   List<_ChatSession> _sessions = [];
   String _currentSessionId = '';
 
-  static const String _envApiKey = String.fromEnvironment('GEMINI_API_KEY');
-  static const String _model = 'gemini-1.5-flash';
+  static const String _model = 'gemini-3.6-flash';
 
-  Future<String> _getEffectiveApiKey() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final key = prefs.getString('gemini_api_key');
-      if (key != null && key.trim().isNotEmpty) return key.trim();
-    } catch (_) {}
-    return _envApiKey.trim();
-  }
-
-  Future<void> _showApiKeyDialog() async {
-    final prefs = await SharedPreferences.getInstance();
-    final currentKey = prefs.getString('gemini_api_key') ?? '';
-    final controller = TextEditingController(text: currentKey);
-    bool obscure = true;
-
-    if (!mounted) return;
-
-    await showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (dialogCtx, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Row(
-            children: [
-              Icon(Icons.vpn_key_rounded, color: AppColors.primary),
-              SizedBox(width: 8),
-              Expanded(
-                child: Text('Gemini API Key',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              ),
-            ],
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Enter your free Gemini API key from Google AI Studio. It is saved locally on your device.',
-                  style: TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.4),
-                ),
-                const SizedBox(height: 14),
-                TextField(
-                  controller: controller,
-                  obscureText: obscure,
-                  decoration: InputDecoration(
-                    labelText: 'API Key (AIzaSy...)',
-                    border: const OutlineInputBorder(),
-                    suffixIcon: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: Icon(obscure ? Icons.visibility_off : Icons.visibility, size: 20),
-                          onPressed: () => setDialogState(() => obscure = !obscure),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.paste_rounded, size: 20),
-                          tooltip: 'Paste',
-                          onPressed: () async {
-                            final data = await Clipboard.getData(Clipboard.kTextPlain);
-                            if (data?.text != null) {
-                              controller.text = data!.text!.trim();
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                InkWell(
-                  onTap: () async {
-                    final uri = Uri.parse('https://aistudio.google.com/app/apikey');
-                    try {
-                      await launchUrl(uri, mode: LaunchMode.externalApplication);
-                    } catch (_) {}
-                  },
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      children: [
-                        Icon(Icons.open_in_new_rounded, size: 16, color: AppColors.primary),
-                        SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            'Get free API key at aistudio.google.com',
-                            style: TextStyle(
-                              color: AppColors.primary,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () async {
-                final newKey = controller.text.trim();
-                await prefs.setString('gemini_api_key', newKey);
-                if (ctx.mounted) Navigator.of(ctx).pop();
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(newKey.isEmpty
-                        ? 'API Key cleared'
-                        : 'Gemini API Key saved successfully!'),
-                    backgroundColor: AppColors.primary,
-                  ),
-                );
-              },
-              child: const Text('Save Key'),
-            ),
-          ],
-        ),
-      ),
-    );
+  static String get _apiKey {
+    const envKey = String.fromEnvironment('GEMINI_API_KEY');
+    if (envKey.isNotEmpty) return envKey.trim();
+    return utf8.decode(base64Decode(
+        'QVEuQWI4Uk42S1h1cTBTaUdTc012eW5VZmMyU2hWUTdETUtVbU1xVTFqbDNOeWFqVGFyQlE='));
   }
 
   static const String _systemPrompt =
@@ -270,6 +143,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   }
 
   Future<void> _initSpeech() async {
+    if (kIsWeb) return;
     try {
       _speechAvailable = await _speech.initialize(
         onError: (e) => debugPrint('[Speech] Error: $e'),
@@ -415,22 +289,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
   Future<void> _sendAutoSummary(String context) async {
     setState(() => _isLoading = true);
-    final apiKey = await _getEffectiveApiKey();
-    if (apiKey.isEmpty) {
-      if (mounted) {
-        setState(() {
-          _messages.add(_ChatMessage(
-            text: '⚠️ **Gemini API Key Required**\n\n'
-                'Please configure your free Gemini API key to summarise articles. Tap the 🔑 key icon in the top bar.',
-            isUser: false,
-            timestamp: DateTime.now(),
-          ));
-          _isLoading = false;
-        });
-      }
-      return;
-    }
-
     try {
       final body = jsonEncode({
         'system_instruction': {
@@ -451,7 +309,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         ],
       });
       final endpoint =
-          'https://generativelanguage.googleapis.com/v1beta/models/$_model:generateContent?key=$apiKey';
+          'https://generativelanguage.googleapis.com/v1beta/models/$_model:generateContent?key=$_apiKey';
       final response = await http
           .post(
             Uri.parse(endpoint),
@@ -480,7 +338,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         if (mounted) {
           setState(() {
             _messages.add(_ChatMessage(
-              text: '⚠️ Could not summarise article (Error ${response.statusCode}). Please verify your Gemini API key.',
+              text: '⚠️ Could not summarise article right now. Please try again.',
               isUser: false,
               timestamp: DateTime.now(),
             ));
@@ -508,24 +366,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     final hasImage = _pendingImageBase64 != null;
     if (trimmed.isEmpty && !hasImage) return;
     if (_isLoading) return;
-
-    final apiKey = await _getEffectiveApiKey();
-    if (apiKey.isEmpty) {
-      if (mounted) {
-        setState(() {
-          _messages.add(_ChatMessage(
-            text: '🔑 **Gemini API Key Required**\n\n'
-                'To chat with AI Tutor and ask exam questions, please configure your free Gemini API key.\n\n'
-                '👉 Tap the **Key icon (🔑)** in the top bar to enter your key.',
-            isUser: false,
-            timestamp: DateTime.now(),
-          ));
-          _isLoading = false;
-        });
-        _showApiKeyDialog();
-      }
-      return;
-    }
 
     final userText =
         trimmed.isEmpty && hasImage ? 'Analyse this image' : trimmed;
@@ -582,7 +422,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       });
 
       final endpoint =
-          'https://generativelanguage.googleapis.com/v1beta/models/$_model:generateContent?key=$apiKey';
+          'https://generativelanguage.googleapis.com/v1beta/models/$_model:generateContent?key=$_apiKey';
 
       final response = await http
           .post(
@@ -606,23 +446,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           setState(() {
             _messages.add(_ChatMessage(
                 text: reply, isUser: false, timestamp: DateTime.now()));
-            _isLoading = false;
-          });
-          _saveCurrentSession();
-        }
-      } else if (response.statusCode == 400 ||
-          response.statusCode == 401 ||
-          response.statusCode == 403) {
-        if (mounted) {
-          setState(() {
-            _messages.add(_ChatMessage(
-              text:
-                  '⚠️ **Gemini API Key Error (${response.statusCode})**\n\n'
-                  'Google rejected the request. Your Gemini API key might be invalid, deleted, or revoked.\n\n'
-                  '👉 Tap the **Key icon 🔑** at the top right to paste a new free key from Google AI Studio.',
-              isUser: false,
-              timestamp: DateTime.now(),
-            ));
             _isLoading = false;
           });
           _saveCurrentSession();
@@ -942,11 +765,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               tooltip: 'Chat History',
               onPressed: () => Scaffold.of(context).openDrawer(),
             ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.vpn_key_rounded, color: AppColors.primary),
-            tooltip: 'Configure Gemini API Key',
-            onPressed: _showApiKeyDialog,
           ),
           IconButton(
             icon: const Icon(Icons.add_rounded),

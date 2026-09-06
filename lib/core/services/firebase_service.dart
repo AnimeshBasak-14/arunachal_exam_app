@@ -1,27 +1,46 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/user_model.dart';
 
 class FirebaseService {
-  final FirebaseAnalytics _analytics;
-  final FirebaseFirestore _firestore;
+  final FirebaseAnalytics? _analytics;
+  final FirebaseFirestore? _firestore;
 
   FirebaseService({
     FirebaseAnalytics? analytics,
     FirebaseFirestore? firestore,
-  })  : _analytics = analytics ?? FirebaseAnalytics.instance,
-        _firestore = firestore ?? FirebaseFirestore.instance;
+  })  : _analytics = analytics ?? _safeAnalytics(),
+        _firestore = firestore ?? _safeFirestore();
 
-  FirebaseAnalytics get analytics => _analytics;
-  FirebaseFirestore get firestore => _firestore;
+  static FirebaseAnalytics? _safeAnalytics() {
+    try {
+      if (Firebase.apps.isNotEmpty) {
+        return FirebaseAnalytics.instance;
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  static FirebaseFirestore? _safeFirestore() {
+    try {
+      if (Firebase.apps.isNotEmpty) {
+        return FirebaseFirestore.instance;
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  FirebaseAnalytics? get analytics => _analytics;
+  FirebaseFirestore? get firestore => _firestore;
 
   // ─── ANALYTICS EVENTS ──────────────────────────────────────────────────
   Future<void> logScreenView(String screenName) async {
     try {
-      await _analytics.logScreenView(screenName: screenName);
+      await _analytics?.logScreenView(screenName: screenName);
       debugPrint('[Analytics] Screen viewed: $screenName');
     } catch (e) {
       debugPrint('[Analytics Error] logScreenView: $e');
@@ -30,7 +49,7 @@ class FirebaseService {
 
   Future<void> logLogin(String method) async {
     try {
-      await _analytics.logLogin(loginMethod: method);
+      await _analytics?.logLogin(loginMethod: method);
       debugPrint('[Analytics] Logged login with $method');
     } catch (e) {
       debugPrint('[Analytics Error] logLogin: $e');
@@ -39,7 +58,7 @@ class FirebaseService {
 
   Future<void> logSignUp(String method) async {
     try {
-      await _analytics.logSignUp(signUpMethod: method);
+      await _analytics?.logSignUp(signUpMethod: method);
       debugPrint('[Analytics] Logged sign up with $method');
     } catch (e) {
       debugPrint('[Analytics Error] logSignUp: $e');
@@ -55,7 +74,7 @@ class FirebaseService {
     required String rankTier,
   }) async {
     try {
-      await _analytics.logEvent(
+      await _analytics?.logEvent(
         name: 'quiz_completed',
         parameters: {
           'exam_code': examCode,
@@ -75,6 +94,7 @@ class FirebaseService {
   // ─── FIRESTORE DATABASE SYNC ──────────────────────────────────────────
   Future<void> syncUserProfile(UserModel user) async {
     try {
+      if (_firestore == null) return;
       final docId = user.email.trim().toLowerCase();
       if (docId.isEmpty) return;
 
@@ -98,6 +118,7 @@ class FirebaseService {
   Future<void> saveQuizResultToFirestore(
       String userEmail, Map<String, dynamic> resultData) async {
     try {
+      if (_firestore == null) return;
       final cleanEmail = userEmail.trim().toLowerCase();
       if (cleanEmail.isEmpty) return;
 

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -52,14 +53,18 @@ void main() async {
 
   // Enable Firestore offline persistence
   try {
-    FirebaseFirestore.instance.settings = const Settings(
-      persistenceEnabled: true,
-      cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
-    );
+    if (!kIsWeb && Firebase.apps.isNotEmpty) {
+      FirebaseFirestore.instance.settings = const Settings(
+        persistenceEnabled: true,
+        cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+      );
+    }
   } catch (_) {}
 
-  // Initialize notifications
-  await NotificationService.initialize();
+  // Initialize notifications (skip on web where native notifications plugin is unsupported)
+  if (!kIsWeb) {
+    await NotificationService.initialize();
+  }
 
   final prefs = await SharedPreferences.getInstance();
 
@@ -90,7 +95,8 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/',
     observers: [
-      FirebaseAnalyticsObserver(analytics: analytics),
+      if (analytics != null && !kIsWeb)
+        FirebaseAnalyticsObserver(analytics: analytics),
     ],
     redirect: (context, state) {
       final isGoingToOnboarding = state.matchedLocation == '/onboarding';
