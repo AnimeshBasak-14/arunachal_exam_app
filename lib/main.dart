@@ -152,7 +152,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/',
     observers: [
-      if (analytics != null && !kIsWeb)
+      if (analytics != null)
         FirebaseAnalyticsObserver(analytics: analytics),
     ],
     redirect: (context, state) {
