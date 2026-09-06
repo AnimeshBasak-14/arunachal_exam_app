@@ -91,8 +91,8 @@
 
   <script>
     const CONFIG = {
-      PROJECT_ID: window.FIREBASE_PROJECT_ID || "arunachal-exam-app",
-      API_KEY: window.FIREBASE_API_KEY || "",
+      PROJECT_ID: "arunachal-exam-app",
+      API_KEY: "YOUR_FIREBASE_API_KEY",
       COLLECTION: "questions"
     };
 
@@ -224,10 +224,13 @@
     document.getElementById('uploadBtn').addEventListener('click', async () => {
       if (!parsedQuestions.length) return;
 
-      const apiKey = getApiKey();
-      if (!apiKey) {
-        alert("⚠️ Firebase API Key is required to publish questions to Firestore.");
-        return;
+      let apiKey = CONFIG.API_KEY;
+      if (!apiKey || apiKey === "YOUR_FIREBASE_API_KEY") {
+        apiKey = prompt("Please enter your Firebase API Key to proceed:");
+        if (!apiKey) {
+          alert("API Key is required to sync to Firestore.");
+          return;
+        }
       }
 
       const btn = document.getElementById('uploadBtn');

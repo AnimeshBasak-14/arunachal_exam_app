@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -251,15 +252,19 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
     final storage = ref.read(storageServiceProvider);
     final historyList = List<String>.from(storage.getQuizHistory());
     
-    // Construct selected answers map JSON manually
-    final selectedAnswersBuffer = StringBuffer('{');
-    _selectedAnswers.forEach((key, value) {
-      if (selectedAnswersBuffer.length > 1) selectedAnswersBuffer.write(',');
-      selectedAnswersBuffer.write('"$key":"$value"');
+    final recordJson = jsonEncode({
+      'examCode': widget.examCode,
+      'score': score,
+      'maxScore': maxScore,
+      'ratingChange': ratingChange,
+      'speedBonus': speedBonus,
+      'correct': correct,
+      'wrong': wrong,
+      'left': left,
+      'timeTaken': timeTaken,
+      'date': dateStr,
+      'selectedAnswers': _selectedAnswers,
     });
-    selectedAnswersBuffer.write('}');
-    
-    final recordJson = '{"examCode":"${widget.examCode}","score":$score,"maxScore":$maxScore,"ratingChange":$ratingChange,"speedBonus":$speedBonus,"correct":$correct,"wrong":$wrong,"left":$left,"timeTaken":$timeTaken,"date":"$dateStr","selectedAnswers":$selectedAnswersBuffer}';
     historyList.insert(0, recordJson); // Add most recent first
     await storage.saveQuizHistory(historyList);
 

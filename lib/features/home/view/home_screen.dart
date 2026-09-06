@@ -19,7 +19,6 @@ final currentTabProvider = StateProvider<int>((ref) => 0);
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
-  @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedTab = ref.watch(currentTabProvider);
 
