@@ -558,21 +558,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           }
                         },
                       ),
-                      const Divider(height: 1),
-                      ListTile(
-                        leading: const Icon(Icons.lock_reset_rounded,
-                            color: AppColors.primary),
-                        title: const Text('Set / Reset Password',
-                            style: TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: const Text(
-                            'Secure account password update via OTP',
-                            style: TextStyle(fontSize: 12)),
-                        trailing: const Icon(Icons.arrow_forward_ios_rounded,
-                            size: 16, color: AppColors.textHint),
-                        onTap: () {
-                          context.push('/forgot-password');
-                        },
-                      ),
                     ],
                   ),
                 ),

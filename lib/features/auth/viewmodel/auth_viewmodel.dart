@@ -39,6 +39,29 @@ class AuthState {
   }
 }
 
+enum GoogleAuthStatus {
+  authenticated,
+  notRegistered,
+  cancelled,
+  error,
+}
+
+class GoogleAuthResult {
+  final GoogleAuthStatus status;
+  final String? email;
+  final String? displayName;
+  final String? photoUrl;
+  final String? errorMessage;
+
+  const GoogleAuthResult({
+    required this.status,
+    this.email,
+    this.displayName,
+    this.photoUrl,
+    this.errorMessage,
+  });
+}
+
 class AuthViewModel extends StateNotifier<AuthState> {
   final StorageService _storage;
   final FirebaseService _firebase;
@@ -399,7 +422,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
     return true;
   }
 
-  Future<bool> loginWithGoogleAccount({
+  Future<GoogleAuthResult> loginWithGoogleAccount({
     required String email,
     String? displayName,
     String? photoUrl,
@@ -409,12 +432,20 @@ class AuthViewModel extends StateNotifier<AuthState> {
       final cleanEmail = email.trim().toLowerCase();
       if (cleanEmail.isEmpty) {
         state = state.copyWith(isLoading: false);
-        return false;
+        return const GoogleAuthResult(
+          status: GoogleAuthStatus.error,
+          errorMessage: 'Email is empty',
+        );
       }
 
-      // 1. Check cloud profile in Firestore first
+      // 1. Check if account is registered in Firestore cloud or locally
       final remoteUser = await _firebase.fetchUserProfile(cleanEmail);
       final savedAccount = _storage.getAccountData(cleanEmail);
+      final registeredPwd = await _storage.getRegisteredPassword(cleanEmail);
+
+      final bool isRegistered = (remoteUser != null) ||
+          (savedAccount != null) ||
+          (registeredPwd != null && registeredPwd.isNotEmpty);
 
       final rawName = (displayName != null && displayName.trim().isNotEmpty)
           ? displayName.trim()
@@ -429,7 +460,19 @@ class AuthViewModel extends StateNotifier<AuthState> {
                   .join(' ');
       final name = rawName.isNotEmpty ? rawName : 'Google Student';
 
-      // Pick best profile picture (preserve custom upload if exists)
+      // SECURITY CHECK: If user is not registered, do NOT auto-create account or log in!
+      // Return notRegistered so UI redirects candidate to complete registration with OTP and password.
+      if (!isRegistered) {
+        state = state.copyWith(isLoading: false);
+        return GoogleAuthResult(
+          status: GoogleAuthStatus.notRegistered,
+          email: cleanEmail,
+          displayName: name,
+          photoUrl: photoUrl,
+        );
+      }
+
+      // Account IS registered: log the user in and preserve rating and profile info
       final String effectivePic = _resolveBestProfilePic(
         remoteUser?.profilePic,
         (photoUrl != null && photoUrl.isNotEmpty)
@@ -438,7 +481,6 @@ class AuthViewModel extends StateNotifier<AuthState> {
         'avatar_gold',
       );
 
-      // Pick highest rating (NEVER reset to zero!)
       final int effectiveRating = max(
         remoteUser?.rating ?? 0,
         savedAccount?.rating ?? 0,
@@ -452,16 +494,6 @@ class AuthViewModel extends StateNotifier<AuthState> {
         dob: remoteUser?.dob ?? savedAccount?.dob ?? '2000-01-01',
         rating: effectiveRating,
         city: remoteUser?.city ?? savedAccount?.city ?? 'Itanagar',
-      );
-
-      final securePassword = _generateSecureRandomPassword();
-      await _storage.registerUserAccount(
-        emailOrPhone: cleanEmail,
-        password: securePassword,
-        name: user.name,
-        dob: user.dob,
-        rating: user.rating,
-        city: user.city,
       );
 
       await _storage.saveUser(
@@ -481,16 +513,25 @@ class AuthViewModel extends StateNotifier<AuthState> {
       } catch (_) {}
 
       state = AuthState(isLoggedIn: true, user: user);
-      return true;
+      return GoogleAuthResult(
+        status: GoogleAuthStatus.authenticated,
+        email: cleanEmail,
+        displayName: user.name,
+        photoUrl: user.profilePic,
+      );
     } catch (e) {
       debugPrint('[GoogleAccountLogin] Error: $e');
+      final err = 'Failed to sign in: $e';
       state = state.copyWith(
-          isLoading: false, errorMessage: 'Failed to sign in: $e');
-      return false;
+          isLoading: false, errorMessage: err);
+      return GoogleAuthResult(
+        status: GoogleAuthStatus.error,
+        errorMessage: err,
+      );
     }
   }
 
-  Future<bool> loginWithGoogleNative() async {
+  Future<GoogleAuthResult> loginWithGoogleNative() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       if (kIsWeb) {
@@ -504,7 +545,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
         final user = userCredential.user;
         if (user == null || user.email == null || user.email!.isEmpty) {
           state = state.copyWith(isLoading: false);
-          return false;
+          return const GoogleAuthResult(status: GoogleAuthStatus.cancelled);
         }
 
         return await loginWithGoogleAccount(
@@ -515,6 +556,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
       } else {
         // 1. Try modern Google Play Services bottom sheet (GoogleSignIn plugin).
         // With SHA-1 registered in Firebase Console, this displays the modern
+        // Google Consent & Terms bottom sheet and account picker.
         try {
           final googleSignIn = GoogleSignIn(
             scopes: ['email', 'profile'],
@@ -529,10 +571,11 @@ class AuthViewModel extends StateNotifier<AuthState> {
           } else {
             // User cancelled/dismissed the account picker
             state = state.copyWith(isLoading: false);
-            return false;
+            return const GoogleAuthResult(status: GoogleAuthStatus.cancelled);
           }
         } catch (e) {
-          debugPrint('[GoogleSignIn] Standard sign-in failed: $e, trying native account picker fallback');
+          debugPrint(
+              '[GoogleSignIn] Standard sign-in failed: $e, trying native account picker fallback');
         }
 
         // 2. Fallback: Android system AccountManager chooser if GoogleSignIn failed
@@ -551,14 +594,15 @@ class AuthViewModel extends StateNotifier<AuthState> {
         }
 
         state = state.copyWith(isLoading: false);
-        return false;
+        return const GoogleAuthResult(status: GoogleAuthStatus.cancelled);
       }
     } on FirebaseAuthException catch (e) {
       debugPrint(
           '[GoogleSignIn Web] FirebaseAuthException: ${e.code} - ${e.message}');
       String? message;
       if (e.code == 'popup-closed-by-user' || e.code == 'cancelled') {
-        message = null; // User simply closed the popup
+        state = state.copyWith(isLoading: false);
+        return const GoogleAuthResult(status: GoogleAuthStatus.cancelled);
       } else if (e.code == 'popup-blocked') {
         message =
             'Popup was blocked by your browser. Please allow popups for this site.';
@@ -574,17 +618,26 @@ class AuthViewModel extends StateNotifier<AuthState> {
             : 'Google Sign-In is initializing. Please try again or sign in with your email.';
       }
       state = state.copyWith(isLoading: false, errorMessage: message);
-      return false;
+      return GoogleAuthResult(
+        status: GoogleAuthStatus.error,
+        errorMessage: message,
+      );
     } catch (e) {
       debugPrint('[GoogleSignIn] Native sign-in error or cancelled: $e');
       final errStr = e.toString().toLowerCase();
-      final String? message = (errStr.contains('cancel') ||
-              errStr.contains('popup_closed') ||
-              errStr.contains('canceled'))
-          ? null
-          : 'Google sign-in could not be completed. Please try again.';
+      if (errStr.contains('cancel') ||
+          errStr.contains('popup_closed') ||
+          errStr.contains('canceled')) {
+        state = state.copyWith(isLoading: false);
+        return const GoogleAuthResult(status: GoogleAuthStatus.cancelled);
+      }
+      const message =
+          'Google sign-in could not be completed. Please try again.';
       state = state.copyWith(isLoading: false, errorMessage: message);
-      return false;
+      return const GoogleAuthResult(
+        status: GoogleAuthStatus.error,
+        errorMessage: message,
+      );
     }
   }
 

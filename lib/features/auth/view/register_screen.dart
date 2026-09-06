@@ -12,7 +12,14 @@ import '../../../core/widgets/social_button.dart';
 import '../viewmodel/auth_viewmodel.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
-  const RegisterScreen({super.key});
+  final String? initialEmail;
+  final String? initialName;
+
+  const RegisterScreen({
+    super.key,
+    this.initialEmail,
+    this.initialName,
+  });
 
   @override
   ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
@@ -36,6 +43,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.initialEmail != null && widget.initialEmail!.isNotEmpty) {
+      _emailController.text = widget.initialEmail!;
+    }
+    if (widget.initialName != null && widget.initialName!.isNotEmpty) {
+      _nameController.text = widget.initialName!;
+    }
     Future.microtask(() {
       if (mounted) {
         ref.read(authViewModelProvider.notifier).clearError();
@@ -268,13 +281,33 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Future<void> _handleSocialLogin(String provider) async {
-    final success = await ref
+    final result = await ref
         .read(authViewModelProvider.notifier)
         .loginWithGoogleNative();
-    if (success && mounted) {
+    if (!mounted) return;
+
+    if (result.status == GoogleAuthStatus.authenticated) {
       context.go('/home');
-    } else if (mounted) {
-      final err = ref.read(authViewModelProvider).errorMessage;
+    } else if (result.status == GoogleAuthStatus.notRegistered) {
+      setState(() {
+        if (result.email != null && result.email!.isNotEmpty) {
+          _emailController.text = result.email!;
+        }
+        if (result.displayName != null && result.displayName!.isNotEmpty) {
+          _nameController.text = result.displayName!;
+        }
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Google account connected! Please enter your DOB and password to complete registration.'),
+          backgroundColor: AppColors.primary,
+          duration: Duration(seconds: 4),
+        ),
+      );
+    } else if (result.status == GoogleAuthStatus.error) {
+      final err = result.errorMessage ??
+          ref.read(authViewModelProvider).errorMessage;
       if (err != null && err.isNotEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

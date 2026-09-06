@@ -182,7 +182,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/register',
-        builder: (context, state) => const RegisterScreen(),
+        builder: (context, state) {
+          final extra = state.extra;
+          if (extra is Map<String, dynamic>) {
+            return RegisterScreen(
+              initialEmail: extra['email'] as String?,
+              initialName: extra['name'] as String?,
+            );
+          }
+          return const RegisterScreen();
+        },
       ),
       GoRoute(
         path: '/forgot-password',

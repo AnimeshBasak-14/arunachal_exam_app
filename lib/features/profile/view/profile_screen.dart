@@ -220,18 +220,6 @@ class ProfileScreen extends ConsumerWidget {
                 ),
                 const Divider(height: 1, color: AppColors.divider),
                 ListTile(
-                  leading: const Icon(Icons.lock_reset_rounded,
-                      color: AppColors.primary),
-                  title: const Text('FORGOT / RESET PASSWORD',
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-                  trailing: const Icon(Icons.arrow_forward_ios_rounded,
-                      size: 16, color: AppColors.textHint),
-                  onTap: () {
-                    context.push('/forgot-password');
-                  },
-                ),
-                const Divider(height: 1, color: AppColors.divider),
-                ListTile(
                   leading:
                       const Icon(Icons.logout_rounded, color: AppColors.error),
                   title: const Text('SIGN OUT',

@@ -15,13 +15,29 @@ class WelcomeScreen extends ConsumerWidget {
 
   Future<void> _handleSocialLogin(
       BuildContext context, WidgetRef ref, String provider) async {
-    final success = await ref
+    final result = await ref
         .read(authViewModelProvider.notifier)
         .loginWithGoogleNative();
-    if (success && context.mounted) {
+    if (!context.mounted) return;
+
+    if (result.status == GoogleAuthStatus.authenticated) {
       context.go('/home');
-    } else if (context.mounted) {
-      final err = ref.read(authViewModelProvider).errorMessage;
+    } else if (result.status == GoogleAuthStatus.notRegistered) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Google account not registered yet. Please complete registration to continue.'),
+          backgroundColor: AppColors.primary,
+          duration: Duration(seconds: 4),
+        ),
+      );
+      context.push('/register', extra: {
+        'email': result.email,
+        'name': result.displayName,
+      });
+    } else if (result.status == GoogleAuthStatus.error) {
+      final err = result.errorMessage ??
+          ref.read(authViewModelProvider).errorMessage;
       if (err != null && err.isNotEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

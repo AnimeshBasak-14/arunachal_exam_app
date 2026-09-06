@@ -294,4 +294,119 @@ void main() {
       expect(authViewModel.state.user?.email, email);
     });
   });
+
+  group('AuthViewModel - Google Sign-In Security Verification', () {
+    test('unregistered Google account returns notRegistered and does NOT log in', () async {
+      const email = 'newstudent@gmail.com';
+
+      // Ensure no existing account locally or in Firestore
+      when(() => mockFirebase.fetchUserProfile(email)).thenAnswer((_) async => null);
+      when(() => mockStorage.getAccountData(email)).thenReturn(null);
+      when(() => mockStorage.getRegisteredPassword(email)).thenAnswer((_) async => null);
+
+      final result = await authViewModel.loginWithGoogleAccount(
+        email: email,
+        displayName: 'New Student',
+        photoUrl: 'https://example.com/avatar.jpg',
+      );
+
+      expect(result.status, GoogleAuthStatus.notRegistered);
+      expect(result.email, email);
+      expect(result.displayName, 'New Student');
+      expect(authViewModel.state.isLoggedIn, false);
+      expect(authViewModel.state.user, isNull);
+
+      // Verify no login or account creation occurred
+      verifyNever(() => mockStorage.setLoggedIn(true));
+      verifyNever(() => mockStorage.saveUser(
+            name: any(named: 'name'),
+            email: any(named: 'email'),
+            phone: any(named: 'phone'),
+            profilePic: any(named: 'profilePic'),
+            dob: any(named: 'dob'),
+            rating: any(named: 'rating'),
+            city: any(named: 'city'),
+          ));
+    });
+
+    test('registered Google account in Firestore returns authenticated and logs in', () async {
+      const email = 'registered@gmail.com';
+      final remoteUser = UserModel(
+        name: 'Registered Student',
+        email: email,
+        phone: '9876543210',
+        profilePic: 'avatar_purple',
+        dob: '1998-05-15',
+        rating: 450,
+        city: 'Naharlagun',
+      );
+
+      when(() => mockFirebase.fetchUserProfile(email)).thenAnswer((_) async => remoteUser);
+      when(() => mockStorage.getAccountData(email)).thenReturn(null);
+      when(() => mockStorage.getRegisteredPassword(email)).thenAnswer((_) async => null);
+      when(() => mockStorage.saveUser(
+            name: any(named: 'name'),
+            email: any(named: 'email'),
+            phone: any(named: 'phone'),
+            profilePic: any(named: 'profilePic'),
+            dob: any(named: 'dob'),
+            rating: any(named: 'rating'),
+            city: any(named: 'city'),
+          )).thenAnswer((_) async {});
+      when(() => mockStorage.setLoggedIn(true)).thenAnswer((_) async {});
+      when(() => mockFirebase.logLogin('google')).thenAnswer((_) async {});
+      when(() => mockFirebase.syncUserProfile(any())).thenAnswer((_) async {});
+
+      final result = await authViewModel.loginWithGoogleAccount(
+        email: email,
+        displayName: 'Registered Student',
+      );
+
+      expect(result.status, GoogleAuthStatus.authenticated);
+      expect(authViewModel.state.isLoggedIn, true);
+      expect(authViewModel.state.user?.name, 'Registered Student');
+      expect(authViewModel.state.user?.rating, 450);
+      expect(authViewModel.state.user?.city, 'Naharlagun');
+      verify(() => mockStorage.setLoggedIn(true)).called(1);
+    });
+
+    test('registered Google account in local storage returns authenticated and preserves data', () async {
+      const email = 'localuser@gmail.com';
+      final localUser = UserModel(
+        name: 'Local User',
+        email: email,
+        phone: '9123456780',
+        profilePic: 'avatar_blue',
+        dob: '1995-10-20',
+        rating: 320,
+        city: 'Pasighat',
+      );
+
+      when(() => mockFirebase.fetchUserProfile(email)).thenAnswer((_) async => null);
+      when(() => mockStorage.getAccountData(email)).thenReturn(localUser);
+      when(() => mockStorage.getRegisteredPassword(email)).thenAnswer((_) async => null);
+      when(() => mockStorage.saveUser(
+            name: any(named: 'name'),
+            email: any(named: 'email'),
+            phone: any(named: 'phone'),
+            profilePic: any(named: 'profilePic'),
+            dob: any(named: 'dob'),
+            rating: any(named: 'rating'),
+            city: any(named: 'city'),
+          )).thenAnswer((_) async {});
+      when(() => mockStorage.setLoggedIn(true)).thenAnswer((_) async {});
+      when(() => mockFirebase.logLogin('google')).thenAnswer((_) async {});
+      when(() => mockFirebase.syncUserProfile(any())).thenAnswer((_) async {});
+
+      final result = await authViewModel.loginWithGoogleAccount(
+        email: email,
+      );
+
+      expect(result.status, GoogleAuthStatus.authenticated);
+      expect(authViewModel.state.isLoggedIn, true);
+      expect(authViewModel.state.user?.name, 'Local User');
+      expect(authViewModel.state.user?.rating, 320);
+      verify(() => mockStorage.setLoggedIn(true)).called(1);
+    });
+  });
 }

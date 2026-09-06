@@ -52,13 +52,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _handleSocialLogin(String provider) async {
-    final success = await ref
+    final result = await ref
         .read(authViewModelProvider.notifier)
         .loginWithGoogleNative();
-    if (success && mounted) {
+    if (!mounted) return;
+
+    if (result.status == GoogleAuthStatus.authenticated) {
       context.go('/home');
-    } else if (mounted) {
-      final err = ref.read(authViewModelProvider).errorMessage;
+    } else if (result.status == GoogleAuthStatus.notRegistered) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Google account not registered yet. Please complete registration to continue.'),
+          backgroundColor: AppColors.primary,
+          duration: Duration(seconds: 4),
+        ),
+      );
+      context.push('/register', extra: {
+        'email': result.email,
+        'name': result.displayName,
+      });
+    } else if (result.status == GoogleAuthStatus.error) {
+      final err = result.errorMessage ??
+          ref.read(authViewModelProvider).errorMessage;
       if (err != null && err.isNotEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
