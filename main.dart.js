@@ -54540,9 +54540,12 @@ A.dT().$1("[GoogleSignIn Web] FirebaseAuthException: "+j.c+" - "+A.k(j.b))
 i=null
 if(j.c==="popup-closed-by-user"||j.c==="cancelled")i=null
 else if(j.c==="popup-blocked")i="Popup was blocked by your browser. Please allow popups for this site."
-else if(j.c==="unauthorized-domain")i="Domain not authorized in Firebase Auth settings. Please check Firebase console."
-else{f=j.b
-i=f==null?"Google sign-in failed. Please try again.":f}n.scG(n.f.i8(i,!1))
+else if(j.c==="configuration-not-found")i='Google Sign-In is not enabled yet in Firebase Console. Enable "Google" under Firebase Console > Authentication > Sign-in method (100% Free).'
+else if(j.c==="unauthorized-domain")i="Domain not authorized. Please add animeshbasak-14.github.io in Firebase Console > Authentication > Settings > Authorized domains."
+else{if(j.b!=null&&j.b.length!==0&&j.b!=="Error"){e=j.b
+e.toString
+f=e}else f="Google Sign-In is initializing. Please try again or sign in with your email."
+i=f}n.scG(n.f.i8(i,!1))
 q=!1
 s=1
 break}else{h=e
