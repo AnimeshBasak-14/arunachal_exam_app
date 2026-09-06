@@ -233,11 +233,18 @@ class _CurrentAffairsGkScreenState
                           context.push(
                             '/news-details',
                             extra: {
+                              'id': item.id,
                               'title': item.title,
+                              'description': item.summary,
                               'summary': item.summary,
                               'source': item.source,
                               'date': item.dateStr,
                               'link': item.link,
+                              'pdfUrl': item.pdfUrl ?? item.link,
+                              'keyPoints': [
+                                'Important for APSSB (CGL, CHSL, CSLE) and APPSC exams.',
+                                'Arunachal state governance and contemporary affairs.',
+                              ],
                             },
                           );
                         },

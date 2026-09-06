@@ -114,6 +114,35 @@ class StorageService {
     return null;
   }
 
+  List<UserModel> getSavedAccounts() {
+    final accounts = <UserModel>[];
+    final keys = _prefs.getKeys();
+    for (final k in keys) {
+      if (k.startsWith('account_data_') && !k.contains('+')) {
+        final raw = _prefs.getString(k);
+        if (raw != null) {
+          try {
+            final map = jsonDecode(raw) as Map<String, dynamic>;
+            final email = map['email'] as String? ?? '';
+            if (email.contains('@') &&
+                !accounts.any((a) => a.email.toLowerCase() == email.toLowerCase())) {
+              accounts.add(UserModel(
+                name: map['name'] as String? ?? 'Student',
+                email: email,
+                phone: map['phone'] as String? ?? '',
+                profilePic: map['profilePic'] as String? ?? 'avatar_gold',
+                dob: map['dob'] as String? ?? '2000-01-01',
+                rating: (map['rating'] as num?)?.toInt() ?? 0,
+                city: map['city'] as String? ?? 'Itanagar',
+              ));
+            }
+          } catch (_) {}
+        }
+      }
+    }
+    return accounts;
+  }
+
   Future<void> setProfilePic(String value) async {
     await _prefs.setString(_keyUserProfilePic, value);
     final user = getAccountData(userEmail);

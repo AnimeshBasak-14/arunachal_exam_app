@@ -325,36 +325,44 @@ class AuthViewModel extends StateNotifier<AuthState> {
     return true;
   }
 
-  Future<bool> loginWithGoogleNative() async {
+  Future<bool> loginWithGoogleAccount({
+    required String email,
+    String? displayName,
+    String? photoUrl,
+  }) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      final googleSignIn = GoogleSignIn(
-        scopes: ['email', 'profile'],
-      );
-      final account = await googleSignIn.signIn();
-      if (account == null) {
+      final cleanEmail = email.trim().toLowerCase();
+      if (cleanEmail.isEmpty) {
         state = state.copyWith(isLoading: false);
         return false;
       }
 
-      final email = account.email.trim().toLowerCase();
-      final name = account.displayName ?? 'Google Student';
-      final photoUrl = account.photoUrl;
+      final rawName = (displayName != null && displayName.trim().isNotEmpty)
+          ? displayName.trim()
+          : cleanEmail
+              .split('@')[0]
+              .split('.')
+              .map((s) => s.isNotEmpty
+                  ? '${s[0].toUpperCase()}${s.substring(1)}'
+                  : '')
+              .join(' ');
+      final name = rawName.isNotEmpty ? rawName : 'Google Student';
 
-      final savedAccount = _storage.getAccountData(email);
+      final savedAccount = _storage.getAccountData(cleanEmail);
       final UserModel user;
 
       if (savedAccount != null) {
         user = savedAccount.copyWith(
-          profilePic: ((savedAccount.profilePic?.isNotEmpty ?? false) &&
-                  !(savedAccount.profilePic?.startsWith('avatar_') ?? false))
-              ? savedAccount.profilePic
-              : (photoUrl ?? savedAccount.profilePic),
+          name: savedAccount.name.isNotEmpty ? savedAccount.name : name,
+          profilePic: (photoUrl != null && photoUrl.isNotEmpty)
+              ? photoUrl
+              : savedAccount.profilePic,
         );
       } else {
         user = UserModel(
           name: name,
-          email: email,
+          email: cleanEmail,
           phone: '',
           profilePic: photoUrl ?? 'avatar_gold',
           dob: '2000-01-01',
@@ -364,9 +372,9 @@ class AuthViewModel extends StateNotifier<AuthState> {
 
         final securePassword = _generateSecureRandomPassword();
         await _storage.registerUserAccount(
-          emailOrPhone: email,
+          emailOrPhone: cleanEmail,
           password: securePassword,
-          name: name,
+          name: user.name,
           dob: user.dob,
           rating: 0,
           city: 'Itanagar',
@@ -392,9 +400,34 @@ class AuthViewModel extends StateNotifier<AuthState> {
       state = AuthState(isLoggedIn: true, user: user);
       return true;
     } catch (e) {
-      debugPrint('[GoogleSignIn] Error: $e');
-      // If native Google Play Services is unavailable on emulator/device, fallback gracefully
-      return loginSocial('Google');
+      debugPrint('[GoogleAccountLogin] Error: $e');
+      state = state.copyWith(
+          isLoading: false, errorMessage: 'Failed to sign in: $e');
+      return false;
+    }
+  }
+
+  Future<bool> loginWithGoogleNative() async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      final googleSignIn = GoogleSignIn(
+        scopes: ['email', 'profile'],
+      );
+      final account = await googleSignIn.signIn();
+      if (account == null) {
+        state = state.copyWith(isLoading: false);
+        return false;
+      }
+
+      return await loginWithGoogleAccount(
+        email: account.email,
+        displayName: account.displayName,
+        photoUrl: account.photoUrl,
+      );
+    } catch (e) {
+      debugPrint('[GoogleSignIn] Native sign-in error or cancelled: $e');
+      state = state.copyWith(isLoading: false);
+      return false;
     }
   }
 

@@ -9,6 +9,7 @@ import '../../../core/widgets/primary_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/widgets/social_button.dart';
 import '../viewmodel/auth_viewmodel.dart';
+import '../widgets/google_account_chooser_dialog.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -57,6 +58,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         .loginWithGoogleNative();
     if (success && mounted) {
       context.go('/home');
+      return;
+    }
+    if (mounted) {
+      await GoogleAccountChooserDialog.show(context);
     }
   }
 

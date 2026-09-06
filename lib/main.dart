@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -40,6 +41,7 @@ import 'features/home/view/news_details_screen.dart';
 import 'features/profile/view/public_profile_screen.dart';
 import 'features/home/view/state_gk_screen.dart';
 import 'features/home/view/current_affairs_gk_screen.dart';
+import 'core/services/current_affairs_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -107,8 +109,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isAuthRoute =
           isGoingToWelcome || isGoingToLogin || isGoingToRegister;
 
-      // 1. If onboarding is not completed, force onboarding screen
-      if (!onboardingCompleted) {
+      // Allow public direct access to news articles via deep-link
+      final isPublicRoute = state.matchedLocation.startsWith('/news-details');
+
+      // 1. If onboarding is not completed, force onboarding screen (unless viewing a shared public article)
+      if (!onboardingCompleted && !isPublicRoute) {
         return isGoingToOnboarding ? null : '/onboarding';
       }
 
@@ -122,8 +127,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      // 3. If not logged in and not on auth routes, redirect to welcome page
-      if (!isLoggedIn && !isAuthRoute) {
+      // 3. If not logged in and not on auth routes or public news route, redirect to welcome page
+      if (!isLoggedIn && !isAuthRoute && !isPublicRoute) {
         return '/welcome';
       }
 
@@ -246,7 +251,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/news-details',
         builder: (context, state) {
-          final article = state.extra as Map<String, dynamic>? ?? {};
+          final extraArticle = state.extra as Map<String, dynamic>?;
+          final Map<String, dynamic> article =
+              (extraArticle != null && extraArticle.isNotEmpty)
+                  ? extraArticle
+                  : CurrentAffairsService.getArticleMapById(
+                      state.uri.queryParameters['id']);
           return NewsDetailsScreen(article: article);
         },
       ),
@@ -281,6 +291,19 @@ class MyApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       routerConfig: router,
+      scrollBehavior: const MaterialScrollBehavior().copyWith(
+        dragDevices: {
+          PointerDeviceKind.mouse,
+          PointerDeviceKind.touch,
+          PointerDeviceKind.trackpad,
+          PointerDeviceKind.stylus,
+        },
+      ),
+      builder: (context, child) {
+        return SelectionArea(
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
     );
   }
 }

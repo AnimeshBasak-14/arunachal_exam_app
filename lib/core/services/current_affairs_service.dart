@@ -9,6 +9,8 @@ class CurrentAffairsItem {
   final String source;
   final String dateStr;
   final String link;
+  final String? pdfUrl;
+  final String? officialUrl;
   final bool aiEnhanced;
   final String category;
 
@@ -19,6 +21,8 @@ class CurrentAffairsItem {
     required this.source,
     required this.dateStr,
     required this.link,
+    this.pdfUrl,
+    this.officialUrl,
     this.aiEnhanced = false,
     this.category = 'Current Affairs',
   });
@@ -38,7 +42,7 @@ class CurrentAffairsService {
   static DateTime? _cacheTime;
   static const _cacheDuration = Duration(minutes: 30);
 
-  final List<CurrentAffairsItem> _fallbackItems = [
+  static final List<CurrentAffairsItem> _defaultItems = [
     CurrentAffairsItem(
       id: 'apssb_1',
       title: 'APSSB CGL 2025: Revised Examination Schedule and Syllabus Circular Released',
@@ -52,6 +56,8 @@ class CurrentAffairsService {
       source: 'APSSB Official Portal',
       dateStr: 'Today',
       link: 'https://apssb.nic.in',
+      pdfUrl: 'https://apssb.nic.in/Index/rules_syllabus',
+      officialUrl: 'https://apssb.nic.in/Index/circulars',
       category: 'Recruitment & Exams',
     ),
     CurrentAffairsItem(
@@ -67,6 +73,8 @@ class CurrentAffairsService {
       source: 'State Government Portal',
       dateStr: 'Yesterday',
       link: 'https://arunachalpradesh.gov.in',
+      pdfUrl: 'https://arunachalpradesh.gov.in/gazette/',
+      officialUrl: 'https://arunachalpradesh.gov.in',
       category: 'Governance & State GK',
     ),
     CurrentAffairsItem(
@@ -82,6 +90,8 @@ class CurrentAffairsService {
       source: 'APPSC Official Portal',
       dateStr: '2 days ago',
       link: 'https://appsc.gov.in',
+      pdfUrl: 'https://appsc.gov.in/Index/rules_syllabus',
+      officialUrl: 'https://appsc.gov.in/Index/circulars',
       category: 'Recruitment & Exams',
     ),
     CurrentAffairsItem(
@@ -96,6 +106,8 @@ class CurrentAffairsService {
       source: 'NewsFY (News For You)',
       dateStr: '3 days ago',
       link: 'https://arunachaltimes.in',
+      pdfUrl: 'https://arunachaltimes.in',
+      officialUrl: 'https://arunachaltimes.in',
       category: 'Infrastructure & Economy',
     ),
     CurrentAffairsItem(
@@ -110,6 +122,8 @@ class CurrentAffairsService {
       source: 'Arunachal Times',
       dateStr: 'This week',
       link: 'https://arunachaltimes.in',
+      pdfUrl: 'https://arunachaltimes.in',
+      officialUrl: 'https://arunachaltimes.in',
       category: 'Environment & Wildlife',
     ),
     CurrentAffairsItem(
@@ -124,9 +138,42 @@ class CurrentAffairsService {
       source: 'DIPR Arunachal',
       dateStr: 'This week',
       link: 'https://arunachalipr.gov.in',
+      pdfUrl: 'https://arunachalipr.gov.in',
+      officialUrl: 'https://arunachalipr.gov.in',
       category: 'Art & Culture',
     ),
   ];
+
+  final List<CurrentAffairsItem> _fallbackItems = _defaultItems;
+
+  static CurrentAffairsItem? getArticleById(String? id) {
+    if (id == null || id.isEmpty) return null;
+    final list = _cache ?? _defaultItems;
+    for (final item in list) {
+      if (item.id.toLowerCase() == id.toLowerCase()) return item;
+    }
+    for (final item in _defaultItems) {
+      if (item.id.toLowerCase() == id.toLowerCase()) return item;
+    }
+    return null;
+  }
+
+  static Map<String, dynamic> getArticleMapById(String? id) {
+    final item = getArticleById(id) ?? _defaultItems.first;
+    return {
+      'id': item.id,
+      'title': item.title,
+      'source': item.source,
+      'date': item.dateStr,
+      'description': item.summary,
+      'link': item.link,
+      'pdfUrl': item.pdfUrl ?? item.link,
+      'keyPoints': [
+        'Key syllabus topic for APSSB (CGL, CHSL, CSLE) and APPSC exams.',
+        'High yield topic for General Knowledge and State GK sections.',
+      ],
+    };
+  }
 
   final List<Map<String, String>> _rssSources = [
     {'url': 'https://arunachaltimes.in/feed/', 'name': 'Arunachal Times', 'cat': 'State News'},

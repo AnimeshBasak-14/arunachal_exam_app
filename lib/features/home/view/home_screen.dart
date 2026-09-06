@@ -165,11 +165,14 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
       }
     }
 
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1040),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
           // 1. Header Card (Page 2 & 11)
           Container(
             padding: const EdgeInsets.symmetric(
@@ -556,7 +559,9 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
           ),
         ],
       ),
-    );
+    ),
+  ),
+);
   }
 }
 
@@ -1065,13 +1070,16 @@ class _CurrentAffairsSection extends ConsumerWidget {
                             InkWell(
                               onTap: () {
                                 context.push('/news-details', extra: {
+                                  'id': item.id,
                                   'title': item.title,
                                   'source': item.source,
                                   'date': item.dateStr,
                                   'description': item.summary,
                                   'link': item.link,
+                                  'pdfUrl': item.pdfUrl ?? item.link,
                                   'keyPoints': [
-                                    'Important for upcoming APSSB exams.'
+                                    'Important for upcoming APSSB & APPSC exams.',
+                                    'Focus on Arunachal state governance, history and geography.',
                                   ],
                                 });
                               },

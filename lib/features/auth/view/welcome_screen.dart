@@ -9,6 +9,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/secondary_button.dart';
 import '../../../core/widgets/social_button.dart';
 import '../viewmodel/auth_viewmodel.dart';
+import '../widgets/google_account_chooser_dialog.dart';
 
 class WelcomeScreen extends ConsumerWidget {
   const WelcomeScreen({super.key});
@@ -20,6 +21,10 @@ class WelcomeScreen extends ConsumerWidget {
         .loginWithGoogleNative();
     if (success && context.mounted) {
       context.go('/home');
+      return;
+    }
+    if (context.mounted) {
+      await GoogleAccountChooserDialog.show(context);
     }
   }
 
