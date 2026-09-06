@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -94,7 +95,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
   static const String _apiKey =
       'AQ.Ab8RN6KS4k7zMX9Rza6IEIwyovwJueGIwOhUWAuueYFNj7torg';
-  static const String _model = 'gemini-2.5-flash-lite-preview-06-17';
+  static const String _model = 'gemini-3.5-flash';
   static const String _endpoint =
       'https://generativelanguage.googleapis.com/v1beta/models/$_model:generateContent?key=$_apiKey';
 
@@ -123,6 +124,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         isUser: true,
         timestamp: DateTime.now(),
       ));
+      _saveCurrentSession();
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _sendAutoSummary(widget.initialContext!);
       });
@@ -167,16 +169,26 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   Future<void> _saveCurrentSession() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      String title = 'APSSB Chat';
       final firstUserMsg = _messages.firstWhere(
         (m) => m.isUser,
         orElse: () => _ChatMessage(
-            text: 'APSSB Practice Session',
+            text: '',
             isUser: true,
             timestamp: DateTime.now()),
       );
-      final title = firstUserMsg.text.length > 28
-          ? '${firstUserMsg.text.substring(0, 28)}...'
-          : firstUserMsg.text;
+
+      if (firstUserMsg.text.isNotEmpty) {
+        String clean = firstUserMsg.text;
+        if (clean.startsWith('Summarise this article for APSSB exam preparation:\n\n')) {
+          clean = clean.replaceFirst('Summarise this article for APSSB exam preparation:\n\n', '');
+        }
+        final lines = clean.split('\n').where((l) => l.trim().isNotEmpty).toList();
+        final firstLine = lines.isNotEmpty ? lines.first.trim() : clean;
+        title = firstLine.length > 30 ? '${firstLine.substring(0, 30)}...' : firstLine;
+      } else if (_messages.any((m) => m.imageBase64 != null)) {
+        title = 'Image Analysis Session';
+      }
 
       final existingIdx =
           _sessions.indexWhere((s) => s.id == _currentSessionId);
@@ -193,18 +205,22 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         _sessions.insert(0, session);
       }
 
-      if (_sessions.length > 20) {
-        _sessions = _sessions.sublist(0, 20);
+      if (_sessions.length > 30) {
+        _sessions = _sessions.sublist(0, 30);
       }
 
       await prefs.setString(
         'ai_tutor_sessions',
         jsonEncode(_sessions.map((s) => s.toMap()).toList()),
       );
+      if (mounted) setState(() {});
     } catch (_) {}
   }
 
-  void _startNewSession() {
+  Future<void> _startNewSession() async {
+    if (_messages.any((m) => m.isUser)) {
+      await _saveCurrentSession();
+    }
     setState(() {
       _currentSessionId = DateTime.now().millisecondsSinceEpoch.toString();
       _messages.clear();
@@ -216,17 +232,34 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       ));
       _pendingImageBase64 = null;
     });
-    Navigator.of(context).maybePop();
+
+    if (mounted && Scaffold.maybeOf(context)?.isDrawerOpen == true) {
+      Navigator.of(context).pop();
+    }
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Started a new chat session'),
+          duration: Duration(seconds: 1),
+        ),
+      );
+    }
   }
 
-  void _loadSession(_ChatSession session) {
+  Future<void> _loadSession(_ChatSession session) async {
+    if (_messages.any((m) => m.isUser)) {
+      await _saveCurrentSession();
+    }
     setState(() {
       _currentSessionId = session.id;
       _messages.clear();
       _messages.addAll(session.messages);
       _pendingImageBase64 = null;
     });
-    Navigator.of(context).maybePop();
+    if (mounted && Scaffold.maybeOf(context)?.isDrawerOpen == true) {
+      Navigator.of(context).pop();
+    }
     _scrollToBottom();
   }
 
@@ -331,6 +364,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       ));
       _isLoading = true;
     });
+    _saveCurrentSession();
     _scrollToBottom();
 
     try {
@@ -346,8 +380,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
         if (m.imageBase64 != null && i == recentMessages.length - 1) {
           parts.add({
-            'inlineData': {
-              'mimeType': 'image/jpeg',
+            'inline_data': {
+              'mime_type': 'image/jpeg',
               'data': m.imageBase64,
             }
           });
@@ -410,6 +444,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           ));
           _isLoading = false;
         });
+        _saveCurrentSession();
       }
     }
     _scrollToBottom();
@@ -495,6 +530,46 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         ),
       );
     }
+  }
+
+  void _showFullScreenImage(String base64Image) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black87,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.zero,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            InteractiveViewer(
+              minScale: 0.5,
+              maxScale: 4.0,
+              child: Center(
+                child: Image.memory(
+                  base64Decode(base64Image),
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+            Positioned(
+              top: MediaQuery.of(ctx).padding.top + 12,
+              right: 16,
+              child: CircleAvatar(
+                backgroundColor: Colors.black54,
+                radius: 20,
+                child: IconButton(
+                  icon: const Icon(Icons.close_rounded,
+                      color: Colors.white, size: 22),
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  tooltip: 'Close Image',
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _scrollToBottom() {
@@ -631,12 +706,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       backgroundColor: AppColors.background,
       drawer: _buildDrawer(),
       appBar: AppBar(
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: const Icon(Icons.menu_rounded),
-            tooltip: 'Chat History',
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          tooltip: 'Back',
+          onPressed: () => context.pop(),
         ),
         title: Row(
           children: [
@@ -665,32 +738,48 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           ],
         ),
         actions: [
+          Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.history_rounded),
+              tooltip: 'Chat History',
+              onPressed: () => Scaffold.of(context).openDrawer(),
+            ),
+          ),
           IconButton(
-            icon: const Icon(Icons.add_comment_outlined),
+            icon: const Icon(Icons.add_rounded),
             tooltip: 'New Chat',
             onPressed: _startNewSession,
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.m, vertical: AppSpacing.s),
-              itemCount: _messages.length + (_isLoading ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index == _messages.length) return _buildTypingIndicator();
-                return _buildMessageBubble(_messages[index]);
-              },
+      body: SafeArea(
+        top: false,
+        bottom: false,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 850),
+            child: Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.m, vertical: AppSpacing.s),
+                    itemCount: _messages.length + (_isLoading ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index == _messages.length) return _buildTypingIndicator();
+                      return _buildMessageBubble(_messages[index]);
+                    },
+                  ),
+                ),
+                if (_messages.length <= 2 && widget.initialContext == null)
+                  _buildSuggestions(),
+                if (_pendingImageBase64 != null) _buildPendingImageStrip(),
+                _buildInputBar(),
+              ],
             ),
           ),
-          if (_messages.length <= 2 && widget.initialContext == null)
-            _buildSuggestions(),
-          if (_pendingImageBase64 != null) _buildPendingImageStrip(),
-          _buildInputBar(),
-        ],
+        ),
       ),
     );
   }
@@ -795,13 +884,34 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           if (msg.imageBase64 != null) ...[
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Image.memory(
-                                base64Decode(msg.imageBase64!),
-                                width: 180,
-                                height: 180,
-                                fit: BoxFit.cover,
+                            GestureDetector(
+                              onTap: () =>
+                                  _showFullScreenImage(msg.imageBase64!),
+                              child: Stack(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.memory(
+                                      base64Decode(msg.imageBase64!),
+                                      width: 180,
+                                      height: 180,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                  Positioned(
+                                    right: 6,
+                                    bottom: 6,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withValues(alpha: 0.55),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(Icons.zoom_in_rounded,
+                                          color: Colors.white, size: 16),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                             if (msg.text.isNotEmpty &&

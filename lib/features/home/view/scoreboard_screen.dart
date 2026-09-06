@@ -227,11 +227,17 @@ class ScoreboardScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // ── PODIUM ───────────────────────────────────────────────────────
-          Container(
-            margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      body: SafeArea(
+        top: false,
+        bottom: true,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: Column(
+              children: [
+                // ── PODIUM ───────────────────────────────────────────────────────
+                Container(
+                  margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
@@ -333,7 +339,12 @@ class ScoreboardScreen extends ConsumerWidget {
           // ── FULL LEADERBOARD ─────────────────────────────────────────────
           Expanded(
             child: ListView.separated(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              padding: EdgeInsets.fromLTRB(
+                16,
+                8,
+                16,
+                MediaQuery.of(context).padding.bottom + 48,
+              ),
               itemCount: allEntries.length,
               separatorBuilder: (_, __) => const SizedBox(height: 6),
               itemBuilder: (context, index) {
@@ -483,6 +494,9 @@ class ScoreboardScreen extends ConsumerWidget {
           ),
         ],
       ),
+    ),
+    ),
+    ),
     );
   }
 

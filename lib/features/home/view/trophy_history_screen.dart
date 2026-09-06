@@ -105,37 +105,49 @@ class TrophyHistoryScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: events.isEmpty ||
-              (events.length == 1 && events[0]['type'] == 'account')
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.emoji_events_outlined,
-                      size: 64, color: AppColors.textHint),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'No trophy history yet.',
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textSecondary),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Take a mock test to start earning trophies!',
-                    style: TextStyle(fontSize: 13, color: AppColors.textHint),
-                  ),
-                  const SizedBox(height: 24),
-                  TextButton(
-                    onPressed: () => context.go('/home'),
-                    child: const Text('Take a Test'),
-                  ),
-                ],
-              ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      body: SafeArea(
+        top: false,
+        bottom: true,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: events.isEmpty ||
+                    (events.length == 1 && events[0]['type'] == 'account')
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.emoji_events_outlined,
+                            size: 64, color: AppColors.textHint),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'No trophy history yet.',
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textSecondary),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Take a mock test to start earning trophies!',
+                          style: TextStyle(
+                              fontSize: 13, color: AppColors.textHint),
+                        ),
+                        const SizedBox(height: 24),
+                        TextButton(
+                          onPressed: () => context.go('/home'),
+                          child: const Text('Take a Test'),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: EdgeInsets.fromLTRB(
+                      16,
+                      12,
+                      16,
+                      MediaQuery.of(context).padding.bottom + 48,
+                    ),
               itemCount: events.length,
               itemBuilder: (context, index) {
                 final event = events[index];
@@ -319,6 +331,9 @@ class TrophyHistoryScreen extends ConsumerWidget {
                 );
               },
             ),
+    ),
+    ),
+    ),
     );
   }
 

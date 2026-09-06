@@ -26,103 +26,151 @@ class NewsDetailsScreen extends StatelessWidget {
         ),
         title: const Text('News Details'),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.l),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryLight,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    source,
-                    style: const TextStyle(
-                      color: AppColors.primaryDark,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-                const Spacer(),
-                Text(
-                  date,
-                  style: const TextStyle(color: AppColors.textHint, fontSize: 12),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.m),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+      body: SafeArea(
+        top: false,
+        bottom: true,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(
+                AppSpacing.l,
+                AppSpacing.l,
+                AppSpacing.l,
+                MediaQuery.of(context).padding.bottom + 48,
               ),
-            ),
-            const SizedBox(height: AppSpacing.l),
-            const Text(
-              'Key Exam Points:',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.s),
-            ...keyPoints.map((p) => Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     children: [
-                      const Text('• ', style: TextStyle(color: AppColors.primary, fontSize: 16)),
-                      Expanded(child: Text(p, style: const TextStyle(height: 1.4))),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryLight,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          source,
+                          style: const TextStyle(
+                            color: AppColors.primaryDark,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        date,
+                        style: const TextStyle(
+                            color: AppColors.textHint, fontSize: 12),
+                      ),
                     ],
                   ),
-                )),
-            const SizedBox(height: AppSpacing.l),
-            Text(
-              description,
-              style: const TextStyle(
-                fontSize: 15,
-                height: 1.6,
-                color: AppColors.textPrimary,
+                  const SizedBox(height: AppSpacing.m),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.l),
+                  const Text(
+                    'Key Exam Points:',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.s),
+                  ...keyPoints.map((p) => Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('• ',
+                                style: TextStyle(
+                                    color: AppColors.primary, fontSize: 16)),
+                            Expanded(
+                                child: Text(p,
+                                    style: const TextStyle(height: 1.4))),
+                          ],
+                        ),
+                      )),
+                  const SizedBox(height: AppSpacing.l),
+                  Text(
+                    description,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      height: 1.6,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xl),
+                  PrimaryButton(
+                    text: 'Ask AI Tutor About This',
+                    icon: Icons.chat_bubble_outline_rounded,
+                    onPressed: () {
+                      context.push(
+                        '/chatbot',
+                        extra: '$title\n\n$description',
+                      );
+                    },
+                  ),
+                  const SizedBox(height: AppSpacing.m),
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.picture_as_pdf_rounded),
+                    label:
+                        const Text('View Official Notification / Advert PDF'),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 50),
+                    ),
+                    onPressed: () async {
+                      final linkStr = article['link'] as String?;
+                      final target = (linkStr != null &&
+                              linkStr.startsWith('http'))
+                          ? linkStr
+                          : 'https://apssb.nic.in';
+                      final url = Uri.parse(target);
+                      bool launched = false;
+                      try {
+                        launched = await launchUrl(url,
+                            mode: LaunchMode.externalApplication);
+                      } catch (_) {}
+
+                      if (!launched) {
+                        try {
+                          launched = await launchUrl(url,
+                              mode: LaunchMode.inAppBrowserView);
+                        } catch (_) {}
+                      }
+
+                      if (!launched) {
+                        try {
+                          launched = await launchUrl(url,
+                              mode: LaunchMode.platformDefault);
+                        } catch (_) {}
+                      }
+
+                      if (!launched && context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                                'Could not open link. Opening in browser: $target'),
+                            duration: const Duration(seconds: 4),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: AppSpacing.xl),
-            PrimaryButton(
-              text: 'Ask AI Tutor About This',
-              icon: Icons.chat_bubble_outline_rounded,
-              onPressed: () {
-                context.push(
-                  '/chatbot',
-                  extra: '$title\n\n$description',
-                );
-              },
-            ),
-            const SizedBox(height: AppSpacing.m),
-            OutlinedButton.icon(
-              icon: const Icon(Icons.picture_as_pdf_rounded),
-              label: const Text('View Official Notification / Advert PDF'),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
-              ),
-              onPressed: () async {
-                final linkStr = article['link'] as String?;
-                final target = (linkStr != null && linkStr.startsWith('http'))
-                    ? linkStr
-                    : 'https://apssb.nic.in';
-                final url = Uri.parse(target);
-                if (await canLaunchUrl(url)) {
-                  await launchUrl(url, mode: LaunchMode.externalApplication);
-                }
-              },
-            ),
-          ],
+          ),
         ),
       ),
     );

@@ -56,11 +56,17 @@ class _CurrentAffairsGkScreenState
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // State GK Banner Shortcut
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      body: SafeArea(
+        top: false,
+        bottom: true,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: Column(
+              children: [
+                // State GK Banner Shortcut
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
             child: InkWell(
               onTap: () => context.push('/state-gk'),
               borderRadius: BorderRadius.circular(14),
@@ -207,7 +213,12 @@ class _CurrentAffairsGkScreenState
                 }
 
                 return ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                  padding: EdgeInsets.fromLTRB(
+                    16,
+                    8,
+                    16,
+                    MediaQuery.of(context).padding.bottom + 48,
+                  ),
                   itemCount: filtered.length,
                   itemBuilder: (context, index) {
                     final item = filtered[index];
@@ -353,6 +364,9 @@ class _CurrentAffairsGkScreenState
           ),
         ],
       ),
+    ),
+    ),
+    ),
     );
   }
 }

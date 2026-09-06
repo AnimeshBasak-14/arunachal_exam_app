@@ -28,7 +28,7 @@ class CurrentAffairsService {
   static const String _apiKey =
       'AQ.Ab8RN6KS4k7zMX9Rza6IEIwyovwJueGIwOhUWAuueYFNj7torg';
   static const String _geminiEndpoint =
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite-preview-06-17:generateContent?key=$_apiKey';
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=$_apiKey';
 
   static List<CurrentAffairsItem>? _cache;
   static DateTime? _cacheTime;

@@ -61,10 +61,16 @@ class _StateGkScreenState extends State<StateGkScreen> {
           ],
         ),
       ),
-      body: Column(
-        children: [
-          // Search & Filter Header
-          Container(
+      body: SafeArea(
+        top: false,
+        bottom: true,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: Column(
+              children: [
+                // Search & Filter Header
+                Container(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             color: AppColors.surface,
             child: Column(
@@ -135,7 +141,12 @@ class _StateGkScreenState extends State<StateGkScreen> {
                         style: TextStyle(color: AppColors.textSecondary)),
                   )
                 : ListView.builder(
-                    padding: const EdgeInsets.all(AppSpacing.m),
+                    padding: EdgeInsets.fromLTRB(
+                      AppSpacing.m,
+                      AppSpacing.m,
+                      AppSpacing.m,
+                      MediaQuery.of(context).padding.bottom + 48,
+                    ),
                     itemCount: filtered.length,
                     itemBuilder: (context, index) {
                       final chapter = filtered[index];
@@ -145,6 +156,9 @@ class _StateGkScreenState extends State<StateGkScreen> {
           ),
         ],
       ),
+    ),
+    ),
+    ),
     );
   }
 

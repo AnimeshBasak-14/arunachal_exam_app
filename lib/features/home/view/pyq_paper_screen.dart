@@ -427,7 +427,12 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                     Expanded(
                       child: ListView.builder(
                         physics: const BouncingScrollPhysics(),
-                        padding: const EdgeInsets.all(AppSpacing.m),
+                        padding: EdgeInsets.fromLTRB(
+                          AppSpacing.m,
+                          AppSpacing.m,
+                          AppSpacing.m,
+                          MediaQuery.of(context).padding.bottom + 48,
+                        ),
                         itemCount: _filteredQuestions.length,
                         itemBuilder: (context, index) {
                           final question = _filteredQuestions[index];
