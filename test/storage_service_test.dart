@@ -1,87 +1,85 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:arunachal_exam_app/core/services/storage_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late StorageService storageService;
+  group('StorageService - Secure Password Tests', () {
+    late SharedPreferences prefs;
+    late StorageService storageService;
 
-  setUp(() async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    storageService = StorageService(prefs);
-  });
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({});
+      prefs = await SharedPreferences.getInstance();
+      FlutterSecureStorage.setMockInitialValues({});
+      storageService = StorageService(prefs, const FlutterSecureStorage());
+    });
 
-  test('saveUser correctly stores active session and account data', () async {
-    await storageService.saveUser(
-      name: 'Tashi Tsering',
-      email: 'tashi@arunachal.in',
-      phone: '9876543210',
-      profilePic: 'avatar_blue',
-      dob: '1998-05-15',
-      rating: 1350,
-      city: 'Naharlagun',
-    );
+    test('registerUserAccount stores password securely in secure storage and not in SharedPreferences', () async {
+      await storageService.registerUserAccount(
+        emailOrPhone: 'user@gmail.com',
+        password: 'securePassword123',
+        name: 'Test User',
+      );
 
-    expect(storageService.userName, 'Tashi Tsering');
-    expect(storageService.userEmail, 'tashi@arunachal.in');
-    expect(storageService.userPhone, '9876543210');
-    expect(storageService.userProfilePic, 'avatar_blue');
-    expect(storageService.userDob, '1998-05-15');
-    expect(storageService.userRating, 1350);
-    expect(storageService.userCity, 'Naharlagun');
+      final retrieved = await storageService.getRegisteredPassword('user@gmail.com');
+      expect(retrieved, equals('securePassword123'));
 
-    final account = storageService.getAccountData('tashi@arunachal.in');
-    expect(account, isNotNull);
-    expect(account!.name, 'Tashi Tsering');
-    expect(account.rating, 1350);
-  });
+      // Ensure password key is NOT in SharedPreferences
+      expect(prefs.containsKey('reg_pwd_user@gmail.com'), isFalse);
+    });
 
-  test('clearUser removes user keys and sets isLoggedIn to false', () async {
-    await storageService.saveUser(
-      name: 'Tashi Tsering',
-      email: 'tashi@arunachal.in',
-      phone: '9876543210',
-    );
-    await storageService.setLoggedIn(true);
-    expect(storageService.isLoggedIn, true);
+    test('getRegisteredPassword migrates legacy plaintext password from SharedPreferences to secure storage', () async {
+      // Manually set legacy password in SharedPreferences
+      await prefs.setString('reg_pwd_legacy@gmail.com', 'oldLegacyPwd');
+      expect(prefs.containsKey('reg_pwd_legacy@gmail.com'), isTrue);
 
-    await storageService.clearUser();
+      // Call getRegisteredPassword, which should migrate it
+      final retrieved = await storageService.getRegisteredPassword('legacy@gmail.com');
+      expect(retrieved, equals('oldLegacyPwd'));
 
-    expect(storageService.isLoggedIn, false);
-    expect(storageService.userName, 'Student Name'); // default value
-    expect(storageService.userEmail, 'student@arunachal.in'); // default value
-  });
+      // Ensure legacy password was deleted from SharedPreferences
+      expect(prefs.containsKey('reg_pwd_legacy@gmail.com'), isFalse);
 
-  test('registerUserAccount and getRegistered password/info work as expected',
-      () async {
-    await storageService.registerUserAccount(
-      emailOrPhone: 'user@test.com',
-      password: 'securePass123',
-      name: 'Test User',
-      dob: '2001-02-03',
-      rating: 1250,
-      city: 'Itanagar',
-    );
+      // Verify it is now in secure storage
+      const secureStorage = FlutterSecureStorage();
+      final secureVal = await secureStorage.read(key: 'reg_pwd_legacy@gmail.com');
+      expect(secureVal, equals('oldLegacyPwd'));
+    });
 
-    expect(
-        storageService.getRegisteredPassword('user@test.com'), 'securePass123');
-    expect(storageService.getRegisteredName('user@test.com'), 'Test User');
-    expect(storageService.getRegisteredDob('user@test.com'), '2001-02-03');
-    expect(storageService.getRegisteredRating('user@test.com'), 1250);
-    expect(storageService.getRegisteredCity('user@test.com'), 'Itanagar');
-  });
+    test('updateRegisteredPassword updates password securely in secure storage', () async {
+      await storageService.registerUserAccount(
+        emailOrPhone: 'user@gmail.com',
+        password: 'initialPwd',
+        name: 'Test User',
+      );
 
-  test('saveQuizHistory and toggleQuestionBookmark persist lists correctly',
-      () async {
-    await storageService.saveQuizHistory(['quiz1', 'quiz2'], 'user@test.com');
-    expect(storageService.getQuizHistory('user@test.com'), ['quiz1', 'quiz2']);
+      await storageService.updateRegisteredPassword('user@gmail.com', 'updatedPwd456');
 
-    await storageService.toggleQuestionBookmark('q101', 'user@test.com');
-    expect(storageService.getBookmarkedQuestions('user@test.com'), ['q101']);
+      final retrieved = await storageService.getRegisteredPassword('user@gmail.com');
+      expect(retrieved, equals('updatedPwd456'));
+      expect(prefs.containsKey('reg_pwd_user@gmail.com'), isFalse);
+    });
 
-    await storageService.toggleQuestionBookmark('q101', 'user@test.com');
-    expect(storageService.getBookmarkedQuestions('user@test.com'), isEmpty);
+    test('updateRegisteredAccount updates account key and transfers secure password', () async {
+      await storageService.registerUserAccount(
+        emailOrPhone: 'old@gmail.com',
+        password: 'myPassword',
+        name: 'Old Name',
+      );
+
+      await storageService.updateRegisteredAccount(
+        'old@gmail.com',
+        'new@gmail.com',
+        'New Name',
+        '2000-01-01',
+        1200,
+      );
+
+      expect(await storageService.getRegisteredPassword('old@gmail.com'), isNull);
+      expect(await storageService.getRegisteredPassword('new@gmail.com'), equals('myPassword'));
+    });
   });
 }

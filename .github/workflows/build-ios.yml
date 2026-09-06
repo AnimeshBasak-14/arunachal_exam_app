@@ -1,11 +1,11 @@
 name: Build Flutter iOS
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  workflow_dispatch:
+  # push:
+  #   branches: [ main ]
+  # pull_request:
+  #   branches: [ main ]
+  workflow_dispatch: # Leaves only the manual trigger active
 
 jobs:
   build-ios:

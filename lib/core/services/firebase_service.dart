@@ -5,8 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/user_model.dart';
 
 class FirebaseService {
-  final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAnalytics _analytics;
+  final FirebaseFirestore _firestore;
+
+  FirebaseService({
+    FirebaseAnalytics? analytics,
+    FirebaseFirestore? firestore,
+  })  : _analytics = analytics ?? FirebaseAnalytics.instance,
+        _firestore = firestore ?? FirebaseFirestore.instance;
 
   FirebaseAnalytics get analytics => _analytics;
   FirebaseFirestore get firestore => _firestore;

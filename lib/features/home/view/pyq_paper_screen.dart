@@ -49,7 +49,6 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
   int? _replyingToCommentIndex;
   String? _activeReplyingQuestionId;
 
-  bool _isLoadingLive = false;
   String _selectedSubject = 'All';
   List<String> _allSubjects = ['All'];
   List<Question> _filteredQuestions = [];
@@ -69,7 +68,6 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
   }
 
   Future<void> _loadLiveQuestions() async {
-    setState(() => _isLoadingLive = true);
     try {
       final live = await QuestionRepository.fetchLiveQuestions(
         examCode: widget.examCode,
@@ -89,14 +87,9 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
           _allSubjects = subjects;
           _selectedSubject = 'All';
           _filteredQuestions = pyqOnly;
-          _isLoadingLive = false;
         });
-      } else {
-        if (mounted) setState(() => _isLoadingLive = false);
       }
-    } catch (_) {
-      if (mounted) setState(() => _isLoadingLive = false);
-    }
+    } catch (_) {}
   }
 
   void _applySubjectFilter(String subject) {
@@ -113,35 +106,50 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
     final prefs = ref.read(sharedPreferencesProvider);
 
     for (final q in _questions) {
-      final savedComments = storage.getQuestionComments(q.id);
-      _questionComments[q.id] = [...q.initialComments, ...savedComments];
-      _commentControllers[q.id] = TextEditingController();
+      final qId = q.id;
+      final savedComments = storage.getQuestionComments(qId);
+      final allComments = [...q.initialComments, ...savedComments];
+      _questionComments[qId] = allComments;
+      _commentControllers[qId] = TextEditingController();
 
-      _questionLikes[q.id] = (q.questionText.length % 15) + 6;
-      _likedQuestions[q.id] = false;
-      _likedSolutions[q.id] = false;
+      _questionLikes[qId] = (q.questionText.length % 15) + 6;
+      _likedQuestions[qId] = false;
+      _likedSolutions[qId] = false;
 
-      final allComments = _questionComments[q.id]!;
+      final qCommentReplies = <int, List<String>>{};
+      final qCommentLikesCount = <int, int>{};
+      final qCommentUserLiked = <int, bool>{};
+      final qReplyLikesCount = <int, Map<int, int>>{};
+      final qReplyUserLiked = <int, Map<int, bool>>{};
+
       for (int i = 0; i < allComments.length; i++) {
-        final repliesList = prefs.getStringList('replies_${q.id}_$i') ?? [];
-        _commentReplies.putIfAbsent(q.id, () => {})[i] = repliesList;
+        final keyPrefix = '${qId}_$i';
+        final repliesList = prefs.getStringList('replies_$keyPrefix') ?? [];
+        qCommentReplies[i] = repliesList;
 
-        final likes = prefs.getInt('likes_${q.id}_$i') ?? (i * 3 + 2);
-        _commentLikesCount.putIfAbsent(q.id, () => {})[i] = likes;
-        _commentUserLiked.putIfAbsent(q.id, () => {})[i] =
-            prefs.getBool('user_liked_${q.id}_$i') ?? false;
+        qCommentLikesCount[i] = prefs.getInt('likes_$keyPrefix') ?? (i * 3 + 2);
+        qCommentUserLiked[i] = prefs.getBool('user_liked_$keyPrefix') ?? false;
 
-        for (int j = 0; j < repliesList.length; j++) {
-          final rLikes = prefs.getInt('reply_likes_${q.id}_${i}_$j') ?? 1;
-          _replyLikesCount
-              .putIfAbsent(q.id, () => {})
-              .putIfAbsent(i, () => {})[j] = rLikes;
-          _replyUserLiked
-                  .putIfAbsent(q.id, () => {})
-                  .putIfAbsent(i, () => {})[j] =
-              prefs.getBool('user_reply_liked_${q.id}_${i}_$j') ?? false;
+        if (repliesList.isNotEmpty) {
+          final iReplyLikes = <int, int>{};
+          final iReplyUserLiked = <int, bool>{};
+
+          for (int j = 0; j < repliesList.length; j++) {
+            final replyKeyPrefix = '${keyPrefix}_$j';
+            iReplyLikes[j] = prefs.getInt('reply_likes_$replyKeyPrefix') ?? 1;
+            iReplyUserLiked[j] = prefs.getBool('user_reply_liked_$replyKeyPrefix') ?? false;
+          }
+
+          qReplyLikesCount[i] = iReplyLikes;
+          qReplyUserLiked[i] = iReplyUserLiked;
         }
       }
+
+      _commentReplies[qId] = qCommentReplies;
+      _commentLikesCount[qId] = qCommentLikesCount;
+      _commentUserLiked[qId] = qCommentUserLiked;
+      _replyLikesCount[qId] = qReplyLikesCount;
+      _replyUserLiked[qId] = qReplyUserLiked;
     }
   }
 
@@ -343,10 +351,84 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
         ),
         title: Text('${widget.examCode} PYQ Papers'),
       ),
-      body: _isLoadingLive && _questions.isEmpty
-          ? const Center(child: CircularProgressIndicator())
-          : _questions.isEmpty
-              ? Center(
+      body: _questions.isEmpty
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.xl),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.folder_off_rounded, size: 54, color: AppColors.textHint),
+                    const SizedBox(height: AppSpacing.m),
+                    Text('No PYQ papers uploaded for ${widget.examCode} yet.', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const SizedBox(height: AppSpacing.s),
+                    const Text('New papers are uploaded regularly via the CMS web portal.', textAlign: TextAlign.center, style: TextStyle(color: AppColors.textSecondary)),
+                    const SizedBox(height: AppSpacing.m),
+                    ElevatedButton.icon(
+                      onPressed: _loadLiveQuestions,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('RETRY LOADING'),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : Column(
+              children: [
+                if (_allSubjects.length > 1)
+                  SizedBox(
+                    height: 48,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: 6),
+                      itemCount: _allSubjects.length,
+                      itemBuilder: (context, i) {
+                        final subj = _allSubjects[i];
+                        final isSelected = _selectedSubject == subj;
+                        return GestureDetector(
+                          onTap: () => _applySubjectFilter(subj),
+                          child: Container(
+                            margin: const EdgeInsets.only(right: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: isSelected ? AppColors.primary : AppColors.surface,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isSelected ? AppColors.primary : AppColors.divider,
+                              ),
+                            ),
+                            child: Text(
+                              subj,
+                              style: TextStyle(
+                                color: isSelected ? Colors.white : AppColors.textSecondary,
+                                fontSize: 12,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                Expanded(
+                  child: ListView.builder(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.all(AppSpacing.m),
+                    itemCount: _filteredQuestions.length,
+                    itemBuilder: (context, index) {
+                      final question = _filteredQuestions[index];
+                final isBookmarked = bookmarkedIds.contains(question.id);
+                final selectedOption = _selectedAnswers[question.id];
+                final showSolution = _showSolutions[question.id] ?? false;
+                final comments = _questionComments[question.id] ?? [];
+
+                return Card(
+                  key: ValueKey(question.id),
+                  margin: const EdgeInsets.only(bottom: AppSpacing.m),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusL),
+                    side: const BorderSide(color: AppColors.divider),
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(AppSpacing.xl),
                     child: Column(
