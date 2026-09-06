@@ -38,6 +38,9 @@ class MockFirebaseService implements FirebaseService {
   Future<void> syncUserProfile(UserModel user) async {}
 
   @override
+  Future<UserModel?> fetchUserProfile(String email) async => null;
+
+  @override
   Future<void> saveQuizResultToFirestore(String userEmail, Map<String, dynamic> resultData) async {}
 }
 

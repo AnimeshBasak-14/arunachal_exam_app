@@ -47,10 +47,21 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
-    await Firebase.initializeApp();
+    if (kIsWeb) {
+      await Firebase.initializeApp(
+        options: const FirebaseOptions(
+          apiKey: 'AIzaSyC8KsvkrcI1RkelPfPxqeHzzC8H-PBENPk',
+          appId: '1:646900488202:web:2d474107c037f4d34e67f3',
+          messagingSenderId: '646900488202',
+          projectId: 'arunachal-exam-app',
+          storageBucket: 'arunachal-exam-app.firebasestorage.app',
+        ),
+      );
+    } else {
+      await Firebase.initializeApp();
+    }
   } catch (e) {
-    debugPrint(
-        "Firebase initialization skipped (google-services.json not found yet): $e");
+    debugPrint("Firebase initialization skipped or failed: $e");
   }
 
   // Enable Firestore offline persistence

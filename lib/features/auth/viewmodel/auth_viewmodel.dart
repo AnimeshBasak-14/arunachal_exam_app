@@ -55,7 +55,63 @@ class AuthViewModel extends StateNotifier<AuthState> {
                     city: _storage.userCity,
                   ))
               : null,
-        ));
+        )) {
+    if (_storage.isLoggedIn && _storage.userEmail.isNotEmpty) {
+      refreshUserFromRemote();
+    }
+  }
+
+  static String _resolveBestProfilePic(String? remotePic, String? localPic,
+      [String fallback = 'avatar_green']) {
+    final cleanRemote = (remotePic ?? '').trim();
+    final cleanLocal = (localPic ?? '').trim();
+
+    // 1. Prefer custom uploaded picture from remote
+    if (cleanRemote.isNotEmpty && !cleanRemote.startsWith('avatar_')) {
+      return cleanRemote;
+    }
+    // 2. Prefer custom uploaded picture from local
+    if (cleanLocal.isNotEmpty && !cleanLocal.startsWith('avatar_')) {
+      return cleanLocal;
+    }
+    // 3. Use preset avatar from remote or local
+    if (cleanRemote.isNotEmpty) return cleanRemote;
+    if (cleanLocal.isNotEmpty) return cleanLocal;
+    return fallback;
+  }
+
+  Future<void> refreshUserFromRemote() async {
+    try {
+      final email = _storage.userEmail;
+      if (email.isEmpty) return;
+      final remote = await _firebase.fetchUserProfile(email);
+      if (remote != null) {
+        final current = state.user;
+        final bestRating = max(current?.rating ?? 0, remote.rating);
+        final effectivePic = _resolveBestProfilePic(remote.profilePic, current?.profilePic);
+
+        final updated = (current ?? remote).copyWith(
+          name: remote.name.isNotEmpty ? remote.name : current?.name,
+          rating: bestRating,
+          profilePic: effectivePic,
+          city: remote.city.isNotEmpty ? remote.city : current?.city,
+        );
+
+        await _storage.saveUser(
+          name: updated.name,
+          email: updated.email,
+          phone: updated.phone,
+          profilePic: updated.profilePic,
+          dob: updated.dob,
+          rating: updated.rating,
+          city: updated.city,
+        );
+        state = state.copyWith(user: updated);
+      }
+    } catch (e) {
+      debugPrint('[AuthViewModel] refreshUserFromRemote error: $e');
+    }
+  }
 
   void clearError() {
     state = state.copyWith(errorMessage: null);
@@ -101,7 +157,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
 
     // Load per-account reserved model if present
     final existingAccount = _storage.getAccountData(cleanInput);
-    final user = existingAccount ??
+    UserModel user = existingAccount ??
         UserModel(
           name: _storage.getRegisteredName(cleanInput) ?? 'Student Name',
           email: isGmail ? cleanInput : '',
@@ -111,6 +167,21 @@ class AuthViewModel extends StateNotifier<AuthState> {
           rating: _storage.getRegisteredRating(cleanInput),
           city: _storage.getRegisteredCity(cleanInput),
         );
+
+    // Sync cloud rating & profilePic from Firestore if available
+    try {
+      final remoteUser = await _firebase.fetchUserProfile(cleanInput);
+      if (remoteUser != null) {
+        final bestRating = max(user.rating, remoteUser.rating);
+        final effectivePic = _resolveBestProfilePic(remoteUser.profilePic, user.profilePic);
+        user = user.copyWith(
+          name: remoteUser.name.isNotEmpty ? remoteUser.name : user.name,
+          rating: bestRating,
+          profilePic: effectivePic,
+          city: remoteUser.city.isNotEmpty ? remoteUser.city : user.city,
+        );
+      }
+    } catch (_) {}
 
     await _storage.saveUser(
       name: user.name,
@@ -338,48 +409,57 @@ class AuthViewModel extends StateNotifier<AuthState> {
         return false;
       }
 
+      // 1. Check cloud profile in Firestore first
+      final remoteUser = await _firebase.fetchUserProfile(cleanEmail);
+      final savedAccount = _storage.getAccountData(cleanEmail);
+
       final rawName = (displayName != null && displayName.trim().isNotEmpty)
           ? displayName.trim()
-          : cleanEmail
-              .split('@')[0]
-              .split('.')
-              .map((s) => s.isNotEmpty
-                  ? '${s[0].toUpperCase()}${s.substring(1)}'
-                  : '')
-              .join(' ');
+          : (remoteUser != null && remoteUser.name.isNotEmpty)
+              ? remoteUser.name
+              : cleanEmail
+                  .split('@')[0]
+                  .split('.')
+                  .map((s) => s.isNotEmpty
+                      ? '${s[0].toUpperCase()}${s.substring(1)}'
+                      : '')
+                  .join(' ');
       final name = rawName.isNotEmpty ? rawName : 'Google Student';
 
-      final savedAccount = _storage.getAccountData(cleanEmail);
-      final UserModel user;
+      // Pick best profile picture (preserve custom upload if exists)
+      final String effectivePic = _resolveBestProfilePic(
+        remoteUser?.profilePic,
+        (photoUrl != null && photoUrl.isNotEmpty)
+            ? photoUrl
+            : savedAccount?.profilePic,
+        'avatar_gold',
+      );
 
-      if (savedAccount != null) {
-        user = savedAccount.copyWith(
-          name: savedAccount.name.isNotEmpty ? savedAccount.name : name,
-          profilePic: (photoUrl != null && photoUrl.isNotEmpty)
-              ? photoUrl
-              : savedAccount.profilePic,
-        );
-      } else {
-        user = UserModel(
-          name: name,
-          email: cleanEmail,
-          phone: '',
-          profilePic: photoUrl ?? 'avatar_gold',
-          dob: '2000-01-01',
-          rating: 0,
-          city: 'Itanagar',
-        );
+      // Pick highest rating (NEVER reset to zero!)
+      final int effectiveRating = max(
+        remoteUser?.rating ?? 0,
+        savedAccount?.rating ?? 0,
+      );
 
-        final securePassword = _generateSecureRandomPassword();
-        await _storage.registerUserAccount(
-          emailOrPhone: cleanEmail,
-          password: securePassword,
-          name: user.name,
-          dob: user.dob,
-          rating: 0,
-          city: 'Itanagar',
-        );
-      }
+      final UserModel user = UserModel(
+        name: (savedAccount?.name.isNotEmpty == true) ? savedAccount!.name : name,
+        email: cleanEmail,
+        phone: remoteUser?.phone ?? savedAccount?.phone ?? '',
+        profilePic: effectivePic,
+        dob: remoteUser?.dob ?? savedAccount?.dob ?? '2000-01-01',
+        rating: effectiveRating,
+        city: remoteUser?.city ?? savedAccount?.city ?? 'Itanagar',
+      );
+
+      final securePassword = _generateSecureRandomPassword();
+      await _storage.registerUserAccount(
+        emailOrPhone: cleanEmail,
+        password: securePassword,
+        name: user.name,
+        dob: user.dob,
+        rating: user.rating,
+        city: user.city,
+      );
 
       await _storage.saveUser(
         name: user.name,

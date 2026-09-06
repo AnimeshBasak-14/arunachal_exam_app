@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -105,7 +104,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           _uploadProgress = 0.3;
         });
 
-        final bytes = await File(pickedFile.path).readAsBytes();
+        final bytes = await pickedFile.readAsBytes();
         final base64Image = 'data:image/jpeg;base64,${base64Encode(bytes)}';
 
         setState(() {

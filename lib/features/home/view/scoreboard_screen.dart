@@ -1,5 +1,8 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
@@ -7,8 +10,6 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/rank_utils.dart';
 import '../../../core/utils/avatar_utils.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Simulated global competitors
 final _mockCompetitors = [
@@ -104,27 +105,39 @@ final _mockCompetitors = [
   },
 ];
 
-final globalLeaderboardStreamProvider = StreamProvider<List<Map<String, dynamic>>>((ref) {
-  return FirebaseFirestore.instance
-      .collection('users')
-      .orderBy('rating', descending: true)
-      .limit(50)
-      .snapshots()
-      .map((snapshot) {
-    if (snapshot.docs.isEmpty) {
-      return _mockCompetitors;
+final globalLeaderboardStreamProvider =
+    StreamProvider<List<Map<String, dynamic>>>((ref) {
+  try {
+    if (Firebase.apps.isEmpty) {
+      return Stream.value(_mockCompetitors);
     }
-    return snapshot.docs.map((doc) {
-      final data = doc.data();
-      return {
-        'name': data['name'] ?? 'Unknown',
-        'email': data['email'] ?? '',
-        'rating': data['rating'] ?? 0,
-        'state': data['city'] ?? 'Unknown',
-        'profilePic': data['profilePic'] ?? '',
-      };
-    }).toList();
-  });
+    return FirebaseFirestore.instance
+        .collection('users')
+        .orderBy('rating', descending: true)
+        .limit(50)
+        .snapshots()
+        .map((snapshot) {
+      if (snapshot.docs.isEmpty) {
+        return _mockCompetitors;
+      }
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        final rawName = data['name'] as String? ?? '';
+        final email = data['email'] as String? ?? '';
+        final fallbackName = email.isNotEmpty ? email.split('@')[0] : 'Candidate';
+        return {
+          'name': rawName.trim().isNotEmpty ? rawName : fallbackName,
+          'email': email,
+          'rating': (data['rating'] as num?)?.toInt() ?? 0,
+          'state': data['city'] as String? ?? 'Arunachal Pradesh',
+          'profilePic': data['profilePic'] as String? ?? '',
+        };
+      }).toList();
+    });
+  } catch (e) {
+    debugPrint('[Scoreboard] Leaderboard stream error: $e');
+    return Stream.value(_mockCompetitors);
+  }
 });
 
 /// Helper data class for sorted leaderboard state
@@ -142,21 +155,39 @@ class LeaderboardData {
 
 final leaderboardProvider = Provider.autoDispose<LeaderboardData>((ref) {
   final currentUser = ref.watch(authViewModelProvider).user;
-  final userEmail = currentUser?.email ?? '';
+  final userEmail = (currentUser?.email ?? '').trim().toLowerCase();
   final userRating = currentUser?.rating ?? 0;
-  final userName = currentUser?.name ?? 'You';
+  final userName = (currentUser?.name != null && currentUser!.name.isNotEmpty)
+      ? currentUser.name
+      : (userEmail.isNotEmpty ? userEmail.split('@')[0] : 'You');
 
   final asyncLeaderboard = ref.watch(globalLeaderboardStreamProvider);
-  
-  List<Map<String, dynamic>> rawEntries = asyncLeaderboard.value ?? _mockCompetitors;
+  final List<Map<String, dynamic>> rawEntries =
+      asyncLeaderboard.value ?? _mockCompetitors;
 
   bool foundMe = false;
   final allEntries = rawEntries.map((e) {
     final entry = Map<String, dynamic>.from(e);
-    if (entry['email'] == userEmail && userEmail.isNotEmpty) {
+    final entryEmail = (entry['email'] as String? ?? '').trim().toLowerCase();
+
+    if (userEmail.isNotEmpty && entryEmail == userEmail) {
       entry['isMe'] = true;
       foundMe = true;
-      entry['profilePic'] = currentUser?.profilePic ?? entry['profilePic'] ?? '';
+      // Preserve the highest rating so rating never resets to zero
+      final cloudRating = (entry['rating'] as num?)?.toInt() ?? 0;
+      entry['rating'] = max(cloudRating, userRating);
+      entry['name'] = userName;
+      // Prefer real uploaded profile picture
+      final cloudPic = entry['profilePic'] as String? ?? '';
+      final localPic = currentUser?.profilePic ?? '';
+      entry['profilePic'] = (localPic.isNotEmpty && !localPic.startsWith('avatar_'))
+          ? localPic
+          : (cloudPic.isNotEmpty && !cloudPic.startsWith('avatar_'))
+              ? cloudPic
+              : (localPic.isNotEmpty ? localPic : cloudPic);
+      entry['state'] = (currentUser != null && currentUser.city.isNotEmpty)
+          ? currentUser.city
+          : (entry['state'] ?? 'Arunachal Pradesh');
     } else {
       entry['isMe'] = false;
       entry['profilePic'] = entry['profilePic'] ?? '';
@@ -169,21 +200,24 @@ final leaderboardProvider = Provider.autoDispose<LeaderboardData>((ref) {
       'name': userName,
       'email': userEmail,
       'rating': userRating,
-      'state': currentUser?.city ?? 'Me',
+      'state': (currentUser != null && currentUser.city.isNotEmpty)
+          ? currentUser.city
+          : 'Arunachal Pradesh',
       'isMe': true,
       'profilePic': currentUser?.profilePic ?? '',
     });
   }
 
-  // O(N log N) sort operation offloaded from Widget.build()
-  allEntries.sort((a, b) => (b['rating'] as int).compareTo(a['rating'] as int));
+  // Sort by rating descending
+  allEntries.sort((a, b) =>
+      ((b['rating'] as num?)?.toInt() ?? 0).compareTo((a['rating'] as num?)?.toInt() ?? 0));
 
   final myRank = allEntries.indexWhere((e) => e['isMe'] == true) + 1;
   final topThree = allEntries.take(3).toList();
 
   return LeaderboardData(
     allEntries: allEntries,
-    myRank: myRank,
+    myRank: myRank > 0 ? myRank : allEntries.length,
     topThree: topThree,
   );
 });
@@ -220,6 +254,14 @@ class ScoreboardScreen extends ConsumerWidget {
         ),
         title: const Text('Global Scoreboard'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            tooltip: 'Refresh Scoreboard',
+            onPressed: () {
+              ref.invalidate(globalLeaderboardStreamProvider);
+              ref.read(authViewModelProvider.notifier).refreshUserFromRemote();
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.history_rounded),
             tooltip: 'Trophy History',
@@ -338,7 +380,13 @@ class ScoreboardScreen extends ConsumerWidget {
           ),
           // ── FULL LEADERBOARD ─────────────────────────────────────────────
           Expanded(
-            child: ListView.separated(
+            child: RefreshIndicator(
+              color: AppColors.primary,
+              onRefresh: () async {
+                ref.invalidate(globalLeaderboardStreamProvider);
+                await ref.read(authViewModelProvider.notifier).refreshUserFromRemote();
+              },
+              child: ListView.separated(
               padding: EdgeInsets.fromLTRB(
                 16,
                 8,
@@ -491,6 +539,7 @@ class ScoreboardScreen extends ConsumerWidget {
                 );
               },
             ),
+            ),
           ),
         ],
       ),
@@ -516,16 +565,19 @@ class ScoreboardScreen extends ConsumerWidget {
       );
     }
 
+    final avatarColor = (profilePic != null && profilePic.startsWith('avatar_'))
+        ? AvatarUtils.getAvatarColor(profilePic)
+        : (isMe ? AppColors.primary : fallbackColor);
+
     return CircleAvatar(
       radius: radius,
-      backgroundColor:
-          isMe ? AppColors.primary : fallbackColor.withValues(alpha: 0.22),
+      backgroundColor: avatarColor,
       child: Text(
         name.isNotEmpty ? name.substring(0, 1).toUpperCase() : '?',
         style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: radius * 0.75,
-          color: isMe ? Colors.white : fallbackColor,
+          color: Colors.white,
         ),
       ),
     );

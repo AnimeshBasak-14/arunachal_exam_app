@@ -31,6 +31,7 @@ void main() {
     when(() => mockStorage.userDob).thenReturn('2000-01-01');
     when(() => mockStorage.userRating).thenReturn(0);
     when(() => mockStorage.userCity).thenReturn('Itanagar');
+    when(() => mockFirebase.fetchUserProfile(any())).thenAnswer((_) async => null);
 
     authViewModel = AuthViewModel(mockStorage, mockFirebase);
   });

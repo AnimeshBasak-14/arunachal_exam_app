@@ -92,22 +92,58 @@ class FirebaseService {
   }
 
   // ─── FIRESTORE DATABASE SYNC ──────────────────────────────────────────
+  Future<UserModel?> fetchUserProfile(String email) async {
+    try {
+      if (_firestore == null) return null;
+      final docId = email.trim().toLowerCase();
+      if (docId.isEmpty) return null;
+
+      final doc = await _firestore.collection('users').doc(docId).get();
+      if (doc.exists && doc.data() != null) {
+        final data = doc.data()!;
+        final name = (data['name'] as String?)?.trim() ?? '';
+        return UserModel(
+          name: name.isNotEmpty ? name : email.split('@')[0],
+          email: data['email'] as String? ?? email,
+          phone: data['phone'] as String? ?? '',
+          dob: data['dob'] as String? ?? '2000-01-01',
+          city: data['city'] as String? ?? 'Itanagar',
+          rating: (data['rating'] as num?)?.toInt() ?? 0,
+          profilePic: data['profilePic'] as String? ?? 'avatar_green',
+        );
+      }
+    } catch (e) {
+      debugPrint('[Firestore Error] fetchUserProfile: $e');
+    }
+    return null;
+  }
+
   Future<void> syncUserProfile(UserModel user) async {
     try {
       if (_firestore == null) return;
       final docId = user.email.trim().toLowerCase();
       if (docId.isEmpty) return;
 
-      await _firestore.collection('users').doc(docId).set({
+      final Map<String, dynamic> updateData = {
         'name': user.name,
         'email': user.email,
         'phone': user.phone,
         'dob': user.dob,
         'city': user.city,
-        'rating': user.rating,
-        'profilePic': user.profilePic,
         'lastActive': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      };
+
+      if (user.rating > 0) {
+        updateData['rating'] = user.rating;
+      }
+      if (user.profilePic != null && user.profilePic!.isNotEmpty) {
+        updateData['profilePic'] = user.profilePic;
+      }
+
+      await _firestore.collection('users').doc(docId).set(
+            updateData,
+            SetOptions(merge: true),
+          );
 
       debugPrint('[Firestore] User profile synced for ${user.email}');
     } catch (e) {

@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/services/service_providers.dart';
 import '../../../core/utils/rank_utils.dart';
+import '../../../core/utils/avatar_utils.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 
 class BioScreen extends ConsumerWidget {
@@ -55,22 +55,6 @@ class BioScreen extends ConsumerWidget {
     final double avgAccuracy =
         totalMaxScore > 0 ? (totalScore / totalMaxScore * 100) : 0.0;
 
-    Color getAvatarColor(String? avatarName) {
-      switch (avatarName) {
-        case 'avatar_teal':
-          return AppColors.secondary;
-        case 'avatar_gold':
-          return AppColors.accent;
-        case 'avatar_blue':
-          return const Color(0xff3b82f6);
-        case 'avatar_orange':
-          return const Color(0xffe07a5f);
-        case 'avatar_green':
-        default:
-          return AppColors.primary;
-      }
-    }
-
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -110,16 +94,14 @@ class BioScreen extends ConsumerWidget {
                     children: [
                       (() {
                         final pic = user?.profilePic;
-                        final isFile =
-                            pic != null && !pic.startsWith('avatar_');
+                        final imgProvider = AvatarUtils.getAvatarImageProvider(pic);
                         return Hero(
                           tag: 'profile_avatar_hero',
                           child: CircleAvatar(
                             radius: 54,
-                            backgroundColor: getAvatarColor(pic),
-                            backgroundImage:
-                                isFile ? FileImage(File(pic)) : null,
-                            child: isFile
+                            backgroundColor: AvatarUtils.getAvatarColor(pic),
+                            backgroundImage: imgProvider,
+                            child: imgProvider != null
                                 ? null
                                 : Text(
                                     userName.isNotEmpty
