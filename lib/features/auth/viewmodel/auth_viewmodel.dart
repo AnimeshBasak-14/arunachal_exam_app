@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:firebase_core/firebase_core.dart' hide FirebaseService;
 import 'package:firebase_auth/firebase_auth.dart';
@@ -512,9 +513,35 @@ class AuthViewModel extends StateNotifier<AuthState> {
           photoUrl: user.photoURL,
         );
       } else {
-        final googleSignIn = GoogleSignIn(
-          scopes: ['email', 'profile'],
-        );
+        // 1. First try the Android system account picker via native MethodChannel.
+        // AccountManager.newChooseAccountIntent displays the exact system bottom sheet
+        // with all Google accounts on device. Once the user selects their account,
+        // it directly returns the email without failing on OAuth client verification.
+        bool methodChannelFailed = false;
+        String? selectedEmail;
+        try {
+          const channel =
+              MethodChannel('com.example.arunachal_exam_app/google_auth');
+          selectedEmail =
+              await channel.invokeMethod<String>('pickGoogleAccount');
+        } catch (e) {
+          debugPrint('[GoogleAccountPicker] MethodChannel error: $e');
+          methodChannelFailed = true;
+        }
+
+        if (!methodChannelFailed) {
+          if (selectedEmail != null && selectedEmail.trim().isNotEmpty) {
+            return await loginWithGoogleAccount(
+              email: selectedEmail.trim(),
+            );
+          }
+          // User dismissed or cancelled the native account chooser
+          state = state.copyWith(isLoading: false);
+          return false;
+        }
+
+        // 2. Fallback to GoogleSignIn plugin if MethodChannel was not available
+        final googleSignIn = GoogleSignIn();
         final account = await googleSignIn.signIn();
         if (account == null) {
           state = state.copyWith(isLoading: false);
@@ -528,12 +555,17 @@ class AuthViewModel extends StateNotifier<AuthState> {
         );
       }
     } on FirebaseAuthException catch (e) {
-      debugPrint('[GoogleSignIn Web] FirebaseAuthException: ${e.code} - ${e.message}');
+      debugPrint(
+          '[GoogleSignIn Web] FirebaseAuthException: ${e.code} - ${e.message}');
       String? message;
       if (e.code == 'popup-closed-by-user' || e.code == 'cancelled') {
-        message = null; // User simply closed the popup, no error needed
+        message = null; // User simply closed the popup
       } else if (e.code == 'popup-blocked') {
-        message = 'Popup was blocked by your browser. Please allow popups for this site.';
+        message =
+            'Popup was blocked by your browser. Please allow popups for this site.';
+      } else if (e.code == 'unauthorized-domain') {
+        message =
+            'Domain not authorized in Firebase Auth settings. Please check Firebase console.';
       } else {
         message = e.message ?? 'Google sign-in failed. Please try again.';
       }
@@ -542,10 +574,11 @@ class AuthViewModel extends StateNotifier<AuthState> {
     } catch (e) {
       debugPrint('[GoogleSignIn] Native sign-in error or cancelled: $e');
       final errStr = e.toString().toLowerCase();
-      final String? message =
-          (errStr.contains('cancel') || errStr.contains('popup_closed'))
-              ? null
-              : 'Google sign-in could not be completed. Please try again.';
+      final String? message = (errStr.contains('cancel') ||
+              errStr.contains('popup_closed') ||
+              errStr.contains('canceled'))
+          ? null
+          : 'Google sign-in could not be completed. Please try again.';
       state = state.copyWith(isLoading: false, errorMessage: message);
       return false;
     }

@@ -25,7 +25,7 @@ jobs:
         run: flutter pub get
 
       - name: Build Web
-        run: flutter build web --release --base-href /arunachal_exam_app/
+        run: flutter build web --release --pwa-strategy=none --base-href /arunachal_exam_app/
 
       - name: Prepare SPA and nojekyll for GitHub Pages
         run: |
