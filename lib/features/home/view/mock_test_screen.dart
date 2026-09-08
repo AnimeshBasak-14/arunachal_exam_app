@@ -439,6 +439,47 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
     );
   }
 
+  Widget _buildPassageWidget(String passage) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.menu_book_rounded,
+                  size: 14, color: AppColors.primary),
+              SizedBox(width: 6),
+              Text(
+                'Comprehension / Direction',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            passage,
+            style: const TextStyle(
+              fontSize: 13,
+              fontStyle: FontStyle.italic,
+              color: AppColors.textSecondary,
+              height: 1.45,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildQuestionReviewCard(Question question, int index) {
     final selectedOption = _selectedAnswers[question.id];
     final isCorrect = selectedOption == question.correctAnswer;
@@ -457,10 +498,27 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
           children: [
             _buildReviewQuestionHeader(question, selectedOption, isCorrect),
             const SizedBox(height: AppSpacing.s),
+            if (question.passageOrDirection != null &&
+                question.passageOrDirection!.trim().isNotEmpty) ...[
+              _buildPassageWidget(question.passageOrDirection!.trim()),
+              const SizedBox(height: AppSpacing.s),
+            ],
             Text(
               'Q${index + 1}. ${question.questionText}',
               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
             ),
+            if (question.questionImage != null &&
+                question.questionImage!.isNotEmpty) ...[
+              const SizedBox(height: AppSpacing.s),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  question.questionImage!,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                ),
+              ),
+            ],
             const SizedBox(height: AppSpacing.m),
             ...List.generate(question.options.length, (optIdx) {
               return _buildReviewOptionTile(question, optIdx, selectedOption);
@@ -576,17 +634,36 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: 14),
-        child: Text(
-          option,
-          style: TextStyle(
-            fontSize: 14,
-            color: isOptionCorrect
-                ? AppColors.primaryDark
-                : isUserSelected
-                    ? AppColors.error
-                    : AppColors.textPrimary,
-            fontWeight: isUserSelected || isOptionCorrect ? FontWeight.bold : FontWeight.normal,
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              option,
+              style: TextStyle(
+                fontSize: 14,
+                color: isOptionCorrect
+                    ? AppColors.primaryDark
+                    : isUserSelected
+                        ? AppColors.error
+                        : AppColors.textPrimary,
+                fontWeight: isUserSelected || isOptionCorrect ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+            if (optIdx < question.optionImages.length &&
+                question.optionImages[optIdx] != null &&
+                question.optionImages[optIdx]!.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: Image.network(
+                  question.optionImages[optIdx]!,
+                  height: 70,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );
@@ -623,6 +700,18 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
             question.solution,
             style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary, height: 1.4),
           ),
+          if (question.solutionImage != null &&
+              question.solutionImage!.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: Image.network(
+                question.solutionImage!,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -851,6 +940,11 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                                     ],
                                   ),
                                   const SizedBox(height: AppSpacing.s),
+                                  if (question.passageOrDirection != null &&
+                                      question.passageOrDirection!.trim().isNotEmpty) ...[
+                                    _buildPassageWidget(question.passageOrDirection!.trim()),
+                                    const SizedBox(height: AppSpacing.s),
+                                  ],
                                   Text(
                                     'Q${index + 1}. ${question.questionText}',
                                     style: const TextStyle(
@@ -859,6 +953,19 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                                       color: AppColors.textPrimary,
                                     ),
                                   ),
+                                  if (question.questionImage != null &&
+                                      question.questionImage!.isNotEmpty) ...[
+                                    const SizedBox(height: AppSpacing.s),
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.network(
+                                        question.questionImage!,
+                                        fit: BoxFit.contain,
+                                        errorBuilder: (_, __, ___) =>
+                                            const SizedBox.shrink(),
+                                      ),
+                                    ),
+                                  ],
                                   const SizedBox(height: AppSpacing.m),
                                   ...List.generate(question.options.length,
                                       (optIdx) {
@@ -900,15 +1007,46 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                                           padding: const EdgeInsets.symmetric(
                                               horizontal: AppSpacing.m,
                                               vertical: 14),
-                                          child: Text(
-                                            option,
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: AppColors.textPrimary,
-                                              fontWeight: isSelected
-                                                  ? FontWeight.bold
-                                                  : FontWeight.normal,
-                                            ),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                option,
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  color: AppColors.textPrimary,
+                                                  fontWeight: isSelected
+                                                      ? FontWeight.bold
+                                                      : FontWeight.normal,
+                                                ),
+                                              ),
+                                              if (optIdx <
+                                                      question.optionImages
+                                                          .length &&
+                                                  question.optionImages[
+                                                          optIdx] !=
+                                                      null &&
+                                                  question
+                                                      .optionImages[optIdx]!
+                                                      .isNotEmpty) ...[
+                                                const SizedBox(height: 6),
+                                                ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(6),
+                                                  child: Image.network(
+                                                    question
+                                                        .optionImages[optIdx]!,
+                                                    height: 70,
+                                                    fit: BoxFit.contain,
+                                                    errorBuilder: (_, __,
+                                                            ___) =>
+                                                        const SizedBox
+                                                            .shrink(),
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
                                           ),
                                         ),
                                       ),

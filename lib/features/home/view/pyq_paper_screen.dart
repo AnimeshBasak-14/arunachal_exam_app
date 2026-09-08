@@ -530,6 +530,51 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                                   ),
                                   const SizedBox(height: AppSpacing.s),
 
+                                  // Passage / Direction (if available for group questions)
+                                  if (question.passageOrDirection != null &&
+                                      question.passageOrDirection!.trim().isNotEmpty) ...[
+                                    Container(
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF8FAFC),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Row(
+                                            children: [
+                                              Icon(Icons.menu_book_rounded,
+                                                  size: 14,
+                                                  color: AppColors.primary),
+                                              SizedBox(width: 6),
+                                              Text(
+                                                'Direction / Passage',
+                                                style: TextStyle(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: AppColors.primary,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Text(
+                                            question.passageOrDirection!.trim(),
+                                            style: const TextStyle(
+                                              fontSize: 13,
+                                              fontStyle: FontStyle.italic,
+                                              color: AppColors.textSecondary,
+                                              height: 1.45,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: AppSpacing.s),
+                                  ],
+
                                   // Question Text
                                   Text(
                                     'Q${index + 1}. ${question.questionText}',
@@ -539,6 +584,19 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                                       color: AppColors.textPrimary,
                                     ),
                                   ),
+                                  if (question.questionImage != null &&
+                                      question.questionImage!.isNotEmpty) ...[
+                                    const SizedBox(height: AppSpacing.s),
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.network(
+                                        question.questionImage!,
+                                        fit: BoxFit.contain,
+                                        errorBuilder: (_, __, ___) =>
+                                            const SizedBox.shrink(),
+                                      ),
+                                    ),
+                                  ],
                                   const SizedBox(height: AppSpacing.m),
 
                                   // Options List
@@ -599,20 +657,47 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                                           padding: const EdgeInsets.symmetric(
                                               horizontal: AppSpacing.m,
                                               vertical: 14),
-                                          child: Text(
-                                            option,
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: selectedOption != null &&
-                                                      isCorrect
-                                                  ? AppColors.primaryDark
-                                                  : AppColors.textPrimary,
-                                              fontWeight: isSelected ||
-                                                      (selectedOption != null &&
-                                                          isCorrect)
-                                                  ? FontWeight.bold
-                                                  : FontWeight.normal,
-                                            ),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                option,
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  color: selectedOption != null &&
+                                                          isCorrect
+                                                      ? AppColors.primaryDark
+                                                      : AppColors.textPrimary,
+                                                  fontWeight: isSelected ||
+                                                          (selectedOption != null &&
+                                                              isCorrect)
+                                                      ? FontWeight.bold
+                                                      : FontWeight.normal,
+                                                ),
+                                              ),
+                                              if (optIdx <
+                                                      question.optionImages.length &&
+                                                  question.optionImages[optIdx] !=
+                                                      null &&
+                                                  question
+                                                      .optionImages[optIdx]!
+                                                      .isNotEmpty) ...[
+                                                const SizedBox(height: 6),
+                                                ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(6),
+                                                  child: Image.network(
+                                                    question
+                                                        .optionImages[optIdx]!,
+                                                    height: 70,
+                                                    fit: BoxFit.contain,
+                                                    errorBuilder: (_, __, ___) =>
+                                                        const SizedBox.shrink(),
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
                                           ),
                                         ),
                                       ),
@@ -768,6 +853,21 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                                                 color: AppColors.textSecondary,
                                                 height: 1.4),
                                           ),
+                                          if (question.solutionImage != null &&
+                                              question
+                                                  .solutionImage!.isNotEmpty) ...[
+                                            const SizedBox(height: 8),
+                                            ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                              child: Image.network(
+                                                question.solutionImage!,
+                                                fit: BoxFit.contain,
+                                                errorBuilder: (_, __, ___) =>
+                                                    const SizedBox.shrink(),
+                                              ),
+                                            ),
+                                          ],
                                         ],
                                       ),
                                     ),

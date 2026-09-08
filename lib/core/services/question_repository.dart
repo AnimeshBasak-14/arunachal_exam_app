@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 
 class Question {
   final String id;
@@ -155,22 +157,155 @@ class Question {
     final data = (doc.data() as Map<String, dynamic>?) ?? {};
     return Question.fromMap(doc.id, data);
   }
+
+  factory Question.fromSupabase(Map<String, dynamic> data) {
+    final tests = data['tests'] as Map<String, dynamic>?;
+    final groups = data['question_groups'] as Map<String, dynamic>?;
+
+    final rawExamCode = tests?['exam_code']?.toString() ?? 'APPSC';
+    final parsedYear = tests?['year'] as int? ?? 2024;
+    final paperType = tests?['paper_type']?.toString() ?? 'PYQ';
+    final testId = data['test_id']?.toString() ?? '';
+    final testTitle = tests?['title']?.toString() ?? '';
+
+    // Options parsing from JSONB array
+    List<String> parsedOptions = [];
+    List<String?> parsedOptionImages = [null, null, null, null];
+    if (data['options'] is List) {
+      final list = data['options'] as List;
+      for (int i = 0; i < list.length; i++) {
+        final item = list[i];
+        if (item is Map) {
+          final id = (item['id'] ?? String.fromCharCode(97 + i)).toString();
+          final text = item['text']?.toString() ?? '';
+          parsedOptions.add(text.startsWith('(') ? text : '($id) $text');
+          if (i < 4 && item['image'] != null) {
+            parsedOptionImages[i] = item['image'].toString();
+          }
+        } else if (item is String) {
+          parsedOptions.add(item);
+        }
+      }
+    }
+    if (parsedOptions.isEmpty) {
+      parsedOptions = [
+        '(a) Option A',
+        '(b) Option B',
+        '(c) Option C',
+        '(d) Option D'
+      ];
+    }
+
+    final rawCorrect = (data['correct_answer'] ?? 'a')
+        .toString()
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-d]'), '');
+    final cleanCorrect = rawCorrect.isNotEmpty ? rawCorrect[0] : 'a';
+
+    String official = '($cleanCorrect)';
+    final correctIdx = cleanCorrect.codeUnitAt(0) - 97;
+    if (correctIdx >= 0 && correctIdx < parsedOptions.length) {
+      official = parsedOptions[correctIdx];
+    }
+
+    // Passage / Direction handling
+    String? passageText;
+    if (groups != null) {
+      final gTitle = groups['title']?.toString();
+      final pText = groups['passage_text']?.toString();
+      final gInst = groups['instructions']?.toString();
+      final parts = [
+        if (gTitle != null && gTitle.isNotEmpty) gTitle,
+        if (gInst != null && gInst.isNotEmpty) gInst,
+        if (pText != null && pText.isNotEmpty) pText,
+      ];
+      if (parts.isNotEmpty) {
+        passageText = parts.join('\n\n');
+      }
+    }
+
+    return Question(
+      id: data['id']?.toString() ?? '',
+      examCode: rawExamCode,
+      year: parsedYear,
+      paperType: paperType,
+      testId: testId,
+      testTitle: testTitle,
+      subject: (data['subject'] ?? 'General').toString(),
+      difficulty: (data['difficulty'] ?? 'Medium').toString(),
+      groupId: data['group_id']?.toString(),
+      passageOrDirection: passageText,
+      questionText: (data['question_text'] ?? '').toString(),
+      questionImage: data['question_image_url']?.toString(),
+      options: parsedOptions,
+      optionImages: parsedOptionImages,
+      correctAnswer: cleanCorrect,
+      officialAnswer: official,
+      solution:
+          (data['explanation'] ?? 'Verified with official key.').toString(),
+      solutionImage: data['explanation_image_url']?.toString(),
+      timeLimitMins: tests?['duration_minutes'] as int? ?? 120,
+      marksPerCorrect:
+          (tests?['marks_per_correct'] as num?)?.toDouble() ?? 2.0,
+      negativeMarks: (tests?['negative_marks'] as num?)?.toDouble() ?? 0.5,
+      isScenarioTest: groups != null,
+      scenarioTags: null,
+      initialComments: const [],
+      pyqText: '[$rawExamCode $parsedYear]',
+    );
+  }
 }
 
 class QuestionRepository {
   static final List<Question> allQuestions = [];
 
-  /// Fetches live questions from Cloud Firestore with automatic offline caching and local fallback
+  /// Fetches live questions from Supabase (PostgreSQL) first, with Cloud Firestore and local fallbacks
   static Future<List<Question>> fetchLiveQuestions({
     required String examCode,
     int? year,
     String? paperType,
   }) async {
+    final cleanCode = examCode.trim().toUpperCase();
+
+    // 1. Query Supabase (Relational PostgreSQL DB with Question Groups / Passages support)
+    try {
+      var supaUrl =
+          'https://fllopztywwblbucvaths.supabase.co/rest/v1/questions?select=*,question_groups(*),tests!inner(*)&tests.exam_code=ilike.*$cleanCode*&order=question_number';
+      if (year != null) {
+        supaUrl += '&tests.year=eq.$year';
+      }
+      if (paperType != null && paperType.isNotEmpty) {
+        supaUrl += '&tests.paper_type=eq.${paperType.toUpperCase()}';
+      }
+
+      final response = await http.get(
+        Uri.parse(supaUrl),
+        headers: {
+          'apikey': 'sb_publishable_y68QKKHxBTZxBP3Sf1X7tw_zfFnXX8M',
+          'Authorization':
+              'Bearer sb_publishable_y68QKKHxBTZxBP3Sf1X7tw_zfFnXX8M',
+        },
+      ).timeout(const Duration(seconds: 4));
+
+      if (response.statusCode == 200) {
+        final List list = jsonDecode(response.body);
+        if (list.isNotEmpty) {
+          debugPrint(
+              '[QuestionRepository] Loaded ${list.length} live questions from Supabase for $cleanCode');
+          return list
+              .map((item) =>
+                  Question.fromSupabase(item as Map<String, dynamic>))
+              .toList();
+        }
+      }
+    } catch (e) {
+      debugPrint('[QuestionRepository] Supabase fetch skipped or error: $e');
+    }
+
+    // 2. Fallback to Cloud Firestore
     try {
       final firestore = FirebaseFirestore.instance;
       Query query = firestore.collection('questions');
-
-      final cleanCode = examCode.trim().toUpperCase();
 
       // Match APSSB variants - accept both short codes and full codes
       String queryCode = cleanCode;
@@ -242,7 +377,7 @@ class QuestionRepository {
           '[QuestionRepository] Error fetching live questions from Firestore: $e');
     }
 
-    // Fallback to local questions
+    // 3. Fallback to local questions
     return allQuestions.where((q) {
       final matchesExam =
           q.examCode.toUpperCase().contains(examCode.toUpperCase()) ||

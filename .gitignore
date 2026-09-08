@@ -45,3 +45,6 @@ app.*.map.json
 # Environment secrets
 .env
 *.env
+
+# Local test papers (large binary PDFs)
+TESTPAPER/*.pdf
