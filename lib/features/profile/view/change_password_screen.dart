@@ -387,6 +387,21 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                   text: 'SAVE PASSWORD',
                   onPressed: _submit,
                 ),
+                const SizedBox(height: AppSpacing.m),
+                Center(
+                  child: TextButton.icon(
+                    onPressed: () => context.push('/forgot-password'),
+                    icon: const Icon(Icons.lock_reset_rounded, size: 18),
+                    label: const Text(
+                      'Forgot password? Reset via Account Recovery',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

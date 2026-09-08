@@ -558,6 +558,38 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           }
                         },
                       ),
+                      const Divider(height: 1),
+                      ListTile(
+                        leading: const Icon(Icons.lock_outline_rounded,
+                            color: AppColors.primary),
+                        title: const Text('Change Password',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: const Text(
+                          'Update your current login password',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios_rounded,
+                            size: 16, color: AppColors.textHint),
+                        onTap: () {
+                          context.push('/change-password');
+                        },
+                      ),
+                      const Divider(height: 1),
+                      ListTile(
+                        leading: const Icon(Icons.lock_reset_rounded,
+                            color: AppColors.primary),
+                        title: const Text('Forgot / Reset Password',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: const Text(
+                          'Recover or reset password via email or phone',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios_rounded,
+                            size: 16, color: AppColors.textHint),
+                        onTap: () {
+                          context.push('/forgot-password');
+                        },
+                      ),
                     ],
                   ),
                 ),

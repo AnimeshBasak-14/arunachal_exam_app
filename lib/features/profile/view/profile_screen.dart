@@ -253,23 +253,45 @@ class ProfileScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              GestureDetector(
-                onTap: () => context.push('/trophy-history'),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.emoji_events_rounded,
-                        color: AppColors.accent, size: 14),
-                    SizedBox(width: 4),
-                    Text('Trophies',
-                        style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary)),
-                    Icon(Icons.arrow_forward_ios_rounded,
-                        size: 10, color: AppColors.primary),
-                  ],
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GestureDetector(
+                    onTap: () => context.push('/trophy-history'),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.emoji_events_rounded,
+                            color: AppColors.accent, size: 14),
+                        SizedBox(width: 4),
+                        Text('Trophies',
+                            style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  GestureDetector(
+                    onTap: () => context.push('/quiz-history'),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.history_rounded,
+                            color: AppColors.primary, size: 14),
+                        SizedBox(width: 4),
+                        Text('See All',
+                            style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary)),
+                        Icon(Icons.arrow_forward_ios_rounded,
+                            size: 10, color: AppColors.primary),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -320,77 +342,110 @@ class ProfileScreen extends ConsumerWidget {
       );
     }
 
+    final displayList = historyJsonList.take(5).toList();
+
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppSpacing.radiusL),
         border: Border.all(color: AppColors.divider),
       ),
-      child: ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: historyJsonList.length,
-        separatorBuilder: (context, index) => const Divider(height: 1),
-        itemBuilder: (context, index) {
-          final jsonStr = historyJsonList[index];
-          try {
-            final examCode = _parseJsonVal(jsonStr, 'examCode');
-            final score = _parseJsonVal(jsonStr, 'score');
-            final maxScore = _parseJsonVal(jsonStr, 'maxScore');
-            final ratingChange =
-                int.tryParse(_parseJsonVal(jsonStr, 'ratingChange')) ?? 0;
-            final date = _parseJsonVal(jsonStr, 'date');
+      child: Column(
+        children: [
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: displayList.length,
+            separatorBuilder: (context, index) => const Divider(height: 1),
+            itemBuilder: (context, index) {
+              final jsonStr = displayList[index];
+              try {
+                final examCode = _parseJsonVal(jsonStr, 'examCode');
+                final score = _parseJsonVal(jsonStr, 'score');
+                final maxScore = _parseJsonVal(jsonStr, 'maxScore');
+                final ratingChange =
+                    int.tryParse(_parseJsonVal(jsonStr, 'ratingChange')) ?? 0;
+                final date = _parseJsonVal(jsonStr, 'date');
 
-            return ListTile(
-              title: Text('$examCode Mock Test',
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 14)),
-              subtitle: Text(date,
-                  style:
-                      const TextStyle(fontSize: 12, color: AppColors.textHint)),
-              onTap: () {
-                try {
-                  final decoded = jsonDecode(jsonStr) as Map<String, dynamic>;
-                  context.push('/mock-test-result', extra: decoded);
-                } catch (e) {
-                  debugPrint("Error loading result history: $e");
-                }
-              },
-              trailing: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    'Score: $score / $maxScore',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 13),
-                  ),
-                  const SizedBox(height: 2),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
+                return ListTile(
+                  title: Text('$examCode Mock Test',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 14)),
+                  subtitle: Text(date,
+                      style:
+                          const TextStyle(fontSize: 12, color: AppColors.textHint)),
+                  onTap: () {
+                    try {
+                      final decoded = jsonDecode(jsonStr) as Map<String, dynamic>;
+                      context.push('/mock-test-result', extra: decoded);
+                    } catch (e) {
+                      debugPrint("Error loading result history: $e");
+                    }
+                  },
+                  trailing: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        ratingChange >= 0 ? '+$ratingChange' : '$ratingChange',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: ratingChange >= 0
-                              ? AppColors.success
-                              : AppColors.error,
-                        ),
+                        'Score: $score / $maxScore',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 13),
                       ),
-                      const SizedBox(width: 2),
-                      const Icon(Icons.emoji_events_rounded,
-                          color: AppColors.accent, size: 14),
+                      const SizedBox(height: 2),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            ratingChange >= 0 ? '+$ratingChange' : '$ratingChange',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: ratingChange >= 0
+                                  ? AppColors.success
+                                  : AppColors.error,
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          const Icon(Icons.emoji_events_rounded,
+                              color: AppColors.accent, size: 14),
+                        ],
+                      ),
                     ],
                   ),
-                ],
+                );
+              } catch (e) {
+                return const SizedBox.shrink();
+              }
+            },
+          ),
+          if (historyJsonList.length > 5) ...[
+            const Divider(height: 1),
+            InkWell(
+              onTap: () => context.push('/quiz-history'),
+              borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(AppSpacing.radiusL)),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'View All History (${historyJsonList.length} attempts)',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.arrow_forward_rounded,
+                        size: 15, color: AppColors.primary),
+                  ],
+                ),
               ),
-            );
-          } catch (e) {
-            return const SizedBox.shrink();
-          }
-        },
+            ),
+          ],
+        ],
       ),
     );
   }

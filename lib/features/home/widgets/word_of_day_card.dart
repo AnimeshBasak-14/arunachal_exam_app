@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../data/word_of_the_day_data.dart';
+import '../../../data/daily_dose_data.dart';
 
 class WordOfDayCard extends StatefulWidget {
   const WordOfDayCard({super.key});
@@ -10,11 +10,37 @@ class WordOfDayCard extends StatefulWidget {
 }
 
 class _WordOfDayCardState extends State<WordOfDayCard> {
+  DailyItemType _selectedType = DailyItemType.word;
+  int _offset = 0;
   bool _expanded = false;
+
+  void _shuffle() {
+    setState(() {
+      _offset += 1;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final word = WordOfTheDayData.getTodaysWord();
+    final item = DailyDoseData.getTodayItem(_selectedType, _offset);
+
+    List<Color> gradientColors;
+    String badgeEmoji;
+    switch (_selectedType) {
+      case DailyItemType.word:
+        gradientColors = [const Color(0xFF1a237e), const Color(0xFF283593)];
+        badgeEmoji = '📚 VOCABULARY';
+        break;
+      case DailyItemType.idiom:
+        gradientColors = [const Color(0xFF4A148C), const Color(0xFF6A1B9A)];
+        badgeEmoji = '💡 IDIOM & PHRASE';
+        break;
+      case DailyItemType.quote:
+        gradientColors = [const Color(0xFF004D40), const Color(0xFF00695C)];
+        badgeEmoji = '✨ DAILY INSPIRATION';
+        break;
+    }
+
     return GestureDetector(
       onTap: () => setState(() => _expanded = !_expanded),
       child: AnimatedContainer(
@@ -22,15 +48,15 @@ class _WordOfDayCardState extends State<WordOfDayCard> {
         curve: Curves.easeInOut,
         padding: const EdgeInsets.all(AppSpacing.m),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF1a237e), Color(0xFF283593)],
+          gradient: LinearGradient(
+            colors: gradientColors,
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(AppSpacing.radiusL),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF1a237e).withValues(alpha: 0.3),
+              color: gradientColors[0].withValues(alpha: 0.35),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -42,86 +68,141 @@ class _WordOfDayCardState extends State<WordOfDayCard> {
             Row(
               children: [
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Text(
-                    '📚 WORD OF THE DAY',
-                    style: TextStyle(
-                      color: Colors.white70,
+                  child: Text(
+                    badgeEmoji,
+                    style: const TextStyle(
+                      color: Colors.white,
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      letterSpacing: 1.2,
+                      letterSpacing: 1.1,
                     ),
                   ),
                 ),
                 const Spacer(),
+                InkWell(
+                  onTap: _shuffle,
+                  borderRadius: BorderRadius.circular(16),
+                  child: const Padding(
+                    padding: EdgeInsets.all(4),
+                    child: Row(
+                      children: [
+                        Icon(Icons.shuffle_rounded, color: Colors.white70, size: 16),
+                        SizedBox(width: 3),
+                        Text(
+                          'Next',
+                          style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
                 Icon(
-                  _expanded
-                      ? Icons.keyboard_arrow_up_rounded
-                      : Icons.keyboard_arrow_down_rounded,
+                  _expanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
                   color: Colors.white54,
                   size: 20,
                 ),
               ],
             ),
             const SizedBox(height: AppSpacing.s),
+
             Row(
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
               children: [
-                Text(
-                  word.word,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  word.partOfSpeech,
-                  style: const TextStyle(
-                    color: Colors.white54,
-                    fontSize: 12,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
+                _buildTypeChip('Word', DailyItemType.word),
+                const SizedBox(width: 6),
+                _buildTypeChip('Idiom', DailyItemType.idiom),
+                const SizedBox(width: 6),
+                _buildTypeChip('Quote', DailyItemType.quote),
               ],
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: AppSpacing.s),
+
             Text(
-              word.meaning,
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 13,
-                height: 1.4,
+              item.title,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: _selectedType == DailyItemType.quote ? 15 : 20,
+                fontWeight: FontWeight.bold,
+                height: 1.3,
+                fontStyle: _selectedType == DailyItemType.quote ? FontStyle.italic : FontStyle.normal,
               ),
             ),
+            const SizedBox(height: 4),
+
+            Text(
+              _selectedType == DailyItemType.quote
+                  ? item.exampleOrAuthor
+                  : ' · ',
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 12.5,
+                height: 1.35,
+              ),
+            ),
+
             if (_expanded) ...[
               const SizedBox(height: AppSpacing.s),
               const Divider(color: Colors.white24, height: 1),
               const SizedBox(height: AppSpacing.s),
-              _buildPill(
-                  'Example', word.exampleSentence, Icons.format_quote_rounded),
-              const SizedBox(height: 6),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                      child: _buildTagRow(
-                          'Synonyms', word.synonyms, const Color(0xFF4CAF50))),
-                  const SizedBox(width: 8),
-                  Expanded(
-                      child: _buildTagRow(
-                          'Antonyms', word.antonyms, const Color(0xFFE57373))),
+              if (_selectedType == DailyItemType.quote) ...[
+                _buildPill('Insight', item.meaning, Icons.lightbulb_outline_rounded),
+              ] else ...[
+                _buildPill('Exam Sentence', item.exampleOrAuthor, Icons.format_quote_rounded),
+                if (item.synonyms.isNotEmpty || item.antonyms.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (item.synonyms.isNotEmpty)
+                        Expanded(
+                          child: _buildTagRow('Synonyms', item.synonyms, const Color(0xFF81C784)),
+                        ),
+                      if (item.synonyms.isNotEmpty && item.antonyms.isNotEmpty)
+                        const SizedBox(width: 8),
+                      if (item.antonyms.isNotEmpty)
+                        Expanded(
+                          child: _buildTagRow('Antonyms', item.antonyms, const Color(0xFFE57373)),
+                        ),
+                    ],
+                  ),
                 ],
-              ),
+              ],
             ],
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTypeChip(String label, DailyItemType type) {
+    final isSelected = _selectedType == type;
+    return GestureDetector(
+      onTap: () {
+        if (_selectedType != type) {
+          setState(() {
+            _selectedType = type;
+            _offset = 0;
+          });
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.black87 : Colors.white70,
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+          ),
         ),
       ),
     );
@@ -137,10 +218,11 @@ class _WordOfDayCardState extends State<WordOfDayCard> {
           child: Text(
             text,
             style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 12,
-                fontStyle: FontStyle.italic,
-                height: 1.3),
+              color: Colors.white70,
+              fontSize: 12,
+              fontStyle: FontStyle.italic,
+              height: 1.35,
+            ),
           ),
         ),
       ],
@@ -151,30 +233,35 @@ class _WordOfDayCardState extends State<WordOfDayCard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style: TextStyle(
-                color: color,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.8)),
+        Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.8,
+          ),
+        ),
         const SizedBox(height: 4),
         Wrap(
           spacing: 4,
           runSpacing: 4,
           children: words
               .map((w) => Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: color.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(color: color.withValues(alpha: 0.4)),
                     ),
-                    child: Text(w,
-                        style: TextStyle(
-                            color: color,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600)),
+                    child: Text(
+                      w,
+                      style: TextStyle(
+                        color: color,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ))
               .toList(),
         ),

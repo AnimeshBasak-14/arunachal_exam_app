@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/services/service_providers.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
+import 'home_screen.dart';
 
 class TrophyHistoryScreen extends ConsumerWidget {
   const TrophyHistoryScreen({super.key});
@@ -135,7 +136,10 @@ class TrophyHistoryScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 24),
                         TextButton(
-                          onPressed: () => context.go('/home'),
+                          onPressed: () {
+                            ref.read(currentTabProvider.notifier).state = 0;
+                            context.go('/home');
+                          },
                           child: const Text('Take a Test'),
                         ),
                       ],

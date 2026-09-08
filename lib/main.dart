@@ -32,6 +32,7 @@ import 'features/home/view/mock_test_screen.dart';
 import 'features/home/view/mock_test_result_screen.dart';
 import 'features/home/view/scoreboard_screen.dart';
 import 'features/home/view/trophy_history_screen.dart';
+import 'features/profile/view/quiz_history_screen.dart';
 import 'features/home/view/notifications_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'core/services/streak_service.dart';
@@ -42,6 +43,8 @@ import 'features/home/view/news_details_screen.dart';
 import 'features/profile/view/public_profile_screen.dart';
 import 'features/home/view/state_gk_screen.dart';
 import 'features/home/view/current_affairs_gk_screen.dart';
+import 'features/study/view/grammar_hub_screen.dart';
+import 'features/study/view/grammar_quiz_screen.dart';
 import 'core/services/current_affairs_service.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_performance/firebase_performance.dart';
@@ -315,6 +318,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const TrophyHistoryScreen(),
       ),
       GoRoute(
+        path: '/quiz-history',
+        builder: (context, state) => const QuizHistoryScreen(),
+      ),
+      GoRoute(
         path: '/notifications',
         builder: (context, state) => const NotificationsScreen(),
       ),
@@ -354,6 +361,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/current-affairs-gk',
         builder: (context, state) => const CurrentAffairsGkScreen(),
+      ),
+      GoRoute(
+        path: '/grammar-hub',
+        builder: (context, state) => const GrammarHubScreen(),
+      ),
+      GoRoute(
+        path: '/grammar-quiz',
+        builder: (context, state) => const GrammarQuizScreen(),
       ),
     ],
   );

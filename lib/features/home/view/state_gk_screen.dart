@@ -18,6 +18,7 @@ class _StateGkScreenState extends State<StateGkScreen> {
   final List<String> _categories = [
     'All',
     'Overview',
+    'Science',
     'History',
     'Administration',
     'Governance',
@@ -174,11 +175,20 @@ class _StateGkScreenState extends State<StateGkScreen> {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: AppColors.primaryLight,
+            color: chapter.category == 'Science'
+                ? const Color(0xFF00695C).withValues(alpha: 0.12)
+                : AppColors.primaryLight,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: const Icon(Icons.menu_book_rounded,
-              color: AppColors.primary, size: 22),
+          child: Icon(
+            chapter.category == 'Science'
+                ? Icons.science_rounded
+                : Icons.menu_book_rounded,
+            color: chapter.category == 'Science'
+                ? const Color(0xFF00695C)
+                : AppColors.primary,
+            size: 22,
+          ),
         ),
         title: Text(
           chapter.title,

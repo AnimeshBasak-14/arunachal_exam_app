@@ -47,4 +47,4 @@ app.*.map.json
 *.env
 
 # Local test papers (large binary PDFs)
-TESTPAPER/*.pdf
+TESTPAPER/

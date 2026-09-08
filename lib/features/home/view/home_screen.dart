@@ -530,6 +530,76 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                   const _DailyChallengeCard(),
                   const SizedBox(height: AppSpacing.m),
 
+                  // English Grammar & Quiz Shortcut Card
+                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.m),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusL),
+                      border: Border.all(color: AppColors.divider),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF3F51B5).withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.menu_book_rounded,
+                              color: Color(0xFF3F51B5), size: 24),
+                        ),
+                        const SizedBox(width: AppSpacing.m),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              Text(
+                                'English Grammar & Quiz',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14.5,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                'Rules of SV Agreement, Voice & Practice Quizzes',
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => context.push('/grammar-hub'),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            backgroundColor: const Color(0xFF3F51B5).withValues(alpha: 0.1),
+                          ),
+                          child: const Text(
+                            'STUDY',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF3F51B5),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        IconButton(
+                          icon: const Icon(Icons.quiz_rounded,
+                              color: AppColors.accent, size: 22),
+                          tooltip: 'Grammar Quiz',
+                          onPressed: () => context.push('/grammar-quiz'),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.m),
+
                   // 3. Current Affairs & GK
                   const _CurrentAffairsSection(),
                   const SizedBox(height: AppSpacing.l),
