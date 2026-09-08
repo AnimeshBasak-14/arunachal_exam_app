@@ -16,6 +16,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../widgets/word_of_day_card.dart';
 import '../../../core/services/current_affairs_service.dart';
 import '../../../core/services/remote_config_service.dart';
+import 'pyq_hub_screen.dart';
+import 'mock_hub_screen.dart';
 
 final currentTabProvider = StateProvider<int>((ref) => 0);
 
@@ -28,6 +30,8 @@ class HomeScreen extends ConsumerWidget {
 
     final tabs = [
       const HomeTabBody(),
+      const PyqHubScreen(),
+      const MockHubScreen(),
       const BookmarksTabBody(),
       const ProfileScreen(),
     ];
@@ -60,6 +64,7 @@ class HomeScreen extends ConsumerWidget {
           ],
         ),
         child: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
           currentIndex: selectedTab,
           onTap: (index) {
             ref.read(currentTabProvider.notifier).state = index;
@@ -67,14 +72,24 @@ class HomeScreen extends ConsumerWidget {
           selectedItemColor: AppColors.primary,
           unselectedItemColor: AppColors.textHint,
           selectedLabelStyle:
-              const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-          unselectedLabelStyle: const TextStyle(fontSize: 12),
+              const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+          unselectedLabelStyle: const TextStyle(fontSize: 11),
           backgroundColor: AppColors.surface,
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home_rounded),
+              icon: Icon(Icons.dashboard_outlined),
+              activeIcon: Icon(Icons.dashboard_rounded),
               label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.history_edu_outlined),
+              activeIcon: Icon(Icons.history_edu_rounded),
+              label: 'PYQ Bank',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.assignment_turned_in_outlined),
+              activeIcon: Icon(Icons.assignment_turned_in_rounded),
+              label: 'Mock Tests',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.bookmark_outline_rounded),
@@ -243,7 +258,7 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                         GestureDetector(
                           onTap: () {
                             ref.read(currentTabProvider.notifier).state =
-                                2; // Profile Tab
+                                4; // Profile Tab
                           },
                           child: Hero(
                             tag: 'profile_avatar_hero',
@@ -597,6 +612,145 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                         ),
                       ],
                     ),
+                  ),
+                  // Core Pillars: PYQ Bank & Mock Test Center
+                  Row(
+                    children: [
+                      // PYQ Bank Card
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            ref.read(currentTabProvider.notifier).state = 1;
+                          },
+                          borderRadius: BorderRadius.circular(AppSpacing.radiusL),
+                          child: Container(
+                            padding: const EdgeInsets.all(AppSpacing.m),
+                            height: 125,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF0D47A1), Color(0xFF1976D2)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(AppSpacing.radiusL),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF0D47A1).withValues(alpha: 0.25),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Icon(Icons.history_edu_rounded, color: Colors.white, size: 20),
+                                    ),
+                                    const Icon(Icons.arrow_forward_rounded, color: Colors.white70, size: 16),
+                                  ],
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: const [
+                                    Text(
+                                      'PYQ Bank',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    SizedBox(height: 2),
+                                    Text(
+                                      'APPSC & APSSB Papers\nExam & Study Mode',
+                                      style: TextStyle(color: Colors.white70, fontSize: 10, height: 1.2),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.m),
+
+                      // Mock Test Center Card
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            ref.read(currentTabProvider.notifier).state = 2;
+                          },
+                          borderRadius: BorderRadius.circular(AppSpacing.radiusL),
+                          child: Container(
+                            padding: const EdgeInsets.all(AppSpacing.m),
+                            height: 125,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF4A148C), Color(0xFF7B1FA2)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(AppSpacing.radiusL),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF4A148C).withValues(alpha: 0.25),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Icon(Icons.assignment_turned_in_rounded, color: Colors.white, size: 20),
+                                    ),
+                                    const Icon(Icons.arrow_forward_rounded, color: Colors.white70, size: 16),
+                                  ],
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: const [
+                                    Text(
+                                      'Mock Tests',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    SizedBox(height: 2),
+                                    Text(
+                                      'Maths, GK, English &\nTechnical Sectionals',
+                                      style: TextStyle(color: Colors.white70, fontSize: 10, height: 1.2),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: AppSpacing.m),
 

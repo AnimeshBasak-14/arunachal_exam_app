@@ -45,6 +45,8 @@ import 'features/home/view/state_gk_screen.dart';
 import 'features/home/view/current_affairs_gk_screen.dart';
 import 'features/study/view/grammar_hub_screen.dart';
 import 'features/study/view/grammar_quiz_screen.dart';
+import 'features/home/view/pyq_hub_screen.dart';
+import 'features/home/view/mock_hub_screen.dart';
 import 'core/services/current_affairs_service.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_performance/firebase_performance.dart';
@@ -369,6 +371,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/grammar-quiz',
         builder: (context, state) => const GrammarQuizScreen(),
+      ),
+      GoRoute(
+        path: '/pyq-hub',
+        builder: (context, state) => const PyqHubScreen(),
+      ),
+      GoRoute(
+        path: '/mock-hub',
+        builder: (context, state) => const MockHubScreen(),
       ),
     ],
   );
