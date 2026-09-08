@@ -3,7 +3,7 @@ class AppConstants {
 
   // App info
   static const String appName = 'Arunachal Exam Prep';
-  static const String appVersion = '1.0.1';
+  static const String appVersion = '1.2.0';
 
   // Streak keys (SharedPreferences)
   static const String streakCountKey = 'streak_count';

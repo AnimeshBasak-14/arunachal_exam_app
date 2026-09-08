@@ -91,7 +91,7 @@ void main() async {
       await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
       // Handshake log so Firebase Console immediately verifies the SDK installation
       await FirebaseCrashlytics.instance
-          .log("Arunachal Exam Prep started (v1.0.1)");
+          .log("Arunachal Exam Prep started (v1.2.0)");
     } catch (_) {}
 
     FlutterError.onError = (errorDetails) {

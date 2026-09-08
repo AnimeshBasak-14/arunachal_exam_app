@@ -297,6 +297,18 @@ class ProfileScreen extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.s),
           _buildQuizHistory(context, ref),
+          const SizedBox(height: AppSpacing.l),
+          const Center(
+            child: Text(
+              'Arunachal Exam Prep v1.2.0 (Build 99)',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textHint,
+                letterSpacing: 0.4,
+              ),
+            ),
+          ),
           const SizedBox(height: AppSpacing.xl),
         ],
       ),
