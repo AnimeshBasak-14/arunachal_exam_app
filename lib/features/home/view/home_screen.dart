@@ -831,7 +831,7 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: const Text(
-                                        'ADMIN / QA',
+                                        'Temporary / Dev',
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 8.5,
@@ -846,17 +846,17 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: const [
                                     Text(
-                                      'Question Flagger',
+                                      'Admin QA / Flagger',
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 15,
+                                        fontSize: 14.5,
                                       ),
                                     ),
                                     SizedBox(height: 2),
                                     Text(
-                                      'Audit OCR Defects\n& Quality Triage',
-                                      style: TextStyle(color: Colors.white70, fontSize: 10, height: 1.2),
+                                      'Review DB questions,\nverify or flag OCR defects',
+                                      style: TextStyle(color: Colors.white70, fontSize: 9.5, height: 1.2),
                                     ),
                                   ],
                                 ),

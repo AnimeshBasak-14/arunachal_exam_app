@@ -387,10 +387,12 @@ class Question {
       hasImage: data['has_image'] == true ||
           (data['image_url'] != null && data['image_url'].toString().trim().isNotEmpty) ||
           (data['question_image_url'] != null && data['question_image_url'].toString().trim().isNotEmpty),
-      reviewStatus: (data['review_status'] ?? 'approved').toString(),
-      flagReasons: (data['flag_reasons'] is List)
-          ? (data['flag_reasons'] as List).map((e) => e.toString()).toList()
-          : const [],
+      reviewStatus: (data['review_status'] ?? 'unreviewed').toString(),
+      flagReasons: (data['flagged_issues'] is List)
+          ? (data['flagged_issues'] as List).map((e) => e.toString()).toList()
+          : (data['flag_reasons'] is List)
+              ? (data['flag_reasons'] as List).map((e) => e.toString()).toList()
+              : const [],
       modeAvailability: (data['mode_availability'] is List)
           ? (data['mode_availability'] as List).map((e) => e.toString()).toList()
           : const ['timed', 'study'],
