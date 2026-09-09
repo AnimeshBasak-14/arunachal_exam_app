@@ -1,0 +1,402 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arunachal Exam Prep - APSSB & APPSC Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root{--void:#0A0F16;--void-1:#0D1520;--glass:rgba(255,255,255,0.03);--glass-2:rgba(255,255,255,0.06);--glass-3:rgba(255,255,255,0.10);--border:rgba(255,255,255,0.08);--border-bright:rgba(255,255,255,0.15);--text-1:#FFFFFF;--text-2:#E5E7EB;--text-3:#9CA3AF;--text-4:#6B7280;--emerald:#2E8B57;--emerald-light:#34D399;--teal:#14B8A6;--teal-light:#5EEAD4;--amber:#F59E0B;--amber-light:#FCD34D;--coral:#F97316;--blue:#3B82F6;--blue-light:#93C5FD;--red:#EF4444;--red-light:#FCA5A5;--neon-emerald:#00FF88;--grad-brand:linear-gradient(135deg,var(--emerald),var(--teal));--grad-hero:linear-gradient(135deg,var(--emerald) 0%,var(--teal) 50%,var(--blue) 100%);--shadow-emerald:0 20px 40px rgba(46,139,87,0.15)}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:'Poppins',sans-serif;background-color:var(--void);color:var(--text-1);min-height:100vh;overflow-x:hidden;padding-bottom:100px}
+    #bg-orbs{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+    .orb{position:absolute;border-radius:50%;filter:blur(100px);opacity:0.18;animation:orbDrift 20s ease-in-out infinite}
+    .orb-1{width:600px;height:600px;background:var(--emerald);top:-200px;left:-150px;animation-duration:22s}
+    .orb-2{width:500px;height:500px;background:var(--teal);top:30%;right:-200px;animation-duration:28s;animation-delay:-8s}
+    .orb-3{width:400px;height:400px;background:var(--amber);bottom:-100px;left:40%;animation-duration:18s;animation-delay:-14s;opacity:0.08}
+    @keyframes orbDrift{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(40px,-30px) scale(1.05)}66%{transform:translate(-20px,40px) scale(0.95)}}
+    .glass{background:var(--glass);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--border);border-top-color:var(--border-bright);border-left-color:var(--border-bright)}
+    .glass-hover{transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1)}
+    .glass-hover:hover{background:var(--glass-2);border-color:var(--border-bright);transform:translateY(-2px) scale(1.01)}
+    #dock{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:1000;display:flex;align-items:center;gap:4px;padding:8px 12px;border-radius:999px;background:rgba(13,21,32,0.85);backdrop-filter:blur(32px);-webkit-backdrop-filter:blur(32px);border:1px solid var(--border-bright);box-shadow:0 8px 32px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.08)}
+    .dock-item{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 14px;border-radius:999px;cursor:pointer;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);color:var(--text-4);font-size:10px;font-weight:500;user-select:none;min-width:56px}
+    .dock-item svg{width:22px;height:22px;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1)}
+    .dock-item:hover{color:var(--text-2);transform:translateY(-4px)}
+    .dock-item:hover svg{transform:scale(1.15)}
+    .dock-item.active{color:var(--emerald-light);background:rgba(46,139,87,0.15)}
+    .dock-item.active::before{content:'';position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:4px;height:4px;background:var(--emerald-light);border-radius:50%;box-shadow:0 0 8px var(--emerald-light)}
+    .dock-separator{width:1px;height:24px;background:var(--border);margin:0 4px}
+    .page{display:none;opacity:0;transform:translateY(16px);transition:opacity 0.4s ease,transform 0.4s cubic-bezier(0.34,1.56,0.64,1);min-height:100vh;position:relative;z-index:1}
+    .page.active{display:block;opacity:1;transform:translateY(0)}
+    .container{max-width:1080px;margin:0 auto;padding:0 24px}
+    .container-narrow{max-width:900px;margin:0 auto;padding:0 24px}
+    .container-reading{max-width:800px;margin:0 auto;padding:0 24px}
+    .topbar{position:sticky;top:16px;z-index:100;margin:16px 24px 0;padding:12px 20px;border-radius:16px;display:flex;align-items:center;justify-content:space-between}
+    .logo-mark{width:36px;height:36px;border-radius:10px;background:var(--grad-brand);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#000;box-shadow:var(--shadow-emerald)}
+    .logo-text{font-weight:700;font-size:15px;margin-left:10px}
+    .logo-text span{color:var(--emerald-light)}
+    .streak-pill{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);font-size:12px;font-weight:600;color:var(--amber-light);animation:streakPulse 3s ease-in-out infinite}
+    @keyframes streakPulse{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,0.3)}50%{box-shadow:0 0 0 8px rgba(245,158,11,0)}}
+    .avatar-btn{width:36px;height:36px;border-radius:50%;background:var(--grad-brand);border:2px solid var(--emerald-light);cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#000;box-shadow:0 0 16px rgba(52,211,153,0.4);margin-left:12px}
+    .section-title{font-size:clamp(20px,4vw,28px);font-weight:700;margin-bottom:8px}
+    .section-subtitle{font-size:14px;color:var(--text-3);margin-bottom:28px}
+    .hero-title{font-size:clamp(28px,6vw,52px);font-weight:800;line-height:1.15;background:var(--grad-hero);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:12px}
+    .hero-subtitle{font-size:15px;color:var(--text-3);max-width:480px;margin:0 auto 32px;line-height:1.7}
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600}
+    .badge-emerald{background:rgba(46,139,87,0.2);border:1px solid rgba(46,139,87,0.4);color:var(--emerald-light)}
+    .badge-amber{background:rgba(245,158,11,0.2);border:1px solid rgba(245,158,11,0.4);color:var(--amber-light)}
+    .badge-teal{background:rgba(20,184,166,0.2);border:1px solid rgba(20,184,166,0.4);color:var(--teal-light)}
+    .badge-blue{background:rgba(59,130,246,0.2);border:1px solid rgba(59,130,246,0.4);color:var(--blue-light)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 22px;border-radius:999px;font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1)}
+    .btn-primary{background:var(--grad-brand);color:#000;box-shadow:var(--shadow-emerald)}
+    .btn-primary:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 24px 48px rgba(46,139,87,0.35)}
+    .btn-ghost{background:var(--glass-2);border:1px solid var(--border-bright);color:var(--text-2)}
+    .btn-ghost:hover{background:var(--glass-3);transform:translateY(-1px)}
+    .hero{padding:48px 0 32px;text-align:center}
+    .hero-trophy{width:96px;height:96px;margin:0 auto 24px;border-radius:50%;background:var(--glass-2);border:2px solid rgba(245,158,11,0.3);display:flex;align-items:center;justify-content:center;font-size:48px;box-shadow:0 0 60px rgba(245,158,11,0.25),0 20px 40px rgba(0,0,0,0.4);animation:trophyFloat 6s ease-in-out infinite}
+    @keyframes trophyFloat{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-12px) rotate(2deg)}}
+    .wod-card{max-width:520px;margin:0 auto 48px;padding:24px;border-radius:20px;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1)}
+    .wod-card:hover{transform:perspective(800px) rotateX(2deg) translateY(-6px) scale(1.01)}
+    .wod-label{font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);margin-bottom:6px}
+    .wod-word{font-size:28px;font-weight:800}
+    .wod-pos{font-size:12px;color:var(--teal-light);font-style:italic;margin:2px 0 8px}
+    .wod-def{font-size:13px;color:var(--text-3);line-height:1.6}
+    .quick-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:48px}
+    @media(max-width:640px){.quick-actions{grid-template-columns:repeat(2,1fr)}}
+    .qa-card{padding:24px 16px;border-radius:20px;text-align:center;cursor:pointer}
+    .qa-icon{width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 14px;animation:iconPulse 4s ease-in-out infinite}
+    @keyframes iconPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+    .qa-title{font-size:13px;font-weight:600;margin-bottom:4px}
+    .qa-desc{font-size:11px;color:var(--text-4)}
+    .exam-banners{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:48px}
+    @media(max-width:600px){.exam-banners{grid-template-columns:1fr}}
+    .exam-banner{border-radius:24px;padding:28px;cursor:pointer;transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1)}
+    .exam-banner:hover{transform:translateY(-4px) scale(1.01)}
+    .exam-banner-appsc{background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(249,115,22,0.15));border:1px solid rgba(245,158,11,0.25)}
+    .exam-banner-apssb{background:linear-gradient(135deg,rgba(20,184,166,0.15),rgba(59,130,246,0.15));border:1px solid rgba(20,184,166,0.25)}
+    .banner-tag{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:700;margin-bottom:12px}
+    .banner-title{font-size:20px;font-weight:800;margin-bottom:6px}
+    .banner-sub{font-size:12px;color:var(--text-3);margin-bottom:16px;line-height:1.5}
+    .banner-stat-num{font-size:20px;font-weight:800}
+    .banner-stat-label{font-size:10px;color:var(--text-4);font-weight:500}
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:48px}
+    @media(max-width:600px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+    .stat-card{text-align:center;padding:20px 12px;border-radius:16px}
+    .stat-num{font-size:28px;font-weight:800;background:var(--grad-brand);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .stat-label{font-size:11px;color:var(--text-4);font-weight:500}
+    .syllabus-tabs{display:flex;gap:8px;padding:6px;border-radius:999px;margin:32px auto 40px;width:fit-content;position:sticky;top:80px;z-index:50}
+    .stab{padding:10px 24px;border-radius:999px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text-4);transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);white-space:nowrap}
+    .stab.active-apssb{background:linear-gradient(135deg,rgba(20,184,166,0.3),rgba(59,130,246,0.3));color:var(--teal-light);border:1px solid rgba(20,184,166,0.4);box-shadow:0 0 20px rgba(20,184,166,0.2)}
+    .stab.active-appsc{background:linear-gradient(135deg,rgba(245,158,11,0.3),rgba(249,115,22,0.3));color:var(--amber-light);border:1px solid rgba(245,158,11,0.4);box-shadow:0 0 20px rgba(245,158,11,0.2)}
+    .stab:not(.active-apssb):not(.active-appsc):hover{background:var(--glass-2);color:var(--text-2)}
+    .syllabus-panel{display:none}
+    .syllabus-panel.active{display:block}
+    .alert-banner{border-radius:16px;padding:16px 20px;margin-bottom:28px;display:flex;align-items:flex-start;gap:12px}
+    .alert-amber{background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.35);animation:alertPulse 3s ease-in-out infinite}
+    @keyframes alertPulse{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,0.2)}50%{box-shadow:0 0 0 8px rgba(245,158,11,0)}}
+    .alert-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+    .alert-text{font-size:13px;line-height:1.6;color:var(--amber-light)}
+    .alert-text strong{display:block;font-weight:700;margin-bottom:2px}
+    .accordion-group{display:flex;flex-direction:column;gap:12px}
+    .accordion-item{border-radius:16px;overflow:hidden}
+    .accordion-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;cursor:pointer;transition:all 0.3s ease}
+    .accordion-header:hover{background:var(--glass-2)}
+    .accordion-left{display:flex;align-items:center;gap:14px}
+    .accordion-icon{font-size:22px}
+    .accordion-title{font-size:15px;font-weight:600}
+    .accordion-meta{font-size:11px;color:var(--text-4);margin-top:2px}
+    .accordion-chevron{font-size:16px;color:var(--text-4);transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1)}
+    .accordion-item.open .accordion-chevron{transform:rotate(180deg)}
+    .accordion-body{max-height:0;overflow:hidden;transition:max-height 0.5s cubic-bezier(0.4,0,0.2,1);padding:0 22px}
+    .accordion-item.open .accordion-body{max-height:3000px;padding:0 22px 22px}
+    .topic-list{display:flex;flex-direction:column;gap:8px}
+    .topic-item{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);font-size:12px;color:var(--text-3);line-height:1.5}
+    .topic-dot{width:6px;height:6px;border-radius:50%;margin-top:5px;flex-shrink:0}
+    .engg-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+    .etab{padding:6px 14px;border-radius:999px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);color:var(--text-4);transition:all 0.25s ease}
+    .etab:hover{border-color:var(--amber);color:var(--amber-light)}
+    .etab.active{background:rgba(245,158,11,0.2);border-color:var(--amber);color:var(--amber-light)}
+    .ca-search{position:relative;margin-bottom:24px}
+    .ca-search input{width:100%;background:var(--glass-2);border:1px solid var(--border-bright);border-radius:999px;padding:14px 20px 14px 52px;font-family:'Poppins',sans-serif;font-size:13px;color:var(--text-1);outline:none;transition:all 0.3s ease}
+    .ca-search input::placeholder{color:var(--text-4)}
+    .ca-search input:focus{border-color:var(--emerald);box-shadow:0 0 0 3px rgba(46,139,87,0.15)}
+    .ca-search svg{position:absolute;left:18px;top:50%;transform:translateY(-50%);color:var(--text-4);width:20px;height:20px}
+    .filter-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px}
+    .chip{padding:6px 16px;border-radius:999px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);color:var(--text-4);transition:all 0.25s ease;user-select:none}
+    .chip:hover{border-color:var(--emerald);color:var(--emerald-light)}
+    .chip.active{background:rgba(46,139,87,0.2);border-color:var(--emerald);color:var(--emerald-light)}
+    .news-grid{display:flex;flex-direction:column;gap:16px}
+    .news-card{border-radius:20px;padding:20px}
+    .news-meta{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+    .news-date{font-size:11px;color:var(--text-4)}
+    .news-title{font-size:15px;font-weight:700;line-height:1.4;margin-bottom:8px}
+    .news-excerpt{font-size:12px;color:var(--text-3);line-height:1.6;margin-bottom:14px}
+    .exam-ready-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:999px;font-size:10px;font-weight:700;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:#00FF88;animation:neonPulse 2.5s ease-in-out infinite}
+    @keyframes neonPulse{0%,100%{box-shadow:0 0 0 0 rgba(0,255,136,0.3)}50%{box-shadow:0 0 0 6px rgba(0,255,136,0)}}
+    .ask-ai-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;font-size:11px;font-weight:600;background:rgba(20,184,166,0.15);border:1px solid rgba(20,184,166,0.3);color:var(--teal-light);cursor:pointer;transition:all 0.25s ease}
+    .ask-ai-btn:hover{background:rgba(20,184,166,0.25);transform:scale(1.03)}
+    .gk-banner-card{border-radius:24px;padding:28px;margin-bottom:32px;background:linear-gradient(135deg,rgba(46,139,87,0.15),rgba(20,184,166,0.1));border:1px solid rgba(46,139,87,0.25)}
+    .state-gk-hero{text-align:center;padding:48px 0 40px;position:relative}
+    .topo-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 100%,rgba(46,139,87,0.12) 0%,transparent 70%);pointer-events:none}
+    .gk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;padding-bottom:48px}
+    .gk-module{border-radius:20px;padding:22px;cursor:pointer}
+    .gk-module-icon{font-size:32px;margin-bottom:12px}
+    .gk-module-title{font-size:14px;font-weight:700;margin-bottom:4px}
+    .gk-module-count{font-size:11px;color:var(--text-4)}
+    .exam-panel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;margin-bottom:40px}
+    .exam-panel{border-radius:24px;padding:24px;cursor:pointer;transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1)}
+    .exam-panel:hover{transform:translateY(-4px)}
+    .exam-panel-title{font-size:16px;font-weight:700;margin-bottom:4px}
+    .exam-panel-sub{font-size:12px;color:var(--text-3);margin-bottom:16px;line-height:1.5}
+    .micro-pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px}
+    .micro-pill{font-size:10px;font-weight:600;padding:3px 10px;border-radius:999px}
+    .pill-teal{background:rgba(20,184,166,0.15);border:1px solid rgba(20,184,166,0.3);color:var(--teal-light)}
+    .pill-amber{background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);color:var(--amber-light)}
+    .start-test-btn{width:100%;padding:12px;border-radius:12px;border:none;font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1)}
+    .start-test-btn:hover{transform:translateY(-2px) scale(1.02)}
+    .btn-teal{background:linear-gradient(135deg,var(--teal),var(--blue));color:#000;box-shadow:0 8px 24px rgba(20,184,166,0.3)}
+    .btn-amber{background:linear-gradient(135deg,var(--amber),var(--coral));color:#000;box-shadow:0 8px 24px rgba(245,158,11,0.3)}
+    #quiz-overlay{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;background:rgba(10,15,22,0.92);backdrop-filter:blur(12px)}
+    #quiz-overlay.visible{display:flex}
+    .quiz-container{width:100%;max-width:680px;margin:24px;border-radius:28px;padding:36px;position:relative}
+    .timer-ring{position:relative;width:64px;height:64px;flex-shrink:0}
+    .timer-ring svg{transform:rotate(-90deg)}
+    .ring-track{fill:none;stroke:rgba(255,255,255,0.06);stroke-width:4}
+    .ring-progress{fill:none;stroke:var(--emerald-light);stroke-width:4;stroke-linecap:round;stroke-dasharray:163;stroke-dashoffset:0;transition:stroke-dashoffset 1s linear}
+    .timer-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--emerald-light)}
+    .question-num{font-size:11px;color:var(--text-4);margin-bottom:8px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase}
+    .question-text{font-size:18px;font-weight:600;line-height:1.5;margin-bottom:28px}
+    .options-grid{display:flex;flex-direction:column;gap:10px;margin-bottom:28px}
+    .option-btn{padding:16px 20px;border-radius:16px;border:1px solid var(--border-bright);background:var(--glass-2);color:var(--text-2);font-family:'Poppins',sans-serif;font-size:13px;font-weight:500;cursor:pointer;text-align:left;transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);display:flex;align-items:center;gap:14px}
+    .option-btn:not(:disabled):hover{background:var(--glass-3);border-color:var(--emerald);transform:translateX(4px)}
+    .option-letter{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:rgba(255,255,255,0.06);border:1px solid var(--border)}
+    .option-btn.correct{background:rgba(0,255,136,0.12);border-color:#00FF88;color:#00FF88;box-shadow:0 0 20px rgba(0,255,136,0.2)}
+    .option-btn.wrong{background:rgba(239,68,68,0.12);border-color:var(--red);color:var(--red-light);box-shadow:0 0 20px rgba(239,68,68,0.2)}
+    .quiz-close{position:absolute;top:20px;right:20px;background:var(--glass-3);border:none;color:var(--text-3);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+    .quiz-progress{height:4px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;margin-bottom:24px}
+    .quiz-progress-fill{height:100%;background:var(--grad-brand);border-radius:999px;transition:width 0.5s ease}
+    .profile-hero{padding:48px 0 32px;text-align:center}
+    .avatar-rings{width:120px;height:120px;margin:0 auto 20px;position:relative}
+    .avatar-inner{width:80px;height:80px;border-radius:50%;background:var(--grad-brand);border:3px solid var(--emerald-light);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;color:#000;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);box-shadow:0 0 30px rgba(52,211,153,0.5);z-index:2}
+    .ring-anim{position:absolute;border-radius:50%;border:1px solid rgba(52,211,153,0.25);top:50%;left:50%;transform:translate(-50%,-50%)}
+    .ring-1{width:96px;height:96px;animation:ringSpinSlow 10s linear infinite}
+    .ring-2{width:112px;height:112px;animation:ringSpinSlow 18s linear infinite reverse;border-color:rgba(20,184,166,0.2)}
+    @keyframes ringSpinSlow{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+    .profile-name{font-size:24px;font-weight:800}
+    .profile-email{font-size:13px;color:var(--text-4);margin-bottom:12px}
+    .profile-tier{display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:999px;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);color:var(--amber-light);font-size:13px;font-weight:700}
+    .score-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:32px}
+    @media(max-width:480px){.score-cards{grid-template-columns:1fr 1fr}}
+    .score-card{text-align:center;padding:18px 12px;border-radius:16px}
+    .score-num{font-size:26px;font-weight:800}
+    .score-label{font-size:10px;color:var(--text-4);font-weight:500;text-transform:uppercase;letter-spacing:0.08em}
+    .profile-section-title{font-size:13px;font-weight:700;color:var(--text-4);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;margin-top:8px}
+    .profile-menu{display:flex;flex-direction:column;gap:8px;margin-bottom:28px}
+    .menu-item{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-radius:14px;cursor:pointer;transition:all 0.25s ease}
+    .menu-item:hover{background:var(--glass-3);transform:translateX(4px)}
+    .menu-item-left{display:flex;align-items:center;gap:14px}
+    .menu-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px}
+    .menu-text{font-size:14px;font-weight:600}
+    .menu-chevron{color:var(--text-4);font-size:14px}
+    .score-chart{height:160px;position:relative;display:flex;align-items:flex-end;gap:6px;padding:0 8px}
+    .chart-bar{flex:1;border-radius:6px 6px 0 0;background:var(--glass-3);position:relative;min-height:8px;transition:all 0.8s cubic-bezier(0.34,1.56,0.64,1)}
+    .chart-bar.active-bar{background:linear-gradient(to top,var(--emerald),var(--teal));box-shadow:0 0 16px rgba(46,139,87,0.4)}
+    .chart-label{position:absolute;bottom:-24px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--text-4);white-space:nowrap}
+    ::-webkit-scrollbar{width:6px;height:6px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
+    ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2)}
+    @media(max-width:768px){.topbar{margin:12px 12px 0;padding:10px 14px;border-radius:12px}.container,.container-narrow,.container-reading{padding:0 16px}#dock{padding:6px 8px;bottom:14px}.dock-item{min-width:44px;padding:6px 10px;font-size:9px}.dock-item svg{width:18px;height:18px}.quiz-container{padding:24px}.question-text{font-size:15px}}
+    @media(max-width:480px){.logo-text{display:none}}
+  </style>
+</head>
+<body>
+<div id="bg-orbs"><div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div></div>
+<nav id="dock">
+  <div class="dock-item active" data-page="home" onclick="navigate('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home</div>
+  <div class="dock-item" data-page="syllabus" onclick="navigate('syllabus')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>Syllabus</div>
+  <div class="dock-item" data-page="current-affairs" onclick="navigate('current-affairs')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>GK &amp; News</div>
+  <div class="dock-separator"></div>
+  <div class="dock-item" data-page="state-gk" onclick="navigate('state-gk')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>State GK</div>
+  <div class="dock-item" data-page="exams" onclick="navigate('exams')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Exams Hub</div>
+  <div class="dock-item" data-page="profile" onclick="navigate('profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile</div>
+</nav>
+<div id="quiz-overlay">
+  <div class="quiz-container glass">
+    <button class="quiz-close" onclick="closeQuiz()">&#10005;</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div><div style="font-size:12px;color:var(--text-4)" id="quiz-title">Mock Test</div><div style="font-size:13px;color:var(--text-4);margin-top:2px">Question <span id="q-current">1</span> of <span id="q-total">10</span></div></div>
+      <div class="timer-ring"><svg width="64" height="64" viewBox="0 0 64 64"><circle class="ring-track" cx="32" cy="32" r="26"/><circle class="ring-progress" id="timer-ring" cx="32" cy="32" r="26"/></svg><div class="timer-text" id="timer-display">30</div></div>
+    </div>
+    <div class="quiz-progress"><div class="quiz-progress-fill" id="quiz-progress-fill" style="width:10%"></div></div>
+    <div class="question-num" id="question-category">CATEGORY</div>
+    <div class="question-text" id="question-text">Loading...</div>
+    <div class="options-grid" id="options-container"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px"><div id="answer-feedback" style="font-size:13px;font-weight:600;min-height:20px"></div><button class="btn btn-primary" id="next-btn" onclick="nextQuestion()" style="display:none">Next &#8594;</button></div>
+  </div>
+</div>
+<div id="page-home" class="page active">
+  <header class="topbar glass">
+    <div style="display:flex;align-items:center"><div class="logo-mark">A</div><div class="logo-text">Arunachal <span>Exam Prep</span></div></div>
+    <div style="display:flex;align-items:center;gap:12px"><div class="streak-pill">&#128293; Day 12</div><div class="avatar-btn" onclick="navigate('profile')">U</div></div>
+  </header>
+  <div class="container">
+    <div class="hero">
+      <div class="hero-trophy">&#127942;</div>
+      <h1 class="hero-title">Crack APSSB &amp;<br>APPSC Exams</h1>
+      <p class="hero-subtitle">Your all-in-one preparation platform for Arunachal Pradesh Government exams. Study smarter with AI-powered insights.</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap"><button class="btn btn-primary" onclick="navigate('exams')">&#128640; Start Mock Test</button><button class="btn btn-ghost" onclick="navigate('syllabus')">&#128218; View Syllabus</button></div>
+    </div>
+    <div class="wod-card glass">
+      <div class="wod-label">&#10024; Word of the Day</div>
+      <div class="wod-word">Viceroyalty</div>
+      <div class="wod-pos">noun &middot; historical</div>
+      <div class="wod-def">The office, authority, or period of service of a viceroy; a territory ruled by a viceroy. In Indian history, British India was administered as a Viceroyalty under the Crown, with the Viceroy serving as the representative of the British Crown.</div>
+      <div style="margin-top:14px"><span class="badge badge-amber">&#128204; APPSC History</span> <span class="badge badge-teal" style="margin-left:6px">&#128204; APSSB GK</span></div>
+    </div>
+    <div style="padding:32px 0 0"><div class="section-title">Quick Access</div><div class="section-subtitle">Jump into your preparation</div>
+    <div class="quick-actions">
+      <div class="qa-card glass glass-hover" onclick="navigate('exams')"><div class="qa-icon" style="background:rgba(20,184,166,0.15);border:1px solid rgba(20,184,166,0.3)">&#9889;</div><div class="qa-title">Mock Tests</div><div class="qa-desc">150+ practice papers</div></div>
+      <div class="qa-card glass glass-hover" onclick="navigate('syllabus')"><div class="qa-icon" style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3)">&#128218;</div><div class="qa-title">Syllabus</div><div class="qa-desc">APSSB &amp; APPSC</div></div>
+      <div class="qa-card glass glass-hover" onclick="navigate('current-affairs')"><div class="qa-icon" style="background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3)">&#128240;</div><div class="qa-title">Current Affairs</div><div class="qa-desc">Daily updates</div></div>
+      <div class="qa-card glass glass-hover" onclick="navigate('state-gk')"><div class="qa-icon" style="background:rgba(46,139,87,0.15);border:1px solid rgba(46,139,87,0.3)">&#127956;</div><div class="qa-title">State GK</div><div class="qa-desc">Arunachal Focus</div></div>
+    </div></div>
+    <div style="padding:32px 0 0"><div class="section-title">Choose Your Exam</div><div class="section-subtitle">Comprehensive preparation for both boards</div>
+    <div class="exam-banners">
+      <div class="exam-banner exam-banner-appsc" onclick="navigate('syllabus');switchSyllabusTab('appsc')">
+        <div class="banner-tag" style="background:rgba(245,158,11,0.2);border:1px solid rgba(245,158,11,0.4);color:var(--amber-light)">&#9878; APPSC</div>
+        <div class="banner-title">Public Service Commission</div>
+        <div class="banner-sub">Group A &amp; B &mdash; Gazetted posts. Civil Services, AE/JE, TGT/PGT, GDMO and more.</div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap">
+          <div><div class="banner-stat-num" style="color:var(--amber-light)">12+</div><div class="banner-stat-label">Exam Types</div></div>
+          <div><div class="banner-stat-num" style="color:var(--amber-light)">6</div><div class="banner-stat-label">Engg Streams</div></div>
+          <div><div class="banner-stat-num" style="color:var(--amber-light)">35%</div><div class="banner-stat-label">State Weightage</div></div>
+        </div>
+      </div>
+      <div class="exam-banner exam-banner-apssb" onclick="navigate('syllabus');switchSyllabusTab('apssb')">
+        <div class="banner-tag" style="background:rgba(20,184,166,0.2);border:1px solid rgba(20,184,166,0.4);color:var(--teal-light)">&#128203; APSSB</div>
+        <div class="banner-title">Staff Selection Board</div>
+        <div class="banner-sub">Group C &mdash; Ministerial, Technical &amp; Uniformed posts. CGL, CHSL, MTS, Constable &amp; more.</div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap">
+          <div><div class="banner-stat-num" style="color:var(--teal-light)">8+</div><div class="banner-stat-label">Exam Codes</div></div>
+          <div><div class="banner-stat-num" style="color:var(--teal-light)">2018</div><div class="banner-stat-label">Act Est.</div></div>
+          <div><div class="banner-stat-num" style="color:var(--teal-light)">Art.315</div><div class="banner-stat-label">Constitution</div></div>
+        </div>
+      </div>
+    </div></div>
+    <div style="padding:0 0 32px"><div class="stats-row">
+      <div class="stat-card glass"><div class="stat-num">2,400+</div><div class="stat-label">Questions</div></div>
+      <div class="stat-card glass"><div class="stat-num">150+</div><div class="stat-label">Mock Tests</div></div>
+      <div class="stat-card glass"><div class="stat-num">11</div><div class="stat-label">GK Modules</div></div>
+      <div class="stat-card glass"><div class="stat-num">6</div><div class="stat-label">Engg Streams</div></div>
+    </div></div>
+  </div>
+</div>
+<div id="page-syllabus" class="page">
+  <header class="topbar glass"><div style="display:flex;align-items:center"><div class="logo-mark">A</div><div class="logo-text">Syllabus <span>Explorer</span></div></div></header>
+  <div class="container-narrow">
+    <div class="syllabus-tabs glass"><div class="stab active-apssb" id="stab-apssb" onclick="switchSyllabusTab('apssb')">&#128203; APSSB</div><div class="stab" id="stab-appsc" onclick="switchSyllabusTab('appsc')">&#9878; APPSC</div></div>
+    <div class="syllabus-panel active" id="panel-apssb">
+      <div class="alert-banner alert-amber"><div class="alert-icon">&#127956;</div><div class="alert-text"><strong>Arunachal Pradesh Focus &mdash; 30&ndash;35% Weightage</strong>Questions on AP history, geography, culture, economy and polity carry significant weightage. Prioritize state-specific content in all APSSB exams.</div></div>
+      <div class="accordion-group">
+        <div class="accordion-item glass" onclick="toggleAccordion(this)"><div class="accordion-header"><div class="accordion-left"><div class="accordion-icon">&#127885;</div><div><div class="accordion-title">CGL &mdash; Combined Graduate Level</div><div class="accordion-meta">Group C Ministerial &middot; 200 Marks &middot; 2 hrs</div></div></div><div class="accordion-chevron">&#9660;</div></div><div class="accordion-body"><div style="margin-bottom:12px"><span class="badge badge-teal">Tier I: Screening</span> <span class="badge badge-amber" style="margin-left:6px">Tier II: Mains</span></div><div class="topic-list"><div class="topic-item"><div class="topic-dot" style="background:var(--teal)"></div>General Intelligence &amp; Reasoning &mdash; 50 Qs (50 Marks) &mdash; Analogies, Series, Coding-Decoding, Spatial, Logical</div><div class="topic-item"><div class="topic-dot" style="background:var(--emerald)"></div>General Knowledge &amp; Current Affairs &mdash; 50 Qs (50 Marks) &mdash; History, Geography, Polity, Economy, Science, AP-specific</div><div class="topic-item"><div class="topic-dot" style="background:var(--amber)"></div>Quantitative Aptitude &mdash; 50 Qs (50 Marks) &mdash; Arithmetic, Algebra, Geometry, DI, Mensuration</div><div class="topic-item"><div class="topic-dot" style="background:var(--coral)"></div>English Language &mdash; 50 Qs (50 Marks) &mdash; Reading Comprehension, Grammar, Vocabulary, Error Detection</div><div class="topic-item"><div class="topic-dot" style="background:var(--blue)"></div>Tier II Mains: Advanced versions + Descriptive English/Hindi + Subject-specific papers for posts</div></div></div></div>
+        <div class="accordion-item glass" onclick="toggleAccordion(this)"><div class="accordion-header"><div class="accordion-left"><div class="accordion-icon">&#128221;</div><div><div class="accordion-title">CHSL &mdash; Combined Higher Secondary Level</div><div class="accordion-meta">Group C Ministerial &middot; 10+2 Qualification &middot; 200 Marks</div></div></div><div class="accordion-chevron">&#9660;</div></div><div class="accordion-body"><div class="topic-list"><div class="topic-item"><div class="topic-dot" style="background:var(--teal)"></div>General Intelligence &amp; Reasoning &mdash; 25 Qs &middot; Verbal &amp; Non-verbal, Logical Sequences</div><div class="topic-item"><div class="topic-dot" style="background:var(--emerald)"></div>General Awareness &mdash; 25 Qs &middot; Current events, Indian History, Geography, Civics, Economy</div><div class="topic-item"><div class="topic-dot" style="background:var(--amber)"></div>Quantitative Aptitude &mdash; 25 Qs &middot; Number Systems, Decimals, Interest, Time &amp; Work</div><div class="topic-item"><div class="topic-dot" style="background:var(--coral)"></div>English Language &mdash; 25 Qs &middot; Spot the Error, Fill in the Blanks, Synonyms/Antonyms</div></div></div></div>
+        <div class="accordion-item glass" onclick="toggleAccordion(this)"><div class="accordion-header"><div class="accordion-left"><div class="accordion-icon">&#128193;</div><div><div class="accordion-title">CSL (MTS) &mdash; Multi-Tasking Staff</div><div class="accordion-meta">Group C Non-Ministerial &middot; Matriculation &middot; 150 Marks</div></div></div><div class="accordion-chevron">&#9660;</div></div><div class="accordion-body"><div class="topic-list"><div class="topic-item"><div class="topic-dot" style="background:var(--teal)"></div>General Intelligence &amp; Reasoning &mdash; Non-Verbal: Figures, Patterns, Odd One Out</div><div class="topic-item"><div class="topic-dot" style="background:var(--emerald)"></div>Numerical Aptitude &mdash; Four Fundamental Operations, Fractions, LCM/HCF, Percentages</div><div class="topic-item"><div class="topic-dot" style="background:var(--amber)"></div>General English &mdash; Basic Grammar, Fill in the Blanks, Vocabulary</div><div class="topic-item"><div class="topic-dot" style="background:var(--coral)"></div>General Awareness &mdash; India &amp; Arunachal Pradesh: Culture, Heritage, Science, Sports</div></div></div></div>
+        <div class="accordion-item glass" onclick="toggleAccordion(this)"><div class="accordion-header"><div class="accordion-left"><div class="accordion-icon">&#128110;</div><div><div class="accordion-title">Uniformed Cadre &mdash; Constable / Fireman / Forest Guard</div><div class="accordion-meta">Physical &amp; Written &middot; Matriculation Qualification</div></div></div><div class="accordion-chevron">&#9660;</div></div><div class="accordion-body"><div style="margin-bottom:12px"><span class="badge badge-emerald">Stage 1: PET/PST</span> <span class="badge badge-teal" style="margin-left:6px">Stage 2: Written</span></div><div class="topic-list"><div class="topic-item"><div class="topic-dot" style="background:var(--teal)"></div>Physical Efficiency Test: Race (1600m Men / 800m Women), Long Jump, High Jump</div><div class="topic-item"><div class="topic-dot" style="background:var(--emerald)"></div>Physical Standard Test: Height (167.5cm Men / 157cm Women), Chest (78/83cm expanded)</div><div class="topic-item"><div class="topic-dot" style="background:var(--amber)"></div>Written Exam: GK &amp; Current Affairs, Reasoning, Elementary Maths, English/Hindi (80 Qs)</div><div class="topic-item"><div class="topic-dot" style="background:var(--coral)"></div>AP-Specific: Arunachal History, Districts, Major Tribes, Geography, Chief Ministers</div></div></div></div>
+        <div class="accordion-item glass" onclick="toggleAccordion(this)"><div class="accordion-header"><div class="accordion-left"><div class="accordion-icon">&#9881;</div><div><div class="accordion-title">Combined Technical &mdash; LDA / DEO / Steno</div><div class="accordion-meta">Technical &amp; Skill-based &middot; Diploma/Degree</div></div></div><div class="accordion-chevron">&#9660;</div></div><div class="accordion-body"><div class="topic-list"><div class="topic-item"><div class="topic-dot" style="background:var(--teal)"></div>Written Paper: GK, Reasoning, Quantitative Aptitude, English</div><div class="topic-item"><div class="topic-dot" style="background:var(--emerald)"></div>Skill Test (DEO): Typing speed 8000 key depressions/hour on computer</div><div class="topic-item"><div class="topic-dot" style="background:var(--amber)"></div>Skill Test (Steno): Shorthand dictation at 80/100 wpm + Transcription on computer</div><div class="topic-item"><div class="topic-dot" style="background:var(--coral)"></div>Trade Test (Technical Posts): Relevant ITI/Diploma trade-specific questions</div></div></div></div>
+      </div>
+    </div>
+    <div class="syllabus-panel" id="panel-appsc">
+      <div class="alert-banner alert-amber"><div class="alert-icon">&#9888;</div><div class="alert-text"><strong>Critical: Arunachal Pradesh Specific (30&ndash;35% Weightage)</strong>APPSC exams heavily test AP History, Geography (Eastern Himalayas), Biodiversity, Tribal Culture, Economy and Governance. Do not underestimate state content.</div></div>
+      <div class="accordion-group">
+        <div class="accordion-item glass" onclick="toggleAccordion(this)"><div class="accordion-header"><div class="accordion-left"><div class="accordion-icon">&#127894;</div><div><div class="accordion-title">APPSCCE &mdash; Civil Services Examination</div><div class="accordion-meta">Group A &mdash; ACS / APS / APFS / APCC &middot; 3-Stage Exam</div></div></div><div class="accordion-chevron">&#9660;</div></div><div class="accordion-body"><div style="margin-bottom:12px"><span class="badge badge-teal">Prelims</span> <span class="badge badge-amber" style="margin-left:6px">Mains (9 Papers)</span> <span class="badge badge-emerald" style="margin-left:6px">Interview</span></div><div class="topic-list"><div class="topic-item"><div class="topic-dot" style="background:var(--teal)"></div><strong>Prelims GS Paper I:</strong> History, Geography, Economy, Polity, Science, Environment, Current Affairs, AP-specific &mdash; 150 Qs / 300 Marks</div><div class="topic-item"><div class="topic-dot" style="background:var(--teal)"></div><strong>Prelims CSAT Paper II:</strong> Comprehension, Logical Reasoning, Analytical Ability, Decision Making, Basic Numeracy &mdash; Qualifying (33%)</div><div class="topic-item"><div class="topic-dot" style="background:var(--amber)"></div><strong>Mains Paper I:</strong> General Essay &mdash; 250 Marks</div><div class="topic-item"><div class="topic-dot" style="background:var(--amber)"></div><strong>Mains Papers II&ndash;V:</strong> GS-I (History), GS-II (Governance), GS-III (Economy), GS-IV (Ethics) &mdash; 250 Marks each</div><div class="topic-item"><div class="topic-dot" style="background:var(--amber)"></div><strong>Mains Papers VI&ndash;VII:</strong> Optional Subject Two Papers &mdash; 250 Marks each</div><div class="topic-item"><div class="topic-dot" style="background:var(--amber)"></div><strong>Mains VIII&ndash;IX:</strong> General English &amp; General Hindi &mdash; 300 Marks (Qualifying only)</div><div class="topic-item"><div class="topic-dot" style="background:var(--coral)"></div><strong>Interview/Personality Test:</strong> 275 Marks &mdash; Critical analysis, AP social issues, leadership</div></div></div></div>
+        <div class="accordion-item glass" onclick="toggleAccordion(this)"><div class="accordion-header"><div class="accordion-left"><div class="accordion-icon">&#127959;</div><div><div class="accordion-title">AESE &mdash; Assistant Engineer (All Streams)</div><div class="accordion-meta">Group A Technical &mdash; CE &middot; EE &middot; ME &middot; ECE &middot; CSE &middot; AGRI</div></div></div><div class="accordion-chevron">&#9660;</div></div><div class="accordion-body"><div class="engg-tabs"><div class="etab active" onclick="showEngg('aese','ce',this)">&#9874; Civil (CE)</div><div class="etab" onclick="showEngg('aese','ee',this)">&#9889; Electrical (EE)</div><div class="etab" onclick="showEngg('aese','me',this)">&#128299; Mechanical (ME)</div><div class="etab" onclick="showEngg('aese','ece',this)">&#128225; ECE</div><div class="etab" onclick="showEngg('aese','cse',this)">&#128187; CSE/IT</div><div class="etab" onclick="showEngg('aese','agri',this)">&#127807; Agriculture</div></div><div id="aese-ce" class="topic-list"><div class="topic-item"><div class="topic-dot" style="background:var(--amber)"></div>Structural Engineering: RCC Design, Steel Structures, Soil Mechanics, Foundation Design</div><div class="topic-item"><div class="topic-dot" style="background:var(--amber)"></div>Fluid Mechanics: Open Channel Flow, Pipe Networks, Hydraulic Machinery</div><div class="topic-item"><div class="topic-dot" style="background:var(--amber)"></div>Transportation: Highway Engineering (IRC Standards), Geometric Design, Pavement</div><div class="topic-item"><div class="topic-dot" style="background:var(--coral)"></div>AP-Specific: IRC:SP:48 Hill Roads, Seismic Zone-V construction, Gabion Walls, Landslide Mitigation</div></div><div id="aese-ee" class="topic-list" style="display:none"><div class="topic-item"><div class="topic-dot" style="background:var(--amber)"></div>Power Systems: Generation, Transmission, Distribution, Load Flow, Short Circuit Analysis</div><div class="topic-item"><div class="topic-dot" style="background:var(--amber)"></div>Electrical Machines: DC/AC Motors, Transformers, Induction Motors, Synchronous Generators</div><div class="topic-item"><div class="topic-dot" style="background:var(--amber)"></div>Control Systems: Transfer Functions, Bode Plot, Root Locus, PID Controllers</div><div class="topic-item"><div class="topic-dot" style="background:var(--coral)"></div>AP-Specific: Run-of-River Micro-Hydro, Sub-zero Transmission Sag, Lightning Protection in Hills</div></div><div id="aese-me" class="topic-list" style="display:none"><div class="topic-item"><div class="topic-dot" style="background:var(--amber)"></div>Thermodynamics: Laws, Power Cycles (Rankine, Otto, Diesel), Refrigeration, Heat Transfer</div><div class="topic-item"><div class="topic-dot" style="background:var(--amber)"></div>Fluid Mechanics: Bernoulli, Viscosity, Pumps, Turbines, Compressors</div><div class="topic-item"><div class="topic-dot" style="background:var(--amber)"></div>Manufacturing: Casting, Welding, Machining, CNC Operations, Quality Control</div><div class="topic-item"><div class="topic-dot" style="background:var(--coral)"></div>AP-Specific: Himalayan Turbine Silt Erosion, Cold-climate Maintenance, Hill Earthmoving</div></div><div id="aese-ece" class="topic-list" style="display:none"><div class="topic-item"><div class="topic-dot" style="background:var(--amber)"></div>Electronics: Semiconductor Devices, Amplifiers, Op-Amps, Digital Logic, Microprocessors</div><div class="topic-item"><div class="topic-dot" style="background:var(--amber)"></div>Communication: AM/FM/PM, PCM, Digital Modulation, Antenna Theory, Satellite Comm</div><div class="topic-item"><div class="topic-dot" style="background:var(--amber)"></div>Signal Processing: Fourier Transform, Z-Transform, DSP Fundamentals, Filters</div><div class="topic-item"><div class="topic-dot" style="background:var(--coral)"></div>AP-Specific: Mountain RF Propagation, VSAT Border Outpost Broadband, Microwave Repeaters</div></div><div id="aese-cse" class="topic-list" style="display:none"><div class="topic-item"><div class="topic-dot" style="background:var(--amber)"></div>Programming: C, C++, Java, Python &mdash; Data Structures, Algorithms, Complexity Analysis</div><div class="topic-item"><div class="topic-dot" style="background:var(--amber)"></div>Database: SQL, Normalization, ER Diagrams, NoSQL, Transaction Management</div><div class="topic-item"><div class="topic-dot" style="background:var(--amber)"></div>Networks: OSI Model, TCP/IP, Routing, Switching, Network Security</div><div class="topic-item"><div class="topic-dot" style="background:var(--coral)"></div>AP-Specific: State Data Center (SDC), e-Office, Jan Suvidha, SWAN Operations</div></div><div id="aese-agri" class="topic-list" style="display:none"><div class="topic-item"><div class="topic-dot" style="background:var(--amber)"></div>Soil &amp; Water: Erosion Control, Watershed Management, Irrigation Methods, Drainage</div><div class="topic-item"><div class="topic-dot" style="background:var(--amber)"></div>Farm Machinery: Tractors, Tillage Equipment, Harvesting, Post-Harvest Technology</div><div class="topic-item"><div class="topic-dot" style="background:var(--amber)"></div>Agricultural Structures: Barn Design, Silo, Rural Roads, Farm Ponds</div><div class="topic-item"><div class="topic-dot" style="background:var(--coral)"></div>AP-Specific: Hill Terrace Erosion, Gravity-fed Micro-Irrigation, Large Cardamom/Kiwi/Ginger Processing</div></div></div></div>
+        <div class="accordion-item glass" onclick="toggleAccordion(this)"><div class="accordion-header"><div class="accordion-left"><div class="accordion-icon">&#128295;</div><div><div class="accordion-title">JE Common Exam &mdash; Junior Engineer (All Streams)</div><div class="accordion-meta">Group B Technical &mdash; CE &middot; EE &middot; ME &middot; ECE &middot; CSE &middot; AGRI</div></div></div><div class="accordion-chevron">&#9660;</div></div><div class="accordion-body"><div class="engg-tabs"><div class="etab active" onclick="showEngg('je','ce',this)">&#9874; Civil</div><div class="etab" onclick="showEngg('je','ee',this)">&#9889; Electrical</div><div class="etab" onclick="showEngg('je','me',this)">&#128299; Mechanical</div><div class="etab" onclick="showEngg('je','ece',this)">&#128225; ECE</div><div class="etab" onclick="showEngg('je','cse',this)">&#128187; CSE/IT</div><div class="etab" onclick="showEngg('je','agri',this)">&#127807; Agriculture</div></div><div id="je-ce" class="topic-list"><div class="topic-item"><div class="topic-dot" style="background:var(--teal)"></div>Building Materials: Bricks, Cement, Steel, Aggregates, Timber, Paints &amp; Varnishes</div><div class="topic-item"><div class="topic-dot" style="background:var(--teal)"></div>Estimating &amp; Costing: Detailed Estimates, Analysis of Rates, EPC Contracts</div><div class="topic-item"><div class="topic-dot" style="background:var(--teal)"></div>Surveying: Chain, Compass, Levelling, Theodolite, Total Station, GPS/GNSS</div><div class="topic-item"><div class="topic-dot" style="background:var(--coral)"></div>AP-Specific: Hill Station Construction, Gabion Retaining Walls, Slope Stabilization</div></div><div id="je-ee" class="topic-list" style="display:none"><div class="topic-item"><div class="topic-dot" style="background:var(--teal)"></div>Basic Electrical: Ohm Law, KVL/KCL, AC/DC Circuits, Power Factor</div><div class="topic-item"><div class="topic-dot" style="background:var(--teal)"></div>Installation &amp; Wiring: Indian Electricity Rules, IS:732, Panel Boards, Earthing</div><div class="topic-item"><div class="topic-dot" style="background:var(--teal)"></div>Illumination: Lamps, Lighting Design, Energy Efficiency, LED Technology</div><div class="topic-item"><div class="topic-dot" style="background:var(--coral)"></div>AP-Specific: Remote Village Electrification, Solar Micro-Grids, Hill Terrain Challenges</div></div><div id="je-me" class="topic-list" style="display:none"><div class="topic-item"><div class="topic-dot" style="background:var(--teal)"></div>Strength of Materials: Stress/Strain, Beams, Columns, Torsion, Springs</div><div class="topic-item"><div class="topic-dot" style="background:var(--teal)"></div>Workshop Technology: Fitting, Welding, Sheet Metal, Foundry, Pattern Making</div><div class="topic-item"><div class="topic-dot" style="background:var(--teal)"></div>Hydraulics: Pumps, Pipes, Valves, Flow Measurement</div><div class="topic-item"><div class="topic-dot" style="background:var(--coral)"></div>AP-Specific: High-Altitude Equipment Maintenance, Cold Start Procedures, Hill Earthmoving Safety</div></div><div id="je-ece" class="topic-list" style="display:none"><div class="topic-item"><div class="topic-dot" style="background:var(--teal)"></div>Basic Electronics: Diodes, Transistors, FETs, Op-Amps, Boolean Algebra, Logic Gates</div><div class="topic-item"><div class="topic-dot" style="background:var(--teal)"></div>Communication Fundamentals: AM/FM Radio, Telephone Systems, Fiber Optics</div><div class="topic-item"><div class="topic-dot" style="background:var(--teal)"></div>Microcontrollers: 8051, Arduino, Embedded Systems Basics</div><div class="topic-item"><div class="topic-dot" style="background:var(--coral)"></div>AP-Specific: VSAT Deployment in Hills, Tower Installation, Border Area Communication</div></div><div id="je-cse" class="topic-list" style="display:none"><div class="topic-item"><div class="topic-dot" style="background:var(--teal)"></div>Computer Fundamentals: Hardware, OS, File Systems, Software Development Life Cycle</div><div class="topic-item"><div class="topic-dot" style="background:var(--teal)"></div>Programming Basics: C/C++, Web Technologies, HTML/CSS, Database Fundamentals</div><div class="topic-item"><div class="topic-dot" style="background:var(--teal)"></div>Networking: LAN/WAN, Internet, Cybersecurity Basics, e-Governance</div><div class="topic-item"><div class="topic-dot" style="background:var(--coral)"></div>AP-Specific: APGOV Digital Services, Common Service Centers (CSC), Jan Suvidha Kendra</div></div><div id="je-agri" class="topic-list" style="display:none"><div class="topic-item"><div class="topic-dot" style="background:var(--teal)"></div>Crop Production: Agronomy, Soil Fertility, Fertilizers, Pest &amp; Disease Management</div><div class="topic-item"><div class="topic-dot" style="background:var(--teal)"></div>Horticulture: Vegetable Growing, Fruit Crops, Post-harvest Technology</div><div class="topic-item"><div class="topic-dot" style="background:var(--teal)"></div>Agricultural Extension: Farm Planning, Cooperative Farming, Credit Systems</div><div class="topic-item"><div class="topic-dot" style="background:var(--coral)"></div>AP-Specific: Jhum Cultivation Alternatives, Cardamom Certification, AP Organic Farming Policy</div></div></div></div>
+        <div class="accordion-item glass" onclick="toggleAccordion(this)"><div class="accordion-header"><div class="accordion-left"><div class="accordion-icon">&#127891;</div><div><div class="accordion-title">TGT / PGT &mdash; Trained Graduate / Post Graduate Teacher</div><div class="accordion-meta">Educational Services &middot; Subject Specialization Required</div></div></div><div class="accordion-chevron">&#9660;</div></div><div class="accordion-body"><div class="topic-list"><div class="topic-item"><div class="topic-dot" style="background:var(--blue)"></div>Paper I: General Studies &mdash; History, Geography, Science, Current Affairs, AP-Specific &mdash; 100 Marks</div><div class="topic-item"><div class="topic-dot" style="background:var(--blue)"></div>Paper II: Subject Knowledge (Science/Maths/Social/English/Hindi as applicable) &mdash; 200 Marks</div><div class="topic-item"><div class="topic-dot" style="background:var(--blue)"></div>Paper III: Pedagogy &mdash; Teaching Methods, Child Psychology, Learning Assessment &mdash; 100 Marks</div><div class="topic-item"><div class="topic-dot" style="background:var(--coral)"></div>AP Education: DIET, SCERT, RMSA, AP Education Policy, Mother Tongue Medium Education</div></div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="page-current-affairs" class="page">
+  <header class="topbar glass"><div style="display:flex;align-items:center"><div class="logo-mark">A</div><div class="logo-text">Current Affairs <span>&amp; GK</span></div></div></header>
+  <div class="container-reading">
+    <div style="padding:32px 0 0">
+      <div class="gk-banner-card"><div style="display:flex;align-items:center;gap:12px;margin-bottom:10px"><span style="font-size:28px">&#127956;</span><div><div style="font-size:16px;font-weight:700">Arunachal Pradesh State GK Compendium</div><div style="font-size:12px;color:var(--text-4)">11 curated modules &middot; Updated for 2025&ndash;26 exams</div></div></div><div style="font-size:12px;color:var(--text-3);line-height:1.6;margin-bottom:14px">From the Land of the Dawn-Lit Mountains &mdash; deep-dive into AP history, geography, tribes, economy, biodiversity and governance. State-specific questions form 30&ndash;35% of all APSSB &amp; APPSC exams.</div><button class="btn btn-primary" onclick="navigate('state-gk')" style="font-size:12px;padding:8px 18px">Explore State GK &#8594;</button></div>
+      <div class="ca-search"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Search current affairs, topics, keywords..." id="ca-search-input" oninput="filterNews()"></div>
+      <div class="filter-chips"><div class="chip active" onclick="setFilter('All',this)">All</div><div class="chip" onclick="setFilter('Arunachal',this)">&#127956; Arunachal</div><div class="chip" onclick="setFilter('National',this)">&#127988; National</div><div class="chip" onclick="setFilter('Economy',this)">&#128200; Economy</div><div class="chip" onclick="setFilter('Science',this)">&#128300; Science &amp; Tech</div><div class="chip" onclick="setFilter('Environment',this)">&#127807; Environment</div><div class="chip" onclick="setFilter('Sports',this)">&#127885; Sports</div></div>
+      <div class="news-grid" id="news-grid"></div>
+    </div>
+  </div>
+</div>
+<div id="page-state-gk" class="page">
+  <header class="topbar glass"><div style="display:flex;align-items:center"><div class="logo-mark">A</div><div class="logo-text">Arunachal <span>State GK</span></div></div></header>
+  <div class="container">
+    <div class="state-gk-hero"><div class="topo-bg"></div><div style="font-size:48px;margin-bottom:16px;animation:trophyFloat 8s ease-in-out infinite">&#127956;</div><h1 class="hero-title" style="font-size:clamp(24px,5vw,40px)">Land of the Dawn-Lit Mountains</h1><p class="hero-subtitle">Comprehensive Arunachal Pradesh GK &mdash; 11 curated modules covering everything examiners test.</p><div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:16px"><span class="badge badge-amber">35% Exam Weightage</span><span class="badge badge-emerald">Updated 2025&ndash;26</span><span class="badge badge-teal">11 Modules</span></div></div>
+    <div class="gk-grid" id="gk-grid"></div>
+  </div>
+</div>
+<div id="page-exams" class="page">
+  <header class="topbar glass"><div style="display:flex;align-items:center"><div class="logo-mark">A</div><div class="logo-text">Exams <span>Hub</span></div></div></header>
+  <div class="container">
+    <div style="padding:40px 0 24px"><h1 class="section-title">Mock Test Center</h1><p class="section-subtitle">Practice with real exam patterns. Timed, scored, and reviewed.</p></div>
+    <div style="margin-bottom:14px"><span class="badge badge-teal">&#128203; APSSB &mdash; Group C</span></div>
+    <div class="exam-panel-grid" id="apssb-panels"></div>
+    <div style="margin:8px 0 14px"><span class="badge badge-amber">&#9878; APPSC &mdash; Group A &amp; B</span></div>
+    <div class="exam-panel-grid" id="appsc-panels"></div>
+  </div>
+</div>
+<div id="page-profile" class="page">
+  <div class="container-reading">
+    <div class="profile-hero"><div class="avatar-rings"><div class="ring-anim ring-1"></div><div class="ring-anim ring-2"></div><div class="avatar-inner">U</div></div><div class="profile-name">Aspirant</div><div class="profile-email">user@example.com</div><div style="margin-top:12px"><span class="profile-tier">&#129356; Silver Scholar</span></div></div>
+    <div class="score-cards"><div class="score-card glass"><div class="score-num" style="color:var(--emerald-light)">24</div><div class="score-label">Tests Taken</div></div><div class="score-card glass"><div class="score-num" style="color:var(--amber-light)">72%</div><div class="score-label">Avg Score</div></div><div class="score-card glass"><div class="score-num" style="color:var(--teal-light)">12</div><div class="score-label">Day Streak</div></div></div>
+    <div class="glass" style="border-radius:20px;padding:20px 20px 44px;margin-bottom:32px"><div style="font-size:13px;font-weight:600;margin-bottom:16px">Recent Test Scores</div><div class="score-chart" id="score-chart"></div></div>
+    <div class="profile-section-title">My Account</div>
+    <div class="profile-menu">
+      <div class="menu-item glass-hover" onclick="navigate('exams')"><div class="menu-item-left"><div class="menu-icon" style="background:rgba(46,139,87,0.15);color:var(--emerald-light)">&#128202;</div><div><div class="menu-text">My Test History</div><div style="font-size:11px;color:var(--text-4)">24 tests completed</div></div></div><div class="menu-chevron">&#8250;</div></div>
+      <div class="menu-item glass-hover"><div class="menu-item-left"><div class="menu-icon" style="background:rgba(245,158,11,0.15);color:var(--amber-light)">&#127942;</div><div><div class="menu-text">Achievements &amp; Trophies</div><div style="font-size:11px;color:var(--text-4)">7 badges earned</div></div></div><div class="menu-chevron">&#8250;</div></div>
+      <div class="menu-item glass-hover"><div class="menu-item-left"><div class="menu-icon" style="background:rgba(59,130,246,0.15);color:var(--blue-light)">&#128214;</div><div><div class="menu-text">Saved Bookmarks</div><div style="font-size:11px;color:var(--text-4)">34 questions bookmarked</div></div></div><div class="menu-chevron">&#8250;</div></div>
+    </div>
+    <div class="profile-section-title">My Courses</div>
+    <div class="profile-menu">
+      <div class="menu-item glass-hover" onclick="navigate('syllabus')"><div class="menu-item-left"><div class="menu-icon" style="background:rgba(20,184,166,0.15);color:var(--teal-light)">&#128218;</div><div><div class="menu-text">APSSB CGL Prep</div><div style="font-size:11px;color:var(--text-4)">68% complete</div></div></div><div class="menu-chevron">&#8250;</div></div>
+      <div class="menu-item glass-hover" onclick="navigate('syllabus');switchSyllabusTab('appsc')"><div class="menu-item-left"><div class="menu-icon" style="background:rgba(245,158,11,0.15);color:var(--amber-light)">&#127894;</div><div><div class="menu-text">APPSCCE Civil Services</div><div style="font-size:11px;color:var(--text-4)">41% complete</div></div></div><div class="menu-chevron">&#8250;</div></div>
+    </div>
+    <div class="profile-section-title">Settings</div>
+    <div class="profile-menu">
+      <div class="menu-item glass-hover"><div class="menu-item-left"><div class="menu-icon" style="background:rgba(100,100,100,0.2);color:var(--text-3)">&#128274;</div><div class="menu-text">Change Password</div></div><div class="menu-chevron">&#8250;</div></div>
+      <div class="menu-item glass-hover"><div class="menu-item-left"><div class="menu-icon" style="background:rgba(100,100,100,0.2);color:var(--text-3)">&#128273;</div><div class="menu-text">Reset / Forgot Password</div></div><div class="menu-chevron">&#8250;</div></div>
+      <div class="menu-item glass-hover"><div class="menu-item-left"><div class="menu-icon" style="background:rgba(239,68,68,0.15);color:var(--red-light)">&#128682;</div><div class="menu-text">Sign Out</div></div><div class="menu-chevron">&#8250;</div></div>
+    </div>
+    <div style="height:32px"></div>
+  </div>
+</div>
+<script>
+const NEWS_DATA=[{id:1,category:'Arunachal',title:'Arunachal Pradesh Cabinet Approves New Industrial Policy 2025',excerpt:'The state cabinet approved a comprehensive industrial policy aimed at attracting investments in agro-processing, handicrafts, and eco-tourism sectors across all 26 districts.',date:'Sep 2025',examReady:true,tags:['Economy','Governance']},{id:2,category:'National',title:'India Launches National Quantum Mission Phase II',excerpt:'Department of Science & Technology announced funding for Phase II of the National Quantum Mission, focusing on quantum computing in healthcare and finance.',date:'Sep 2025',examReady:true,tags:['Science','Technology']},{id:3,category:'Arunachal',title:'Namdapha Tiger Reserve Records 47 Tigers in Latest Census',excerpt:'The wildlife census confirmed 47 tigers in Namdapha, making it the densest tiger population per sq km in Northeast India. Namdapha is also the only park in India hosting four big cat species.',date:'Aug 2025',examReady:true,tags:['Environment','Biodiversity']},{id:4,category:'Economy',title:'RBI Monetary Policy: Repo Rate Held at 6.25%',excerpt:'The Reserve Bank of India Monetary Policy Committee voted unanimously to hold the repo rate at 6.25% citing balanced inflation trajectory and stable growth for FY2025-26.',date:'Aug 2025',examReady:false,tags:['Economy','Banking']},{id:5,category:'Science',title:"ISRO's NISAR Satellite Successfully Captures First Data",excerpt:"The NASA-ISRO Synthetic Aperture Radar (NISAR) satellite transmitted its first radar images of Earth's surface, a milestone in Earth observation and climate monitoring.",date:'Aug 2025',examReady:true,tags:['Science','Space']},{id:6,category:'Environment',title:'Great Himalayan Biodiversity Corridor Officially Notified',excerpt:'Ministry of Environment officially notified the Great Himalayan Biodiversity Corridor spanning Arunachal Pradesh, Sikkim and West Bengal, protecting 28,000 sq km of pristine habitat.',date:'Jul 2025',examReady:true,tags:['Environment','Arunachal']},{id:7,category:'Sports',title:'Arunachal Pradesh Athletes Win 6 Medals at National Games',excerpt:'AP athletes secured 3 gold, 2 silver and 1 bronze medal at the National Games with outstanding performances in wushu, archery, and indigenous traditional sports.',date:'Jul 2025',examReady:false,tags:['Sports','Arunachal']},{id:8,category:'National',title:'PM SVANidhi Scheme Extended with Enhanced Credit Limit',excerpt:'Government extended the PM SVANidhi street vendor micro-credit scheme with credit limits up to Rs 50,000 and digital payment incentives for repeat borrowers.',date:'Jul 2025',examReady:true,tags:['Economy','Social Welfare']}];
+const GK_MODULES=[{icon:'&#127956;',title:'Geography & Physical Features',count:'85 topics',bg:'rgba(46,139,87,0.15)',border:'rgba(46,139,87,0.25)'},{icon:'&#128220;',title:'History & Pre-colonial Era',count:'72 topics',bg:'rgba(245,158,11,0.12)',border:'rgba(245,158,11,0.25)'},{icon:'&#128101;',title:'Tribes & Indigenous Culture',count:'91 topics',bg:'rgba(20,184,166,0.12)',border:'rgba(20,184,166,0.25)'},{icon:'&#127807;',title:'Biodiversity & Wildlife',count:'68 topics',bg:'rgba(52,211,153,0.12)',border:'rgba(52,211,153,0.25)'},{icon:'&#9878;',title:'Polity & Governance',count:'54 topics',bg:'rgba(59,130,246,0.12)',border:'rgba(59,130,246,0.25)'},{icon:'&#128200;',title:'Economy & Agriculture',count:'61 topics',bg:'rgba(249,115,22,0.12)',border:'rgba(249,115,22,0.25)'},{icon:'&#127917;',title:'Art, Craft & Festivals',count:'78 topics',bg:'rgba(168,85,247,0.12)',border:'rgba(168,85,247,0.25)'},{icon:'&#127963;',title:'Important Places & Districts',count:'46 topics',bg:'rgba(236,72,153,0.12)',border:'rgba(236,72,153,0.25)'},{icon:'&#127758;',title:'Current Affairs - AP Focus',count:'120+ topics',bg:'rgba(20,184,166,0.12)',border:'rgba(20,184,166,0.25)'},{icon:'&#128300;',title:'Science & Technology in AP',count:'38 topics',bg:'rgba(14,165,233,0.12)',border:'rgba(14,165,233,0.25)'},{icon:'&#127942;',title:'Sports & Personalities',count:'42 topics',bg:'rgba(245,158,11,0.12)',border:'rgba(245,158,11,0.25)'}];
+const EXAM_PANELS={apssb:[{title:'APSSB CGL',sub:'Combined Graduate Level - Full Syllabus Practice',pills:['4 Subjects','200 Marks','2 hrs'],cls:'btn-teal',btn:'Start CGL Mock'},{title:'APSSB CHSL',sub:'Higher Secondary Level - Quick Practice Paper',pills:['4 Subjects','200 Marks','2 hrs'],cls:'btn-teal',btn:'Start CHSL Mock'},{title:'APSSB MTS (CSL)',sub:'Multi-Tasking Staff - Foundation Level Paper',pills:['4 Subjects','150 Marks','90 min'],cls:'btn-teal',btn:'Start MTS Mock'},{title:'APSSB Constable',sub:'Uniformed Cadre - GK Heavy Practice',pills:['GK Focus','80 Qs','AP Specific'],cls:'btn-teal',btn:'Start Constable Mock'}],appsc:[{title:'APPSCCE Prelims',sub:'Civil Services - GS Paper I Full Practice',pills:['150 Qs','300 Marks','2 hrs'],cls:'btn-amber',btn:'Start Prelims Mock'},{title:'APPSCCE CSAT',sub:'Civil Services - CSAT Paper II (Qualifying)',pills:['100 Qs','Qualifying','2 hrs'],cls:'btn-amber',btn:'Start CSAT Mock'},{title:'AESE / AE Mock',sub:'Assistant Engineer - Technical All Streams',pills:['100 Qs','CE/EE/ME/ECE/CSE'],cls:'btn-amber',btn:'Start AE Mock'},{title:'JE Common Exam',sub:'Junior Engineer - All Streams Technical Focus',pills:['100 Qs','Technical','AP Specific'],cls:'btn-amber',btn:'Start JE Mock'}]};
+const QUESTIONS=[{cat:'ARUNACHAL HISTORY',q:'Which convention officially demarcated the boundary between British India and Tibet, passing through what is now Arunachal Pradesh?',opts:['Treaty of Yandabo','Simla Convention (McMahon Line)','Treaty of Sugauli','Treaty of Sagaing'],ans:1},{cat:'APSSB GK',q:'The Namdapha National Park, one of the largest in India, is located in which district of Arunachal Pradesh?',opts:['West Kameng','Changlang','Upper Siang','Tawang'],ans:1},{cat:'POLITY',q:'APSSB was constituted under which Act for Group C recruitment in Arunachal Pradesh?',opts:['AP Civil Services Act 1969','APSSB Act 2018','Public Service Commission Act 1951','NE Region Act 2004'],ans:1},{cat:'ENVIRONMENT',q:'Which river, originating from Tibet, enters India through Arunachal Pradesh as the Siang before becoming the Brahmaputra?',opts:['Lohit','Subansiri','Tsangpo','Dibang'],ans:2},{cat:'SCIENCE & TECH',q:'NISAR, a joint NASA-ISRO mission, primarily uses which remote sensing technology?',opts:['Optical Multispectral','Synthetic Aperture Radar (SAR)','LiDAR','Hyperspectral Imaging'],ans:1},{cat:'ECONOMY',q:'What repo rate did RBI set in the August 2025 Monetary Policy Committee meeting?',opts:['5.75%','6.00%','6.25%','6.50%'],ans:2},{cat:'TRIBES & CULTURE',q:'The Tawang Monastery, one of the largest in the world, is associated with which sect of Buddhism?',opts:['Hinayana','Vajrayana (Gelug Sect)','Zen','Theravada'],ans:1},{cat:'GEOGRAPHY',q:'Arunachal Pradesh shares its longest international border with which country?',opts:['Bhutan','Myanmar','China','Bangladesh'],ans:2},{cat:'CURRENT AFFAIRS',q:'The Great Himalayan Biodiversity Corridor notified in 2025 spans across how many states?',opts:['2','3','4','5'],ans:1},{cat:'APSSB GK',q:'The headquarters of APSSB is located in which city of Arunachal Pradesh?',opts:['Pasighat','Naharlagun','Tawang','Along'],ans:1}];
+let currentPage='home',activeFilter='All',currentQ=0,timerInterval=null,timeLeft=30;
+function navigate(page){document.querySelectorAll('.page').forEach(p=>{p.classList.remove('active');p.style.display='none'});const t=document.getElementById('page-'+page);if(t){t.style.display='block';requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('active')))}document.querySelectorAll('.dock-item').forEach(d=>d.classList.remove('active'));const d=document.querySelector('.dock-item[data-page="'+page+'"]');if(d)d.classList.add('active');currentPage=page;window.scrollTo({top:0,behavior:'smooth'})}
+function switchSyllabusTab(b){document.querySelectorAll('.syllabus-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.stab').forEach(t=>t.className='stab');document.getElementById('panel-'+b).classList.add('active');document.getElementById('stab-'+b).classList.add('active-'+b)}
+function toggleAccordion(item){const o=item.classList.contains('open');item.parentElement.querySelectorAll('.accordion-item.open').forEach(a=>{if(a!==item)a.classList.remove('open')});item.classList.toggle('open',!o)}
+function showEngg(exam,stream,el){el.closest('.accordion-body').querySelectorAll('[id^="'+exam+'-"]').forEach(p=>p.style.display='none');el.closest('.engg-tabs').querySelectorAll('.etab').forEach(t=>t.classList.remove('active'));const p=document.getElementById(exam+'-'+stream);if(p)p.style.display='flex';el.classList.add('active');event.stopPropagation()}
+function setFilter(cat,el){activeFilter=cat;document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');renderNews()}
+function filterNews(){renderNews()}
+function renderNews(){const q=((document.getElementById('ca-search-input')||{}).value||'').toLowerCase();const grid=document.getElementById('news-grid');if(!grid)return;const f=NEWS_DATA.filter(n=>{const mc=activeFilter==='All'||n.category===activeFilter||n.tags.some(t=>t.includes(activeFilter));const mq=!q||n.title.toLowerCase().includes(q)||n.excerpt.toLowerCase().includes(q)||n.tags.some(t=>t.toLowerCase().includes(q));return mc&&mq});if(!f.length){grid.innerHTML='<div class="glass news-card" style="text-align:center;padding:40px;color:var(--text-4)">No articles found.</div>';return}grid.innerHTML=f.map(n=>`<div class="news-card glass glass-hover"><div class="news-meta"><span class="badge badge-emerald">${n.category}</span>${n.tags.map(t=>`<span class="badge badge-teal">${t}</span>`).join('')}<span class="news-date">&#183; ${n.date}</span></div><div class="news-title">${n.title}</div><div class="news-excerpt">${n.excerpt}</div><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">${n.examReady?'<span class="exam-ready-badge">&#10022; Exam Ready</span>':'<span></span>'}<button class="ask-ai-btn">&#10024; Ask AI Tutor</button></div></div>`).join('')}
+function renderGKModules(){const g=document.getElementById('gk-grid');if(!g)return;g.innerHTML=GK_MODULES.map(m=>`<div class="gk-module glass-hover" style="background:${m.bg};border:1px solid ${m.border};border-radius:20px;padding:22px;cursor:pointer"><div class="gk-module-icon">${m.icon}</div><div class="gk-module-title">${m.title}</div><div class="gk-module-count">${m.count}</div></div>`).join('')}
+function renderExamPanels(){const a=document.getElementById('apssb-panels'),b=document.getElementById('appsc-panels');if(a)a.innerHTML=EXAM_PANELS.apssb.map(e=>`<div class="exam-panel glass"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><div class="exam-panel-title">${e.title}</div><span class="badge badge-teal">APSSB</span></div><div class="exam-panel-sub">${e.sub}</div><div class="micro-pills">${e.pills.map(p=>`<span class="micro-pill pill-teal">${p}</span>`).join('')}</div><button class="start-test-btn ${e.cls}" onclick="startQuiz('${e.title}')">${e.btn} &#8594;</button></div>`).join('');if(b)b.innerHTML=EXAM_PANELS.appsc.map(e=>`<div class="exam-panel glass"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><div class="exam-panel-title">${e.title}</div><span class="badge badge-amber">APPSC</span></div><div class="exam-panel-sub">${e.sub}</div><div class="micro-pills">${e.pills.map(p=>`<span class="micro-pill pill-amber">${p}</span>`).join('')}</div><button class="start-test-btn ${e.cls}" onclick="startQuiz('${e.title}')">${e.btn} &#8594;</button></div>`).join('')}
+function startQuiz(title){currentQ=0;document.getElementById('quiz-title').textContent=title;document.getElementById('q-total').textContent=QUESTIONS.length;document.getElementById('quiz-overlay').classList.add('visible');document.body.style.overflow='hidden';loadQuestion()}
+function closeQuiz(){clearInterval(timerInterval);document.getElementById('quiz-overlay').classList.remove('visible');document.body.style.overflow=''}
+function loadQuestion(){const q=QUESTIONS[currentQ];document.getElementById('q-current').textContent=currentQ+1;document.getElementById('question-category').textContent=q.cat;document.getElementById('question-text').textContent=q.q;document.getElementById('answer-feedback').textContent='';document.getElementById('next-btn').style.display='none';document.getElementById('quiz-progress-fill').style.width=((currentQ+1)/QUESTIONS.length*100)+'%';const L=['A','B','C','D'];document.getElementById('options-container').innerHTML=q.opts.map((o,i)=>`<button class="option-btn" onclick="selectOption(${i},${q.ans})"><span class="option-letter">${L[i]}</span>${o}</button>`).join('');startTimer()}
+function startTimer(){clearInterval(timerInterval);timeLeft=30;updateTimerUI();timerInterval=setInterval(()=>{timeLeft--;updateTimerUI();if(timeLeft<=0){clearInterval(timerInterval);timeExpired()}},1000)}
+function updateTimerUI(){document.getElementById('timer-display').textContent=timeLeft;const r=document.getElementById('timer-ring');r.style.strokeDashoffset=163-(163*(timeLeft/30));r.style.stroke=timeLeft<=10?'#EF4444':timeLeft<=20?'#F59E0B':'var(--emerald-light)'}
+function timeExpired(){const fb=document.getElementById('answer-feedback');fb.textContent='Time up!';fb.style.color='var(--text-4)';document.querySelectorAll('.option-btn').forEach(b=>b.disabled=true);document.getElementById('next-btn').style.display='flex'}
+function selectOption(idx,correct){clearInterval(timerInterval);const btns=document.querySelectorAll('.option-btn');btns.forEach(b=>b.disabled=true);btns[idx].classList.add(idx===correct?'correct':'wrong');if(idx!==correct)btns[correct].classList.add('correct');const fb=document.getElementById('answer-feedback');if(idx===correct){fb.textContent='Correct!';fb.style.color='#00FF88'}else{fb.textContent='Incorrect - correct answer highlighted.';fb.style.color='var(--red-light)'}document.getElementById('next-btn').style.display='flex'}
+function nextQuestion(){currentQ++;if(currentQ>=QUESTIONS.length){document.getElementById('question-text').textContent='Quiz Complete! Great effort. Keep practising!';document.getElementById('options-container').innerHTML='';document.getElementById('next-btn').style.display='none';document.getElementById('answer-feedback').textContent='Completed '+QUESTIONS.length+' questions.';document.getElementById('question-category').textContent='RESULT';clearInterval(timerInterval);setTimeout(closeQuiz,3000);return}loadQuestion()}
+function renderScoreChart(){const scores=[58,72,65,81,74,88,76,90,68,85,79,92];const labels=['Aug','','','','Sep','','','','','','',''];const c=document.getElementById('score-chart');if(!c)return;const mx=Math.max(...scores);c.innerHTML=scores.map((s,i)=>`<div class="chart-bar${i===scores.length-1?' active-bar':''}" style="height:${(s/mx)*130}px"><div class="chart-label">${labels[i]}</div></div>`).join('')}
+document.addEventListener('DOMContentLoaded',()=>{renderNews();renderGKModules();renderExamPanels();renderScoreChart();document.querySelectorAll('.page').forEach(p=>{if(!p.classList.contains('active'))p.style.display='none'});document.addEventListener('mousemove',e=>{const x=(e.clientX/window.innerWidth-0.5)*30,y=(e.clientY/window.innerHeight-0.5)*30;const o1=document.querySelector('.orb-1'),o2=document.querySelector('.orb-2');if(o1)o1.style.transform=`translate(${x*0.4}px,${y*0.4}px)`;if(o2)o2.style.transform=`translate(${-x*0.3}px,${-y*0.3}px)`})});
+</script>
+</body>
+</html>
