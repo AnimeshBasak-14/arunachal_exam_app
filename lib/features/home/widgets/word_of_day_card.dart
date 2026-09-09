@@ -10,7 +10,6 @@ class WordOfDayCard extends StatefulWidget {
 }
 
 class _WordOfDayCardState extends State<WordOfDayCard> {
-  DailyItemType _selectedType = DailyItemType.word;
   int _offset = 0;
   bool _expanded = false;
 
@@ -20,24 +19,35 @@ class _WordOfDayCardState extends State<WordOfDayCard> {
     });
   }
 
+  DailyDoseItem _getTodayItem() {
+    final now = DateTime.now();
+    final dayIndex = (now.difference(DateTime(2024, 1, 1)).inDays + _offset);
+    final allItems = [
+      ...DailyDoseData.words,
+      ...DailyDoseData.idioms,
+      ...DailyDoseData.quotes,
+    ];
+    return allItems[dayIndex.abs() % allItems.length];
+  }
+
   @override
   Widget build(BuildContext context) {
-    final item = DailyDoseData.getTodayItem(_selectedType, _offset);
+    final item = _getTodayItem();
 
     List<Color> gradientColors;
     String badgeEmoji;
-    switch (_selectedType) {
+    switch (item.type) {
       case DailyItemType.word:
-        gradientColors = [const Color(0xFF1a237e), const Color(0xFF283593)];
-        badgeEmoji = '📚 VOCABULARY';
+        gradientColors = const [Color(0xFF1A237E), Color(0xFF283593)];
+        badgeEmoji = '📖 WORD OF THE DAY';
         break;
       case DailyItemType.idiom:
-        gradientColors = [const Color(0xFF4A148C), const Color(0xFF6A1B9A)];
-        badgeEmoji = '💡 IDIOM & PHRASE';
+        gradientColors = const [Color(0xFF4A148C), Color(0xFF6A1B9A)];
+        badgeEmoji = '💡 IDIOM OF THE DAY';
         break;
       case DailyItemType.quote:
-        gradientColors = [const Color(0xFF004D40), const Color(0xFF00695C)];
-        badgeEmoji = '✨ DAILY INSPIRATION';
+        gradientColors = const [Color(0xFF004D40), Color(0xFF00695C)];
+        badgeEmoji = '✨ QUOTE OF THE DAY';
         break;
     }
 
@@ -65,10 +75,11 @@ class _WordOfDayCardState extends State<WordOfDayCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header Row: Badge & Next/Expand controls
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
@@ -77,7 +88,7 @@ class _WordOfDayCardState extends State<WordOfDayCard> {
                     badgeEmoji,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 10,
+                      fontSize: 10.5,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.1,
                     ),
@@ -88,11 +99,12 @@ class _WordOfDayCardState extends State<WordOfDayCard> {
                   onTap: _shuffle,
                   borderRadius: BorderRadius.circular(16),
                   child: const Padding(
-                    padding: EdgeInsets.all(4),
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.shuffle_rounded, color: Colors.white70, size: 16),
-                        SizedBox(width: 3),
+                        Icon(Icons.refresh_rounded, color: Colors.white70, size: 16),
+                        SizedBox(width: 4),
                         Text(
                           'Next',
                           style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
@@ -101,7 +113,7 @@ class _WordOfDayCardState extends State<WordOfDayCard> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 4),
                 Icon(
                   _expanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
                   color: Colors.white54,
@@ -109,35 +121,26 @@ class _WordOfDayCardState extends State<WordOfDayCard> {
                 ),
               ],
             ),
-            const SizedBox(height: AppSpacing.s),
+            const SizedBox(height: AppSpacing.m),
 
-            Row(
-              children: [
-                _buildTypeChip('Word', DailyItemType.word),
-                const SizedBox(width: 6),
-                _buildTypeChip('Idiom', DailyItemType.idiom),
-                const SizedBox(width: 6),
-                _buildTypeChip('Quote', DailyItemType.quote),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.s),
-
+            // Main Title
             Text(
               item.title,
               style: TextStyle(
                 color: Colors.white,
-                fontSize: _selectedType == DailyItemType.quote ? 15 : 20,
+                fontSize: item.type == DailyItemType.quote ? 15.5 : 21,
                 fontWeight: FontWeight.bold,
                 height: 1.3,
-                fontStyle: _selectedType == DailyItemType.quote ? FontStyle.italic : FontStyle.normal,
+                fontStyle: item.type == DailyItemType.quote ? FontStyle.italic : FontStyle.normal,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
 
+            // Subtitle: Meaning or Author
             Text(
-              _selectedType == DailyItemType.quote
+              item.type == DailyItemType.quote
                   ? item.exampleOrAuthor
-                  : ' · ',
+                  : '${item.category} · ${item.meaning}',
               style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 12.5,
@@ -146,15 +149,15 @@ class _WordOfDayCardState extends State<WordOfDayCard> {
             ),
 
             if (_expanded) ...[
-              const SizedBox(height: AppSpacing.s),
+              const SizedBox(height: AppSpacing.m),
               const Divider(color: Colors.white24, height: 1),
-              const SizedBox(height: AppSpacing.s),
-              if (_selectedType == DailyItemType.quote) ...[
+              const SizedBox(height: AppSpacing.m),
+              if (item.type == DailyItemType.quote) ...[
                 _buildPill('Insight', item.meaning, Icons.lightbulb_outline_rounded),
               ] else ...[
                 _buildPill('Exam Sentence', item.exampleOrAuthor, Icons.format_quote_rounded),
                 if (item.synonyms.isNotEmpty || item.antonyms.isNotEmpty) ...[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -174,35 +177,6 @@ class _WordOfDayCardState extends State<WordOfDayCard> {
               ],
             ],
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTypeChip(String label, DailyItemType type) {
-    final isSelected = _selectedType == type;
-    return GestureDetector(
-      onTap: () {
-        if (_selectedType != type) {
-          setState(() {
-            _selectedType = type;
-            _offset = 0;
-          });
-        }
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.black87 : Colors.white70,
-            fontSize: 11,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-          ),
         ),
       ),
     );

@@ -613,6 +613,7 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                       ],
                     ),
                   ),
+                  const SizedBox(height: AppSpacing.m),
                   // Core Pillars: PYQ Bank & Mock Test Center
                   Row(
                     children: [
@@ -756,88 +757,6 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
 
                   // 3. Current Affairs & GK
                   const _CurrentAffairsSection(),
-                  const SizedBox(height: AppSpacing.l),
-
-                  // 4. Categories header
-                  Text(
-                    AppStrings.categories,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
-                  ),
-                  const SizedBox(height: AppSpacing.m),
-
-                  // Grid Buttons for Categories (Page 2 and 11)
-                  Row(
-                    children: [
-                      // APPSC Category Button
-                      Expanded(
-                        child: InkWell(
-                          onTap: () => context.push('/appsc'),
-                          child: Container(
-                            height: 110,
-                            decoration: BoxDecoration(
-                              gradient: AppColors.appscGradient,
-                              borderRadius:
-                                  BorderRadius.circular(AppSpacing.radiusL),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.amber.withValues(alpha: 0.25),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: const Center(
-                              child: Text(
-                                AppStrings.appsc,
-                                style: TextStyle(
-                                  color: AppColors.textWhite,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 24,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.m),
-                      // APSSB Category Button
-                      Expanded(
-                        child: InkWell(
-                          onTap: () => context.push('/apssb'),
-                          child: Container(
-                            height: 110,
-                            decoration: BoxDecoration(
-                              gradient: AppColors.apssbGradient,
-                              borderRadius:
-                                  BorderRadius.circular(AppSpacing.radiusL),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.teal.withValues(alpha: 0.25),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: const Center(
-                              child: Text(
-                                AppStrings.apssb,
-                                style: TextStyle(
-                                  color: AppColors.textWhite,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 24,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
                   const SizedBox(height: AppSpacing.xl),
                 ],
               ],

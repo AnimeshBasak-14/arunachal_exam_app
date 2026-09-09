@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:go_router/go_router.dart';
+
+import '../../../core/services/service_providers.dart';
+import '../../../core/services/streak_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../core/services/service_providers.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
-import 'home_screen.dart';
 
 class TrophyHistoryScreen extends ConsumerWidget {
   const TrophyHistoryScreen({super.key});
@@ -28,6 +28,11 @@ class TrophyHistoryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final storage = ref.watch(storageServiceProvider);
     final currentUser = ref.watch(authViewModelProvider).user;
+    final prefs = ref.watch(sharedPreferencesProvider);
+    final streakService = StreakService(prefs);
+
+    final currentStreak = streakService.getCurrentStreak();
+    final longestStreak = streakService.getLongestStreak();
     final historyJsonList = storage.getQuizHistory();
     final currentRating = currentUser?.rating ?? 1200;
 
@@ -80,6 +85,8 @@ class TrophyHistoryScreen extends ConsumerWidget {
       'ratingAfter': 1200,
     });
 
+    final hasOnlyAccount = events.length == 1 && events[0]['type'] == 'account';
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -112,232 +119,561 @@ class TrophyHistoryScreen extends ConsumerWidget {
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 800),
-            child: events.isEmpty ||
-                    (events.length == 1 && events[0]['type'] == 'account')
-                ? Center(
+            child: CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.emoji_events_outlined,
-                            size: 64, color: AppColors.textHint),
+                        // Streak Header Banner
+                        _buildStreakBanner(
+                            context, currentStreak, longestStreak),
                         const SizedBox(height: 16),
-                        const Text(
-                          'No trophy history yet.',
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textSecondary),
+                        // LeetCode-style Streak Milestones
+                        _buildStreakMilestones(longestStreak),
+                        const SizedBox(height: 16),
+                        // Quiz Achievements
+                        _buildAchievementBadges(events, currentRating),
+                        const SizedBox(height: 20),
+                        // Timeline Header with Quick Action
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Rating & Trophy Timeline',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            ElevatedButton.icon(
+                              onPressed: () => context.push('/mock-hub'),
+                              icon: const Icon(Icons.play_arrow_rounded,
+                                  size: 16),
+                              label: const Text(
+                                'Take Mock Test',
+                                style: TextStyle(
+                                    fontSize: 12, fontWeight: FontWeight.bold),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20)),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Take a mock test to start earning trophies!',
-                          style: TextStyle(
-                              fontSize: 13, color: AppColors.textHint),
-                        ),
-                        const SizedBox(height: 24),
-                        TextButton(
-                          onPressed: () {
-                            ref.read(currentTabProvider.notifier).state = 0;
-                            context.go('/home');
-                          },
-                          child: const Text('Take a Test'),
-                        ),
+                        const SizedBox(height: 12),
                       ],
                     ),
+                  ),
+                ),
+                if (hasOnlyAccount)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 24),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.emoji_events_outlined,
+                                size: 56, color: AppColors.textHint),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'No test history yet',
+                              style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textSecondary),
+                            ),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Complete your first mock test to gain trophies & boost your rating!',
+                              style: TextStyle(
+                                  fontSize: 12, color: AppColors.textHint),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton.icon(
+                              onPressed: () => context.push('/mock-hub'),
+                              icon: const Icon(Icons.play_circle_fill_rounded),
+                              label: const Text('Start First Mock Test'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            _buildAccountCreationTile(events[0]),
+                          ],
+                        ),
+                      ),
+                    ),
                   )
-                : ListView.builder(
+                else
+                  SliverPadding(
                     padding: EdgeInsets.fromLTRB(
                       16,
-                      12,
+                      0,
                       16,
                       MediaQuery.of(context).padding.bottom + 48,
                     ),
-              itemCount: events.length,
-              itemBuilder: (context, index) {
-                final event = events[index];
-                final isAccount = event['type'] == 'account';
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final event = events[index];
+                          final isAccount = event['type'] == 'account';
 
-                if (isAccount) {
-                  return _buildAccountCreationTile(event);
-                }
-
-                final totalChange = event['totalChange'] as int;
-                final ratingChange = event['ratingChange'] as int;
-                final speedBonus = event['speedBonus'] as int? ?? 0;
-                final examCode = event['examCode'] as String;
-                final date = event['date'] as String;
-                final score = event['score'] as String;
-                final maxScore = event['maxScore'] as String;
-                final timeTaken = event['timeTaken'] as int;
-                final ratingAfter = event['ratingAfter'] as int;
-                final ratingBefore = event['ratingBefore'] as int;
-                final isGain = totalChange >= 0;
-
-                final mins = timeTaken ~/ 60;
-                final secs = timeTaken % 60;
-
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Timeline line + dot
-                      Column(
-                        children: [
-                          Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: isGain
-                                  ? AppColors.success.withValues(alpha: 0.12)
-                                  : AppColors.error.withValues(alpha: 0.12),
-                              border: Border.all(
-                                color: isGain
-                                    ? AppColors.success.withValues(alpha: 0.4)
-                                    : AppColors.error.withValues(alpha: 0.4),
-                                width: 1.5,
-                              ),
-                            ),
-                            child: Center(
-                              child: Text(
-                                isGain ? '+$totalChange' : '$totalChange',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w900,
-                                  color: isGain
-                                      ? AppColors.success
-                                      : AppColors.error,
-                                ),
-                              ),
-                            ),
-                          ),
-                          if (index < events.length - 1)
-                            Container(
-                              width: 2,
-                              height: 50,
-                              color: AppColors.divider,
-                            ),
-                        ],
+                          if (isAccount) {
+                            return _buildAccountCreationTile(event);
+                          }
+                          return _buildTimelineTile(
+                              event, index, events.length);
+                        },
+                        childCount: events.length,
                       ),
-                      const SizedBox(width: 12),
-                      // Event card
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            borderRadius:
-                                BorderRadius.circular(AppSpacing.radiusL),
-                            border: Border.all(color: AppColors.divider),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(Icons.task_alt_rounded,
-                                      color: AppColors.primary, size: 14),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    '$examCode Mock Test',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 13),
-                                  ),
-                                  const Spacer(),
-                                  Text(
-                                    date,
-                                    style: const TextStyle(
-                                        fontSize: 10,
-                                        color: AppColors.textHint),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              // Score + time row
-                              Wrap(
-                                spacing: 6,
-                                runSpacing: 4,
-                                crossAxisAlignment: WrapCrossAlignment.center,
-                                children: [
-                                  _infoChip(
-                                      Icons.equalizer_rounded,
-                                      'Score $score / $maxScore',
-                                      AppColors.primary),
-                                  _infoChip(Icons.timer_outlined,
-                                      '${mins}m ${secs}s', AppColors.secondary),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              // Trophy breakdown row
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Expanded(
-                                    child: Wrap(
-                                      spacing: 4,
-                                      runSpacing: 4,
-                                      children: [
-                                        _trophyTag('Score', ratingChange,
-                                            AppColors.textPrimary),
-                                        if (speedBonus != 0)
-                                          _trophyTag(
-                                              'Speed',
-                                              speedBonus,
-                                              speedBonus > 0
-                                                  ? AppColors.accent
-                                                  : AppColors.error),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  // Before → After
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        '$ratingBefore',
-                                        style: const TextStyle(
-                                            fontSize: 11,
-                                            color: AppColors.textSecondary),
-                                      ),
-                                      const Padding(
-                                        padding:
-                                            EdgeInsets.symmetric(horizontal: 2),
-                                        child: Icon(Icons.arrow_forward_rounded,
-                                            size: 11,
-                                            color: AppColors.textHint),
-                                      ),
-                                      Text(
-                                        '$ratingAfter',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                          color: isGain
-                                              ? AppColors.success
-                                              : AppColors.error,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 2),
-                                      const Icon(Icons.emoji_events_rounded,
-                                          color: AppColors.accent, size: 12),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStreakBanner(
+      BuildContext context, int currentStreak, int longestStreak) {
+    return InkWell(
+      onTap: () => context.push('/streak-calendar'),
+      borderRadius: BorderRadius.circular(AppSpacing.radiusL),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFE65100), Color(0xFFFF9800)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusL),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFFF9800).withOpacity(0.3),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Text('🔥', style: TextStyle(fontSize: 28)),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        '$currentStreak Day Streak',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.25),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          'Best: $longestStreak d',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
                   ),
-                );
-              },
+                  const SizedBox(height: 3),
+                  const Text(
+                    'Practice daily to maintain your study streak! Tap to view full calendar.',
+                    style: TextStyle(color: Colors.white70, fontSize: 11),
+                  ),
+                ],
+              ),
             ),
-    ),
-    ),
-    ),
+            const Icon(Icons.arrow_forward_ios_rounded,
+                color: Colors.white70, size: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStreakMilestones(int longestStreak) {
+    final milestones = [
+      {'days': 3, 'label': '3 Days', 'icon': '🥉', 'name': 'Bronze'},
+      {'days': 7, 'label': '7 Days', 'icon': '🥈', 'name': 'Silver'},
+      {'days': 14, 'label': '14 Days', 'icon': '🥇', 'name': 'Gold'},
+      {'days': 30, 'label': '30 Days', 'icon': '👑', 'name': 'Diamond'},
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Streak Milestones',
+          style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: milestones.map((m) {
+            final days = m['days'] as int;
+            final isUnlocked = longestStreak >= days;
+            return Expanded(
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+                decoration: BoxDecoration(
+                  color: isUnlocked ? Colors.amber.shade50 : Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: isUnlocked
+                        ? Colors.amber.shade400
+                        : Colors.grey.shade300,
+                    width: isUnlocked ? 1.5 : 1,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      m['icon'] as String,
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: isUnlocked ? null : Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      m['label'] as String,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: isUnlocked
+                            ? Colors.amber.shade900
+                            : AppColors.textHint,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      isUnlocked ? 'Unlocked' : 'Locked',
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w600,
+                        color:
+                            isUnlocked ? AppColors.success : AppColors.textHint,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAchievementBadges(
+      List<Map<String, dynamic>> events, int currentRating) {
+    final quizCount = events.where((e) => e['type'] == 'quiz').length;
+    final hasSpeedster = events.any((e) =>
+        e['type'] == 'quiz' &&
+        (e['timeTaken'] as int) > 0 &&
+        (e['timeTaken'] as int) <= 300);
+    final hasSharpShooter = events.any((e) {
+      if (e['type'] != 'quiz') return false;
+      final sc = double.tryParse('${e['score']}') ?? 0;
+      final mx = double.tryParse('${e['maxScore']}') ?? 1;
+      return mx > 0 && (sc / mx) >= 0.8;
+    });
+    final isContender = currentRating >= 1300;
+    final isGrandmaster = currentRating >= 1500;
+
+    final badges = [
+      {
+        'name': 'First Test',
+        'icon': Icons.bolt_rounded,
+        'unlocked': quizCount >= 1,
+        'desc': 'Finish 1 test'
+      },
+      {
+        'name': 'Speedster',
+        'icon': Icons.speed_rounded,
+        'unlocked': hasSpeedster,
+        'desc': 'Done in < 5m'
+      },
+      {
+        'name': 'Sharp Mind',
+        'icon': Icons.track_changes_rounded,
+        'unlocked': hasSharpShooter,
+        'desc': 'Score 80%+'
+      },
+      {
+        'name': '1300+ ELO',
+        'icon': Icons.trending_up_rounded,
+        'unlocked': isContender,
+        'desc': 'Reach 1300'
+      },
+      {
+        'name': 'Grandmaster',
+        'icon': Icons.military_tech_rounded,
+        'unlocked': isGrandmaster,
+        'desc': 'Reach 1500'
+      },
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Quiz Achievements',
+          style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary),
+        ),
+        const SizedBox(height: 8),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: badges.map((b) {
+              final isUnlocked = b['unlocked'] as bool;
+              return Container(
+                margin: const EdgeInsets.only(right: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: isUnlocked
+                      ? AppColors.primaryLight
+                      : Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isUnlocked
+                        ? AppColors.primary.withOpacity(0.4)
+                        : Colors.grey.shade300,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      b['icon'] as IconData,
+                      size: 16,
+                      color: isUnlocked ? AppColors.primary : AppColors.textHint,
+                    ),
+                    const SizedBox(width: 6),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          b['name'] as String,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: isUnlocked
+                                ? AppColors.primaryDark
+                                : AppColors.textSecondary,
+                          ),
+                        ),
+                        Text(
+                          b['desc'] as String,
+                          style: const TextStyle(
+                              fontSize: 9, color: AppColors.textHint),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTimelineTile(
+      Map<String, dynamic> event, int index, int totalCount) {
+    final totalChange = event['totalChange'] as int;
+    final ratingChange = event['ratingChange'] as int;
+    final speedBonus = event['speedBonus'] as int? ?? 0;
+    final examCode = event['examCode'] as String;
+    final date = event['date'] as String;
+    final score = event['score'] as String;
+    final maxScore = event['maxScore'] as String;
+    final timeTaken = event['timeTaken'] as int;
+    final ratingAfter = event['ratingAfter'] as int;
+    final ratingBefore = event['ratingBefore'] as int;
+    final isGain = totalChange >= 0;
+
+    final mins = timeTaken ~/ 60;
+    final secs = timeTaken % 60;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Timeline line + dot
+          Column(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isGain
+                      ? AppColors.success.withValues(alpha: 0.12)
+                      : AppColors.error.withValues(alpha: 0.12),
+                  border: Border.all(
+                    color: isGain
+                        ? AppColors.success.withValues(alpha: 0.4)
+                        : AppColors.error.withValues(alpha: 0.4),
+                    width: 1.5,
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    isGain ? '+$totalChange' : '$totalChange',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                      color: isGain ? AppColors.success : AppColors.error,
+                    ),
+                  ),
+                ),
+              ),
+              if (index < totalCount - 1)
+                Container(
+                  width: 2,
+                  height: 50,
+                  color: AppColors.divider,
+                ),
+            ],
+          ),
+          const SizedBox(width: 12),
+          // Event card
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusL),
+                border: Border.all(color: AppColors.divider),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.task_alt_rounded,
+                          color: AppColors.primary, size: 14),
+                      const SizedBox(width: 6),
+                      Text(
+                        '$examCode Mock Test',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
+                      const Spacer(),
+                      Text(
+                        date,
+                        style: const TextStyle(
+                            fontSize: 11, color: AppColors.textHint),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    children: [
+                      _infoChip(Icons.score_outlined, '$score/$maxScore',
+                          AppColors.primary),
+                      _infoChip(
+                          Icons.timer_outlined,
+                          '${mins}m ${secs}s',
+                          AppColors.textSecondary),
+                      _trophyTag('Performance', ratingChange,
+                          ratingChange >= 0 ? AppColors.success : AppColors.error),
+                      if (speedBonus > 0)
+                        _trophyTag('Speed Bonus', speedBonus, AppColors.accent),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        'Rating: ',
+                        style: const TextStyle(
+                            fontSize: 11, color: AppColors.textHint),
+                      ),
+                      Text(
+                        '$ratingBefore',
+                        style: const TextStyle(
+                            fontSize: 11, color: AppColors.textSecondary),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 2),
+                        child: Icon(Icons.arrow_forward_rounded,
+                            size: 11, color: AppColors.textHint),
+                      ),
+                      Text(
+                        '$ratingAfter',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: isGain ? AppColors.success : AppColors.error,
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      const Icon(Icons.emoji_events_rounded,
+                          color: AppColors.accent, size: 12),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

@@ -1,8 +1,9 @@
-﻿class GrammarTopic {
+class GrammarTopic {
   final String id;
   final String title;
   final String subtitle;
   final String iconName;
+  final String level; // 'Beginner', 'Intermediate', 'Advanced'
   final List<GrammarRule> rules;
 
   const GrammarTopic({
@@ -10,6 +11,7 @@
     required this.title,
     required this.subtitle,
     required this.iconName,
+    this.level = 'Intermediate',
     required this.rules,
   });
 }
@@ -50,11 +52,112 @@ class GrammarQuizQuestion {
 
 class GrammarData {
   static final List<GrammarTopic> topics = [
+    // ─── BEGINNER FOUNDATION MODULES ──────────────────────────────
+    const GrammarTopic(
+      id: 'parts_of_speech_intro',
+      title: 'The 8 Parts of Speech (Foundations)',
+      subtitle: 'What Nouns, Pronouns, Verbs, and Adjectives actually do',
+      iconName: 'category_rounded',
+      level: 'Beginner',
+      rules: [
+        GrammarRule(
+          ruleTitle: '1. What is a Noun & Pronoun?',
+          explanation: 'A Noun names a person, place, thing, or concept (Itanagar, officer, duty). A Pronoun replaces a noun to prevent repetition (he, she, it, they, who).',
+          exampleCorrect: 'Rohan submitted the file because he had verified every record.',
+          exampleIncorrect: 'Rohan submitted the file because Rohan had verified every record.',
+          tip: 'Test trick: If a word can take "the", "a", or "an", it is almost always a noun.',
+        ),
+        GrammarRule(
+          ruleTitle: '2. What is a Verb?',
+          explanation: 'A Verb shows an action (write, run, study) or a state of being (is, am, are, was, were, seem, exist). Every sentence MUST have a verb.',
+          exampleCorrect: 'The officer inspected the bridge yesterday.',
+          exampleIncorrect: 'The officer the bridge yesterday. (Missing verb)',
+          tip: 'Ask: "What is the subject DOING, or what state is the subject IN?"',
+        ),
+        GrammarRule(
+          ruleTitle: '3. Adjectives vs. Adverbs',
+          explanation: 'Adjectives modify NOUNS (a diligent aspirant). Adverbs modify VERBS, ADJECTIVES, or other ADVERBS (she solved the paper diligently).',
+          exampleCorrect: 'He spoke clearly during the interview.',
+          exampleIncorrect: 'He spoke clear during the interview.',
+          tip: 'Adverbs often end in "-ly", while adjectives answer "What kind? Which one?"',
+        ),
+        GrammarRule(
+          ruleTitle: '4. Prepositions & Conjunctions',
+          explanation: 'Prepositions link nouns to express position, direction, or time (in, on, across, through). Conjunctions connect words or clauses (and, but, because, although).',
+          exampleCorrect: 'He walked across the town and met the commissioner.',
+          exampleIncorrect: 'He walked town and met the commissioner.',
+          tip: 'A preposition is always followed by an object noun or pronoun (e.g. "at 9 AM", "in Arunachal").',
+        ),
+      ],
+    ),
+    const GrammarTopic(
+      id: 'sentence_structure_basics',
+      title: 'Sentence Structure: Finding Subject & Verb',
+      subtitle: 'Identify who is doing what before checking agreement rules',
+      iconName: 'architecture_rounded',
+      level: 'Beginner',
+      rules: [
+        GrammarRule(
+          ruleTitle: '1. What is the Subject of a Sentence?',
+          explanation: 'The subject is the person, place, or thing that performs the action or is described by the verb.',
+          exampleCorrect: 'The District Collector signed the notification.',
+          exampleIncorrect: 'Signed the notification. (Fragment: Who signed?)',
+          tip: 'Find the verb first, then ask: "WHO or WHAT performed this verb?"',
+        ),
+        GrammarRule(
+          ruleTitle: '2. What is an Object?',
+          explanation: 'The direct object receives the action of the transitive verb. Ask: "[Subject] + [Verb] + WHAT / WHOM?"',
+          exampleCorrect: 'The candidates completed the mock test.',
+          exampleIncorrect: 'The candidates completed. (Incomplete thought)',
+          tip: 'Candidates (Subject) + completed (Verb) + What? -> the mock test (Object).',
+        ),
+        GrammarRule(
+          ruleTitle: '3. Compound Subjects',
+          explanation: 'When two or more distinct subjects are joined by "and", the combined subject is plural and requires a plural verb.',
+          exampleCorrect: 'Tashi and Bem are preparing for the APPSC CCE prelims.',
+          exampleIncorrect: 'Tashi and Bem is preparing for the APPSC CCE prelims.',
+          tip: 'Think of "Subject 1 AND Subject 2" as "THEY".',
+        ),
+      ],
+    ),
+    const GrammarTopic(
+      id: 'nouns_singular_plural',
+      title: 'Nouns & Number: Singular vs Plural Traps',
+      subtitle: 'Uncountable nouns and irregular plurals commonly tested in APSSB',
+      iconName: 'format_list_numbered_rounded',
+      level: 'Beginner',
+      rules: [
+        GrammarRule(
+          ruleTitle: '1. The Uncountable Noun Trap',
+          explanation: 'Words like furniture, advice, information, luggage, scenery, equipment, and machinery can NEVER take "a/an" or an ending "-s". They are strictly singular.',
+          exampleCorrect: 'The officer gave valuable advice to the young recruits.',
+          exampleIncorrect: 'The officer gave valuable advices to the young recruits.',
+          tip: 'Say "a piece of advice" or "items of luggage", never "advices" or "luggages".',
+        ),
+        GrammarRule(
+          ruleTitle: '2. Nouns Always Plural in Form and Verb',
+          explanation: 'Tools and clothes with two symmetric parts (scissors, trousers, binoculars, spectacles, pants) always take a plural verb unless preceded by "a pair of".',
+          exampleCorrect: 'These scissors are sharp. (OR: A pair of scissors is on the desk.)',
+          exampleIncorrect: 'These scissors is sharp.',
+          tip: 'Without "pair of", always treat them as plural.',
+        ),
+        GrammarRule(
+          ruleTitle: '3. Collective Nouns That Are Always Plural',
+          explanation: 'Cattle, clergy, gentry, poultry, police, people look singular without an ending "-s", but they are ALWAYS plural.',
+          exampleCorrect: 'The police are investigating the security breach.',
+          exampleIncorrect: 'The police is investigating the security breach.',
+          tip: 'Never say "polices" or "cattles". Treat them as plural.',
+        ),
+      ],
+    ),
+
+    // ─── INTERMEDIATE CORE MODULES ──────────────────────────────
     const GrammarTopic(
       id: 'subject_verb_agreement',
       title: 'Subject-Verb Agreement',
       subtitle: 'The 15 Golden Rules tested in APSSB & APPSC exams',
       iconName: 'rule_rounded',
+      level: 'Intermediate',
       rules: [
         GrammarRule(
           ruleTitle: 'Rule 1: Intervening Prepositional Phrases',

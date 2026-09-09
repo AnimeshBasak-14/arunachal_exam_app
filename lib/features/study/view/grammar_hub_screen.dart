@@ -13,11 +13,15 @@ class GrammarHubScreen extends StatefulWidget {
 
 class _GrammarHubScreenState extends State<GrammarHubScreen> {
   String _searchQuery = '';
+  String _selectedLevel = 'All';
   String? _selectedTopicId;
 
   @override
   Widget build(BuildContext context) {
-    final topics = GrammarData.topics;
+    final allTopics = GrammarData.topics;
+    final topics = _selectedLevel == 'All'
+        ? allTopics
+        : allTopics.where((t) => t.level == _selectedLevel).toList();
 
     // Filtered rules if searching
     final isSearching = _searchQuery.trim().isNotEmpty;
@@ -43,7 +47,7 @@ class _GrammarHubScreenState extends State<GrammarHubScreen> {
       ),
       body: CustomScrollView(
         slivers: [
-          // Banner & Quiz Action
+          // Banner, Search, and Level Filter
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.m),
@@ -52,6 +56,8 @@ class _GrammarHubScreenState extends State<GrammarHubScreen> {
                   _buildHeaderBanner(context),
                   const SizedBox(height: AppSpacing.m),
                   _buildSearchBar(),
+                  const SizedBox(height: AppSpacing.s),
+                  _buildLevelFilterRow(),
                 ],
               ),
             ),
@@ -209,6 +215,76 @@ class _GrammarHubScreenState extends State<GrammarHubScreen> {
     );
   }
 
+  Widget _buildLevelFilterRow() {
+    final levels = ['All', 'Beginner', 'Intermediate', 'Advanced'];
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: levels.map((lvl) {
+          final isSelected = _selectedLevel == lvl;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: ChoiceChip(
+              label: Text(
+                lvl == 'All' ? 'All Levels' : lvl,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected ? Colors.white : AppColors.textPrimary,
+                ),
+              ),
+              selected: isSelected,
+              selectedColor: AppColors.primary,
+              backgroundColor: Colors.white,
+              onSelected: (selected) {
+                if (selected) {
+                  setState(() => _selectedLevel = lvl);
+                }
+              },
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: BorderSide(
+                  color: isSelected ? AppColors.primary : Colors.grey.shade300,
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildLevelBadge(String level) {
+    Color bg;
+    Color fg;
+    if (level == 'Beginner') {
+      bg = Colors.green.shade50;
+      fg = Colors.green.shade800;
+    } else if (level == 'Intermediate') {
+      bg = Colors.blue.shade50;
+      fg = Colors.blue.shade800;
+    } else {
+      bg = Colors.orange.shade50;
+      fg = Colors.orange.shade800;
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        level.toUpperCase(),
+        style: TextStyle(
+          fontSize: 9,
+          fontWeight: FontWeight.w700,
+          color: fg,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
   Widget _buildTopicCard(GrammarTopic topic, bool isExpanded) {
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.m),
@@ -239,9 +315,16 @@ class _GrammarHubScreenState extends State<GrammarHubScreen> {
               backgroundColor: AppColors.primaryLight,
               child: const Icon(Icons.auto_stories_rounded, color: AppColors.primary, size: 20),
             ),
-            title: Text(
-              topic.title,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            title: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    topic.title,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  ),
+                ),
+                _buildLevelBadge(topic.level),
+              ],
             ),
             subtitle: Text(
               topic.subtitle,

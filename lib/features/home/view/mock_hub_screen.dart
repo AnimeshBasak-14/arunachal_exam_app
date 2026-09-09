@@ -66,17 +66,34 @@ class MockHubScreen extends ConsumerStatefulWidget {
 
 class _MockHubScreenState extends ConsumerState<MockHubScreen> {
   String _selectedCategory = 'All';
+  String _selectedLevel = 'All Levels';
+  String _selectedMockType = 'All Types';
   String _searchQuery = '';
   bool _isLoading = false;
   List<MockTestItem> _mockTests = [];
 
-  final List<String> _categories = [
+  final List<String> _topics = [
     'All',
     'Maths',
     'GK',
     'GA',
     'English',
     'Technical',
+    'Full Mock',
+  ];
+
+  final List<String> _levels = [
+    'All Levels',
+    'Easy',
+    'Medium',
+    'Hard',
+  ];
+
+  final List<String> _mockTypes = [
+    'All Types',
+    '5 Questions',
+    '10 Questions',
+    '20 Questions',
     'Full Mock',
   ];
 
@@ -264,6 +281,21 @@ class _MockHubScreenState extends ConsumerState<MockHubScreen> {
       if (_selectedCategory != 'All' && test.category != _selectedCategory) {
         return false;
       }
+      if (_selectedLevel != 'All Levels' && test.difficulty.toLowerCase() != _selectedLevel.toLowerCase()) {
+        return false;
+      }
+      if (_selectedMockType == '5 Questions' && test.questionCount > 8) {
+        return false;
+      }
+      if (_selectedMockType == '10 Questions' && (test.questionCount < 8 || test.questionCount > 15)) {
+        return false;
+      }
+      if (_selectedMockType == '20 Questions' && (test.questionCount < 15 || test.questionCount > 35)) {
+        return false;
+      }
+      if (_selectedMockType == 'Full Mock' && test.questionCount < 35 && test.category != 'Full Mock') {
+        return false;
+      }
       if (_searchQuery.isNotEmpty) {
         final q = _searchQuery.toLowerCase();
         if (!test.title.toLowerCase().contains(q) &&
@@ -298,7 +330,7 @@ class _MockHubScreenState extends ConsumerState<MockHubScreen> {
           constraints: const BoxConstraints(maxWidth: 960),
           child: Column(
             children: [
-              // Search & Category Chips Header
+              // Search & 3 Dropdown Filters Header
               Container(
                 color: Colors.white,
                 padding: const EdgeInsets.all(AppSpacing.m),
@@ -325,35 +357,89 @@ class _MockHubScreenState extends ConsumerState<MockHubScreen> {
                       ),
                     ),
                     const SizedBox(height: AppSpacing.s),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: _categories.map((cat) {
-                          final isSelected = _selectedCategory == cat;
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: ChoiceChip(
-                              label: Text(cat == 'All' ? 'All Mocks' : cat),
-                              selected: isSelected,
-                              onSelected: (_) => setState(() => _selectedCategory = cat),
-                              selectedColor: AppColors.primary,
-                              backgroundColor: AppColors.background,
-                              labelStyle: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: isSelected ? Colors.white : AppColors.textSecondary,
-                              ),
-                              elevation: isSelected ? 1 : 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                                side: BorderSide(
-                                  color: isSelected ? AppColors.primary : Colors.grey.shade300,
-                                ),
+                    // 3 Dropdown Filters: Level, Topic, Mock Type
+                    Row(
+                      children: [
+                        // 1. Question Level Dropdown
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            decoration: BoxDecoration(
+                              color: AppColors.background,
+                              borderRadius: BorderRadius.circular(AppSpacing.radiusM),
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: _selectedLevel,
+                                isExpanded: true,
+                                icon: const Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary, size: 18),
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                                items: _levels.map((lvl) {
+                                  return DropdownMenuItem(value: lvl, child: Text(lvl, overflow: TextOverflow.ellipsis));
+                                }).toList(),
+                                onChanged: (val) {
+                                  if (val != null) setState(() => _selectedLevel = val);
+                                },
                               ),
                             ),
-                          );
-                        }).toList(),
-                      ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+
+                        // 2. Topic Dropdown
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            decoration: BoxDecoration(
+                              color: AppColors.background,
+                              borderRadius: BorderRadius.circular(AppSpacing.radiusM),
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: _selectedCategory,
+                                isExpanded: true,
+                                icon: const Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary, size: 18),
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                                items: _topics.map((t) {
+                                  return DropdownMenuItem(value: t, child: Text(t == 'All' ? 'All Topics' : t, overflow: TextOverflow.ellipsis));
+                                }).toList(),
+                                onChanged: (val) {
+                                  if (val != null) setState(() => _selectedCategory = val);
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+
+                        // 3. Mock Type Dropdown
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            decoration: BoxDecoration(
+                              color: AppColors.background,
+                              borderRadius: BorderRadius.circular(AppSpacing.radiusM),
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: _selectedMockType,
+                                isExpanded: true,
+                                icon: const Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary, size: 18),
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                                items: _mockTypes.map((mt) {
+                                  return DropdownMenuItem(value: mt, child: Text(mt, overflow: TextOverflow.ellipsis));
+                                }).toList(),
+                                onChanged: (val) {
+                                  if (val != null) setState(() => _selectedMockType = val);
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -521,49 +607,57 @@ class _MockHubScreenState extends ConsumerState<MockHubScreen> {
             ),
             const SizedBox(height: 12),
 
-            // Test Metrics & Action Button
+            // Test Metrics Row
             Row(
               children: [
-                Row(
-                  children: [
-                    const Icon(Icons.help_outline_rounded, size: 14, color: AppColors.textHint),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${test.questionCount} Qs',
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                    ),
-                    const SizedBox(width: 12),
-                    const Icon(Icons.timer_outlined, size: 14, color: AppColors.textHint),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${test.durationMinutes} mins',
-                      style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                    ),
-                    const SizedBox(width: 12),
-                    const Text(
-                      '+2 / -0.5',
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textHint),
-                    ),
-                  ],
+                const Icon(Icons.help_outline_rounded, size: 14, color: AppColors.textHint),
+                const SizedBox(width: 4),
+                Text(
+                  '${test.questionCount} Qs',
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                 ),
-                const Spacer(),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    context.push('/mock-test/${test.examCode}/full');
-                  },
-                  icon: const Icon(Icons.play_arrow_rounded, size: 16, color: Colors.white),
-                  label: const Text(
-                    'Start Mock',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusM)),
-                    elevation: 0,
-                  ),
+                const SizedBox(width: 12),
+                const Icon(Icons.timer_outlined, size: 14, color: AppColors.textHint),
+                const SizedBox(width: 4),
+                Text(
+                  '${test.durationMinutes} mins',
+                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  '+2 / -0.5 APSSB Marking',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textHint),
                 ),
               ],
+            ),
+            const SizedBox(height: 12),
+
+            // Start Mock Button - Full width, clean padding, no overflow
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  final targetCount = _selectedMockType == '5 Questions'
+                      ? '5'
+                      : _selectedMockType == '10 Questions'
+                          ? '10'
+                          : _selectedMockType == '20 Questions'
+                              ? '20'
+                              : 'full';
+                  context.push('/mock-test/${test.examCode}/$targetCount');
+                },
+                icon: const Icon(Icons.play_arrow_rounded, size: 18, color: Colors.white),
+                label: const Text(
+                  'Start Mock Test',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusM)),
+                  elevation: 0,
+                ),
+              ),
             ),
           ],
         ),

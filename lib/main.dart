@@ -297,6 +297,17 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: '/pyq-paper',
+        builder: (context, state) {
+          final examCode = state.uri.queryParameters['code'] ??
+              state.uri.queryParameters['examCode'] ??
+              'APSSB-CGL';
+          final yearText = state.uri.queryParameters['year'] ?? '2024';
+          final year = int.tryParse(yearText) ?? 2024;
+          return PyqPaperScreen(examCode: examCode, year: year);
+        },
+      ),
+      GoRoute(
         path: '/mock-test/:examCode/:type',
         builder: (context, state) {
           final examCode = state.pathParameters['examCode'] ?? '';

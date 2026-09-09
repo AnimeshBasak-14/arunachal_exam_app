@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/services/question_repository.dart';
 import '../../../core/services/service_providers.dart';
+import '../../../core/utils/math_utils.dart';
 
 class PyqPaperScreen extends ConsumerStatefulWidget {
   final String examCode;
@@ -57,14 +58,16 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
   @override
   void initState() {
     super.initState();
-    // 1. Initial quick load from local bank
+    // 1. Initial quick load from local bank (strictly matching year if specified)
     _questions = QuestionRepository.allQuestions
-        .where((q) => q.examCode == widget.examCode)
+        .where((q) =>
+            q.examCode == widget.examCode &&
+            (widget.year <= 2000 || q.year == widget.year))
         .toList();
     _filteredQuestions = _questions;
     _initQuestionMetadata();
 
-    // 2. Fetch all live synced questions from Cloud Firestore
+    // 2. Fetch all live synced questions from Cloud Firestore & Supabase
     _loadLiveQuestions();
   }
 
@@ -72,22 +75,31 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
     try {
       final live = await QuestionRepository.fetchLiveQuestions(
         examCode: widget.examCode,
+        year: widget.year > 2000 ? widget.year : null,
         paperType: 'PYQ',
       );
-      final pyqOnly = live
-          .where((q) => q.paperType.toUpperCase() == 'PYQ' && q.year > 2000)
-          .toList();
-      if (pyqOnly.isNotEmpty && mounted) {
+      // Strictly filter to PYQ only and match year if specified
+      final pyqOnly = live.where((q) {
+        final isPyq = q.paperType.toUpperCase() == 'PYQ';
+        final matchesYear = widget.year <= 2000 || q.year == widget.year;
+        return isPyq && matchesYear;
+      }).toList();
+
+      final result = pyqOnly.isNotEmpty
+          ? pyqOnly
+          : live.where((q) => q.paperType.toUpperCase() == 'PYQ').toList();
+
+      if (result.isNotEmpty && mounted) {
         setState(() {
-          _questions = pyqOnly;
+          _questions = result;
           _initQuestionMetadata();
           final subjects = [
             'All',
-            ...{...pyqOnly.map((q) => q.subject)}.where((s) => s.isNotEmpty)
+            ...{...result.map((q) => q.subject)}.where((s) => s.isNotEmpty)
           ];
           _allSubjects = subjects;
           _selectedSubject = 'All';
-          _filteredQuestions = pyqOnly;
+          _filteredQuestions = result;
         });
       }
     } catch (_) {}
@@ -352,7 +364,9 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => context.pop(),
         ),
-        title: Text('${widget.examCode} PYQ Papers'),
+        title: Text(
+          '${widget.examCode} ${widget.year > 2000 ? widget.year : ''} PYQ Papers'.trim(),
+        ),
       ),
       body: _questions.isEmpty
           ? Center(
@@ -561,7 +575,7 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                                           ),
                                           const SizedBox(height: 6),
                                           Text(
-                                            question.passageOrDirection!.trim(),
+                                            MathUtils.formatMath(question.passageOrDirection!.trim()),
                                             style: const TextStyle(
                                               fontSize: 13,
                                               fontStyle: FontStyle.italic,
@@ -577,7 +591,7 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
 
                                   // Question Text
                                   Text(
-                                    'Q${index + 1}. ${question.questionText}',
+                                    'Q${index + 1}. ${MathUtils.cleanQuestionText(question.questionText)}',
                                     style: const TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
@@ -662,7 +676,7 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                option,
+                                                MathUtils.formatMath(option),
                                                 style: TextStyle(
                                                   fontSize: 14,
                                                   color: selectedOption != null &&
@@ -847,7 +861,7 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
-                                            question.solution,
+                                            MathUtils.formatMath(question.solution),
                                             style: const TextStyle(
                                                 fontSize: 13,
                                                 color: AppColors.textSecondary,

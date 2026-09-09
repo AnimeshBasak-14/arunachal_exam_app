@@ -53,10 +53,21 @@ class PyqHubScreen extends ConsumerStatefulWidget {
 class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerProviderStateMixin {
   late TabController _boardTabController;
   String _searchQuery = '';
+  String _selectedExam = 'All Exams';
   String _selectedYear = 'All Years';
   String _selectedSubject = 'All Subjects';
   bool _isLoading = false;
   List<PyqPaperItem> _livePapers = [];
+
+  final List<String> _exams = [
+    'All Exams',
+    'CGL',
+    'CHSL',
+    'CSLE',
+    'UDC',
+    'MTS',
+    'CCE',
+  ];
 
   final List<String> _years = [
     'All Years',
@@ -258,6 +269,11 @@ class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerPr
       if (_selectedYear != 'All Years' && paper.year.toString() != _selectedYear) {
         return false;
       }
+      if (_selectedExam != 'All Exams') {
+        if (!paper.examCode.toUpperCase().contains(_selectedExam.toUpperCase())) {
+          return false;
+        }
+      }
       if (_selectedSubject != 'All Subjects' && paper.subject != _selectedSubject) {
         return false;
       }
@@ -329,13 +345,40 @@ class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerPr
                     ),
                     const SizedBox(height: AppSpacing.s),
 
-                    // Filter Chips Row (Year & Subject dropdowns)
+                    // Filter Chips Row (Exam, Year & Subject dropdowns)
                     Row(
                       children: [
-                        // Year Dropdown
+                        // 1. Exam Dropdown
                         Expanded(
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            decoration: BoxDecoration(
+                              color: AppColors.background,
+                              borderRadius: BorderRadius.circular(AppSpacing.radiusM),
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: _selectedExam,
+                                isExpanded: true,
+                                icon: const Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary, size: 18),
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                                items: _exams.map((e) {
+                                  return DropdownMenuItem(value: e, child: Text(e, overflow: TextOverflow.ellipsis));
+                                }).toList(),
+                                onChanged: (val) {
+                                  if (val != null) setState(() => _selectedExam = val);
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+
+                        // 2. Year Dropdown
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
                             decoration: BoxDecoration(
                               color: AppColors.background,
                               borderRadius: BorderRadius.circular(AppSpacing.radiusM),
@@ -345,10 +388,10 @@ class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerPr
                               child: DropdownButton<String>(
                                 value: _selectedYear,
                                 isExpanded: true,
-                                icon: const Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary),
-                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                                icon: const Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary, size: 18),
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                                 items: _years.map((y) {
-                                  return DropdownMenuItem(value: y, child: Text(y));
+                                  return DropdownMenuItem(value: y, child: Text(y, overflow: TextOverflow.ellipsis));
                                 }).toList(),
                                 onChanged: (val) {
                                   if (val != null) setState(() => _selectedYear = val);
@@ -357,12 +400,12 @@ class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerPr
                             ),
                           ),
                         ),
-                        const SizedBox(width: AppSpacing.s),
+                        const SizedBox(width: 6),
 
-                        // Subject Dropdown
+                        // 3. Subject Dropdown
                         Expanded(
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
                             decoration: BoxDecoration(
                               color: AppColors.background,
                               borderRadius: BorderRadius.circular(AppSpacing.radiusM),
@@ -372,8 +415,8 @@ class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerPr
                               child: DropdownButton<String>(
                                 value: _selectedSubject,
                                 isExpanded: true,
-                                icon: const Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary),
-                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                                icon: const Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary, size: 18),
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                                 items: _subjects.map((s) {
                                   return DropdownMenuItem(value: s, child: Text(s, overflow: TextOverflow.ellipsis));
                                 }).toList(),

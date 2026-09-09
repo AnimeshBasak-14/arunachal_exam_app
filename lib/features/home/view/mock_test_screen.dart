@@ -11,12 +11,13 @@ import '../../../core/services/service_providers.dart';
 import '../../../core/services/firebase_service.dart';
 import '../../../core/services/remote_config_service.dart';
 import '../../../core/utils/rank_utils.dart';
+import '../../../core/utils/math_utils.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 
 class MockTestScreen extends ConsumerStatefulWidget {
   final String examCode;
-  final String testType; // 'topic' or 'full'
+  final String testType; // 'topic', 'full', '5', '10', '20'
 
   const MockTestScreen({
     super.key,
@@ -32,7 +33,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
   late List<Question> _testQuestions;
   final Map<String, String> _selectedAnswers = {}; // questionId -> optionChar
   late Timer _timer;
-  int _secondsRemaining = 300; // 5 minutes mock test
+  int _secondsRemaining = 300; // Dynamic based on question count
   int _initialSeconds = 300;
   bool _isSubmitted = false;
   bool _isLoadingQuestions = true;
@@ -55,7 +56,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
     _testQuestions = all.take(initialCount).toList();
     _initialSeconds = _secondsRemaining;
 
-    // 2. Fetch live mock test questions from Firestore
+    // 2. Fetch live mock test questions from Firestore / Supabase
     _loadLiveMockQuestions();
 
     _startTimer();
@@ -64,35 +65,54 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
   Future<void> _loadLiveMockQuestions() async {
     setState(() => _isLoadingQuestions = true);
     try {
-      // 1. Fetch all questions for this exam (includes both PYQ and MOCK questions)
+      // 1. Fetch questions strictly of paperType MOCK
       final examQs = await QuestionRepository.fetchLiveQuestions(
         examCode: widget.examCode,
+        paperType: 'MOCK',
       );
 
       // 2. Fetch general mock pool questions (APSSB-MOCK)
       final generalMocks = await QuestionRepository.fetchLiveQuestions(
         examCode: 'APSSB-MOCK',
+        paperType: 'MOCK',
       );
 
-      // 3. Fallback to APSSB-CGLE if both empty
-      var pool = <Question>[...examQs, ...generalMocks];
+      var pool = <Question>[
+        ...examQs.where((q) => q.paperType.toUpperCase() == 'MOCK'),
+        ...generalMocks.where((q) => q.paperType.toUpperCase() == 'MOCK'),
+      ];
+
+      // Fallback if empty
       if (pool.isEmpty) {
-        pool = await QuestionRepository.fetchLiveQuestions(
-          examCode: 'APSSB-CGLE',
+        final fallback = await QuestionRepository.fetchLiveQuestions(
+          examCode: widget.examCode,
         );
+        pool = fallback;
       }
 
       if (pool.isNotEmpty && mounted) {
-        final count = RemoteConfigService.instance.dailyTestQuestionCount;
-        // Randomize so every session gets a fresh mix of PYQ and MOCK questions
+        // Determine question count based on testType (e.g. '5', '10', '20', 'full')
+        int count = 10;
+        final parsed = int.tryParse(widget.testType);
+        if (parsed != null && parsed > 0) {
+          count = parsed;
+        } else if (widget.testType.toLowerCase() == 'full') {
+          count = pool.length;
+        } else {
+          count = RemoteConfigService.instance.dailyTestQuestionCount;
+        }
+
         final shuffled = List<Question>.from(pool)..shuffle(math.Random());
+        final selectedQs = shuffled.take(count).toList();
+
+        // Dynamic timer: 1 min (60s) per question, minimum 5 mins (300s)
+        final totalSeconds = math.max(300, selectedQs.length * 60);
+
         setState(() {
-          _testQuestions = shuffled.take(count).toList();
+          _testQuestions = selectedQs;
           _isLoadingQuestions = false;
-          if (_testQuestions.isNotEmpty && _testQuestions.first.timeLimitMins > 0) {
-            _secondsRemaining = _testQuestions.first.timeLimitMins * 60;
-            _initialSeconds = _secondsRemaining;
-          }
+          _secondsRemaining = totalSeconds;
+          _initialSeconds = totalSeconds;
         });
       } else {
         if (mounted) setState(() => _isLoadingQuestions = false);
@@ -500,11 +520,11 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
             const SizedBox(height: AppSpacing.s),
             if (question.passageOrDirection != null &&
                 question.passageOrDirection!.trim().isNotEmpty) ...[
-              _buildPassageWidget(question.passageOrDirection!.trim()),
+              _buildPassageWidget(MathUtils.formatMath(question.passageOrDirection!.trim())),
               const SizedBox(height: AppSpacing.s),
             ],
             Text(
-              'Q${index + 1}. ${question.questionText}',
+              'Q${index + 1}. ${MathUtils.cleanQuestionText(question.questionText)}',
               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
             ),
             if (question.questionImage != null &&
@@ -638,7 +658,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              option,
+              MathUtils.formatMath(option),
               style: TextStyle(
                 fontSize: 14,
                 color: isOptionCorrect
@@ -697,7 +717,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            question.solution,
+            MathUtils.formatMath(question.solution),
             style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary, height: 1.4),
           ),
           if (question.solutionImage != null &&
@@ -942,11 +962,11 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                                   const SizedBox(height: AppSpacing.s),
                                   if (question.passageOrDirection != null &&
                                       question.passageOrDirection!.trim().isNotEmpty) ...[
-                                    _buildPassageWidget(question.passageOrDirection!.trim()),
+                                    _buildPassageWidget(MathUtils.formatMath(question.passageOrDirection!.trim())),
                                     const SizedBox(height: AppSpacing.s),
                                   ],
                                   Text(
-                                    'Q${index + 1}. ${question.questionText}',
+                                    'Q${index + 1}. ${MathUtils.cleanQuestionText(question.questionText)}',
                                     style: const TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
@@ -1012,7 +1032,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                option,
+                                                MathUtils.formatMath(option),
                                                 style: TextStyle(
                                                   fontSize: 14,
                                                   color: AppColors.textPrimary,
