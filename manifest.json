@@ -3,7 +3,7 @@
     "short_name": "Arunachal Exam",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0A0F16",
+    "background_color": "#F8FAFC",
     "theme_color": "#2E8B57",
     "description": "Comprehensive preparation portal for APSSB, APPSC and Arunachal Pradesh state competitive examinations.",
     "orientation": "portrait-primary",
