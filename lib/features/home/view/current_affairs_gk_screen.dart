@@ -6,7 +6,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 
 class CurrentAffairsGkScreen extends ConsumerStatefulWidget {
-  const CurrentAffairsGkScreen({super.key});
+  final bool isEmbedded;
+  const CurrentAffairsGkScreen({super.key, this.isEmbedded = false});
 
   @override
   ConsumerState<CurrentAffairsGkScreen> createState() =>
@@ -35,10 +36,13 @@ class _CurrentAffairsGkScreenState
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () => context.pop(),
-        ),
+        automaticallyImplyLeading: !widget.isEmbedded,
+        leading: widget.isEmbedded
+            ? null
+            : IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                onPressed: () => context.pop(),
+              ),
         title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

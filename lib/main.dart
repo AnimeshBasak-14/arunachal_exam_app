@@ -51,6 +51,7 @@ import 'features/home/view/exams_hub_screen.dart';
 import 'features/admin/view/question_review_screen.dart';
 import 'features/admin/view/question_flagger_screen.dart';
 import 'features/syllabus/view/syllabus_screen.dart';
+import 'features/home/view/bookmarks_screen.dart';
 import 'core/services/question_repository.dart';
 import 'core/services/current_affairs_service.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -192,15 +193,24 @@ final routerProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      // 2. On Web, allow direct access to admin portal or public routes without requiring mobile login
+      // 2. On Web, allow direct access to admin portal, home, and public info pages without requiring login
       if (kIsWeb) {
         if (isPublicRoute) {
           return null;
         }
-        if (state.matchedLocation == '/' || state.matchedLocation == '/home') {
+        if (state.matchedLocation == '/') {
+          return '/home';
+        }
+        if (state.matchedLocation == '/home' ||
+            state.matchedLocation == '/syllabus' ||
+            state.matchedLocation == '/state-gk' ||
+            state.matchedLocation == '/current-affairs-gk' ||
+            state.matchedLocation == '/exams-hub' ||
+            state.matchedLocation == '/grammar-hub' ||
+            state.matchedLocation == '/bookmarks') {
           return null;
         }
-        if (!isAuthRoute) {
+        if (!isAuthRoute && !isLoggedIn) {
           return '/welcome';
         }
         return null;
@@ -448,6 +458,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           final initialTab = (int.tryParse(tabStr ?? '0') ?? 0).clamp(0, 3);
           return SyllabusScreen(initialTabIndex: initialTab);
         },
+      ),
+      GoRoute(
+        path: '/bookmarks',
+        builder: (context, state) => const BookmarksScreen(),
       ),
     ],
   );

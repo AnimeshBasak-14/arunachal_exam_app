@@ -208,6 +208,20 @@ class ProfileScreen extends ConsumerWidget {
                 ),
                 const Divider(height: 1, color: AppColors.divider),
                 ListTile(
+                  leading: const Icon(Icons.bookmark_rounded,
+                      color: AppColors.primary),
+                  title: const Text('BOOKMARKS',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: const Text('Saved exams & practice questions',
+                      style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                  trailing: const Icon(Icons.arrow_forward_ios_rounded,
+                      size: 16, color: AppColors.textHint),
+                  onTap: () {
+                    context.push('/bookmarks');
+                  },
+                ),
+                const Divider(height: 1, color: AppColors.divider),
+                ListTile(
                   leading: const Icon(Icons.settings_outlined,
                       color: AppColors.primary),
                   title: const Text('SETTING',

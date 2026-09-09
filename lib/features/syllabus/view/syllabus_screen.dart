@@ -75,75 +75,85 @@ class _SyllabusScreenState extends State<SyllabusScreen>
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(108),
-          child: Column(
-            children: [
-              // Search field
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.m, vertical: 6),
-                child: Container(
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.08),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 900),
+              child: Column(
+                children: [
+                  // Search field
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.m, vertical: 6),
+                    child: Container(
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
-                    decoration: InputDecoration(
-                      hintText: 'Search topics, posts, or marking rules...',
-                      hintStyle: const TextStyle(fontSize: 13, color: AppColors.textHint),
-                      prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColors.primary),
-                      suffixIcon: _searchQuery.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear, size: 18, color: AppColors.textHint),
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() => _searchQuery = '');
-                              },
-                            )
-                          : null,
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                      child: TextField(
+                        controller: _searchController,
+                        onChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
+                        decoration: InputDecoration(
+                          hintText: 'Search topics, posts, or marking rules...',
+                          hintStyle: const TextStyle(fontSize: 13, color: AppColors.textHint),
+                          prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColors.primary),
+                          suffixIcon: _searchQuery.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear, size: 18, color: AppColors.textHint),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    setState(() => _searchQuery = '');
+                                  },
+                                )
+                              : null,
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
 
-              // TabBar
-              TabBar(
-                controller: _tabController,
-                indicatorColor: AppColors.accent,
-                indicatorWeight: 3,
-                labelColor: Colors.white,
-                unselectedLabelColor: Colors.white60,
-                labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                tabs: const [
-                  Tab(icon: Icon(Icons.compare_arrows_rounded, size: 18), text: 'Overview'),
-                  Tab(icon: Icon(Icons.assignment_outlined, size: 18), text: 'APSSB'),
-                  Tab(icon: Icon(Icons.account_balance_outlined, size: 18), text: 'APPSC'),
-                  Tab(icon: Icon(Icons.grid_view_rounded, size: 18), text: 'Subjects'),
+                  // TabBar
+                  TabBar(
+                    controller: _tabController,
+                    indicatorColor: AppColors.accent,
+                    indicatorWeight: 3,
+                    labelColor: Colors.white,
+                    unselectedLabelColor: Colors.white60,
+                    labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    tabs: const [
+                      Tab(icon: Icon(Icons.compare_arrows_rounded, size: 18), text: 'Overview'),
+                      Tab(icon: Icon(Icons.assignment_outlined, size: 18), text: 'APSSB'),
+                      Tab(icon: Icon(Icons.account_balance_outlined, size: 18), text: 'APPSC'),
+                      Tab(icon: Icon(Icons.grid_view_rounded, size: 18), text: 'Subjects'),
+                    ],
+                  ),
                 ],
               ),
-            ],
+            ),
           ),
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildExecutiveOverviewTab(),
-          _buildApssbTab(),
-          _buildAppscTab(),
-          _buildSubjectMatrixTab(),
-        ],
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 900),
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildExecutiveOverviewTab(),
+              _buildApssbTab(),
+              _buildAppscTab(),
+              _buildSubjectMatrixTab(),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -477,9 +487,11 @@ class _SyllabusScreenState extends State<SyllabusScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Row: Exam Badge & Stage
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            // Top Row: Exam Badge & Stage (Flexible wrapping)
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -670,9 +682,11 @@ class _SyllabusScreenState extends State<SyllabusScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Badge
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            // Top Badge (Flexible wrapping)
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -910,9 +924,11 @@ class _SyllabusScreenState extends State<SyllabusScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Category & Weightage
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            // Category & Weightage (Flexible wrapping)
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -1015,7 +1031,7 @@ class _SyllabusScreenState extends State<SyllabusScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 110,
+          constraints: const BoxConstraints(maxWidth: 115),
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.1),
@@ -1047,7 +1063,9 @@ class _SyllabusScreenState extends State<SyllabusScreen>
       bg = const Color(0xFFFEE2E2);
       text = const Color(0xFF991B1B);
     }
+    final screenW = MediaQuery.of(context).size.width;
     return Container(
+      constraints: BoxConstraints(maxWidth: screenW > 420 ? 360 : (screenW - 72).clamp(180.0, 360.0)),
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
         color: bg,
@@ -1055,12 +1073,16 @@ class _SyllabusScreenState extends State<SyllabusScreen>
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Icon(icon, size: 13, color: text),
           const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: text),
+          Flexible(
+            child: Text(
+              label,
+              style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: text),
+              softWrap: true,
+            ),
           ),
         ],
       ),
