@@ -43,30 +43,19 @@ class FloatingGlassDock extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.white.withValues(alpha: 0.08),
-                    Colors.white.withValues(alpha: 0.04),
-                  ],
-                ),
+                color: Colors.white.withValues(alpha: 0.85),
                 borderRadius: BorderRadius.circular(40),
-                border: Border(
-                  top: BorderSide(
-                      color: Colors.white.withValues(alpha: 0.2), width: 1),
-                  left: BorderSide(
-                      color: Colors.white.withValues(alpha: 0.12), width: 1),
-                  right: BorderSide(
-                      color: Colors.white.withValues(alpha: 0.06), width: 1),
-                  bottom: BorderSide(
-                      color: Colors.white.withValues(alpha: 0.06), width: 1),
-                ),
+                border: Border.all(color: Colors.white, width: 1.5),
                 boxShadow: const [
                   BoxShadow(
-                    color: Color(0x80000000),
-                    blurRadius: 40,
-                    offset: Offset(0, 16),
+                    color: Color(0x140F172A),
+                    blurRadius: 30,
+                    offset: Offset(0, 10),
+                  ),
+                  BoxShadow(
+                    color: Color(0x0D2E8B57),
+                    blurRadius: 20,
+                    offset: Offset(0, 4),
                   ),
                 ],
               ),
@@ -165,13 +154,13 @@ class _DockButtonState extends State<_DockButton>
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(28),
               color: widget.isSelected
-                  ? AppColors.primary.withValues(alpha: 0.2)
+                  ? AppColors.primary.withValues(alpha: 0.12)
                   : Colors.transparent,
               boxShadow: widget.isSelected
                   ? [
                       BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.3),
-                        blurRadius: 16,
+                        color: AppColors.primary.withValues(alpha: 0.2),
+                        blurRadius: 12,
                         spreadRadius: 1,
                       )
                     ]
@@ -185,7 +174,7 @@ class _DockButtonState extends State<_DockButton>
                   widget.isSelected ? widget.item.activeIcon : widget.item.icon,
                   size: 22,
                   color: widget.isSelected
-                      ? AppColors.primaryLight
+                      ? AppColors.primary
                       : (_hovered
                           ? AppColors.textPrimary
                           : AppColors.textSecondary),
@@ -200,25 +189,25 @@ class _DockButtonState extends State<_DockButton>
                         ? FontWeight.w700
                         : FontWeight.w500,
                     color: widget.isSelected
-                        ? AppColors.primaryLight
-                        : AppColors.textHint,
+                        ? AppColors.primary
+                        : AppColors.textSecondary,
                     fontFamily: 'Poppins',
                   ),
                   child: Text(widget.item.label),
                 ),
                 const SizedBox(height: 4),
-                // Active neon dot
+                // Active dot
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
                   width: widget.isSelected ? 5 : 0,
                   height: widget.isSelected ? 5 : 0,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppColors.neon,
+                    color: AppColors.primary,
                     boxShadow: widget.isSelected
                         ? [
                             BoxShadow(
-                              color: AppColors.neon.withValues(alpha: 0.8),
+                              color: AppColors.primary.withValues(alpha: 0.5),
                               blurRadius: 6,
                               spreadRadius: 1,
                             )

@@ -6,13 +6,11 @@ import 'app_spacing.dart';
 class AppTheme {
   AppTheme._();
 
-  static ThemeData get lightTheme => darkTheme; // Alias — app uses single theme
-
-  static ThemeData get darkTheme {
+  static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark,
-      colorScheme: const ColorScheme.dark(
+      brightness: Brightness.light,
+      colorScheme: const ColorScheme.light(
         primary: AppColors.primary,
         secondary: AppColors.secondary,
         tertiary: AppColors.accent,
@@ -22,10 +20,10 @@ class AppTheme {
         onSecondary: AppColors.textWhite,
         onSurface: AppColors.textPrimary,
         onError: AppColors.textWhite,
-        outline: AppColors.glassBorder,
+        outline: AppColors.border,
       ),
-      scaffoldBackgroundColor: AppColors.void_,
-      textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme).copyWith(
+      scaffoldBackgroundColor: AppColors.atmosphere,
+      textTheme: GoogleFonts.poppinsTextTheme().copyWith(
         displayLarge: GoogleFonts.poppins(
           fontWeight: FontWeight.bold,
           color: AppColors.textPrimary,
@@ -70,12 +68,12 @@ class AppTheme {
           letterSpacing: 0.5,
         ),
       ),
-      // ── Cards ──────────────────────────────────────────────────────────
+      // ── Cards (Glass Panel defaults) ──────────────────────────────────
       cardTheme: CardThemeData(
-        color: AppColors.glassBase,
+        color: AppColors.glassSurface,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusL),
+          borderRadius: BorderRadius.circular(16),
           side: const BorderSide(color: AppColors.glassBorder, width: 1),
         ),
       ),
@@ -115,14 +113,14 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.primaryLight,
+          foregroundColor: AppColors.primary,
           textStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primaryLight,
-          side: const BorderSide(color: AppColors.glassBorder),
+          foregroundColor: AppColors.primary,
+          side: const BorderSide(color: AppColors.border),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSpacing.radiusM),
           ),
@@ -131,18 +129,18 @@ class AppTheme {
       // ── Input Fields ───────────────────────────────────────────────────
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.glassBase,
+        fillColor: AppColors.surface,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.m,
           vertical: AppSpacing.m,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusM),
-          borderSide: const BorderSide(color: AppColors.glassBorder, width: 1),
+          borderSide: const BorderSide(color: AppColors.border, width: 1),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusM),
-          borderSide: const BorderSide(color: AppColors.glassBorder, width: 1),
+          borderSide: const BorderSide(color: AppColors.border, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusM),
@@ -164,14 +162,14 @@ class AppTheme {
       ),
       // ── Bottom Sheet ───────────────────────────────────────────────────
       bottomSheetTheme: const BottomSheetThemeData(
-        backgroundColor: Color(0xFF111827),
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
       ),
       // ── Dialog ────────────────────────────────────────────────────────
       dialogTheme: DialogThemeData(
-        backgroundColor: const Color(0xFF111827),
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
           side: const BorderSide(color: AppColors.glassBorder),
@@ -188,15 +186,15 @@ class AppTheme {
       ),
       // ── Chips ─────────────────────────────────────────────────────────
       chipTheme: ChipThemeData(
-        backgroundColor: AppColors.glassBase,
-        selectedColor: AppColors.primary.withValues(alpha: 0.2),
-        disabledColor: AppColors.glassBase,
+        backgroundColor: Colors.white,
+        selectedColor: AppColors.primary.withValues(alpha: 0.15),
+        disabledColor: Colors.white,
         labelStyle: GoogleFonts.poppins(
           color: AppColors.textSecondary,
           fontSize: 12,
           fontWeight: FontWeight.w500,
         ),
-        side: const BorderSide(color: AppColors.glassBorder),
+        side: const BorderSide(color: AppColors.border),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       ),
@@ -219,9 +217,9 @@ class AppTheme {
       iconTheme: const IconThemeData(color: AppColors.textSecondary),
       // ── SnackBar ──────────────────────────────────────────────────────
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: const Color(0xFF1F2937),
+        backgroundColor: AppColors.textPrimary,
         contentTextStyle: GoogleFonts.poppins(
-          color: AppColors.textPrimary,
+          color: AppColors.textWhite,
           fontSize: 14,
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -230,8 +228,10 @@ class AppTheme {
       // ── Progress Indicator ────────────────────────────────────────────
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: AppColors.primary,
-        linearTrackColor: AppColors.glassBase,
+        linearTrackColor: Color(0xFFE2E8F0),
       ),
     );
   }
+
+  static ThemeData get darkTheme => lightTheme; // Light Antigravity default
 }

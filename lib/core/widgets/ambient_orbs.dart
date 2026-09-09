@@ -62,37 +62,37 @@ class _AmbientOrbsState extends State<AmbientOrbs>
       behavior: HitTestBehavior.translucent,
       child: Stack(
         children: [
-          // Void background
+          // Atmosphere background
           Positioned.fill(
-            child: Container(color: AppColors.void_),
+            child: Container(color: AppColors.atmosphere),
           ),
-          // Orb 1 — Forest Emerald (top-left)
+          // Orb 1 — Mint tint (top-left)
           _AnimatedOrb(
             drift: _drift,
             mouseOffset: _mouseOffset,
-            color: AppColors.primary,
+            color: AppColors.orbMint,
             width: 0.50,
             height: 0.50,
             alignment: const Alignment(-0.9, -0.9),
             phaseOffset: 0.0,
             parallaxFactor: 1.0,
           ),
-          // Orb 2 — Neon Teal (top-right)
+          // Orb 2 — Sky tint (top-right)
           _AnimatedOrb(
             drift: _drift,
             mouseOffset: _mouseOffset,
-            color: AppColors.secondary,
+            color: AppColors.orbSky,
             width: 0.40,
             height: 0.40,
             alignment: const Alignment(0.9, -0.8),
             phaseOffset: 0.33,
             parallaxFactor: 0.8,
           ),
-          // Orb 3 — Glowing Amber (bottom-center)
+          // Orb 3 — Amber tint (bottom-center)
           _AnimatedOrb(
             drift: _drift,
             mouseOffset: _mouseOffset,
-            color: AppColors.accent,
+            color: AppColors.orbAmber,
             width: 0.55,
             height: 0.45,
             alignment: const Alignment(0.1, 1.0),

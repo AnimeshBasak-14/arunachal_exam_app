@@ -26,12 +26,12 @@ class AntigravityGlassCard extends StatefulWidget {
   const AntigravityGlassCard({
     super.key,
     required this.child,
-    this.borderRadius = 20.0,
+    this.borderRadius = 16.0,
     this.padding = const EdgeInsets.all(16),
     this.margin,
     this.glowShadow,
     this.backgroundGradient,
-    this.backgroundOpacity = 0.04,
+    this.backgroundOpacity = 0.75,
     this.blurSigma = 24.0,
     this.onTap,
     this.enableHover = true,
@@ -46,6 +46,7 @@ class _AntigravityGlassCardState extends State<AntigravityGlassCard>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
+  late Animation<double> _translateAnimation;
   bool _isHovered = false;
   bool _isPressed = false;
 
@@ -54,12 +55,17 @@ class _AntigravityGlassCardState extends State<AntigravityGlassCard>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 500),
     );
     _scaleAnimation = Tween<double>(begin: 1.0, end: widget.hoverScale).animate(
       CurvedAnimation(
         parent: _controller,
-        // Spring physics — overshoots slightly then settles
+        curve: const _SpringCurve(),
+      ),
+    );
+    _translateAnimation = Tween<double>(begin: 0.0, end: -4.0).animate(
+      CurvedAnimation(
+        parent: _controller,
         curve: const _SpringCurve(),
       ),
     );
@@ -102,29 +108,18 @@ class _AntigravityGlassCardState extends State<AntigravityGlassCard>
     final radius = BorderRadius.circular(widget.borderRadius);
     final isInteractive = widget.onTap != null;
 
-    final baseShadow = [
-      const BoxShadow(
-        color: Color(0x66000000),
-        blurRadius: 40,
-        offset: Offset(0, 20),
-      ),
-    ];
-
-    final activeShadow = [
-      ...baseShadow,
-      if (_isHovered || _isPressed)
-        BoxShadow(
-          color: AppColors.primary.withValues(alpha: 0.15),
-          blurRadius: 30,
-          spreadRadius: 2,
-        ),
-    ];
+    final currentShadow = (_isHovered || _isPressed)
+        ? AppColors.glassHoverShadow
+        : AppColors.glassShadow;
 
     return AnimatedBuilder(
-      animation: _scaleAnimation,
-      builder: (context, child) => Transform.scale(
-        scale: _scaleAnimation.value,
-        child: child,
+      animation: _controller,
+      builder: (context, child) => Transform.translate(
+        offset: Offset(0, _translateAnimation.value),
+        child: Transform.scale(
+          scale: _scaleAnimation.value,
+          child: child,
+        ),
       ),
       child: MouseRegion(
         cursor: isInteractive ? SystemMouseCursors.click : MouseCursor.defer,
@@ -138,7 +133,7 @@ class _AntigravityGlassCardState extends State<AntigravityGlassCard>
             margin: widget.margin,
             decoration: BoxDecoration(
               borderRadius: radius,
-              boxShadow: widget.glowShadow ?? activeShadow,
+              boxShadow: widget.glowShadow ?? currentShadow,
             ),
             child: ClipRRect(
               borderRadius: radius,
