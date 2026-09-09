@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../widgets/custom_practice_modal.dart';
 
 class MockTestItem {
   final String id;
@@ -508,73 +509,65 @@ class _MockHubScreenState extends ConsumerState<MockHubScreen> {
                       ],
                     ),
 
-                    // ─── Smart Filtered Test CTA ─────────────────────────────────
-                    if (_selectedCategory != 'All' || _selectedLevel != 'All Levels' || _selectedMockType != 'All Types') ...[
-                      const SizedBox(height: AppSpacing.s),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            // Build question count from mock type selection
-                            final targetCount = _selectedMockType == '5 Questions'
-                                ? '5'
-                                : _selectedMockType == '10 Questions'
-                                    ? '10'
-                                    : _selectedMockType == '20 Questions'
-                                        ? '20'
-                                        : '10';
-
-                            // Map category/topic to subject string for query
-                            final subjectMap = {
-                              'Maths': 'Mathematics',
-                              'GK': 'General Knowledge',
-                              'GA': 'General Awareness',
-                              'English': 'English',
-                              'Comprehension': 'Reading Comprehension',
-                              'Grammar': 'Grammar',
-                              'Technical': 'Technical',
-                              'Full Mock': '',
-                            };
-                            final subject = _selectedCategory != 'All'
-                                ? (subjectMap[_selectedCategory] ?? _selectedCategory)
-                                : '';
-                            final difficulty = _selectedLevel != 'All Levels' ? _selectedLevel : '';
-
-                            final int duration = _selectedMockType == '5 Questions'
-                                ? 5
-                                : _selectedMockType == '10 Questions'
-                                    ? 10
-                                    : _selectedMockType == '20 Questions'
-                                        ? 20
-                                        : 10;
-
-                            // Build URI with optional query params
-                            var uri = '/mock-test/APSSB-MOCK/$targetCount';
-                            final params = <String>[];
-                            if (subject.isNotEmpty) params.add('subject=${Uri.encodeComponent(subject)}');
-                            if (difficulty.isNotEmpty) params.add('difficulty=${Uri.encodeComponent(difficulty)}');
-                            params.add('duration=$duration');
-                            if (params.isNotEmpty) uri += '?${params.join('&')}';
-
-                            context.push(uri);
-                          },
-                          icon: const Icon(Icons.play_circle_filled_rounded, size: 18, color: Colors.white),
-                          label: Text(
-                            _selectedCategory != 'All'
-                                ? 'Start $_selectedCategory Test (${ _selectedMockType == 'All Types' ? '10Q' : _selectedMockType.replaceAll(' Questions', 'Q')})'
-                                : 'Start Filtered Mock Test',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white),
-                            overflow: TextOverflow.ellipsis,
+                    // ─── Build Custom Practice Card ──────────────────────────────
+                    const SizedBox(height: AppSpacing.s),
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF1E3A8A), Color(0xFF2563EB)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusM),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF1E3A8A).withValues(alpha: 0.25),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
                           ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF1B5E20),
-                            padding: const EdgeInsets.symmetric(vertical: 11),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusM)),
-                            elevation: 0,
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => showCustomPracticeModal(context),
+                          borderRadius: BorderRadius.circular(AppSpacing.radiusM),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.18),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(Icons.tune_rounded, color: Colors.white, size: 20),
+                                ),
+                                const SizedBox(width: 12),
+                                const Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Build Custom Practice',
+                                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13.5),
+                                      ),
+                                      Text(
+                                        'Pick topics, question count & exam mode',
+                                        style: TextStyle(color: Colors.white70, fontSize: 11),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 14),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ],
+                    ),
                   ],
                 ),
               ),

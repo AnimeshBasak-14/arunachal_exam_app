@@ -239,5 +239,107 @@ void main() {
         expect(find.textContaining('Q87 •'), findsOneWidget);
       },
     );
+
+    // ─── 4. TIMED MODE STRICT ISOLATION TEST ───────────────────────────
+    testWidgets(
+      'Timed Mode Strict Isolation Test: ensures 0 instances of Doubt Forum, Discussion, or Show Solution',
+      (WidgetTester tester) async {
+        final q = makeTestQuestion(
+          id: 'timed_q_1',
+          text: 'What is 15 percent of 200?',
+          qNum: 1,
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ListView(
+                children: [
+                  SingleQuestionWidget(
+                    question: q,
+                    displayNum: 1,
+                    onSelectOption: (_) {},
+                    isSubmitted: false,
+                    showSolution: false,
+                    onToggleSolution: null, // Strict Timed Mode
+                    discussionWidget: null, // Strict Timed Mode
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Verify zero instances of candidate discussion / doubt forum
+        expect(find.byKey(const Key('candidate_discussion')), findsNothing);
+        expect(find.textContaining('Candidate Discussion'), findsNothing);
+        expect(find.textContaining('Doubt Forum'), findsNothing);
+
+        // Verify zero instances of Show Solution toggle
+        expect(find.text('Show Solution'), findsNothing);
+        expect(find.text('Hide Solution'), findsNothing);
+        expect(find.textContaining('Official Answer:'), findsNothing);
+      },
+    );
+
+    // ─── 5. STUDY MODE FEEDBACK TEST ────────────────────────────────────
+    testWidgets(
+      'Study Mode Feedback Test: retains instant solution toggle, explanations, and discussion',
+      (WidgetTester tester) async {
+        final q = makeTestQuestion(
+          id: 'study_q_1',
+          text: 'What is 15 percent of 200?',
+          qNum: 1,
+        );
+
+        bool solutionShown = false;
+
+        await tester.pumpWidget(
+          StatefulBuilder(
+            builder: (context, setState) {
+              return MaterialApp(
+                home: Scaffold(
+                  body: ListView(
+                    children: [
+                      SingleQuestionWidget(
+                        question: q,
+                        displayNum: 1,
+                        onSelectOption: (_) {},
+                        isSubmitted: false,
+                        showSolution: solutionShown,
+                        onToggleSolution: () {
+                          setState(() {
+                            solutionShown = !solutionShown;
+                          });
+                        },
+                        discussionWidget:
+                            const Text('Candidate Discussion & Doubt Forum'),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Verify discussion forum is present in study mode
+        expect(find.byKey(const Key('candidate_discussion')), findsOneWidget);
+        expect(find.text('Candidate Discussion & Doubt Forum'), findsOneWidget);
+
+        // Verify Show Solution toggle is present
+        expect(find.text('Show Solution'), findsOneWidget);
+
+        // Tap Show Solution and verify official answer and explanation reveal
+        await tester.tap(find.text('Show Solution'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Hide Solution'), findsOneWidget);
+        expect(find.textContaining('Official Answer:'), findsOneWidget);
+        expect(find.textContaining('Explanation details here'), findsOneWidget);
+      },
+    );
   });
 }

@@ -22,9 +22,11 @@ class MockTestScreen extends ConsumerStatefulWidget {
   final String testType; // 'topic', 'full', '5', '10', '20'
   final String? subject; // Optional subject/topic filter (e.g., 'English', 'Mathematics')
   final String? difficulty; // Optional difficulty filter (e.g., 'Easy', 'Medium', 'Hard')
-  final String? paperType; // 'PYQ' or 'MOCK' â€” defaults to 'MOCK'
+  final String? paperType; // 'PYQ' or 'MOCK' — defaults to 'MOCK'
   final int? year; // Optional year filter for PYQ practice tests
   final int? durationMinutes; // Optional test duration in minutes
+  final bool isStudyMode; // false = Timed Exam Mode, true = Study Mode (Instant Solutions)
+  final List<Question>? initialQuestions; // Optional pre-fetched questions for custom practice
 
   const MockTestScreen({
     super.key,
@@ -35,6 +37,8 @@ class MockTestScreen extends ConsumerStatefulWidget {
     this.paperType,
     this.year,
     this.durationMinutes,
+    this.isStudyMode = false,
+    this.initialQuestions,
   });
 
   @override
@@ -44,7 +48,8 @@ class MockTestScreen extends ConsumerStatefulWidget {
 class _MockTestScreenState extends ConsumerState<MockTestScreen> {
   late List<Question> _testQuestions;
   final Map<String, String> _selectedAnswers = {}; // questionId -> optionChar
-  Timer? _timer; // nullable â€” timer starts only after questions are fetched
+  final Map<String, bool> _showSolutions = {}; // questionId -> showSolution boolean
+  Timer? _timer; // nullable — timer starts only after questions are fetched
   int _secondsRemaining = 300; // Dynamic based on question count
   int _initialSeconds = 300;
   bool _isSubmitted = false;
@@ -62,15 +67,28 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
   @override
   void initState() {
     super.initState();
-    // 1. Initial quick load
-    final all = QuestionRepository.allQuestions;
-    final initialCount = RemoteConfigService.instance.dailyTestQuestionCount;
-    _testQuestions = all.take(initialCount).toList();
-    _initialSeconds = _secondsRemaining;
+    if (widget.initialQuestions != null && widget.initialQuestions!.isNotEmpty) {
+      _testQuestions = List.from(widget.initialQuestions!);
+      _isLoadingQuestions = false;
+      final mins = widget.durationMinutes ??
+          (_testQuestions.length <= 10
+              ? 15
+              : (_testQuestions.length <= 20 ? 30 : 60));
+      _secondsRemaining = mins * 60;
+      _initialSeconds = _secondsRemaining;
+      if (!widget.isStudyMode) {
+        _startTimer();
+      }
+    } else {
+      // 1. Initial quick load
+      final all = QuestionRepository.allQuestions;
+      final initialCount = RemoteConfigService.instance.dailyTestQuestionCount;
+      _testQuestions = all.take(initialCount).toList();
+      _initialSeconds = _secondsRemaining;
 
-    // 2. Fetch live mock test questions â€” timer starts AFTER fetch completes
-    _loadLiveMockQuestions();
-    // Note: _startTimer() is called inside _loadLiveMockQuestions() after questions are ready
+      // 2. Fetch live mock test questions — timer starts AFTER fetch completes
+      _loadLiveMockQuestions();
+    }
   }
 
   Future<void> _loadLiveMockQuestions() async {
@@ -178,12 +196,16 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
           _initialSeconds = totalSeconds;
         });
 
-        // Start timer AFTER questions and seconds are set â€” prevents mismatch
-        _startTimer();
+        // Start timer AFTER questions and seconds are set — only for timed mode
+        if (!widget.isStudyMode) {
+          _startTimer();
+        }
       } else {
         if (mounted) setState(() => _isLoadingQuestions = false);
-        // Fallback: start timer with default duration so screen isn't stuck
-        _startTimer();
+        // Fallback: start timer with default duration if timed mode
+        if (!widget.isStudyMode) {
+          _startTimer();
+        }
       }
     } catch (e) {
       debugPrint('[MockTest] Error loading live questions: $e');
@@ -632,6 +654,9 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
     required bool isInsideGroup,
   }) {
     final selectedOption = _selectedAnswers[question.id];
+    final isStudy = widget.isStudyMode;
+    final showSolution = _showSolutions[question.id] ?? false;
+
     return SingleQuestionWidget(
       key: ValueKey(question.id),
       question: question,
@@ -643,11 +668,22 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
           : (val) {
               setState(() {
                 _selectedAnswers[question.id] = val;
+                if (isStudy) {
+                  _showSolutions[question.id] = true;
+                }
               });
             },
       isSubmitted: _isSubmitted,
+      showSolution: isStudy ? (_isSubmitted || showSolution) : _isSubmitted,
+      onToggleSolution: isStudy
+          ? () {
+              setState(() {
+                _showSolutions[question.id] = !showSolution;
+              });
+            }
+          : null,
       selectedSubjectFilter: widget.subject,
-      discussionWidget: _buildActiveDiscussionWidget(question),
+      discussionWidget: isStudy ? _buildActiveDiscussionWidget(question) : null,
     );
   }
 
@@ -794,28 +830,38 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
-                      color: _secondsRemaining < 60
-                          ? AppColors.error.withValues(alpha: 0.12)
-                          : AppColors.primaryLight,
+                      color: widget.isStudyMode
+                          ? const Color(0xFFE8F5E9)
+                          : (_secondsRemaining < 60
+                              ? AppColors.error.withValues(alpha: 0.12)
+                              : AppColors.primaryLight),
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          Icons.timer_outlined,
-                          color: _secondsRemaining < 60
-                              ? AppColors.error
-                              : AppColors.primary,
+                          widget.isStudyMode
+                              ? Icons.auto_stories_rounded
+                              : Icons.timer_outlined,
+                          color: widget.isStudyMode
+                              ? const Color(0xFF2E7D32)
+                              : (_secondsRemaining < 60
+                                  ? AppColors.error
+                                  : AppColors.primary),
                           size: 15,
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          _formatTime(_secondsRemaining),
+                          widget.isStudyMode
+                              ? 'Study Mode'
+                              : _formatTime(_secondsRemaining),
                           style: TextStyle(
-                            color: _secondsRemaining < 60
-                                ? AppColors.error
-                                : AppColors.primary,
+                            color: widget.isStudyMode
+                                ? const Color(0xFF2E7D32)
+                                : (_secondsRemaining < 60
+                                    ? AppColors.error
+                                    : AppColors.primary),
                             fontWeight: FontWeight.bold,
                             fontSize: 12.5,
                           ),

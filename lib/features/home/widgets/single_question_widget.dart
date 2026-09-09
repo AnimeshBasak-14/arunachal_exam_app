@@ -71,6 +71,10 @@ class SingleQuestionWidget extends StatelessWidget {
       }
     }
 
+    final effectiveImage = (question.imageUrl != null && question.imageUrl!.isNotEmpty)
+        ? question.imageUrl
+        : question.questionImage;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -170,37 +174,46 @@ class SingleQuestionWidget extends StatelessWidget {
         ),
 
         // ─── Question Image (if any) ───────────────────────────────────
-        if (question.questionImage != null &&
-            question.questionImage!.isNotEmpty) ...[
+        if (effectiveImage != null && effectiveImage.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.s),
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: Image.network(
-              question.questionImage!,
-              fit: BoxFit.contain,
-              loadingBuilder: (ctx, child, progress) => progress == null
-                  ? child
-                  : const SizedBox(
+            child: Container(
+              constraints: const BoxConstraints(maxHeight: 320),
+              color: Colors.white,
+              child: InteractiveViewer(
+                minScale: 0.8,
+                maxScale: 3.5,
+                child: Center(
+                  child: Image.network(
+                    effectiveImage,
+                    fit: BoxFit.contain,
+                    loadingBuilder: (ctx, child, progress) => progress == null
+                        ? child
+                        : const SizedBox(
+                            height: 64,
+                            child: Center(
+                                child: CircularProgressIndicator(strokeWidth: 2)),
+                          ),
+                    errorBuilder: (_, __, ___) => Container(
                       height: 48,
-                      child: Center(
-                          child: CircularProgressIndicator(strokeWidth: 2)),
+                      decoration: BoxDecoration(
+                        color: AppColors.background,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppColors.divider),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.broken_image_rounded,
+                              size: 20, color: AppColors.textHint),
+                          SizedBox(width: 8),
+                          Text('Image unavailable',
+                              style: TextStyle(fontSize: 12, color: AppColors.textHint)),
+                        ],
+                      ),
                     ),
-              errorBuilder: (_, __, ___) => Container(
-                height: 48,
-                decoration: BoxDecoration(
-                  color: AppColors.background,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.divider),
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.broken_image_rounded,
-                        size: 20, color: AppColors.textHint),
-                    SizedBox(width: 8),
-                    Text('Image unavailable',
-                        style: TextStyle(fontSize: 12, color: AppColors.textHint)),
-                  ],
+                  ),
                 ),
               ),
             ),

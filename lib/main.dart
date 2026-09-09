@@ -47,6 +47,9 @@ import 'features/study/view/grammar_hub_screen.dart';
 import 'features/study/view/grammar_quiz_screen.dart';
 import 'features/home/view/pyq_hub_screen.dart';
 import 'features/home/view/mock_hub_screen.dart';
+import 'features/home/view/exams_hub_screen.dart';
+import 'features/admin/view/question_review_screen.dart';
+import 'core/services/question_repository.dart';
 import 'core/services/current_affairs_service.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_performance/firebase_performance.dart';
@@ -320,6 +323,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           final year = yearStr != null ? int.tryParse(yearStr) : null;
           final durationStr = state.uri.queryParameters['duration'];
           final duration = durationStr != null ? int.tryParse(durationStr) : null;
+          final isStudy = state.uri.queryParameters['study'] == 'true' ||
+              state.uri.queryParameters['mode'] == 'study';
+          final extraQs =
+              (state.extra is List<Question>) ? (state.extra as List<Question>) : null;
           return MockTestScreen(
             examCode: examCode,
             testType: type,
@@ -328,6 +335,8 @@ final routerProvider = Provider<GoRouter>((ref) {
             paperType: paperType,
             year: year,
             durationMinutes: duration,
+            isStudyMode: isStudy,
+            initialQuestions: extraQs,
           );
         },
       ),
@@ -406,6 +415,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/mock-hub',
         builder: (context, state) => const MockHubScreen(),
+      ),
+      GoRoute(
+        path: '/exams-hub',
+        builder: (context, state) {
+          final tabStr = state.uri.queryParameters['tab'];
+          final initialTab = tabStr == '1' ? 1 : 0;
+          return ExamsHubScreen(initialTabIndex: initialTab);
+        },
+      ),
+      GoRoute(
+        path: '/admin/question-review',
+        builder: (context, state) => const QuestionReviewScreen(),
       ),
     ],
   );

@@ -19,6 +19,11 @@ class Question {
   final String? passageImage;
   final String questionText;
   final String? questionImage;
+  final String? imageUrl;
+  final bool hasImage;
+  final String reviewStatus; // 'approved', 'flagged', 'needs_ocr_rerun'
+  final List<String> flagReasons;
+  final List<String> modeAvailability; // ['timed', 'study']
   final List<String> options; // ['(a) ...', '(b) ...']
   final List<String?> optionImages;
   final String correctAnswer; // 'a', 'b', 'c', 'd'
@@ -49,6 +54,11 @@ class Question {
     this.passageImage,
     required this.questionText,
     this.questionImage,
+    this.imageUrl,
+    this.hasImage = false,
+    this.reviewStatus = 'approved',
+    this.flagReasons = const [],
+    this.modeAvailability = const ['timed', 'study'],
     required this.options,
     this.optionImages = const [null, null, null, null],
     required this.correctAnswer,
@@ -64,6 +74,78 @@ class Question {
     this.pyqText,
     this.questionNumber = 0,
   });
+
+  Question copyWith({
+    String? id,
+    String? examCode,
+    int? year,
+    String? paperType,
+    String? testId,
+    String? testTitle,
+    String? subject,
+    String? difficulty,
+    String? groupId,
+    String? passageId,
+    String? passageOrDirection,
+    String? passageImage,
+    String? questionText,
+    String? questionImage,
+    String? imageUrl,
+    bool? hasImage,
+    String? reviewStatus,
+    List<String>? flagReasons,
+    List<String>? modeAvailability,
+    List<String>? options,
+    List<String?>? optionImages,
+    String? correctAnswer,
+    String? officialAnswer,
+    String? solution,
+    String? solutionImage,
+    int? timeLimitMins,
+    double? marksPerCorrect,
+    double? negativeMarks,
+    bool? isScenarioTest,
+    String? scenarioTags,
+    List<String>? initialComments,
+    String? pyqText,
+    int? questionNumber,
+  }) {
+    return Question(
+      id: id ?? this.id,
+      examCode: examCode ?? this.examCode,
+      year: year ?? this.year,
+      paperType: paperType ?? this.paperType,
+      testId: testId ?? this.testId,
+      testTitle: testTitle ?? this.testTitle,
+      subject: subject ?? this.subject,
+      difficulty: difficulty ?? this.difficulty,
+      groupId: groupId ?? this.groupId,
+      passageId: passageId ?? this.passageId,
+      passageOrDirection: passageOrDirection ?? this.passageOrDirection,
+      passageImage: passageImage ?? this.passageImage,
+      questionText: questionText ?? this.questionText,
+      questionImage: questionImage ?? this.questionImage,
+      imageUrl: imageUrl ?? this.imageUrl,
+      hasImage: hasImage ?? this.hasImage,
+      reviewStatus: reviewStatus ?? this.reviewStatus,
+      flagReasons: flagReasons ?? this.flagReasons,
+      modeAvailability: modeAvailability ?? this.modeAvailability,
+      options: options ?? this.options,
+      optionImages: optionImages ?? this.optionImages,
+      correctAnswer: correctAnswer ?? this.correctAnswer,
+      officialAnswer: officialAnswer ?? this.officialAnswer,
+      solution: solution ?? this.solution,
+      solutionImage: solutionImage ?? this.solutionImage,
+      timeLimitMins: timeLimitMins ?? this.timeLimitMins,
+      marksPerCorrect: marksPerCorrect ?? this.marksPerCorrect,
+      negativeMarks: negativeMarks ?? this.negativeMarks,
+      isScenarioTest: isScenarioTest ?? this.isScenarioTest,
+      scenarioTags: scenarioTags ?? this.scenarioTags,
+      initialComments: initialComments ?? this.initialComments,
+      pyqText: pyqText ?? this.pyqText,
+      questionNumber: questionNumber ?? this.questionNumber,
+    );
+  }
 
   factory Question.fromMap(String docId, Map<String, dynamic> data) {
     // Parse options list
@@ -133,7 +215,25 @@ class Question {
       passageImage: data['passageImage']?.toString() ?? data['passage_image']?.toString(),
       questionText: (data['questionText'] ?? data['question_text'] ?? '').toString(),
       questionImage: data['questionImage']?.toString() ??
+          data['question_image_url']?.toString() ??
+          data['image_url']?.toString(),
+      imageUrl: data['imageUrl']?.toString() ??
+          data['image_url']?.toString() ??
           data['question_image_url']?.toString(),
+      hasImage: data['hasImage'] == true ||
+          data['has_image'] == true ||
+          (data['image_url'] != null && data['image_url'].toString().trim().isNotEmpty),
+      reviewStatus: (data['reviewStatus'] ?? data['review_status'] ?? 'approved').toString(),
+      flagReasons: (data['flagReasons'] is List)
+          ? (data['flagReasons'] as List).map((e) => e.toString()).toList()
+          : (data['flag_reasons'] is List)
+              ? (data['flag_reasons'] as List).map((e) => e.toString()).toList()
+              : const [],
+      modeAvailability: (data['modeAvailability'] is List)
+          ? (data['modeAvailability'] as List).map((e) => e.toString()).toList()
+          : (data['mode_availability'] is List)
+              ? (data['mode_availability'] as List).map((e) => e.toString()).toList()
+              : const ['timed', 'study'],
       options: parsedOptions,
       optionImages: parsedOptionImages,
       correctAnswer: cleanCorrect,
@@ -279,7 +379,21 @@ class Question {
       passageOrDirection: passageText,
       passageImage: passageImage,
       questionText: rawQuestionText,
-      questionImage: data['question_image_url']?.toString(),
+      questionImage: data['image_url']?.toString() ??
+          data['question_image_url']?.toString() ??
+          data['question_image']?.toString(),
+      imageUrl: data['image_url']?.toString() ??
+          data['question_image_url']?.toString(),
+      hasImage: data['has_image'] == true ||
+          (data['image_url'] != null && data['image_url'].toString().trim().isNotEmpty) ||
+          (data['question_image_url'] != null && data['question_image_url'].toString().trim().isNotEmpty),
+      reviewStatus: (data['review_status'] ?? 'approved').toString(),
+      flagReasons: (data['flag_reasons'] is List)
+          ? (data['flag_reasons'] as List).map((e) => e.toString()).toList()
+          : const [],
+      modeAvailability: (data['mode_availability'] is List)
+          ? (data['mode_availability'] as List).map((e) => e.toString()).toList()
+          : const ['timed', 'study'],
       options: parsedOptions,
       optionImages: parsedOptionImages,
       correctAnswer: cleanCorrect,

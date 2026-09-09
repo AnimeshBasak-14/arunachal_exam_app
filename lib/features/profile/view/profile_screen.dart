@@ -220,6 +220,20 @@ class ProfileScreen extends ConsumerWidget {
                 ),
                 const Divider(height: 1, color: AppColors.divider),
                 ListTile(
+                  leading: const Icon(Icons.admin_panel_settings_outlined,
+                      color: AppColors.primary),
+                  title: const Text('ADMIN QUESTION REVIEW',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: const Text('Quality triage, OCR fixes & flag reports',
+                      style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                  trailing: const Icon(Icons.arrow_forward_ios_rounded,
+                      size: 16, color: AppColors.textHint),
+                  onTap: () {
+                    context.push('/admin/question-review');
+                  },
+                ),
+                const Divider(height: 1, color: AppColors.divider),
+                ListTile(
                   leading:
                       const Icon(Icons.logout_rounded, color: AppColors.error),
                   title: const Text('SIGN OUT',
