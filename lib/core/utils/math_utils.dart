@@ -1,128 +1,69 @@
-class MathUtils {
+﻿class MathUtils {
   MathUtils._();
 
-  /// Cleans redundant leading numbers like "Q8. Q33. ", "Q1. ", "33. "
   static String cleanQuestionText(String text) {
     var cleaned = text.trim();
-    // Strip redundant leading numbering patterns: "Q33. ", "Q.33 ", "33. ", "33) "
     cleaned = cleaned.replaceFirst(
-      RegExp(r'^(?:Q\s*\d+[\.\:\)\s]+|\d+[\.\:\)\s]+)', caseSensitive: false),
+      RegExp(r'''^(?:Q\s*\d+[\.:\)\s]+|\d+[\.:\)\s]+)''', caseSensitive: false),
       '',
     ).trim();
     return formatMath(cleaned);
   }
 
-  /// Formats LaTeX formulas into clean, readable mathematical typography
   static String formatMath(String text) {
     if (text.isEmpty) return text;
-
     var s = text;
 
-    // Trigonometric functions — handle both backslash and forward-slash prefix forms
-    // e.g. /textcosec, /textsin, \text{cosec}, \cosec
     s = s.replaceAllMapped(
-      RegExp(r'[/\\]text\{?([a-zA-Z]+)\}?', caseSensitive: false),
+      RegExp(r'''[/\\]text\{?([a-zA-Z]+)\}?''', caseSensitive: false),
       (m) => m[1]!.toLowerCase(),
     );
-    s = s.replaceAll(r'\cosec', 'cosec')
-        .replaceAll(r'\sin', 'sin')
-        .replaceAll(r'\cos', 'cos')
-        .replaceAll(r'\tan', 'tan')
-        .replaceAll(r'\cot', 'cot')
-        .replaceAll(r'\sec', 'sec')
-        .replaceAll(r'\log', 'log')
-        .replaceAll(r'\ln', 'ln');
+    s = s.replaceAll(r'\cosec', 'cosec').replaceAll(r'\sin', 'sin').replaceAll(r'\cos', 'cos')
+        .replaceAll(r'\tan', 'tan').replaceAll(r'\cot', 'cot').replaceAll(r'\sec', 'sec')
+        .replaceAll(r'\log', 'log').replaceAll(r'\ln', 'ln');
 
-    // Greek symbols & angles
-    s = s.replaceAll(r'\theta', 'θ')
-        .replaceAll(r'\alpha', 'α')
-        .replaceAll(r'\beta', 'β')
-        .replaceAll(r'\gamma', 'γ')
-        .replaceAll(r'\lambda', 'λ')
-        .replaceAll(r'\pi', 'π')
-        .replaceAll(r'\phi', 'φ')
-        .replaceAll(r'\omega', 'ω')
-        .replaceAll(r'\Delta', 'Δ');
+    s = s.replaceAll(r'\theta', 'θ').replaceAll(r'\alpha', 'α').replaceAll(r'\beta', 'β')
+        .replaceAll(r'\gamma', 'γ').replaceAll(r'\lambda', 'λ').replaceAll(r'\pi', 'π')
+        .replaceAll(r'\phi', 'φ').replaceAll(r'\omega', 'ω').replaceAll(r'\mu', 'μ')
+        .replaceAll(r'\sigma', 'σ').replaceAll(r'\rho', 'ρ').replaceAll(r'\Delta', 'Δ')
+        .replaceAll(r'\delta', 'δ');
 
-    // Degrees and angles
-    s = s.replaceAll(r'^\circ', '°')
-        .replaceAll(r'^{\circ}', '°')
-        .replaceAll(r'\circ', '°')
+    s = s.replaceAll(r'^\circ', '°').replaceAll(r'^{\circ}', '°').replaceAll(r'\circ', '°')
         .replaceAll(r'\angle', '∠');
 
-    // Mathematical operators & relations
-    s = s.replaceAll(r'\times', '×')
-        .replaceAll(r'\cdot', '·')
-        .replaceAll(r'\div', '÷')
-        .replaceAll(r'\pm', '±')
-        .replaceAll(r'\mp', '∓')
-        .replaceAll(r'\le', '≤')
-        .replaceAll(r'\leq', '≤')
-        .replaceAll(r'\ge', '≥')
-        .replaceAll(r'\geq', '≥')
-        .replaceAll(r'\ne', '≠')
-        .replaceAll(r'\neq', '≠')
-        .replaceAll(r'\approx', '≈')
-        .replaceAll(r'\infty', '∞')
-        .replaceAll(r'\in', '∈')
-        .replaceAll(r'\notin', '∉')
-        .replaceAll(r'\subset', '⊂')
-        .replaceAll(r'\subseteq', '⊆')
-        .replaceAll(r'\cap', '∩')
-        .replaceAll(r'\cup', '∪');
+    s = s.replaceAll(r'\triangle', '△').replaceAll(r'\Triangle', '△');
+    s = s.replaceAllMapped(RegExp(r'''\bIriangl[a-z]*\b''', caseSensitive: false), (_) => '△');
+    s = s.replaceAll('[triangle]', '△').replaceAll('[Triangle]', '△').replaceAll('[TRIANGLE]', '△');
 
-    // Square root
-    s = s.replaceAllMapped(RegExp(r'\\sqrt\{([^}]+)\}'), (m) => '√(${m[1]})')
-        .replaceAll(r'\sqrt', '√');
+    s = s.replaceAll(r'\parallel', '∥').replaceAll(r'\perp', '⊥').replaceAll(r'\sim', '∼')
+        .replaceAll(r'\cong', '≅').replaceAll(r'\square', '□');
 
-    // Fractions: \frac{a}{b} -> (a / b)
-    s = s.replaceAllMapped(RegExp(r'\\frac\{([^}]+)\}\{([^}]+)\}'), (m) => '(${m[1]}/${m[2]})');
+    s = s.replaceAll(r'\times', '×').replaceAll(r'\cdot', '·').replaceAll(r'\div', '÷')
+        .replaceAll(r'\pm', '±').replaceAll(r'\mp', '∓').replaceAll(r'\le', '≤')
+        .replaceAll(r'\leq', '≤').replaceAll(r'\ge', '≥').replaceAll(r'\geq', '≥')
+        .replaceAll(r'\ne', '≠').replaceAll(r'\neq', '≠').replaceAll(r'\approx', '≈')
+        .replaceAll(r'\infty', '∞').replaceAll(r'\in', '∈').replaceAll(r'\notin', '∉')
+        .replaceAll(r'\subset', '⊂').replaceAll(r'\subseteq', '⊆').replaceAll(r'\cap', '∩')
+        .replaceAll(r'\cup', '∪').replaceAll(r'\therefore', '∴').replaceAll(r'\because', '∵');
 
-    // Superscripts
-    s = s.replaceAllMapped(RegExp(r'\^\{?([0-9])\}?'), (m) {
-      final digit = m[1];
-      switch (digit) {
-        case '0': return '⁰';
-        case '1': return '¹';
-        case '2': return '²';
-        case '3': return '³';
-        case '4': return '⁴';
-        case '5': return '⁵';
-        case '6': return '⁶';
-        case '7': return '⁷';
-        case '8': return '⁸';
-        case '9': return '⁹';
-        default: return '^$digit';
-      }
+    s = s.replaceAllMapped(RegExp(r'''\\sqrt\{([^}]+)\}'''), (m) => '√(${m[1]})').replaceAll(r'\sqrt', '√');
+    s = s.replaceAllMapped(RegExp(r'''\\frac\{([^}]+)\}\{([^}]+)\}'''), (m) => '(${m[1]}/${m[2]})');
+
+    s = s.replaceAllMapped(RegExp(r'''\^\{?([0-9])\}?'''), (m) {
+      const sup = ['⁰','¹','²','³','⁴','⁵','⁶','⁷','⁸','⁹'];
+      final i = int.tryParse(m[1]!);
+      return (i != null && i < sup.length) ? sup[i] : '^${m[1]}';
     });
 
-    // Subscripts
-    s = s.replaceAllMapped(RegExp(r'_\{?([0-9])\}?'), (m) {
-      final digit = m[1];
-      switch (digit) {
-        case '0': return '₀';
-        case '1': return '₁';
-        case '2': return '₂';
-        case '3': return '₃';
-        case '4': return '₄';
-        case '5': return '₅';
-        case '6': return '₆';
-        case '7': return '₇';
-        case '8': return '₈';
-        case '9': return '₉';
-        default: return '_$digit';
-      }
+    s = s.replaceAllMapped(RegExp(r'''_\{?([0-9])\}?'''), (m) {
+      const sub = ['₀','₁','₂','₃','₄','₅','₆','₇','₈','₉'];
+      final i = int.tryParse(m[1]!);
+      return (i != null && i < sub.length) ? sub[i] : '_${m[1]}';
     });
 
-    // Strip unnecessary braces
     s = s.replaceAll('{', '').replaceAll('}', '');
-
-    // Strip raw dollar signs
     s = s.replaceAll(r'$', '');
-
-    // Normalize excess spaces
     s = s.replaceAll(RegExp(r'\s{2,}'), ' ');
-
     return s.trim();
   }
 }

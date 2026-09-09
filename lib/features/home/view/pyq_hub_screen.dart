@@ -262,6 +262,39 @@ class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerPr
       });
     }
   }
+  Widget _buildBoardPill(int index, IconData icon, String label) {
+    final isSelected = _boardTabController.index == index;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          _boardTabController.animateTo(index);
+          setState(() {});
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.primary : Colors.transparent,
+            borderRadius: BorderRadius.circular(7),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 14, color: isSelected ? Colors.white : AppColors.textSecondary),
+              const SizedBox(width: 5),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected ? Colors.white : AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -291,17 +324,23 @@ class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerPr
       return true;
     }).toList();
 
-    final boardTabBar = TabBar(
-      controller: _boardTabController,
-      indicatorColor: AppColors.primary,
-      indicatorWeight: 3,
-      labelColor: AppColors.primary,
-      unselectedLabelColor: AppColors.textSecondary,
-      labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
-      tabs: const [
-        Tab(text: 'APSSB Papers', icon: Icon(Icons.school_rounded, size: 18)),
-        Tab(text: 'APPSC Papers', icon: Icon(Icons.account_balance_rounded, size: 18)),
-      ],
+    // Compact pill segmented selector for APSSB / APPSC
+    final boardSelector = Container(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Container(
+        height: 36,
+        decoration: BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            _buildBoardPill(0, Icons.school_rounded, 'APSSB'),
+            _buildBoardPill(1, Icons.account_balance_rounded, 'APPSC'),
+          ],
+        ),
+      ),
     );
 
     return Scaffold(
@@ -316,18 +355,13 @@ class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerPr
               elevation: 0,
               backgroundColor: Colors.white,
               foregroundColor: AppColors.textPrimary,
-              bottom: boardTabBar,
             ),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 960),
           child: Column(
             children: [
-              if (widget.isEmbedded)
-                Container(
-                  color: Colors.white,
-                  child: boardTabBar,
-                ),
+              boardSelector,
 
               // Search & Filter Header
               Container(
@@ -593,20 +627,20 @@ class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerPr
             ),
             const SizedBox(height: 6),
 
-            // Subject tag
+            // Metadata row — question count (no misleading "General Studies" subject for full papers)
             Row(
               children: [
-                const Icon(Icons.subject_rounded, size: 14, color: AppColors.primary),
-                const SizedBox(width: 4),
-                Text(
-                  paper.subject,
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary),
-                ),
-                const SizedBox(width: 12),
                 const Icon(Icons.help_outline_rounded, size: 14, color: AppColors.textHint),
                 const SizedBox(width: 4),
                 Text(
                   '${paper.questionCount} Questions',
+                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                ),
+                const SizedBox(width: 12),
+                const Icon(Icons.timer_outlined, size: 14, color: AppColors.textHint),
+                const SizedBox(width: 4),
+                Text(
+                  '${paper.durationMinutes} mins',
                   style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                 ),
               ],

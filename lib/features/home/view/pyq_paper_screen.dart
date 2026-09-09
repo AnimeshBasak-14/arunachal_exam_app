@@ -467,18 +467,66 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                               _showSolutions[question.id] ?? false;
                           final comments = _questionComments[question.id] ?? [];
 
-                          return Card(
-                            key: ValueKey(question.id),
-                            margin: const EdgeInsets.only(bottom: AppSpacing.m),
-                            shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.circular(AppSpacing.radiusL),
-                              side: const BorderSide(color: AppColors.divider),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(AppSpacing.m),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                          // ─── Group Question Detection ─────────────────────
+                          // Determine if this question starts a new group OR is the first in its group
+                          final isGrouped = question.groupId != null && question.groupId!.isNotEmpty;
+                          final prevQuestion = index > 0 ? _filteredQuestions[index - 1] : null;
+                          final isFirstInGroup = isGrouped &&
+                              (prevQuestion == null || prevQuestion.groupId != question.groupId);
+                          // For subsequent questions in a group, hide duplicate passage
+                          final showPassage = question.passageOrDirection != null &&
+                              question.passageOrDirection!.trim().isNotEmpty &&
+                              (!isGrouped || isFirstInGroup);
+
+                          return Column(
+                            key: ValueKey('col_${question.id}'),
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // ─── Group Header Banner ──────────────────────
+                              if (isFirstInGroup) ...[
+                                Container(
+                                  margin: const EdgeInsets.only(bottom: 4),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF1565C0).withValues(alpha: 0.07),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: const Color(0xFF1565C0).withValues(alpha: 0.2)),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.layers_rounded, size: 15, color: Color(0xFF1565C0)),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        '📚 Group Questions — Passage',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF1565C0),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                              ],
+
+                              Card(
+                                key: ValueKey(question.id),
+                                margin: EdgeInsets.only(
+                                  bottom: AppSpacing.m,
+                                  left: isGrouped ? 4 : 0,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(AppSpacing.radiusL),
+                                  side: BorderSide(
+                                    color: isGrouped ? const Color(0xFF1565C0).withValues(alpha: 0.25) : AppColors.divider,
+                                    width: isGrouped ? 1.5 : 1.0,
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(AppSpacing.m),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   // Question Header (Subject & Actions)
                                   Row(
@@ -554,9 +602,8 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                                   ),
                                   const SizedBox(height: AppSpacing.s),
 
-                                  // Passage / Direction (if available for group questions)
-                                  if (question.passageOrDirection != null &&
-                                      question.passageOrDirection!.trim().isNotEmpty) ...[
+                                  // Passage / Direction — only shown on first question of group
+                                  if (showPassage) ...[
                                     Container(
                                       padding: const EdgeInsets.all(10),
                                       decoration: BoxDecoration(
@@ -567,15 +614,15 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          const Row(
+                                          Row(
                                             children: [
-                                              Icon(Icons.menu_book_rounded,
+                                              const Icon(Icons.menu_book_rounded,
                                                   size: 14,
                                                   color: AppColors.primary),
-                                              SizedBox(width: 6),
+                                              const SizedBox(width: 6),
                                               Text(
-                                                'Direction / Passage',
-                                                style: TextStyle(
+                                                isGrouped ? 'Comprehension / Direction' : 'Direction / Passage',
+                                                style: const TextStyle(
                                                   fontSize: 11,
                                                   fontWeight: FontWeight.bold,
                                                   color: AppColors.primary,
@@ -616,8 +663,28 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                                       child: Image.network(
                                         question.questionImage!,
                                         fit: BoxFit.contain,
-                                        errorBuilder: (_, __, ___) =>
-                                            const SizedBox.shrink(),
+                                        loadingBuilder: (ctx, child, progress) => progress == null
+                                            ? child
+                                            : const SizedBox(
+                                                height: 48,
+                                                child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                                              ),
+                                        errorBuilder: (_, __, ___) => Container(
+                                          height: 48,
+                                          decoration: BoxDecoration(
+                                            color: AppColors.background,
+                                            borderRadius: BorderRadius.circular(8),
+                                            border: Border.all(color: AppColors.divider),
+                                          ),
+                                          child: const Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Icon(Icons.broken_image_rounded, size: 20, color: AppColors.textHint),
+                                              SizedBox(width: 8),
+                                              Text('Image unavailable', style: TextStyle(fontSize: 12, color: AppColors.textHint)),
+                                            ],
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -1237,10 +1304,12 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                                       ),
                                     ],
                                   ),
-                                ],
-                              ),
-                            ),
-                          );
+                                 ],
+                               ),
+                             ),
+                           ),  // end Card
+                           ],  // end outer Column children
+                         );  // end outer Column
                         },
                       ),
                     ),

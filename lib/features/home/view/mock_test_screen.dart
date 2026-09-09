@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
@@ -20,7 +20,7 @@ class MockTestScreen extends ConsumerStatefulWidget {
   final String testType; // 'topic', 'full', '5', '10', '20'
   final String? subject; // Optional subject/topic filter (e.g., 'English', 'Mathematics')
   final String? difficulty; // Optional difficulty filter (e.g., 'Easy', 'Medium', 'Hard')
-  final String? paperType; // 'PYQ' or 'MOCK' — defaults to 'MOCK'
+  final String? paperType; // 'PYQ' or 'MOCK' â€” defaults to 'MOCK'
   final int? year; // Optional year filter for PYQ practice tests
   final int? durationMinutes; // Optional test duration in minutes
 
@@ -42,7 +42,7 @@ class MockTestScreen extends ConsumerStatefulWidget {
 class _MockTestScreenState extends ConsumerState<MockTestScreen> {
   late List<Question> _testQuestions;
   final Map<String, String> _selectedAnswers = {}; // questionId -> optionChar
-  late Timer _timer;
+  Timer? _timer; // nullable â€” timer starts only after questions are fetched
   int _secondsRemaining = 300; // Dynamic based on question count
   int _initialSeconds = 300;
   bool _isSubmitted = false;
@@ -66,10 +66,9 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
     _testQuestions = all.take(initialCount).toList();
     _initialSeconds = _secondsRemaining;
 
-    // 2. Fetch live mock test questions from Firestore / Supabase
+    // 2. Fetch live mock test questions â€” timer starts AFTER fetch completes
     _loadLiveMockQuestions();
-
-    _startTimer();
+    // Note: _startTimer() is called inside _loadLiveMockQuestions() after questions are ready
   }
 
   Future<void> _loadLiveMockQuestions() async {
@@ -167,8 +166,13 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
           _secondsRemaining = totalSeconds;
           _initialSeconds = totalSeconds;
         });
+
+        // Start timer AFTER questions and seconds are set â€” prevents mismatch
+        _startTimer();
       } else {
         if (mounted) setState(() => _isLoadingQuestions = false);
+        // Fallback: start timer with default duration so screen isn't stuck
+        _startTimer();
       }
     } catch (e) {
       debugPrint('[MockTest] Error loading live questions: $e');
@@ -185,7 +189,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
 
   @override
   void dispose() {
-    _timer.cancel();
+    _timer?.cancel();
     super.dispose();
   }
 
@@ -214,7 +218,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
   }
 
   void _submitTest({bool isAuto = false}) {
-    _timer.cancel();
+    _timer?.cancel();
 
     // Score Calculations
     int correctCount = 0;
@@ -255,7 +259,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
     final int timeTaken = _initialSeconds - _secondsRemaining;
 
     // Speed Bonus: awarded only if accuracy >= 40%; max 10 trophies
-    // Formula: timeLeft ratio × 10, rounded. Faster completion = higher bonus.
+    // Formula: timeLeft ratio Ã— 10, rounded. Faster completion = higher bonus.
     int speedBonus = 0;
     if (actualScore >= 0.40 && timeTaken < _initialSeconds) {
       final double timeLeftRatio =
@@ -860,7 +864,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
             ),
             if (widget.difficulty != null && widget.difficulty!.isNotEmpty)
               Text(
-                '${widget.difficulty} · ${_testQuestions.isEmpty ? '...' : '${_testQuestions.length} Qs'}',
+                '${widget.difficulty} Â· ${_testQuestions.isEmpty ? '...' : '${_testQuestions.length} Qs'}',
                 style: const TextStyle(fontSize: 10, color: Colors.white70, fontWeight: FontWeight.normal),
               )
             else if (!_isLoadingQuestions)
@@ -1200,3 +1204,4 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
     );
   }
 }
+

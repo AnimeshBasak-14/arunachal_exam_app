@@ -11,24 +11,13 @@ class ExamsHubScreen extends StatefulWidget {
   State<ExamsHubScreen> createState() => _ExamsHubScreenState();
 }
 
-class _ExamsHubScreenState extends State<ExamsHubScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _ExamsHubScreenState extends State<ExamsHubScreen> {
+  late int _selectedIndex;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(
-      length: 2,
-      vsync: this,
-      initialIndex: widget.initialTabIndex,
-    );
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+    _selectedIndex = widget.initialTabIndex;
   }
 
   @override
@@ -43,31 +32,64 @@ class _ExamsHubScreenState extends State<ExamsHubScreen>
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: AppColors.textPrimary,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: AppColors.primary,
-          indicatorWeight: 3,
-          labelColor: AppColors.primary,
-          unselectedLabelColor: AppColors.textSecondary,
-          labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
-          tabs: const [
-            Tab(
-              text: 'PYQ Papers',
-              icon: Icon(Icons.history_edu_rounded, size: 20),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(56),
+          child: Container(
+            color: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Container(
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  _buildTab(0, Icons.history_edu_rounded, 'PYQ Papers'),
+                  _buildTab(1, Icons.assignment_turned_in_rounded, 'Mock Tests'),
+                ],
+              ),
             ),
-            Tab(
-              text: 'Mock Tests',
-              icon: Icon(Icons.assignment_turned_in_rounded, size: 20),
-            ),
-          ],
+          ),
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
+      body: IndexedStack(
+        index: _selectedIndex,
         children: const [
           PyqHubScreen(isEmbedded: true),
           MockHubScreen(isEmbedded: true),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTab(int index, IconData icon, String label) {
+    final isSelected = _selectedIndex == index;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _selectedIndex = index),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.primary : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 16, color: isSelected ? Colors.white : AppColors.textSecondary),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected ? Colors.white : AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
