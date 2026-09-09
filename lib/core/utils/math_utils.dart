@@ -18,20 +18,18 @@ class MathUtils {
 
     var s = text;
 
-    // Trigonometric functions
-    s = s.replaceAll(r'\text{cosec}', 'cosec')
-        .replaceAll(r'\cosec', 'cosec')
-        .replaceAll(r'\text{sin}', 'sin')
+    // Trigonometric functions — handle both backslash and forward-slash prefix forms
+    // e.g. /textcosec, /textsin, \text{cosec}, \cosec
+    s = s.replaceAllMapped(
+      RegExp(r'[/\\]text\{?([a-zA-Z]+)\}?', caseSensitive: false),
+      (m) => m[1]!.toLowerCase(),
+    );
+    s = s.replaceAll(r'\cosec', 'cosec')
         .replaceAll(r'\sin', 'sin')
-        .replaceAll(r'\text{cos}', 'cos')
         .replaceAll(r'\cos', 'cos')
-        .replaceAll(r'\text{tan}', 'tan')
         .replaceAll(r'\tan', 'tan')
-        .replaceAll(r'\text{cot}', 'cot')
         .replaceAll(r'\cot', 'cot')
-        .replaceAll(r'\text{sec}', 'sec')
         .replaceAll(r'\sec', 'sec')
-        .replaceAll(r'\text{log}', 'log')
         .replaceAll(r'\log', 'log')
         .replaceAll(r'\ln', 'ln');
 

@@ -156,14 +156,7 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authViewModelProvider);
     final userName = authState.user?.name ?? 'Student Name';
-    final exams = ref.watch(examViewModelProvider);
     final searchQuery = ref.watch(searchFilterProvider);
-
-    final filteredExams = exams
-        .where((exam) =>
-            exam.code.toLowerCase().contains(searchQuery.toLowerCase()) ||
-            exam.name.toLowerCase().contains(searchQuery.toLowerCase()))
-        .toList();
 
     Color getAvatarColor(String? avatarName) {
       switch (avatarName) {
@@ -474,68 +467,68 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
 
                 // Render dynamic search results if active
                 if (searchQuery.isNotEmpty) ...[
-                  Text(
-                    'Search Results (${filteredExams.length})',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
+                  const SizedBox(height: AppSpacing.s),
+                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.m),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusL),
+                      border: Border.all(color: AppColors.divider),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.search_rounded, size: 18, color: AppColors.primary),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Search results for "$searchQuery"',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.textPrimary),
+                              ),
+                            ),
+                          ],
                         ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Find questions and papers in:',
+                          style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () {
+                                  ref.read(searchFilterProvider.notifier).state = '';
+                                  _searchController.clear();
+                                  ref.read(currentTabProvider.notifier).state = 1;
+                                },
+                                icon: const Icon(Icons.history_edu_rounded, size: 16, color: AppColors.primary),
+                                label: const Text('PYQ Bank', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12)),
+                                style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.primary)),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () {
+                                  ref.read(searchFilterProvider.notifier).state = '';
+                                  _searchController.clear();
+                                  ref.read(currentTabProvider.notifier).state = 2;
+                                },
+                                icon: const Icon(Icons.assignment_turned_in_rounded, size: 16, color: AppColors.primary),
+                                label: const Text('Mock Tests', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12)),
+                                style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.primary)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.m),
-                  if (filteredExams.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: AppSpacing.xl),
-                      child: Center(
-                        child: Text(
-                          'No matching exams found.',
-                          style: TextStyle(color: AppColors.textSecondary),
-                        ),
-                      ),
-                    )
-                  else
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: filteredExams.length,
-                      itemBuilder: (context, index) {
-                        final exam = filteredExams[index];
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: AppSpacing.s),
-                          decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            borderRadius:
-                                BorderRadius.circular(AppSpacing.radiusL),
-                            border:
-                                Border.all(color: AppColors.divider, width: 1),
-                          ),
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: AppColors.primaryLight,
-                              child: Icon(exam.icon,
-                                  color: AppColors.primary, size: 22),
-                            ),
-                            title: Text(
-                              exam.code,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textPrimary),
-                            ),
-                            subtitle: Text(
-                              exam.name,
-                              style: const TextStyle(
-                                  color: AppColors.textSecondary, fontSize: 13),
-                            ),
-                            trailing: const Icon(
-                                Icons.arrow_forward_ios_rounded,
-                                size: 16,
-                                color: AppColors.textHint),
-                            onTap: () {
-                              context.push('/exam-detail/${exam.id}');
-                            },
-                          ),
-                        );
-                      },
-                    ),
                 ] else ...[
                   // Word of the Day Card
                   const WordOfDayCard(),

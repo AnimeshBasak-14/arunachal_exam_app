@@ -312,7 +312,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final examCode = state.pathParameters['examCode'] ?? '';
           final type = state.pathParameters['type'] ?? '';
-          return MockTestScreen(examCode: examCode, testType: type);
+          // Optional filter params via query string: ?subject=English&difficulty=Easy&paperType=MOCK&year=2024
+          final subject = state.uri.queryParameters['subject'];
+          final difficulty = state.uri.queryParameters['difficulty'];
+          final paperType = state.uri.queryParameters['paperType'];
+          final yearStr = state.uri.queryParameters['year'];
+          final year = yearStr != null ? int.tryParse(yearStr) : null;
+          return MockTestScreen(
+            examCode: examCode,
+            testType: type,
+            subject: subject,
+            difficulty: difficulty,
+            paperType: paperType,
+            year: year,
+          );
         },
       ),
       GoRoute(

@@ -364,8 +364,18 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => context.pop(),
         ),
-        title: Text(
-          '${widget.examCode} ${widget.year > 2000 ? widget.year : ''} PYQ Papers'.trim(),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${widget.examCode}${widget.year > 2000 ? ' ${widget.year}' : ''}',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const Text(
+              'Study Mode — Tap an option to answer',
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.white70),
+            ),
+          ],
         ),
       ),
       body: _questions.isEmpty

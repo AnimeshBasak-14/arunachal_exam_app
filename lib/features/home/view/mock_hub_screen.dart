@@ -36,7 +36,9 @@ class MockTestItem {
       category = 'Maths';
     } else if (examCode.contains('CIVIL') || examCode.contains('COMP') || examCode.contains('AGRI') || title.toLowerCase().contains('civil') || title.toLowerCase().contains('technical')) {
       category = 'Technical';
-    } else if (title.toLowerCase().contains('english') || title.toLowerCase().contains('grammar')) {
+    } else if (title.toLowerCase().contains('grammar')) {
+      category = 'Grammar';
+    } else if (title.toLowerCase().contains('english') || title.toLowerCase().contains('vocab')) {
       category = 'English';
     } else if (title.toLowerCase().contains('awareness') || title.toLowerCase().contains('current')) {
       category = 'GA';
@@ -78,6 +80,7 @@ class _MockHubScreenState extends ConsumerState<MockHubScreen> {
     'GK',
     'GA',
     'English',
+    'Grammar',
     'Technical',
     'Full Mock',
   ];
@@ -174,6 +177,28 @@ class _MockHubScreenState extends ConsumerState<MockHubScreen> {
       durationMinutes: 12,
       difficulty: 'Easy',
       description: 'High-frequency synonyms, antonyms, and idioms tested in Arunachal state examinations.',
+    ),
+
+    // Grammar (separate from English vocabulary)
+    MockTestItem(
+      id: 'mock_grammar_1',
+      title: 'APSSB English Grammar Mock (Tenses, Voice & Narration)',
+      category: 'Grammar',
+      examCode: 'APSSB-CSLE',
+      questionCount: 20,
+      durationMinutes: 15,
+      difficulty: 'Medium',
+      description: 'Subject-verb agreement, active/passive voice, direct/indirect speech with explanations.',
+    ),
+    MockTestItem(
+      id: 'mock_grammar_2',
+      title: 'APPSC Grammar Sprint — Articles, Prepositions & Conjunctions',
+      category: 'Grammar',
+      examCode: 'APPSC-CCE',
+      questionCount: 15,
+      durationMinutes: 12,
+      difficulty: 'Easy',
+      description: 'Beginner to intermediate grammar rules covering articles, prepositions, and sentence connectors.',
     ),
 
     // Technical Subjects
@@ -441,6 +466,64 @@ class _MockHubScreenState extends ConsumerState<MockHubScreen> {
                         ),
                       ],
                     ),
+
+                    // ─── Smart Filtered Test CTA ─────────────────────────────────
+                    if (_selectedCategory != 'All' || _selectedLevel != 'All Levels' || _selectedMockType != 'All Types') ...[
+                      const SizedBox(height: AppSpacing.s),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            // Build question count from mock type selection
+                            final targetCount = _selectedMockType == '5 Questions'
+                                ? '5'
+                                : _selectedMockType == '10 Questions'
+                                    ? '10'
+                                    : _selectedMockType == '20 Questions'
+                                        ? '20'
+                                        : '10';
+
+                            // Map category/topic to subject string for query
+                            final subjectMap = {
+                              'Maths': 'Mathematics',
+                              'GK': 'General Knowledge',
+                              'GA': 'General Awareness',
+                              'English': 'English',
+                              'Grammar': 'Grammar',
+                              'Technical': 'Technical',
+                              'Full Mock': '',
+                            };
+                            final subject = _selectedCategory != 'All'
+                                ? (subjectMap[_selectedCategory] ?? _selectedCategory)
+                                : '';
+                            final difficulty = _selectedLevel != 'All Levels' ? _selectedLevel : '';
+
+                            // Build URI with optional query params
+                            var uri = '/mock-test/APSSB-MOCK/$targetCount';
+                            final params = <String>[];
+                            if (subject.isNotEmpty) params.add('subject=${Uri.encodeComponent(subject)}');
+                            if (difficulty.isNotEmpty) params.add('difficulty=${Uri.encodeComponent(difficulty)}');
+                            if (params.isNotEmpty) uri += '?${params.join('&')}';
+
+                            context.push(uri);
+                          },
+                          icon: const Icon(Icons.play_circle_filled_rounded, size: 18, color: Colors.white),
+                          label: Text(
+                            _selectedCategory != 'All'
+                                ? 'Start $_selectedCategory Test (${ _selectedMockType == 'All Types' ? '10Q' : _selectedMockType.replaceAll(' Questions', 'Q')})'
+                                : 'Start Filtered Mock Test',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1B5E20),
+                            padding: const EdgeInsets.symmetric(vertical: 11),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusM)),
+                            elevation: 0,
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -492,6 +575,10 @@ class _MockHubScreenState extends ConsumerState<MockHubScreen> {
       case 'English':
         categoryColor = Colors.indigo;
         categoryIcon = Icons.spellcheck_rounded;
+        break;
+      case 'Grammar':
+        categoryColor = Colors.deepPurple;
+        categoryIcon = Icons.menu_book_rounded;
         break;
       case 'Technical':
         categoryColor = Colors.deepOrange;
@@ -612,10 +699,19 @@ class _MockHubScreenState extends ConsumerState<MockHubScreen> {
               children: [
                 const Icon(Icons.help_outline_rounded, size: 14, color: AppColors.textHint),
                 const SizedBox(width: 4),
-                Text(
-                  '${test.questionCount} Qs',
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                ),
+                Builder(builder: (context) {
+                  final effectiveCount = _selectedMockType == '5 Questions'
+                      ? (test.questionCount > 5 ? 5 : test.questionCount)
+                      : _selectedMockType == '10 Questions'
+                          ? (test.questionCount > 10 ? 10 : test.questionCount)
+                          : _selectedMockType == '20 Questions'
+                              ? (test.questionCount > 20 ? 20 : test.questionCount)
+                              : test.questionCount;
+                  return Text(
+                    '$effectiveCount Questions',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  );
+                }),
                 const SizedBox(width: 12),
                 const Icon(Icons.timer_outlined, size: 14, color: AppColors.textHint),
                 const SizedBox(width: 4),

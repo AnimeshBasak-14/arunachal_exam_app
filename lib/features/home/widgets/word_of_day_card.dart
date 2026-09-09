@@ -53,6 +53,7 @@ class _WordOfDayCardState extends State<WordOfDayCard> {
 
     return GestureDetector(
       onTap: () => setState(() => _expanded = !_expanded),
+      onLongPress: _shuffle, // Long-press to get next word/idiom/quote
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -75,7 +76,7 @@ class _WordOfDayCardState extends State<WordOfDayCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Row: Badge & Next/Expand controls
+            // Header Row: Badge & Expand control
             Row(
               children: [
                 Container(
@@ -95,25 +96,6 @@ class _WordOfDayCardState extends State<WordOfDayCard> {
                   ),
                 ),
                 const Spacer(),
-                InkWell(
-                  onTap: _shuffle,
-                  borderRadius: BorderRadius.circular(16),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.refresh_rounded, color: Colors.white70, size: 16),
-                        SizedBox(width: 4),
-                        Text(
-                          'Next',
-                          style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 4),
                 Icon(
                   _expanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
                   color: Colors.white54,

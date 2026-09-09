@@ -18,11 +18,19 @@ import '../../auth/viewmodel/auth_viewmodel.dart';
 class MockTestScreen extends ConsumerStatefulWidget {
   final String examCode;
   final String testType; // 'topic', 'full', '5', '10', '20'
+  final String? subject; // Optional subject/topic filter (e.g., 'English', 'Mathematics')
+  final String? difficulty; // Optional difficulty filter (e.g., 'Easy', 'Medium', 'Hard')
+  final String? paperType; // 'PYQ' or 'MOCK' — defaults to 'MOCK'
+  final int? year; // Optional year filter for PYQ practice tests
 
   const MockTestScreen({
     super.key,
     required this.examCode,
     required this.testType,
+    this.subject,
+    this.difficulty,
+    this.paperType,
+    this.year,
   });
 
   @override
@@ -65,22 +73,35 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
   Future<void> _loadLiveMockQuestions() async {
     setState(() => _isLoadingQuestions = true);
     try {
-      // 1. Fetch questions strictly of paperType MOCK
+      final targetPaperType = widget.paperType?.toUpperCase() ?? 'MOCK';
+
+      // 1. Fetch questions for the given examCode
       final examQs = await QuestionRepository.fetchLiveQuestions(
         examCode: widget.examCode,
-        paperType: 'MOCK',
+        paperType: targetPaperType,
+        year: widget.year,
       );
 
-      // 2. Fetch general mock pool questions (APSSB-MOCK)
-      final generalMocks = await QuestionRepository.fetchLiveQuestions(
-        examCode: 'APSSB-MOCK',
-        paperType: 'MOCK',
-      );
+      // 2. Also fetch from general MOCK pool if not a PYQ test
+      List<Question> pool = [...examQs.where((q) => q.paperType.toUpperCase() == targetPaperType)];
 
-      var pool = <Question>[
-        ...examQs.where((q) => q.paperType.toUpperCase() == 'MOCK'),
-        ...generalMocks.where((q) => q.paperType.toUpperCase() == 'MOCK'),
-      ];
+      if (targetPaperType == 'MOCK' && pool.isEmpty) {
+        final generalMocks = await QuestionRepository.fetchLiveQuestions(
+          examCode: 'APSSB-MOCK',
+          paperType: 'MOCK',
+        );
+        pool = [...generalMocks.where((q) => q.paperType.toUpperCase() == 'MOCK')];
+      }
+
+      // 3. For broad subject-based tests (e.g., from PYQ bank subject filter),
+      //    fetch across all exam codes when examCode is 'ALL'
+      if (widget.examCode.toUpperCase() == 'ALL') {
+        final broadPool = await QuestionRepository.fetchLiveQuestions(
+          examCode: '',
+          paperType: targetPaperType,
+        );
+        pool = [...broadPool.where((q) => q.paperType.toUpperCase() == targetPaperType)];
+      }
 
       // Fallback if empty
       if (pool.isEmpty) {
@@ -88,6 +109,24 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
           examCode: widget.examCode,
         );
         pool = fallback;
+      }
+
+      // 4. Apply optional subject filter
+      if (widget.subject != null && widget.subject!.isNotEmpty && widget.subject != 'All') {
+        final subjectLower = widget.subject!.toLowerCase();
+        final subjectFiltered = pool.where((q) =>
+          q.subject.toLowerCase().contains(subjectLower) ||
+          subjectLower.contains(q.subject.toLowerCase())
+        ).toList();
+        if (subjectFiltered.isNotEmpty) pool = subjectFiltered;
+      }
+
+      // 5. Apply optional difficulty filter
+      if (widget.difficulty != null && widget.difficulty!.isNotEmpty && widget.difficulty != 'All Levels') {
+        final diffFiltered = pool.where((q) =>
+          q.difficulty.toLowerCase() == widget.difficulty!.toLowerCase()
+        ).toList();
+        if (diffFiltered.isNotEmpty) pool = diffFiltered;
       }
 
       if (pool.isNotEmpty && mounted) {
@@ -793,7 +832,28 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
               );
             },
         ),
-        title: Text('${widget.examCode} Mock Test'),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.subject != null && widget.subject!.isNotEmpty
+                  ? '${widget.subject} ${widget.paperType == 'PYQ' ? 'PYQ Practice' : 'Mock Test'}'
+                  : '${widget.examCode} Mock Test',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+              overflow: TextOverflow.ellipsis,
+            ),
+            if (widget.difficulty != null && widget.difficulty!.isNotEmpty)
+              Text(
+                '${widget.difficulty} · ${_testQuestions.isEmpty ? '...' : '${_testQuestions.length} Qs'}',
+                style: const TextStyle(fontSize: 10, color: Colors.white70, fontWeight: FontWeight.normal),
+              )
+            else if (!_isLoadingQuestions)
+              Text(
+                '${_testQuestions.length} Questions',
+                style: const TextStyle(fontSize: 10, color: Colors.white70, fontWeight: FontWeight.normal),
+              ),
+          ],
+        ),
         actions: [
           Center(
             child: Padding(

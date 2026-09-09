@@ -269,13 +269,21 @@ class QuestionRepository {
 
     // 1. Query Supabase (Relational PostgreSQL DB with Question Groups / Passages support)
     try {
+      // Build Supabase REST query using correct PostgREST nested filter syntax
       var supaUrl =
-          'https://fllopztywwblbucvaths.supabase.co/rest/v1/questions?select=*,question_groups(*),tests!inner(*)&tests.exam_code=ilike.*$cleanCode*&order=question_number';
+          'https://fllopztywwblbucvaths.supabase.co/rest/v1/questions?select=*,question_groups(*),tests!inner(*)&order=question_number';
+
+      // Only filter by exam_code if a specific code is provided (not empty or 'ALL')
+      if (cleanCode.isNotEmpty && cleanCode != 'ALL') {
+        final examFilter = Uri.encodeComponent(cleanCode);
+        supaUrl += '&tests.exam_code=ilike.*$examFilter*';
+      }
+
       if (year != null) {
         supaUrl += '&tests.year=eq.$year';
       }
       if (paperType != null && paperType.isNotEmpty) {
-        supaUrl += '&tests.paper_type=eq.${paperType.toUpperCase()}';
+        supaUrl += '&tests.paper_type=eq.${Uri.encodeComponent(paperType.toUpperCase())}';
       }
 
       final response = await http.get(
@@ -284,8 +292,9 @@ class QuestionRepository {
           'apikey': 'sb_publishable_y68QKKHxBTZxBP3Sf1X7tw_zfFnXX8M',
           'Authorization':
               'Bearer sb_publishable_y68QKKHxBTZxBP3Sf1X7tw_zfFnXX8M',
+          'Prefer': 'return=representation',
         },
-      ).timeout(const Duration(seconds: 4));
+      ).timeout(const Duration(seconds: 6));
 
       if (response.statusCode == 200) {
         final List list = jsonDecode(response.body);

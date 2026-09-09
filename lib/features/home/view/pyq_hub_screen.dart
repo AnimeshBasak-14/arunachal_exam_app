@@ -84,6 +84,7 @@ class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerPr
     'General Studies',
     'Elementary Maths',
     'General English',
+    'Grammar',
     'Reasoning / CSAT',
     'Civil Engineering',
   ];
@@ -429,6 +430,42 @@ class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerPr
                         ),
                       ],
                     ),
+
+                    // ─── Smart Practice CTA (PYQ Topic Filter) ───────────────────
+                    if (_selectedSubject != 'All Subjects') ...[
+                      const SizedBox(height: AppSpacing.s),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            // Choose exam code: use specific exam filter or 'ALL' for cross-exam practice
+                            final examCode = _selectedExam != 'All Exams'
+                                ? '$activeBoard-${_selectedExam}'
+                                : 'ALL';
+
+                            // Build URI — use PYQ paper type, with subject filter
+                            final year = _selectedYear != 'All Years' ? _selectedYear : '';
+                            var uri = '/mock-test/$examCode/10?subject=${Uri.encodeComponent(_selectedSubject)}&paperType=PYQ';
+                            if (year.isNotEmpty) uri += '&year=$year';
+
+                            context.push(uri);
+                          },
+                          icon: const Icon(Icons.quiz_rounded, size: 18, color: Colors.white),
+                          label: Text(
+                            'Practice $_selectedSubject Questions'
+                                '${_selectedExam != 'All Exams' ? ' · $_selectedExam' : ' (All Exams)'}',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.white),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            padding: const EdgeInsets.symmetric(vertical: 11),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusM)),
+                            elevation: 0,
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
