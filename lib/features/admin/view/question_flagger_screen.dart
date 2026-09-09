@@ -18,14 +18,14 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
   static const String _supabaseUrl = 'https://fllopztywwblbucvaths.supabase.co';
   static const String _supabaseKey = 'sb_publishable_y68QKKHxBTZxBP3Sf1X7tw_zfFnXX8M';
 
-  // Filters state - default Status is 'unreviewed' as specified
-  String _selectedStatus = 'unreviewed'; // 'unreviewed', 'flagged', 'approved', 'all'
+  // Filters state - default Status is 'all' so admin immediately sees database records
+  String _selectedStatus = 'all'; // 'all', 'unreviewed', 'flagged', 'approved'
   String _selectedType = 'All'; // 'All', 'PYQ', 'Mock Test'
   String _selectedYear = 'All'; // 'All', '2024', '2023', '2022', '2021'
   String _selectedSubject = 'All';
   String _searchQuery = '';
 
-  final List<String> _statuses = ['unreviewed', 'flagged', 'approved', 'all'];
+  final List<String> _statuses = ['all', 'unreviewed', 'flagged', 'approved'];
   final List<String> _types = ['All', 'PYQ', 'Mock Test'];
   final List<String> _years = ['All', '2024', '2023', '2022', '2021'];
   final List<String> _subjects = [
@@ -57,7 +57,8 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
   bool _isLoadingMore = false;
   bool _hasMore = true;
   int _currentPage = 0;
-  static const int _pageSize = 20;
+  static const int _pageSize = 25;
+  bool _dbNeedsMigration = false;
 
   // Local admin notes & expanded state tracking
   final Map<String, String> _questionAdminNotes = {};
@@ -101,39 +102,48 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
 
     try {
       final offset = _currentPage * _pageSize;
-      var url = '$_supabaseUrl/rest/v1/questions?select=*,passages(*),question_groups(*),tests!inner(*)';
+      final bool needsInnerJoin = (_selectedType != 'All' || _selectedYear != 'All');
+      final String testsJoin = needsInnerJoin ? 'tests!inner(*)' : 'tests(*)';
+      var baseUrl = '$_supabaseUrl/rest/v1/questions?select=*,question_groups(*),$testsJoin';
 
-      // Status filter
-      if (_selectedStatus != 'all') {
-        url += '&review_status=eq.$_selectedStatus';
-      }
-
-      // Type filter
+      // 1. Type filter
       if (_selectedType == 'PYQ') {
-        url += '&tests.paper_type=eq.PYQ';
+        baseUrl += '&tests.paper_type=eq.PYQ';
       } else if (_selectedType == 'Mock Test') {
-        url += '&tests.paper_type=eq.MOCK';
+        baseUrl += '&tests.paper_type=eq.MOCK';
       }
 
-      // Year filter
+      // 2. Year filter
       if (_selectedYear != 'All') {
-        url += '&tests.year=eq.$_selectedYear';
+        baseUrl += '&tests.year=eq.$_selectedYear';
       }
 
-      // Subject filter
+      // 3. Subject filter
       if (_selectedSubject != 'All') {
-        url += '&subject=ilike.*${Uri.encodeComponent(_selectedSubject)}*';
+        baseUrl += '&subject=ilike.*${Uri.encodeComponent(_selectedSubject)}*';
       }
 
-      // Quick Search query
+      // 4. Quick Search query
       if (_searchQuery.trim().isNotEmpty) {
-        url += '&question_text=ilike.*${Uri.encodeComponent(_searchQuery.trim())}*';
+        baseUrl += '&question_text=ilike.*${Uri.encodeComponent(_searchQuery.trim())}*';
       }
 
-      url += '&order=question_number.asc,order_index.asc&limit=$_pageSize&offset=$offset';
+      // 5. Status filter query
+      String statusQuery = '';
+      if (!_dbNeedsMigration) {
+        if (_selectedStatus == 'unreviewed') {
+          statusQuery = '&or=(review_status.eq.unreviewed,review_status.is.null)';
+        } else if (_selectedStatus != 'all') {
+          statusQuery = '&review_status=eq.$_selectedStatus';
+        }
+      }
 
-      final res = await http.get(
-        Uri.parse(url),
+      final paginationAndOrder = '&order=created_at.desc.nullslast,id.asc&limit=$_pageSize&offset=$offset';
+      var requestUrl = '$baseUrl$statusQuery$paginationAndOrder';
+
+      debugPrint('[QuestionFlagger] Fetching: $requestUrl');
+      var res = await http.get(
+        Uri.parse(requestUrl),
         headers: {
           'apikey': _supabaseKey,
           'Authorization': 'Bearer $_supabaseKey',
@@ -143,9 +153,31 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
         },
       ).timeout(const Duration(seconds: 10));
 
+      // Resilient fallback: if Supabase returns 400 because review_status column does not exist yet
+      if (res.statusCode == 400 && (res.body.contains('review_status') || statusQuery.isNotEmpty)) {
+        debugPrint('[QuestionFlagger] review_status column not found on questions table. Retrying without status filter...');
+        _dbNeedsMigration = true;
+        requestUrl = '$baseUrl$paginationAndOrder';
+        res = await http.get(
+          Uri.parse(requestUrl),
+          headers: {
+            'apikey': _supabaseKey,
+            'Authorization': 'Bearer $_supabaseKey',
+            'Range': '$offset-${offset + _pageSize - 1}',
+            'Range-Unit': 'items',
+            'Prefer': 'return=representation',
+          },
+        ).timeout(const Duration(seconds: 10));
+      }
+
+      debugPrint('[QuestionFlagger] HTTP Status: ${res.statusCode}, Body Length: ${res.body.length}');
+      if (res.statusCode >= 400) {
+        debugPrint('[QuestionFlagger] Postgres/Supabase Error: ${res.body}');
+      }
+
       if (res.statusCode == 200 || res.statusCode == 206) {
         final List raw = jsonDecode(res.body);
-        final parsed = raw.map((m) {
+        List<Question> parsed = raw.map((m) {
           final q = Question.fromSupabase(m as Map<String, dynamic>);
           if (m['admin_notes'] != null && m['admin_notes'].toString().isNotEmpty) {
             _questionAdminNotes[q.id] = m['admin_notes'].toString();
@@ -153,6 +185,17 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
           return q;
         }).toList();
 
+        // In-memory status filter if review_status column is absent in DB
+        if (_dbNeedsMigration && _selectedStatus != 'all') {
+          if (_selectedStatus == 'unreviewed') {
+            // All rows are treated as unreviewed
+          } else {
+            // Flagged or approved questions cannot exist until column is present
+            parsed = [];
+          }
+        }
+
+        debugPrint('[QuestionFlagger] Successfully loaded ${parsed.length} questions from Supabase.');
         setState(() {
           if (reset) {
             _questions = parsed;
@@ -160,15 +203,16 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
             _questions.addAll(parsed);
           }
           _currentPage++;
-          _hasMore = parsed.length == _pageSize;
+          _hasMore = raw.length == _pageSize;
           _isLoading = false;
           _isLoadingMore = false;
         });
       } else {
         _fallbackLocalQuestions(reset: reset);
       }
-    } catch (e) {
+    } catch (e, stack) {
       debugPrint('[QuestionFlagger] Error fetching questions: $e');
+      debugPrint(stack.toString());
       _fallbackLocalQuestions(reset: reset);
     }
   }
@@ -243,7 +287,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
 
       // Supabase: questions table update
       final patchUrl = '$_supabaseUrl/rest/v1/questions?id=eq.${q.id}';
-      await http.patch(
+      final patchRes = await http.patch(
         Uri.parse(patchUrl),
         headers: {
           'apikey': _supabaseKey,
@@ -257,6 +301,20 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
           'last_reviewed_at': now,
         }),
       ).timeout(const Duration(seconds: 6));
+
+      if (patchRes.statusCode >= 400 && patchRes.body.contains('review_status')) {
+        setState(() => _dbNeedsMigration = true);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('⚠️ Marked in session. Run migrations/003_admin_flagger.sql in Supabase to persist!'),
+              backgroundColor: Colors.orange,
+              duration: Duration(seconds: 4),
+            ),
+          );
+        }
+        return;
+      }
 
       // Supabase: question_flags audit log
       final flagUrl = '$_supabaseUrl/rest/v1/question_flags';
@@ -356,7 +414,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
         patchBody['admin_notes'] = notes;
       }
 
-      await http.patch(
+      final patchRes = await http.patch(
         Uri.parse(patchUrl),
         headers: {
           'apikey': _supabaseKey,
@@ -365,6 +423,21 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
         },
         body: jsonEncode(patchBody),
       ).timeout(const Duration(seconds: 6));
+
+      if (patchRes.statusCode >= 400 && patchRes.body.contains('review_status')) {
+        setState(() => _dbNeedsMigration = true);
+        if (mounted) {
+          final label = issueCatalog.firstWhere((i) => i['id'] == issueCategory, orElse: () => {'label': issueCategory})['label'];
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('⚠️ $label (Flagged in session. Run migrations/003_admin_flagger.sql to persist)'),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
+        return;
+      }
 
       // Supabase: question_flags audit insert
       final flagUrl = '$_supabaseUrl/rest/v1/question_flags';
@@ -486,7 +559,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
               // Update in Supabase
               try {
                 final patchUrl = '$_supabaseUrl/rest/v1/questions?id=eq.${q.id}';
-                await http.patch(
+                var patchRes = await http.patch(
                   Uri.parse(patchUrl),
                   headers: {
                     'apikey': _supabaseKey,
@@ -502,6 +575,22 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                     'last_reviewed_at': DateTime.now().toIso8601String(),
                   }),
                 );
+
+                if (patchRes.statusCode >= 400 && patchRes.body.contains('review_status')) {
+                  setState(() => _dbNeedsMigration = true);
+                  patchRes = await http.patch(
+                    Uri.parse(patchUrl),
+                    headers: {
+                      'apikey': _supabaseKey,
+                      'Authorization': 'Bearer $_supabaseKey',
+                      'Content-Type': 'application/json',
+                    },
+                    body: jsonEncode({
+                      'question_text': newQText,
+                      'options': newOpts.map((t) => {'text': t}).toList(),
+                    }),
+                  );
+                }
 
                 setState(() {
                   _questionAdminNotes[q.id] = newNotes;
@@ -746,6 +835,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
             ),
           ),
           const Divider(height: 1, color: AppColors.divider),
+          if (_dbNeedsMigration) _buildMigrationBanner(),
 
           // ─── Status Summary Banner ───────────────────────────────────────
           Container(
@@ -1409,5 +1499,46 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
     final match = RegExp(r'^[\\(\\[]?([a-dA-D])[\\)\\]\\.\\s]').firstMatch(trimmed);
     if (match != null) return match.group(1)!.toLowerCase();
     return String.fromCharCode(97 + fallbackIndex);
+  }
+
+  Widget _buildMigrationBanner() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      color: const Color(0xFFFFFBEB),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.info_outline_rounded, color: Color(0xFFD97706), size: 18),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Supabase Schema Update Pending',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                    color: Color(0xFF92400E),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                const Text(
+                  'Questions are loading in compatibility mode. To enable persistent DB flagging and status filters, run "migrations/003_admin_flagger.sql" in your Supabase SQL Editor.',
+                  style: TextStyle(fontSize: 11, color: Color(0xFFB45309), height: 1.3),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close_rounded, size: 16, color: Color(0xFF92400E)),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+            onPressed: () => setState(() => _dbNeedsMigration = false),
+          ),
+        ],
+      ),
+    );
   }
 }

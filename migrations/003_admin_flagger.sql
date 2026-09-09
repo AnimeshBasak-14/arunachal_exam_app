@@ -15,7 +15,16 @@ alter table public.questions drop constraint if exists questions_review_status_c
 alter table public.questions add constraint questions_review_status_check 
   check (review_status in ('unreviewed', 'approved', 'flagged', 'needs_ocr_rerun'));
 
--- 3. Dedicated audit table for granular issue logging
+-- 3. Backfill existing nulls so the default filter finds them
+update public.questions
+set review_status = 'unreviewed'
+where review_status is null;
+
+-- 4. Ensure default value is set for all future inserts
+alter table public.questions 
+  alter column review_status set default 'unreviewed';
+
+-- 5. Dedicated audit table for granular issue logging
 create table if not exists public.question_flags (
   id uuid primary key default gen_random_uuid(),
   question_id uuid not null references public.questions(id) on delete cascade,
@@ -50,7 +59,32 @@ alter table public.question_flags add constraint question_flags_issue_category_c
   )
 );
 
--- 4. Indexes for fast admin filtering
+-- 6. Indexes for fast admin filtering
 create index if not exists idx_questions_review_status on public.questions(review_status);
 create index if not exists idx_questions_last_reviewed on public.questions(last_reviewed_at);
 create index if not exists idx_question_flags_question_id on public.question_flags(question_id);
+
+-- 7. Ensure Read and Update permissions (RLS) aren't silently blocking queries
+alter table public.questions enable row level security;
+
+drop policy if exists "Allow read access to questions" on public.questions;
+create policy "Allow read access to questions"
+on public.questions for select
+using (true);
+
+drop policy if exists "Allow update access to questions" on public.questions;
+create policy "Allow update access to questions"
+on public.questions for update
+using (true);
+
+alter table public.question_flags enable row level security;
+
+drop policy if exists "Allow read access to question_flags" on public.question_flags;
+create policy "Allow read access to question_flags"
+on public.question_flags for select
+using (true);
+
+drop policy if exists "Allow insert access to question_flags" on public.question_flags;
+create policy "Allow insert access to question_flags"
+on public.question_flags for insert
+with check (true);

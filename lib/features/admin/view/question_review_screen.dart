@@ -22,7 +22,7 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
   String _selectedSource = 'All'; // 'All', 'PYQ', 'MOCK'
   String _selectedYear = 'All';
   String _selectedSubject = 'All';
-  String _selectedStatus = 'flagged'; // 'flagged', 'needs_ocr_rerun', 'approved', 'all'
+  String _selectedStatus = 'all'; // 'all', 'unreviewed', 'flagged', 'needs_ocr_rerun', 'approved'
 
   final List<String> _sources = ['All', 'PYQ', 'MOCK'];
   final List<String> _years = ['All', '2024', '2023', '2022', '2021'];
@@ -33,7 +33,7 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
     'General English',
     'Reasoning',
   ];
-  final List<String> _statuses = ['flagged', 'needs_ocr_rerun', 'approved', 'all'];
+  final List<String> _statuses = ['all', 'unreviewed', 'flagged', 'needs_ocr_rerun', 'approved'];
 
   final List<String> _flagIssueTypes = [
     'merged_options',
@@ -118,33 +118,64 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
   Future<void> _fetchQuestions() async {
     setState(() => _isLoading = true);
     try {
-      var url = '$_supabaseUrl/rest/v1/questions?select=*,passages(*),question_groups(*),tests!inner(*)&order=question_number';
+      final bool needsInnerJoin = (_selectedSource != 'All' || _selectedYear != 'All');
+      final String testsJoin = needsInnerJoin ? 'tests!inner(*)' : 'tests(*)';
+      var baseUrl = '$_supabaseUrl/rest/v1/questions?select=*,question_groups(*),$testsJoin';
 
-      if (_selectedStatus != 'all') {
-        url += '&review_status=eq.$_selectedStatus';
-      }
-      if (_selectedSource != 'All') {
-        url += '&tests.paper_type=eq.${Uri.encodeComponent(_selectedSource.toUpperCase())}';
+      if (_selectedSource == 'PYQ') {
+        baseUrl += '&tests.paper_type=eq.PYQ';
+      } else if (_selectedSource == 'MOCK') {
+        baseUrl += '&tests.paper_type=eq.MOCK';
       }
       if (_selectedYear != 'All') {
-        url += '&tests.year=eq.$_selectedYear';
+        baseUrl += '&tests.year=eq.$_selectedYear';
       }
       if (_selectedSubject != 'All') {
-        url += '&subject=ilike.*${Uri.encodeComponent(_selectedSubject)}*';
+        baseUrl += '&subject=ilike.*${Uri.encodeComponent(_selectedSubject)}*';
       }
 
-      final res = await http.get(
-        Uri.parse(url),
+      String statusQuery = '';
+      if (_selectedStatus == 'unreviewed') {
+        statusQuery = '&or=(review_status.eq.unreviewed,review_status.is.null)';
+      } else if (_selectedStatus != 'all') {
+        statusQuery = '&review_status=eq.$_selectedStatus';
+      }
+
+      var requestUrl = '$baseUrl$statusQuery&order=id.asc';
+      var res = await http.get(
+        Uri.parse(requestUrl),
         headers: {
           'apikey': _supabaseKey,
           'Authorization': 'Bearer $_supabaseKey',
           'Prefer': 'return=representation',
         },
-      ).timeout(const Duration(seconds: 8));
+      ).timeout(const Duration(seconds: 10));
 
-      if (res.statusCode == 200) {
+      bool columnMissing = false;
+      if (res.statusCode == 400 && (res.body.contains('review_status') || statusQuery.isNotEmpty)) {
+        debugPrint('[QuestionReview] review_status column not found. Retrying without status filter...');
+        columnMissing = true;
+        requestUrl = '$baseUrl&order=id.asc';
+        res = await http.get(
+          Uri.parse(requestUrl),
+          headers: {
+            'apikey': _supabaseKey,
+            'Authorization': 'Bearer $_supabaseKey',
+            'Prefer': 'return=representation',
+          },
+        ).timeout(const Duration(seconds: 10));
+      }
+
+      if (res.statusCode == 200 || res.statusCode == 206) {
         final List raw = jsonDecode(res.body);
-        final parsed = raw.map((m) => Question.fromSupabase(m as Map<String, dynamic>)).toList();
+        List<Question> parsed = raw.map((m) => Question.fromSupabase(m as Map<String, dynamic>)).toList();
+        if (columnMissing && _selectedStatus != 'all') {
+          if (_selectedStatus == 'unreviewed') {
+            // Keep all rows as unreviewed
+          } else {
+            parsed = [];
+          }
+        }
         setState(() {
           _questions = parsed;
           _currentIndex = 0;
@@ -152,7 +183,6 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
         });
         _syncControllersWithCurrentQuestion();
       } else {
-        // Fallback: local audit query if remote table doesn't have review_status column yet
         _loadFallbackAuditList();
       }
     } catch (e) {
@@ -201,7 +231,7 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
       };
 
       final url = '$_supabaseUrl/rest/v1/questions?id=eq.${currentQ.id}';
-      final res = await http.patch(
+      var res = await http.patch(
         Uri.parse(url),
         headers: {
           'apikey': _supabaseKey,
@@ -211,6 +241,25 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
         },
         body: jsonEncode(patchBody),
       ).timeout(const Duration(seconds: 6));
+
+      if (res.statusCode >= 400 && res.body.contains('review_status')) {
+        // Fallback: update content fields that exist on current schema
+        res = await http.patch(
+          Uri.parse(url),
+          headers: {
+            'apikey': _supabaseKey,
+            'Authorization': 'Bearer $_supabaseKey',
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation',
+          },
+          body: jsonEncode({
+            'question_text': _questionTextController.text.trim(),
+            'options': updatedOptions,
+            'correct_answer': _selectedCorrectOption,
+            'explanation': _explanationController.text.trim(),
+          }),
+        ).timeout(const Duration(seconds: 6));
+      }
 
       if (mounted) {
         if (res.statusCode >= 200 && res.statusCode < 300) {
@@ -225,7 +274,7 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
           // Saved locally in memory
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Saved locally (Supabase status: ${res.statusCode})'),
+              content: Text('Saved locally. Run migrations/003_admin_flagger.sql to enable status in Supabase'),
               backgroundColor: AppColors.warning,
             ),
           );
