@@ -48,3 +48,6 @@ app.*.map.json
 
 # Local test papers (large binary PDFs)
 TESTPAPER/
+
+# Binary APKs
+*.apk
