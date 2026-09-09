@@ -80,7 +80,7 @@ class SingleQuestionWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             if (showSubjectChip)
-              Flexible(
+              IntrinsicWidth(
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
@@ -100,7 +100,6 @@ class SingleQuestionWidget extends StatelessWidget {
                           ? const Color(0xFF1565C0)
                           : AppColors.primary,
                     ),
-                    overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                   ),
                 ),
@@ -417,7 +416,10 @@ class SingleQuestionWidget extends StatelessWidget {
         // ─── Discussion Widget ─────────────────────────────────────────
         if (discussionWidget != null) ...[
           const Divider(height: AppSpacing.l),
-          discussionWidget!,
+          KeyedSubtree(
+            key: const Key('candidate_discussion'),
+            child: discussionWidget!,
+          ),
         ],
       ],
     );

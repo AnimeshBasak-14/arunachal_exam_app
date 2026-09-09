@@ -1,138 +1,39 @@
 import 'package:flutter/material.dart';
-import '../../../core/services/question_repository.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_spacing.dart';
-import '../../../core/utils/math_utils.dart';
+import '../core/theme/app_colors.dart';
+import '../core/theme/app_spacing.dart';
+import '../core/utils/math_utils.dart';
 
-class QuestionDisplayGroup {
-  final String? groupId;
-  final String? passage;
-  final String? passageImage;
-  final List<Question> questions;
-  final int startIndex;
-  final int endIndex;
-
-  QuestionDisplayGroup({
-    this.groupId,
-    this.passage,
-    this.passageImage,
-    required this.questions,
-    required this.startIndex,
-    required this.endIndex,
-  });
-
-  bool get isGroup =>
-      questions.length > 1 || (passage != null && passage!.trim().isNotEmpty);
-}
-
-List<QuestionDisplayGroup> buildQuestionDisplayGroups(List<Question> questions) {
-  final groups = <QuestionDisplayGroup>[];
-  int currentQIndex = 1;
-
-  int i = 0;
-  while (i < questions.length) {
-    final q = questions[i];
-    final gId = (q.passageId != null && q.passageId!.isNotEmpty)
-        ? q.passageId
-        : ((q.groupId != null && q.groupId!.isNotEmpty) ? q.groupId : null);
-
-    if (gId != null) {
-      final siblingQuestions = <Question>[q];
-      int j = i + 1;
-      while (j < questions.length &&
-          ((questions[j].passageId != null && questions[j].passageId == gId) ||
-              (questions[j].groupId != null && questions[j].groupId == gId))) {
-        siblingQuestions.add(questions[j]);
-        j++;
-      }
-
-      String? groupPassage = q.passageOrDirection;
-      String? groupImage = q.passageImage;
-      for (final sq in siblingQuestions) {
-        if (groupPassage == null || groupPassage.isEmpty) {
-          if (sq.passageOrDirection != null && sq.passageOrDirection!.isNotEmpty) {
-            groupPassage = sq.passageOrDirection;
-          }
-        }
-        if (groupImage == null || groupImage.isEmpty) {
-          if (sq.passageImage != null && sq.passageImage!.isNotEmpty) {
-            groupImage = sq.passageImage;
-          }
-        }
-      }
-
-      groups.add(QuestionDisplayGroup(
-        groupId: gId,
-        passage: groupPassage,
-        passageImage: groupImage,
-        questions: siblingQuestions,
-        startIndex: currentQIndex,
-        endIndex: currentQIndex + siblingQuestions.length - 1,
-      ));
-      currentQIndex += siblingQuestions.length;
-      i = j;
-    } else if (q.passageOrDirection != null &&
-        q.passageOrDirection!.trim().isNotEmpty) {
-      final siblingQuestions = <Question>[q];
-      int j = i + 1;
-      while (j < questions.length &&
-          questions[j].passageOrDirection != null &&
-          questions[j].passageOrDirection!.trim() ==
-              q.passageOrDirection!.trim()) {
-        siblingQuestions.add(questions[j]);
-        j++;
-      }
-      groups.add(QuestionDisplayGroup(
-        groupId: null,
-        passage: q.passageOrDirection,
-        passageImage: q.passageImage,
-        questions: siblingQuestions,
-        startIndex: currentQIndex,
-        endIndex: currentQIndex + siblingQuestions.length - 1,
-      ));
-      currentQIndex += siblingQuestions.length;
-      i = j;
-    } else {
-      groups.add(QuestionDisplayGroup(
-        groupId: null,
-        passage: null,
-        passageImage: null,
-        questions: [q],
-        startIndex: currentQIndex,
-        endIndex: currentQIndex,
-      ));
-      currentQIndex++;
-      i++;
-    }
-  }
-  return groups;
-}
-
-
-class ComprehensionGroupWidget extends StatefulWidget {
+/// Reusable Comprehension Group Card that binds a shared passage / directions
+/// and its nested sequence of associated questions into a single cohesive card.
+///
+/// Features:
+/// - Sticky / Collapsible passage header
+/// - [InteractiveViewer] around chart/diagram images for seamless pinch-to-zoom
+/// - Nested question stack displaying Q85, Q86, Q87 sequentially
+/// - Two-pane side-by-side layout on tablets/web (width >= 720px)
+class ComprehensionGroupCard extends StatefulWidget {
+  final String? title;
   final String? passage;
   final String? passageImage;
   final int startIndex;
   final int endIndex;
   final List<Widget> children;
-  final String? bannerTitle;
 
-  const ComprehensionGroupWidget({
+  const ComprehensionGroupCard({
     super.key,
+    this.title,
     this.passage,
     this.passageImage,
     required this.startIndex,
     required this.endIndex,
     required this.children,
-    this.bannerTitle,
   });
 
   @override
-  State<ComprehensionGroupWidget> createState() =>
-      _ComprehensionGroupWidgetState();
+  State<ComprehensionGroupCard> createState() => _ComprehensionGroupCardState();
 }
 
-class _ComprehensionGroupWidgetState extends State<ComprehensionGroupWidget> {
+class _ComprehensionGroupCardState extends State<ComprehensionGroupCard> {
   bool _isPassageCollapsed = false;
 
   @override
@@ -162,7 +63,7 @@ class _ComprehensionGroupWidgetState extends State<ComprehensionGroupWidget> {
             final isWideScreen = constraints.maxWidth >= 720;
 
             if (isWideScreen && hasPassage) {
-              // ─── Wide Screen: Side-by-side Two Pane Layout ────────────────
+              // ─── Tablet / Desktop Two-Pane Side-by-Side ─────────────────────
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -172,7 +73,7 @@ class _ComprehensionGroupWidgetState extends State<ComprehensionGroupWidget> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Left Pane: Passage
+                        // Left Pane: Pinned Passage with InteractiveViewer
                         Expanded(
                           flex: 5,
                           child: _buildPassageContainer(
@@ -186,7 +87,7 @@ class _ComprehensionGroupWidgetState extends State<ComprehensionGroupWidget> {
                           thickness: 1.2,
                         ),
                         const SizedBox(width: AppSpacing.m),
-                        // Right Pane: Sub-questions
+                        // Right Pane: Nested Question Stack
                         Expanded(
                           flex: 7,
                           child: _buildQuestionsList(),
@@ -198,7 +99,7 @@ class _ComprehensionGroupWidgetState extends State<ComprehensionGroupWidget> {
               );
             }
 
-            // ─── Standard / Mobile Screen: Vertical Stack Layout ────────────
+            // ─── Standard Mobile Layout: Vertical Stack ──────────────────────
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -240,8 +141,7 @@ class _ComprehensionGroupWidgetState extends State<ComprehensionGroupWidget> {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              widget.bannerTitle ??
-                  '📚 Comprehension / Group Questions ($rangeText)',
+              widget.title ?? '📚 Comprehension / Group Questions ($rangeText)',
               style: const TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.bold,
@@ -350,6 +250,7 @@ class _ComprehensionGroupWidgetState extends State<ComprehensionGroupWidget> {
               ),
             ),
           ],
+          // Chart / diagram image with pinch-to-zoom InteractiveViewer
           if (widget.passageImage != null &&
               widget.passageImage!.trim().isNotEmpty) ...[
             const SizedBox(height: 8),
@@ -372,30 +273,24 @@ class _ComprehensionGroupWidgetState extends State<ComprehensionGroupWidget> {
                       loadingBuilder: (ctx, child, progress) => progress == null
                           ? child
                           : const SizedBox(
-                              height: 60,
+                              height: 80,
                               child: Center(
                                 child: CircularProgressIndicator(strokeWidth: 2),
                               ),
                             ),
                       errorBuilder: (_, __, ___) => Container(
                         height: 48,
-                        decoration: BoxDecoration(
-                          color: AppColors.background,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.divider),
-                        ),
+                        padding: const EdgeInsets.all(8),
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.broken_image_rounded,
-                                color: AppColors.textHint, size: 20),
+                            Icon(Icons.broken_image_outlined,
+                                color: AppColors.textHint, size: 18),
                             SizedBox(width: 6),
                             Text(
-                              'Diagram could not be loaded',
+                              'Diagram preview unavailable',
                               style: TextStyle(
-                                fontSize: 12,
-                                color: AppColors.textHint,
-                              ),
+                                  color: AppColors.textHint, fontSize: 11),
                             ),
                           ],
                         ),
@@ -430,10 +325,10 @@ class _ComprehensionGroupWidgetState extends State<ComprehensionGroupWidget> {
         for (int i = 0; i < widget.children.length; i++) ...[
           if (i > 0)
             const Padding(
-              padding: EdgeInsets.symmetric(vertical: AppSpacing.m),
+              padding: EdgeInsets.symmetric(vertical: AppSpacing.s),
               child: Divider(
-                color: AppColors.divider,
-                thickness: 1.2,
+                color: Color(0xFFE2E8F0),
+                thickness: 1.0,
               ),
             ),
           widget.children[i],

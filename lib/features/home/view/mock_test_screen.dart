@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -646,6 +647,35 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
             },
       isSubmitted: _isSubmitted,
       selectedSubjectFilter: widget.subject,
+      discussionWidget: _buildActiveDiscussionWidget(question),
+    );
+  }
+
+  Widget _buildActiveDiscussionWidget(Question question) {
+    return Container(
+      key: const Key('candidate_discussion'),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: const Row(
+        children: [
+          Icon(Icons.forum_outlined, size: 14, color: AppColors.primary),
+          SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              'Candidate Discussion & Doubt Forum',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -676,115 +706,128 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
         }
       },
       child: Scaffold(
+        extendBody: true,
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Quit Test?'),
-                  content: const Text(
-                      'Are you sure you want to exit? Your progress will not be saved.'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('CANCEL'),
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(68),
+          child: SafeArea(
+            bottom: false,
+            child: AppBar(
+              toolbarHeight: 68,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Quit Test?'),
+                      content: const Text(
+                          'Are you sure you want to exit? Your progress will not be saved.'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('CANCEL'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            context.pop();
+                          },
+                          child: const Text('QUIT',
+                              style: TextStyle(color: AppColors.error)),
+                        ),
+                      ],
                     ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        context.pop();
-                      },
-                      child: const Text('QUIT',
-                          style: TextStyle(color: AppColors.error)),
-                    ),
-                  ],
-                ),
-              );
-            },
-        ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.subject != null && widget.subject!.isNotEmpty
-                  ? '${widget.subject} ${widget.paperType == 'PYQ' ? 'PYQ Practice' : 'Mock Test'}'
-                  : '${widget.examCode} Mock Test',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-              overflow: TextOverflow.ellipsis,
-            ),
-            if (!_isLoadingQuestions)
-              Row(
+                  );
+                },
+              ),
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  if (widget.difficulty != null && widget.difficulty!.isNotEmpty) ...[
-                    Text(
-                      widget.difficulty!,
-                      style: const TextStyle(fontSize: 10, color: Colors.white70, fontWeight: FontWeight.normal),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.subject != null && widget.subject!.isNotEmpty
+                              ? '${widget.subject} ${widget.paperType == 'PYQ' ? 'PYQ Practice' : 'Mock Test'}'
+                              : '${widget.examCode} Mock Test',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (!_isLoadingQuestions) ...[
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              if (widget.difficulty != null && widget.difficulty!.isNotEmpty) ...[
+                                Text(
+                                  widget.difficulty!,
+                                  style: const TextStyle(fontSize: 10, color: Colors.white70, fontWeight: FontWeight.normal),
+                                ),
+                                const Text(' · ', style: TextStyle(fontSize: 10, color: Colors.white70)),
+                              ],
+                              Text(
+                                '${_testQuestions.length} Questions',
+                                style: const TextStyle(fontSize: 10, color: Colors.white70, fontWeight: FontWeight.normal),
+                              ),
+                              const Text(' · ', style: TextStyle(fontSize: 10, color: Colors.white70)),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Text(
+                                  '+2 / -0.5 Marking',
+                                  style: TextStyle(fontSize: 9, color: Colors.white, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
                     ),
-                    const Text(' · ', style: TextStyle(fontSize: 10, color: Colors.white70)),
-                  ],
-                  Text(
-                    '${_testQuestions.length} Questions',
-                    style: const TextStyle(fontSize: 10, color: Colors.white70, fontWeight: FontWeight.normal),
                   ),
-                  const Text(' · ', style: TextStyle(fontSize: 10, color: Colors.white70)),
+                  const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(4),
+                      color: _secondsRemaining < 60
+                          ? AppColors.error.withValues(alpha: 0.12)
+                          : AppColors.primaryLight,
+                      borderRadius: BorderRadius.circular(15),
                     ),
-                    child: const Text(
-                      '+2 / -0.5 Marking',
-                      style: TextStyle(fontSize: 9, color: Colors.white, fontWeight: FontWeight.bold),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.timer_outlined,
+                          color: _secondsRemaining < 60
+                              ? AppColors.error
+                              : AppColors.primary,
+                          size: 15,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _formatTime(_secondsRemaining),
+                          style: TextStyle(
+                            color: _secondsRemaining < 60
+                                ? AppColors.error
+                                : AppColors.primary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12.5,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
-          ],
-        ),
-        actions: [
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.only(right: AppSpacing.m),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: _secondsRemaining < 60
-                      ? AppColors.error.withValues(alpha: 0.12)
-                      : AppColors.primaryLight,
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.timer_outlined,
-                      color: _secondsRemaining < 60
-                          ? AppColors.error
-                          : AppColors.primary,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _formatTime(_secondsRemaining),
-                      style: TextStyle(
-                        color: _secondsRemaining < 60
-                            ? AppColors.error
-                            : AppColors.primary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ),
           ),
-        ],
-      ),
+        ),
       body: _isLoadingQuestions
           ? const Center(child: CircularProgressIndicator())
           : _testQuestions.isEmpty
@@ -826,10 +869,10 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                           return ListView.builder(
                             physics: const BouncingScrollPhysics(),
                             padding: const EdgeInsets.fromLTRB(
-                              AppSpacing.m,
-                              AppSpacing.m,
-                              AppSpacing.m,
-                              96,
+                              16,
+                              12,
+                              16,
+                              kBottomNavigationBarHeight + 80,
                             ),
                             itemCount: displayGroups.length,
                             itemBuilder: (context, gIdx) {
@@ -882,48 +925,67 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                         },
                       ),
                     ),
-
-                    // Submit Button
-                    if (!_isSubmitted)
-                      SafeArea(
-                        top: false,
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                              AppSpacing.m, 0, AppSpacing.m, AppSpacing.m),
-                          child: PrimaryButton(
-                            text: 'SUBMIT MOCK TEST',
-                            onPressed: () {
-                              showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: const Text('Submit Test?'),
-                                  content: Text(
-                                      'You have answered ${_selectedAnswers.length} of ${_testQuestions.length} questions. Do you want to submit?'),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      child: const Text('CANCEL'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                        _submitTest();
-                                      },
-                                      child: const Text('SUBMIT',
-                                          style: TextStyle(
-                                              color: AppColors.primary,
-                                              fontWeight: FontWeight.bold)),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
                   ],
                 ),
-    ),
+        bottomNavigationBar: !_isSubmitted
+            ? ClipRect(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.90),
+                      border: const Border(
+                        top: BorderSide(color: AppColors.divider, width: 1),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, -2),
+                        ),
+                      ],
+                    ),
+                    child: SafeArea(
+                      top: false,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+                        child: PrimaryButton(
+                          key: const Key('submit_mock_test_btn'),
+                          text: 'SUBMIT MOCK TEST',
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Submit Test?'),
+                                content: Text(
+                                    'You have answered ${_selectedAnswers.length} of ${_testQuestions.length} questions. Do you want to submit?'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text('CANCEL'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                      _submitTest();
+                                    },
+                                    child: const Text('SUBMIT',
+                                        style: TextStyle(
+                                            color: AppColors.primary,
+                                            fontWeight: FontWeight.bold)),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            : null,
+      ),
     );
   }
 }

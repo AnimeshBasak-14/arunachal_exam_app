@@ -450,11 +450,11 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                           final displayGroups = _buildDisplayGroups();
                           return ListView.builder(
                             physics: const BouncingScrollPhysics(),
-                            padding: EdgeInsets.fromLTRB(
-                              AppSpacing.m,
-                              AppSpacing.m,
-                              AppSpacing.m,
-                              MediaQuery.of(context).padding.bottom + 96,
+                            padding: const EdgeInsets.fromLTRB(
+                              16,
+                              12,
+                              16,
+                              kBottomNavigationBarHeight + 80,
                             ),
                             itemCount: displayGroups.length,
                             itemBuilder: (context, gIdx) {
@@ -567,6 +567,7 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
     );
 
     return Column(
+      key: const Key('candidate_discussion'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // Comments Section
