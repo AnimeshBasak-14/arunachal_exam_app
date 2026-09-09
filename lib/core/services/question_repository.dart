@@ -427,11 +427,10 @@ class QuestionRepository {
   }) async {
     final cleanCode = examCode.trim().toUpperCase();
 
-    // 1. Query Supabase (Relational PostgreSQL DB with Passages / Question Groups support)
+    // 1. Query Supabase (Relational PostgreSQL DB)
     try {
-      // Build Supabase REST query selecting passages and tests
       var supaUrl =
-          'https://fllopztywwblbucvaths.supabase.co/rest/v1/questions?select=*,passages(*),question_groups(*),tests!inner(*)&order=question_number';
+          'https://fllopztywwblbucvaths.supabase.co/rest/v1/questions?select=*,question_groups(*),tests!inner(*)&order=question_number';
 
       // Only filter by exam_code if a specific code is provided (not empty or 'ALL')
       if (cleanCode.isNotEmpty && cleanCode != 'ALL') {
@@ -454,7 +453,7 @@ class QuestionRepository {
               'Bearer sb_publishable_y68QKKHxBTZxBP3Sf1X7tw_zfFnXX8M',
           'Prefer': 'return=representation',
         },
-      ).timeout(const Duration(seconds: 6));
+      ).timeout(const Duration(seconds: 8));
 
       if (response.statusCode == 200) {
         final List list = jsonDecode(response.body);
@@ -471,82 +470,7 @@ class QuestionRepository {
       debugPrint('[QuestionRepository] Supabase fetch skipped or error: $e');
     }
 
-    // 2. Fallback to Cloud Firestore
-    try {
-      final firestore = FirebaseFirestore.instance;
-      Query query = firestore.collection('questions');
-
-      // Match APSSB variants - accept both short codes and full codes
-      String queryCode = cleanCode;
-      if (cleanCode == 'APSSB-CGLE' ||
-          cleanCode == 'CGL' ||
-          cleanCode == 'CGLE') {
-        queryCode = 'APSSB-CGLE';
-      }
-      if (cleanCode == 'APSSB-CHSL' || cleanCode == 'CHSL') {
-        queryCode = 'APSSB-CHSL';
-      }
-      if (cleanCode == 'APSSB-CSLE' ||
-          cleanCode == 'CSLE' ||
-          cleanCode == 'CSCE') {
-        queryCode = 'APSSB-CSLE';
-      }
-      if (cleanCode == 'APSSB-UDC' || cleanCode == 'UDC') {
-        queryCode = 'APSSB-UDC';
-      }
-      if (cleanCode == 'APSSB-MTS' || cleanCode == 'MTS') {
-        queryCode = 'APSSB-MTS';
-      }
-      if (cleanCode == 'APSSB-MOCK' || cleanCode == 'MOCK') {
-        queryCode = 'APSSB-MOCK';
-      }
-      if (cleanCode == 'APSSB-MOCK-MATHS' || cleanCode == 'MOCK-MATHS') {
-        queryCode = 'APSSB-MOCK-MATHS';
-      }
-      if (cleanCode == 'APPSC-AE' || cleanCode == 'AE') queryCode = 'APPSC-AE';
-      if (cleanCode == 'APPSC-JE' || cleanCode == 'JE') queryCode = 'APPSC-JE';
-      if (cleanCode == 'APPSC-APCS' || cleanCode == 'APCS') {
-        queryCode = 'APPSC-APCS';
-      }
-      if (cleanCode == 'APPSC-ADO' || cleanCode == 'ADO') {
-        queryCode = 'APPSC-ADO';
-      }
-      if (cleanCode == 'APPSC-HDO' || cleanCode == 'HDO') {
-        queryCode = 'APPSC-HDO';
-      }
-      if (cleanCode == 'APPSC-FAO' || cleanCode == 'FAO') {
-        queryCode = 'APPSC-FAO';
-      }
-      if (cleanCode == 'APPSC-PGT' || cleanCode == 'PGT') {
-        queryCode = 'APPSC-PGT';
-      }
-      if (cleanCode == 'APPSC-TGT' || cleanCode == 'TGT') {
-        queryCode = 'APPSC-TGT';
-      }
-      if (cleanCode == 'APP' || cleanCode == 'PROSECUTOR') {
-        queryCode = 'APPSC-APP';
-      }
-
-      query = query.where('examCode', isEqualTo: queryCode);
-
-      if (year != null) {
-        query = query.where('year', isEqualTo: year);
-      }
-      if (paperType != null) {
-        query = query.where('paperType', isEqualTo: paperType.toUpperCase());
-      }
-
-      final snapshot =
-          await query.get(const GetOptions(source: Source.serverAndCache));
-      if (snapshot.docs.isNotEmpty) {
-        return snapshot.docs.map((doc) => Question.fromFirestore(doc)).toList();
-      }
-    } catch (e) {
-      debugPrint(
-          '[QuestionRepository] Error fetching live questions from Firestore: $e');
-    }
-
-    // 3. Fallback to local questions
+    // 2. Fallback to local questions (Firestore / spreadsheet completely removed)
     return allQuestions.where((q) {
       final matchesExam =
           q.examCode.toUpperCase().contains(examCode.toUpperCase()) ||

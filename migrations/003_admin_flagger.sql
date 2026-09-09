@@ -49,6 +49,9 @@ alter table public.question_flags drop constraint if exists question_flags_issue
 alter table public.question_flags add constraint question_flags_issue_category_check check (
   issue_category is null or issue_category in (
     'correct',
+    'wrong_answer_key',
+    'explanation_wrong',
+    'missing_solution',
     'question_text_wrong',
     'options_wrong',
     'dummy_placeholders',

@@ -229,7 +229,7 @@ class ProfileScreen extends ConsumerWidget {
                   trailing: const Icon(Icons.arrow_forward_ios_rounded,
                       size: 16, color: AppColors.textHint),
                   onTap: () {
-                    context.push('/admin/question-review');
+                    context.push('/admin/question-flagger');
                   },
                 ),
                 const Divider(height: 1, color: AppColors.divider),

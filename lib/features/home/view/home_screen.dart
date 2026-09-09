@@ -1,7 +1,10 @@
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/avatar_utils.dart';
@@ -11,7 +14,6 @@ import '../../profile/view/profile_screen.dart';
 import '../../../core/services/service_providers.dart';
 import '../../../core/services/question_repository.dart';
 import 'notifications_screen.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../widgets/word_of_day_card.dart';
 import '../../../core/services/current_affairs_service.dart';
 import '../../../core/services/remote_config_service.dart';
@@ -335,6 +337,29 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                     // Header Action Buttons: Search, Notifications & Profile
                     Row(
                       children: [
+                        if (kIsWeb)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: AppColors.primary,
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8)),
+                              ),
+                              onPressed: () =>
+                                  context.push('/admin/question-flagger'),
+                              icon: const Icon(Icons.flag_circle_rounded,
+                                  size: 18, color: AppColors.error),
+                              label: const Text('Admin Flagger',
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold)),
+                            ),
+                          ),
                         IconButton(
                           onPressed: () => _openSearchModal(context),
                           icon: const Icon(
@@ -913,19 +938,25 @@ class _BookmarksTabBodyState extends ConsumerState<BookmarksTabBody>
     }
     setState(() => _loadingQs = true);
     try {
-      final firestore = FirebaseFirestore.instance;
-      // Firestore whereIn supports up to 30 items
-      final chunks = <List<String>>[];
-      for (int i = 0; i < ids.length; i += 30) {
-        chunks.add(ids.sublist(i, i + 30 > ids.length ? ids.length : i + 30));
-      }
       final results = <Question>[];
-      for (final chunk in chunks) {
-        final snap = await firestore
-            .collection('questions')
-            .where(FieldPath.documentId, whereIn: chunk)
-            .get();
-        results.addAll(snap.docs.map((d) => Question.fromFirestore(d)));
+      final idParams = ids.map((id) => '"$id"').join(',');
+      final url =
+          'https://fllopztywwblbucvaths.supabase.co/rest/v1/questions?id=in.($idParams)&select=*,tests(*)';
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'apikey': 'sb_publishable_y68QKKHxBTZxBP3Sf1X7tw_zfFnXX8M',
+          'Authorization':
+              'Bearer sb_publishable_y68QKKHxBTZxBP3Sf1X7tw_zfFnXX8M',
+        },
+      );
+      if (response.statusCode == 200) {
+        final List list = jsonDecode(response.body);
+        results.addAll(
+          list.map(
+            (item) => Question.fromSupabase(item as Map<String, dynamic>),
+          ),
+        );
       }
       if (mounted) {
         setState(() {

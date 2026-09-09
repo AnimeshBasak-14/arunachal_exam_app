@@ -177,8 +177,9 @@ final routerProvider = Provider<GoRouter>((ref) {
           isGoingToRegister ||
           isGoingToForgotPassword;
 
-      // Allow public direct access to news articles via deep-link
-      final isPublicRoute = state.matchedLocation.startsWith('/news-details');
+      // Allow direct access to news articles and admin screens via web URL / deep-link
+      final isPublicRoute = state.matchedLocation.startsWith('/news-details') ||
+          state.matchedLocation.startsWith('/admin');
 
       // 1. If logged in, go to /home from any auth, onboarding, or root route
       if (isLoggedIn) {
@@ -190,9 +191,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      // 2. On Web, bypass mobile onboarding slides completely
+      // 2. On Web, allow direct access to admin portal or public routes without requiring mobile login
       if (kIsWeb) {
-        if (!isAuthRoute && !isPublicRoute) {
+        if (isPublicRoute) {
+          return null;
+        }
+        if (state.matchedLocation == '/' || state.matchedLocation == '/home') {
+          return null;
+        }
+        if (!isAuthRoute) {
           return '/welcome';
         }
         return null;

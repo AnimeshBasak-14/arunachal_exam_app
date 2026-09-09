@@ -27,18 +27,32 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
 
   final List<String> _statuses = ['all', 'unreviewed', 'flagged', 'approved'];
   final List<String> _types = ['All', 'PYQ', 'Mock Test'];
-  final List<String> _years = ['All', '2024', '2023', '2022', '2021'];
+  final List<String> _years = [
+    'All',
+    '2026',
+    '2025',
+    '2024',
+    '2023',
+    '2022',
+    '2021',
+    '2019',
+  ];
   final List<String> _subjects = [
     'All',
+    'Elementary Maths',
     'General Studies',
-    'Elementary Mathematics',
     'General English',
-    'Reasoning',
+    'Logical Reasoning',
+    'Reading Comprehension',
+    'Civil Engineering',
   ];
 
   // Defect issue categories catalog
   static const List<Map<String, String>> issueCatalog = [
     {'id': 'correct', 'label': '✅ Correct / Verified'},
+    {'id': 'wrong_answer_key', 'label': '🎯 Wrong Correct Answer Key'},
+    {'id': 'explanation_wrong', 'label': '❌ Explanation / Solution Wrong'},
+    {'id': 'missing_solution', 'label': '⚠️ Missing Explanation / Solution'},
     {'id': 'question_text_wrong', 'label': '❌ Question Text Wrong / Mangled OCR'},
     {'id': 'options_wrong', 'label': '❌ Options Wrong / Merged Options'},
     {'id': 'dummy_placeholders', 'label': '⚠️ Dummy Placeholders (Option A, B...)'},
@@ -118,9 +132,20 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
         baseUrl += '&tests.year=eq.$_selectedYear';
       }
 
-      // 3. Subject filter
+      // 3. Subject filter with smart multi-variant matching
       if (_selectedSubject != 'All') {
-        baseUrl += '&subject=ilike.*${Uri.encodeComponent(_selectedSubject)}*';
+        if (_selectedSubject == 'Elementary Maths') {
+          baseUrl +=
+              '&or=(subject.ilike.*Math*,subject.ilike.*Quantitative*,subject.ilike.*Arithmetic*)';
+        } else if (_selectedSubject == 'Logical Reasoning') {
+          baseUrl += '&or=(subject.ilike.*Reasoning*,subject.ilike.*Logical*)';
+        } else if (_selectedSubject == 'General English') {
+          baseUrl +=
+              '&or=(subject.ilike.*English*,subject.ilike.*Grammar*,subject.ilike.*Vocab*)';
+        } else {
+          baseUrl +=
+              '&subject=ilike.*${Uri.encodeComponent(_selectedSubject)}*';
+        }
       }
 
       // 4. Quick Search query
@@ -473,112 +498,268 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
     }
   }
 
+  // Helper to strip leading option labels like (a), a., a), {A}, etc.
+  String _stripOptionPrefix(String opt) {
+    return opt
+        .replaceFirst(
+            RegExp(r'^\s*[\(\{\[\<\|]?[a-dA-D][\)\}\]\>\|\.\s]\s*'), '')
+        .trim();
+  }
+
   // ─── Direct Action 3: Quick Edit & Notes Dialog ───────────────────────────
   void _showQuickEditDialog(Question q) {
-    final noteController = TextEditingController(text: _questionAdminNotes[q.id] ?? '');
+    final noteController =
+        TextEditingController(text: _questionAdminNotes[q.id] ?? '');
     final questionTextController = TextEditingController(text: q.questionText);
-    final optControllers = List.generate(
-      q.options.length,
-      (i) => TextEditingController(text: q.options[i]),
+
+    // Prepare 4 clean option controllers
+    final optA =
+        q.options.isNotEmpty ? _stripOptionPrefix(q.options[0]) : '';
+    final optB =
+        q.options.length > 1 ? _stripOptionPrefix(q.options[1]) : '';
+    final optC =
+        q.options.length > 2 ? _stripOptionPrefix(q.options[2]) : '';
+    final optD =
+        q.options.length > 3 ? _stripOptionPrefix(q.options[3]) : '';
+
+    final optAController = TextEditingController(text: optA);
+    final optBController = TextEditingController(text: optB);
+    final optCController = TextEditingController(text: optC);
+    final optDController = TextEditingController(text: optD);
+
+    final solutionController = TextEditingController(
+      text: (q.solution.isNotEmpty &&
+              q.solution != 'Verified with official key.')
+          ? q.solution
+          : '',
     );
+
+    String selectedCorrect = q.correctAnswer.toLowerCase();
+    if (!['a', 'b', 'c', 'd'].contains(selectedCorrect)) {
+      selectedCorrect = 'a';
+    }
+
+    String selectedStatus = 'approved';
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Row(
-          children: [
-            const Icon(Icons.edit_note_rounded, color: AppColors.primary),
-            const SizedBox(width: 8),
-            Text('Quick Edit • Q${q.questionNumber > 0 ? q.questionNumber : q.id.substring(0, 4)}',
-                style: const TextStyle(fontSize: 16)),
-          ],
-        ),
-        content: SizedBox(
-          width: 500,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Admin Note (Stored in admin_notes):',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: noteController,
-                  maxLines: 2,
-                  decoration: const InputDecoration(
-                    hintText: 'e.g. Option (d) contains next question bleed Q87...',
-                    border: OutlineInputBorder(),
-                    isDense: true,
-                  ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (dialogCtx, setDialogState) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          titlePadding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          title: Row(
+            children: [
+              const Icon(Icons.edit_note_rounded,
+                  color: AppColors.primary, size: 22),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Edit & Fix Question • Q${q.questionNumber > 0 ? q.questionNumber : q.id.substring(0, 4)}',
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 14),
-                const Text('Question Prompt:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: questionTextController,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    isDense: true,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                const Text('Options:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                const SizedBox(height: 6),
-                ...List.generate(optControllers.length, (idx) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: TextField(
-                      controller: optControllers[idx],
-                      decoration: InputDecoration(
-                        prefixText: '(${String.fromCharCode(97 + idx)}) ',
-                        border: const OutlineInputBorder(),
-                        isDense: true,
-                      ),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: 560,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Question Text / Prompt:',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: questionTextController,
+                    maxLines: 3,
+                    style: const TextStyle(fontSize: 13),
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                      hintText: 'Enter clean question text...',
                     ),
-                  );
-                }),
-              ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  const Text('Options (a–d):',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  const SizedBox(height: 6),
+                  _buildOptionEditField('A', optAController),
+                  const SizedBox(height: 6),
+                  _buildOptionEditField('B', optBController),
+                  const SizedBox(height: 6),
+                  _buildOptionEditField('C', optCController),
+                  const SizedBox(height: 6),
+                  _buildOptionEditField('D', optDController),
+                  const SizedBox(height: 12),
+
+                  // Correct Answer & Status Row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Correct Option:',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 12)),
+                            const SizedBox(height: 6),
+                            Container(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 12),
+                              decoration: BoxDecoration(
+                                border:
+                                    Border.all(color: Colors.grey.shade400),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  isExpanded: true,
+                                  value: selectedCorrect,
+                                  items: const [
+                                    DropdownMenuItem(
+                                        value: 'a',
+                                        child: Text('Option (A)')),
+                                    DropdownMenuItem(
+                                        value: 'b',
+                                        child: Text('Option (B)')),
+                                    DropdownMenuItem(
+                                        value: 'c',
+                                        child: Text('Option (C)')),
+                                    DropdownMenuItem(
+                                        value: 'd',
+                                        child: Text('Option (D)')),
+                                  ],
+                                  onChanged: (val) {
+                                    if (val != null) {
+                                      setDialogState(
+                                          () => selectedCorrect = val);
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Review Status:',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 12)),
+                            const SizedBox(height: 6),
+                            Container(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 12),
+                              decoration: BoxDecoration(
+                                border:
+                                    Border.all(color: Colors.grey.shade400),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  isExpanded: true,
+                                  value: selectedStatus,
+                                  items: const [
+                                    DropdownMenuItem(
+                                        value: 'approved',
+                                        child: Text('✅ Approved')),
+                                    DropdownMenuItem(
+                                        value: 'flagged',
+                                        child: Text('⚠️ Flagged')),
+                                    DropdownMenuItem(
+                                        value: 'unreviewed',
+                                        child: Text('⚪ Unreviewed')),
+                                  ],
+                                  onChanged: (val) {
+                                    if (val != null) {
+                                      setDialogState(
+                                          () => selectedStatus = val);
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  const Text('Explanation / Solution:',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: solutionController,
+                    maxLines: 2,
+                    style: const TextStyle(fontSize: 12),
+                    decoration: const InputDecoration(
+                      hintText:
+                          'Enter solution or explanation for candidates...',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  const Text('Admin Note (Stored in admin_notes):',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: noteController,
+                    maxLines: 1,
+                    style: const TextStyle(fontSize: 12),
+                    decoration: const InputDecoration(
+                      hintText:
+                          'e.g. Cleaned option leak and verified answer key',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton.icon(
-            onPressed: () async {
-              final newNotes = noteController.text.trim();
-              final newQText = questionTextController.text.trim();
-              final newOpts = optControllers.map((c) => c.text.trim()).toList();
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton.icon(
+              onPressed: () async {
+                final newNotes = noteController.text.trim();
+                final newQText = questionTextController.text.trim();
+                final cleanOptions = [
+                  '(a) ${optAController.text.trim()}',
+                  '(b) ${optBController.text.trim()}',
+                  '(c) ${optCController.text.trim()}',
+                  '(d) ${optDController.text.trim()}',
+                ];
+                final newSolution =
+                    solutionController.text.trim().isNotEmpty
+                        ? solutionController.text.trim()
+                        : 'Verified with official key.';
 
-              Navigator.pop(ctx);
+                Navigator.pop(ctx);
 
-              // Update in Supabase
-              try {
-                final patchUrl = '$_supabaseUrl/rest/v1/questions?id=eq.${q.id}';
-                var patchRes = await http.patch(
-                  Uri.parse(patchUrl),
-                  headers: {
-                    'apikey': _supabaseKey,
-                    'Authorization': 'Bearer $_supabaseKey',
-                    'Content-Type': 'application/json',
-                  },
-                  body: jsonEncode({
-                    'question_text': newQText,
-                    'options': newOpts.map((t) => {'text': t}).toList(),
-                    'admin_notes': newNotes,
-                    'review_status': 'approved',
-                    'flagged_issues': [],
-                    'last_reviewed_at': DateTime.now().toIso8601String(),
-                  }),
-                );
-
-                if (patchRes.statusCode >= 400 && patchRes.body.contains('review_status')) {
-                  setState(() => _dbNeedsMigration = true);
-                  patchRes = await http.patch(
+                // Update in Supabase
+                try {
+                  final patchUrl =
+                      '$_supabaseUrl/rest/v1/questions?id=eq.${q.id}';
+                  final patchRes = await http.patch(
                     Uri.parse(patchUrl),
                     headers: {
                       'apikey': _supabaseKey,
@@ -587,61 +768,123 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                     },
                     body: jsonEncode({
                       'question_text': newQText,
-                      'options': newOpts.map((t) => {'text': t}).toList(),
+                      'options': cleanOptions,
+                      'correct_answer': selectedCorrect,
+                      'explanation': newSolution,
+                      'admin_notes': newNotes,
+                      'review_status': selectedStatus,
+                      'flagged_issues': selectedStatus == 'approved'
+                          ? []
+                          : q.flagReasons,
+                      'last_reviewed_at': DateTime.now().toIso8601String(),
                     }),
                   );
-                }
 
-                setState(() {
-                  _questionAdminNotes[q.id] = newNotes;
-                  final idx = _questions.indexWhere((item) => item.id == q.id);
-                  if (idx != -1) {
-                    _questions[idx] = Question(
-                      id: q.id,
-                      examCode: q.examCode,
-                      year: q.year,
-                      paperType: q.paperType,
-                      testId: q.testId,
-                      testTitle: q.testTitle,
-                      subject: q.subject,
-                      difficulty: q.difficulty,
-                      groupId: q.groupId,
-                      passageId: q.passageId,
-                      passageOrDirection: q.passageOrDirection,
-                      passageImage: q.passageImage,
-                      questionText: newQText,
-                      questionImage: q.questionImage,
-                      imageUrl: q.imageUrl,
-                      hasImage: q.hasImage,
-                      reviewStatus: 'approved',
-                      flagReasons: const [],
-                      modeAvailability: q.modeAvailability,
-                      options: newOpts,
-                      optionImages: q.optionImages,
-                      correctAnswer: q.correctAnswer,
-                      officialAnswer: q.officialAnswer,
-                      solution: q.solution,
+                  if (patchRes.statusCode >= 400 &&
+                      patchRes.body.contains('review_status')) {
+                    setState(() => _dbNeedsMigration = true);
+                    await http.patch(
+                      Uri.parse(patchUrl),
+                      headers: {
+                        'apikey': _supabaseKey,
+                        'Authorization': 'Bearer $_supabaseKey',
+                        'Content-Type': 'application/json',
+                      },
+                      body: jsonEncode({
+                        'question_text': newQText,
+                        'options': cleanOptions,
+                        'correct_answer': selectedCorrect,
+                        'explanation': newSolution,
+                      }),
                     );
                   }
-                });
 
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Saved and marked Approved!'),
-                      backgroundColor: AppColors.success,
-                    ),
-                  );
+                  setState(() {
+                    _questionAdminNotes[q.id] = newNotes;
+                    final idx =
+                        _questions.indexWhere((item) => item.id == q.id);
+                    if (idx != -1) {
+                      _questions[idx] = Question(
+                        id: q.id,
+                        examCode: q.examCode,
+                        year: q.year,
+                        paperType: q.paperType,
+                        testId: q.testId,
+                        testTitle: q.testTitle,
+                        subject: q.subject,
+                        difficulty: q.difficulty,
+                        groupId: q.groupId,
+                        passageId: q.passageId,
+                        passageOrDirection: q.passageOrDirection,
+                        passageImage: q.passageImage,
+                        questionText: newQText,
+                        questionImage: q.questionImage,
+                        imageUrl: q.imageUrl,
+                        hasImage: q.hasImage,
+                        reviewStatus: selectedStatus,
+                        flagReasons: selectedStatus == 'approved'
+                            ? const []
+                            : q.flagReasons,
+                        modeAvailability: q.modeAvailability,
+                        options: cleanOptions,
+                        optionImages: q.optionImages,
+                        correctAnswer: selectedCorrect,
+                        officialAnswer: q.officialAnswer,
+                        solution: newSolution,
+                      );
+                    }
+                  });
+
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          selectedStatus == 'approved'
+                              ? 'Saved to Supabase and marked Approved!'
+                              : 'Question updated in Supabase successfully!',
+                        ),
+                        backgroundColor: AppColors.success,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  debugPrint('Quick edit error: $e');
                 }
-              } catch (e) {
-                debugPrint('Quick edit error: $e');
-              }
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.success),
-            icon: const Icon(Icons.check_rounded, color: Colors.white, size: 16),
-            label: const Text('Save & Approve', style: TextStyle(color: Colors.white)),
+              },
+              style:
+                  ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+              icon: const Icon(Icons.check_rounded,
+                  color: Colors.white, size: 16),
+              label: const Text('Save to Database',
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOptionEditField(
+      String label, TextEditingController controller) {
+    return TextField(
+      controller: controller,
+      style: const TextStyle(fontSize: 12.5),
+      decoration: InputDecoration(
+        prefixIcon: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Text(
+            '($label)',
+            style: const TextStyle(
+                fontWeight: FontWeight.bold, color: AppColors.primary),
           ),
-        ],
+        ),
+        prefixIconConstraints:
+            const BoxConstraints(minWidth: 36, minHeight: 0),
+        border: const OutlineInputBorder(),
+        isDense: true,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       ),
     );
   }
@@ -722,11 +965,6 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.auto_awesome_rounded, color: Color(0xFF7C3AED)),
-            tooltip: 'Full Screen Repair Tool',
-            onPressed: () => context.push('/admin/question-review'),
-          ),
-          IconButton(
             icon: const Icon(Icons.refresh_rounded, color: AppColors.primary),
             tooltip: 'Refresh Feed',
             onPressed: () => _fetchQuestions(reset: true),
@@ -739,7 +977,10 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
           Container(
             color: Colors.white,
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-            child: Column(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 960),
+                child: Column(
               children: [
                 // Quick Search input
                 TextField(
@@ -834,6 +1075,8 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
               ],
             ),
           ),
+        ),
+      ),
           const Divider(height: 1, color: AppColors.divider),
           if (_dbNeedsMigration) _buildMigrationBanner(),
 
@@ -919,7 +1162,13 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                               );
                             }
                             final q = _questions[index];
-                            return _buildQuestionCard(q, index);
+                            return Center(
+                              child: ConstrainedBox(
+                                constraints:
+                                    const BoxConstraints(maxWidth: 960),
+                                child: _buildQuestionCard(q, index),
+                              ),
+                            );
                           },
                         ),
                       ),
@@ -1372,12 +1621,84 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
               ],
             ),
 
+            // Explanation / Solution Box
+            Container(
+              margin: const EdgeInsets.only(top: 8),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: (q.solution.isNotEmpty &&
+                        q.solution != 'Verified with official key.')
+                    ? const Color(0xFFF8FAFC)
+                    : const Color(0xFFFFFBEB),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: (q.solution.isNotEmpty &&
+                          q.solution != 'Verified with official key.')
+                      ? const Color(0xFFE2E8F0)
+                      : const Color(0xFFFDE68A),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        (q.solution.isNotEmpty &&
+                                q.solution != 'Verified with official key.')
+                            ? Icons.lightbulb_outline_rounded
+                            : Icons.warning_amber_rounded,
+                        size: 14,
+                        color: (q.solution.isNotEmpty &&
+                                q.solution != 'Verified with official key.')
+                            ? AppColors.primary
+                            : const Color(0xFFD97706),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Explanation / Solution:',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: (q.solution.isNotEmpty &&
+                                  q.solution != 'Verified with official key.')
+                              ? AppColors.primary
+                              : const Color(0xFFD97706),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    (q.solution.isNotEmpty &&
+                            q.solution != 'Verified with official key.')
+                        ? q.solution
+                        : '⚠️ No detailed explanation/solution provided.',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      color: (q.solution.isNotEmpty &&
+                              q.solution != 'Verified with official key.')
+                          ? AppColors.textPrimary
+                          : const Color(0xFFB45309),
+                      fontStyle: (q.solution.isNotEmpty &&
+                              q.solution != 'Verified with official key.')
+                          ? FontStyle.normal
+                          : FontStyle.italic,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
             const SizedBox(height: 12),
             const Divider(height: 1, color: AppColors.divider),
             const SizedBox(height: 8),
 
-            // ─── Flagging & Action Toolbar ────────────────────────────────
-            Row(
+            // ─── Flagging & Action Toolbar (Responsive Wrap) ─────────────
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 // 1. Mark Correct Button (Green Checkmark)
                 ElevatedButton.icon(
@@ -1396,7 +1717,6 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                     style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
                   ),
                 ),
-                const SizedBox(width: 8),
 
                 // 2. Flag Issue Dropdown Menu
                 Container(
@@ -1408,7 +1728,9 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
+                      isDense: true,
                       hint: const Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.flag_rounded, size: 14, color: AppColors.error),
                           SizedBox(width: 4),
@@ -1432,13 +1754,23 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                     ),
                   ),
                 ),
-                const Spacer(),
 
-                // 3. Quick Edit / Note Dialog
-                IconButton(
-                  icon: const Icon(Icons.edit_note_rounded, size: 20, color: AppColors.primary),
-                  tooltip: 'Quick Edit / Note',
+                // 3. Edit & Fix Question Button
+                OutlinedButton.icon(
                   onPressed: () => _showQuickEditDialog(q),
+                  icon: const Icon(Icons.edit_rounded, size: 14),
+                  label: const Text('Edit / Fix Question',
+                      style:
+                          TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                    side:
+                        const BorderSide(color: AppColors.primary, width: 1.2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                  ),
                 ),
               ],
             ),
