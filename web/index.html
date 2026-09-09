@@ -1,76 +1,1416 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <base href="$FLUTTER_BASE_HREF">
-
-  <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="Arunachal Exam Prep - Comprehensive preparation portal for APSSB, APPSC and Arunachal Pradesh state competitive examinations.">
-
-  <!-- Cache control headers to prevent stale JS caching -->
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-
-  <!-- iOS meta tags & icons -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="Arunachal Exam Prep">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
-
-  <title>Arunachal Exam Prep - APSSB & APPSC Preparation</title>
-  <link rel="manifest" href="manifest.json">
-
-  <!-- Firebase Web SDK Compat (Ensures authDomain is always provided to Firebase Auth & Analytics) -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
-  <script>
-    // Force unregister any legacy service workers so web clients always run the latest build
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for (let registration of registrations) {
-          registration.unregister();
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arunachal Exam Prep</title>
+    <link rel="icon" type="image/png" href="favicon.png"/>
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-void: #0A0F16;
+            --emerald: #2E8B57;
+            --emerald-light: #34D399;
+            --teal: #14B8A6;
+            --teal-light: #5EEAD4;
+            --amber: #F59E0B;
+            --amber-light: #FCD34D;
+            --coral: #F97316;
+            --blue: #3B82F6;
+            --red: #EF4444;
+            --neon: #00FF88;
+            --glass-bg: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-highlight: rgba(255, 255, 255, 0.15);
+            --text-main: #FFFFFF;
+            --text-muted: #9CA3AF;
+            --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-      });
-    }
 
-    // Global Firebase configuration
-    window.firebaseConfig = {
-      apiKey: "AIzaSyC8KsvkrcI1RkelPfPxqeHzzC8H-PBENPk",
-      authDomain: "arunachal-exam-app.firebaseapp.com",
-      projectId: "arunachal-exam-app",
-      storageBucket: "arunachal-exam-app.firebasestorage.app",
-      messagingSenderId: "646900488202",
-      appId: "1:646900488202:web:2d474107c037f4d34e67f3"
-    };
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-    if (typeof firebase !== 'undefined' && (!firebase.apps || !firebase.apps.length)) {
-      try {
-        firebase.initializeApp(window.firebaseConfig);
-      } catch (e) {
-        console.warn("Firebase JS init:", e);
-      }
-    }
-  </script>
+        body {
+            background-color: var(--bg-void);
+            color: var(--text-main);
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Ambient Orbs */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.4;
+            animation: drift 20s infinite alternate ease-in-out;
+            transition: transform 0.2s ease-out;
+        }
+        .orb-emerald {
+            top: -10%; left: -10%;
+            width: 40vw; height: 40vw;
+            background: radial-gradient(circle, var(--emerald), transparent 70%);
+        }
+        .orb-teal {
+            top: -5%; right: -10%;
+            width: 35vw; height: 35vw;
+            background: radial-gradient(circle, var(--teal), transparent 70%);
+            animation-delay: -5s;
+        }
+        .orb-amber {
+            bottom: -15%; left: 30%;
+            width: 45vw; height: 45vw;
+            background: radial-gradient(circle, var(--amber), transparent 70%);
+            animation-delay: -10s;
+        }
+
+        @keyframes drift {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(30px, -30px) scale(1.1); }
+            100% { transform: translate(-30px, 30px) scale(0.9); }
+        }
+
+        /* Glassmorphism */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            border-top-color: var(--glass-highlight);
+            border-left-color: var(--glass-highlight);
+            border-radius: 24px;
+        }
+
+        .glass-panel {
+            background: rgba(10, 15, 22, 0.7);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+        }
+
+        /* Layout & Utilities */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 20px 100px 20px;
+        }
+
+        .page {
+            display: none;
+            animation: fadeInSlideUp 0.5s var(--spring) forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeInSlideUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1, h2, h3 { font-weight: 600; }
+        .text-gradient {
+            background: linear-gradient(135deg, #fff, var(--teal-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s var(--spring);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #fff;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--emerald), var(--teal));
+            box-shadow: 0 4px 15px rgba(46, 139, 87, 0.3);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46, 139, 87, 0.5);
+        }
+        .btn-ghost {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .btn-ghost:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateY(-2px);
+        }
+
+        /* Topbar */
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-radius: 0 0 24px 24px;
+        }
+        .logo-area { display: flex; align-items: center; gap: 12px; }
+        .logo-mark {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--emerald), var(--teal));
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 20px;
+        }
+        .topbar-right { display: flex; align-items: center; gap: 15px; }
+        .streak-pill {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--amber);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex; align-items: center; gap: 5px;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            animation: pulse-amber 2s infinite;
+        }
+        @keyframes pulse-amber {
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        }
+        .avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: #444;
+            border: 2px solid var(--emerald);
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23fff"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>');
+            background-size: cover;
+        }
+        .icon-btn {
+            position: relative;
+            background: none; border: none; color: white; cursor: pointer;
+            width: 36px; height: 36px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.05);
+        }
+        .badge {
+            position: absolute; top: -2px; right: -2px;
+            width: 10px; height: 10px; border-radius: 50%;
+            background: var(--red); border: 2px solid var(--bg-void);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        }
+
+        /* Navigation Dock */
+        .dock-container {
+            position: fixed; bottom: 20px; left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            padding: 10px 20px;
+            display: flex; gap: 15px; align-items: center;
+            border-radius: 40px;
+        }
+        .dock-item {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            color: var(--text-muted); text-decoration: none;
+            padding: 8px 12px; border-radius: 16px;
+            transition: all 0.3s var(--spring);
+            position: relative;
+            cursor: pointer;
+        }
+        .dock-item svg { width: 24px; height: 24px; fill: currentColor; transition: all 0.3s; }
+        .dock-item span { font-size: 10px; font-weight: 500; }
+        .dock-item:hover { transform: translateY(-4px); color: white; }
+        .dock-item.active {
+            color: white;
+            background: rgba(46, 139, 87, 0.2);
+        }
+        .dock-item.active svg { fill: var(--emerald-light); filter: drop-shadow(0 0 8px var(--emerald)); }
+        .dock-item.active::after {
+            content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+            width: 4px; height: 4px; border-radius: 50%; background: var(--neon);
+            box-shadow: 0 0 8px var(--neon);
+        }
+        .dock-sep { width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,0.2); margin: 0 5px; }
+
+        /* General Card Styles */
+        .card {
+            padding: 20px;
+            transition: all 0.3s var(--spring);
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        /* Home Page */
+        .hero { margin-bottom: 24px; }
+        .hero h1 { font-size: 28px; line-height: 1.2; margin-bottom: 8px; }
+        .hero p { color: var(--text-muted); font-size: 15px; }
+
+        .banner {
+            background: linear-gradient(135deg, #14B8A6, #3B82F6) !important;
+            box-shadow: 0 12px 30px rgba(20, 184, 166, 0.4);
+            border-left: 4px solid var(--emerald);
+            padding: 16px; border-radius: 16px;
+            margin-bottom: 24px; display: flex; gap: 12px; align-items: flex-start;
+        }
+        .news-card { margin-bottom: 24px; }
+        .banner-icon { font-size: 24px; }
+        .banner-content h4 { font-size: 15px; margin-bottom: 4px; color: var(--emerald-light); }
+        .banner-content p { font-size: 13px; color: #ccc; }
+
+        .wotd-card { margin-bottom: 24px; position: relative; overflow: hidden; }
+        .wotd-card::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 60%);
+            opacity: 0; transition: opacity 0.3s; pointer-events: none;
+        }
+        .wotd-card:hover::before { opacity: 1; }
+        .wotd-label { font-size: 12px; color: var(--amber-light); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; display: block; }
+        .wotd-word { font-size: 32px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.5px; }
+        .wotd-pos { font-size: 13px; color: var(--teal-light); font-style: italic; margin-bottom: 12px; }
+        .wotd-def { font-size: 14px; color: #ddd; line-height: 1.5; margin-bottom: 16px; }
+        .tags { display: flex; gap: 8px; flex-wrap: wrap; }
+        .tag { background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 12px; font-size: 11px; box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+
+        .daily-challenge {
+            background: linear-gradient(135deg, rgba(74, 20, 140, 0.4), rgba(0, 121, 107, 0.4));
+            margin-bottom: 24px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .dc-info h3 { font-size: 18px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px;}
+        .dc-info p { font-size: 13px; color: #ccc; }
+        .pill { background: rgba(0,0,0,0.3); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+
+        .pillars-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;
+        }
+        .pillar-card {
+            padding: 20px 16px; border-radius: 20px; text-decoration: none; color: white;
+            display: flex; flex-direction: column; gap: 12px; transition: all 0.3s var(--spring);
+        }
+        .pillar-card:hover { transform: translateY(-5px) scale(1.02); }
+        .pillar-1 { background: linear-gradient(135deg, #0D47A1, #1976D2); }
+        .pillar-2 { background: linear-gradient(135deg, #4A148C, #7B1FA2); }
+        .pillar-3 { background: linear-gradient(135deg, #004D40, #00796B); }
+        .pillar-4 { background: linear-gradient(135deg, #0F766E, #0D9488); }
+        .pillar-icon { width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .pillar-card h4 { font-size: 16px; }
+        .pillar-card p { font-size: 11px; color: rgba(255,255,255,0.8); line-height: 1.4; }
+
+        .grammar-card {
+            display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px;
+            background: linear-gradient(to right, rgba(59, 130, 246, 0.1), rgba(99, 102, 241, 0.1));
+            border-left: 4px solid #6366F1;
+        }
+        
+        .ca-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .ca-section-header h3 { font-size: 18px; }
+        .ca-section-header a { color: var(--teal-light); font-size: 13px; text-decoration: none; }
+        .ca-scroll { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 16px; scrollbar-width: none; }
+        .ca-scroll::-webkit-scrollbar { display: none; }
+        .ca-card {
+            min-width: 240px; flex-shrink: 0; padding: 16px; display: flex; flex-direction: column; gap: 8px;
+        }
+        .ca-card.featured { min-width: 280px; background: linear-gradient(135deg, #14B8A6, #3B82F6); box-shadow: 0 12px 30px rgba(20, 184, 166, 0.4); border-color: var(--emerald); }
+        .ca-badge { align-self: flex-start; padding: 2px 8px; border-radius: 8px; font-size: 10px; font-weight: 600; text-transform: uppercase; background: rgba(255,255,255,0.1); }
+        .ca-card h4 { font-size: 14px; line-height: 1.4; }
+        .ca-date { font-size: 11px; color: var(--text-muted); }
+
+        /* Exams Page */
+        .page-header { margin-bottom: 24px; text-align: center; }
+        .page-header h2 { font-size: 24px; margin-bottom: 8px; }
+        .page-header p { color: var(--text-muted); font-size: 14px; }
+
+        .tab-switcher {
+            display: flex; background: rgba(255,255,255,0.1); border-radius: 30px; padding: 4px; margin-bottom: 24px;
+        }
+        .tab-btn {
+            flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 600;
+            border-radius: 26px; cursor: pointer; transition: all 0.3s; color: var(--text-muted);
+        }
+        .tab-btn.active { background: white; color: var(--bg-void); }
+
+        .exam-tab-content { display: none; }
+        .exam-tab-content.active { display: block; animation: fadeInSlideUp 0.4s forwards; }
+
+        .filters { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 16px; padding-bottom: 8px; scrollbar-width: none; }
+        .filters::-webkit-scrollbar { display: none; }
+        .filter-chip {
+            padding: 6px 16px; border-radius: 20px; font-size: 12px; white-space: nowrap; cursor: pointer;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); transition: all 0.2s;
+        }
+        .filter-chip.active { background: var(--emerald); color: white; border-color: var(--emerald-light); }
+
+        .search-bar {
+            width: 100%; padding: 12px 16px; border-radius: 16px; margin-bottom: 16px;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            color: white; font-size: 14px; outline: none; transition: all 0.3s;
+        }
+        .search-bar:focus { border-color: var(--emerald); background: rgba(255,255,255,0.08); }
+
+        .grid-list { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        @media(min-width: 768px) { .grid-list { grid-template-columns: 1fr 1fr; } }
+        
+        .exam-card { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+        .exam-code { align-self: flex-start; padding: 4px 10px; background: rgba(59, 130, 246, 0.2); color: #93C5FD; border-radius: 8px; font-size: 11px; font-weight: 600; }
+        .exam-card h4 { font-size: 15px; line-height: 1.3; }
+        .exam-meta { display: flex; gap: 12px; font-size: 12px; color: var(--text-muted); }
+        .exam-meta span { display: flex; align-items: center; gap: 4px; }
+        .exam-actions { display: flex; gap: 10px; margin-top: auto; }
+        .exam-actions .btn { flex: 1; font-size: 12px; padding: 8px; }
+
+        .custom-test-builder { padding: 24px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 10px; color: var(--teal-light); }
+        .multi-select { display: flex; flex-wrap: wrap; gap: 10px; }
+        .select-chip {
+            padding: 8px 16px; border-radius: 20px; font-size: 13px; cursor: pointer;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); transition: 0.2s;
+        }
+        .select-chip.selected { background: var(--teal); border-color: var(--teal-light); }
+        .slider-container { display: flex; align-items: center; gap: 15px; }
+        input[type="range"] { flex: 1; accent-color: var(--teal); }
+        #slider-val { font-weight: 600; width: 30px; text-align: center; }
+
+        /* AI Tutor Page */
+        .chat-container { display: flex; flex-direction: column; height: calc(100vh - 200px); }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 10px 0; display: flex; flex-direction: column; gap: 16px; scrollbar-width: none; }
+        .chat-messages::-webkit-scrollbar { display: none; }
+        .msg { max-width: 85%; padding: 12px 16px; border-radius: 18px; font-size: 14px; line-height: 1.5; animation: fadeInSlideUp 0.3s forwards; }
+        .msg.ai { background: rgba(20, 184, 166, 0.15); border: 1px solid rgba(20, 184, 166, 0.3); align-self: flex-start; border-bottom-left-radius: 4px; }
+        .msg.user { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); align-self: flex-end; border-bottom-right-radius: 4px; }
+        .quick-questions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .qq-chip { padding: 6px 12px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; font-size: 12px; color: #93C5FD; cursor: pointer; }
+        .chat-input-area { display: flex; gap: 10px; margin-top: 10px; }
+        .chat-input { flex: 1; padding: 12px 16px; border-radius: 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; outline: none; }
+        .chat-send { width: 44px; height: 44px; border-radius: 50%; background: var(--teal); border: none; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .typing-indicator { display: flex; gap: 4px; padding: 12px 16px; background: rgba(20, 184, 166, 0.1); border-radius: 18px; align-self: flex-start; width: fit-content; display: none; }
+        .dot { width: 6px; height: 6px; background: var(--teal-light); border-radius: 50%; animation: typing 1.4s infinite ease-in-out both; }
+        .dot:nth-child(1) { animation-delay: -0.32s; } .dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
+        /* CA & GK Page */
+        .news-list { display: flex; flex-direction: column; gap: 16px; }
+        .news-item { padding: 16px; display: flex; flex-direction: column; gap: 10px; cursor: pointer; }
+        .news-top { display: flex; justify-content: space-between; align-items: center; }
+        .news-cat { font-size: 10px; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; font-weight: 600; }
+        .cat-recruitment { background: rgba(239, 68, 68, 0.2); color: #FCA5A5; }
+        .cat-governance { background: rgba(59, 130, 246, 0.2); color: #93C5FD; }
+        .cat-environment { background: rgba(16, 185, 129, 0.2); color: #6EE7B7; }
+        .cat-infrastructure { background: rgba(245, 158, 11, 0.2); color: #FCD34D; }
+        .cat-default { background: rgba(156, 163, 175, 0.2); color: #D1D5DB; }
+        .news-item h4 { font-size: 16px; line-height: 1.4; }
+        .news-excerpt { font-size: 13px; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .news-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+        .exam-ready { font-size: 11px; color: var(--neon); display: flex; align-items: center; gap: 4px; text-shadow: 0 0 5px rgba(0,255,136,0.5); }
+        .ask-ai-btn { font-size: 11px; padding: 4px 10px; background: rgba(255,255,255,0.1); border-radius: 12px; color: white; border: none; cursor: pointer; }
+
+        /* Profile Page */
+        .profile-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 30px; text-align: center; }
+        .profile-avatar-container { position: relative; width: 100px; height: 100px; margin-bottom: 16px; }
+        .profile-avatar { width: 100%; height: 100%; border-radius: 50%; border: 3px solid var(--glass-highlight); background: #333; z-index: 2; position: relative; }
+        .ring { position: absolute; top: -10px; left: -10px; right: -10px; bottom: -10px; border-radius: 50%; border: 1px solid rgba(20, 184, 166, 0.3); z-index: 1; animation: spin 10s linear infinite; }
+        .ring:nth-child(2) { top: -20px; left: -20px; right: -20px; bottom: -20px; border: 1px dashed rgba(46, 139, 87, 0.2); animation: spin-reverse 15s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes spin-reverse { 100% { transform: rotate(-360deg); } }
+        .profile-header h2 { font-size: 22px; margin-bottom: 4px; }
+        .profile-header p { font-size: 14px; color: var(--text-muted); margin-bottom: 8px; }
+        .tier-badge { display: inline-block; padding: 4px 12px; background: linear-gradient(135deg, rgba(156, 163, 175, 0.2), rgba(209, 213, 219, 0.2)); border: 1px solid #9CA3AF; border-radius: 20px; font-size: 12px; font-weight: 600; color: #E5E7EB; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+        .stat-card { padding: 16px 10px; text-align: center; border-radius: 16px; }
+        .stat-value { font-size: 24px; font-weight: 700; color: var(--emerald-light); margin-bottom: 4px; }
+        .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
+
+        .chart-container { padding: 20px; margin-bottom: 24px; height: 160px; display: flex; align-items: flex-end; justify-content: space-between; gap: 4px; }
+        .bar { width: 100%; background: rgba(255,255,255,0.1); border-radius: 4px 4px 0 0; transition: height 1s var(--spring); position: relative; }
+        .bar.highlight { background: var(--teal); box-shadow: 0 0 10px var(--teal); }
+        .bar::after { content: ''; position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--text-muted); }
+
+        .menu-section { margin-bottom: 24px; }
+        .menu-title { font-size: 14px; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .menu-list { display: flex; flex-direction: column; gap: 8px; }
+        .menu-item { padding: 16px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; text-decoration: none; color: white; background: rgba(255,255,255,0.02); transition: 0.2s; }
+        .menu-item:hover { background: rgba(255,255,255,0.06); }
+        .menu-item-left { display: flex; align-items: center; gap: 12px; }
+        .progress-bar-bg { width: 100px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: var(--emerald); width: 0; transition: width 1s ease-out; }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 2000; display: none; opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .modal-overlay.active { display: block; opacity: 1; }
+        
+        /* News Modal */
+        #news-modal .glass-panel { width: 100%; height: 100%; padding: 20px; overflow-y: auto; }
+        .modal-header { display: flex; align-items: center; margin-bottom: 24px; padding-top: 10px;}
+        .back-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; margin-right: 16px; }
+        .news-detail-content { margin-bottom: 30px; }
+        .news-detail-title { font-size: 22px; margin-bottom: 16px; line-height: 1.3; }
+        .news-detail-body { font-size: 15px; color: #ddd; line-height: 1.6; margin-bottom: 24px; }
+        .why-matters { background: rgba(245, 158, 11, 0.1); border-left: 4px solid var(--amber); padding: 16px; border-radius: 8px; margin-bottom: 24px; }
+        .why-matters h4 { color: var(--amber-light); margin-bottom: 8px; font-size: 14px; }
+
+        /* Quiz Modal */
+        #quiz-modal .glass-panel { width: 100%; height: 100%; display: flex; flex-direction: column; }
+        .quiz-topbar { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
+        .timer-ring { width: 40px; height: 40px; }
+        .timer-ring circle { fill: none; stroke-width: 3; stroke-linecap: round; }
+        .timer-bg { stroke: rgba(255,255,255,0.1); }
+        .timer-progress { stroke: var(--emerald); stroke-dasharray: 113; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear, stroke 0.3s; }
+        .timer-text { fill: white; font-size: 12px; font-weight: 600; text-anchor: middle; dominant-baseline: central; }
+        
+        .quiz-progress-bar { height: 3px; background: rgba(255,255,255,0.1); width: 100%; }
+        .quiz-progress-fill { height: 100%; background: linear-gradient(90deg, var(--emerald), var(--teal)); width: 0%; transition: width 0.3s; }
+
+        .quiz-body { flex: 1; padding: 30px 20px; overflow-y: auto; }
+        .q-cat { font-size: 12px; color: var(--teal-light); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+        .q-text { font-size: 20px; font-weight: 500; line-height: 1.4; margin-bottom: 30px; }
+        
+        .options-grid { display: flex; flex-direction: column; gap: 12px; }
+        .option-btn {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            padding: 16px; border-radius: 16px; display: flex; align-items: center; gap: 16px;
+            color: white; font-size: 15px; cursor: pointer; transition: all 0.2s; text-align: left;
+        }
+        .option-btn:hover:not(:disabled) { background: rgba(255,255,255,0.1); transform: translateX(8px); border-color: var(--emerald); }
+        .opt-letter { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; }
+        
+        .option-btn.correct {
+            background: rgba(34, 197, 94, 0.15);
+            border-color: #22C55E;
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.5), 0 0 40px rgba(34, 197, 94, 0.2);
+        }
+        .option-btn.correct .opt-letter { background: var(--neon); color: black; }
+        .option-btn.wrong {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: #EF4444;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.5), 0 0 40px rgba(239, 68, 68, 0.2);
+        }
+        .option-btn.wrong .opt-letter { background: var(--red); }
+        .option-btn:disabled { cursor: default; }
+
+        .quiz-footer { padding: 20px; border-top: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; height: 80px; }
+        .feedback-text { font-size: 15px; font-weight: 500; }
+        .feedback-text.correct { color: var(--neon); }
+        .feedback-text.wrong { color: #FCA5A5; }
+
+        /* Score Screen */
+        .score-screen { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; padding: 20px; }
+        .score-circle { width: 150px; height: 150px; border-radius: 50%; border: 8px solid var(--emerald); display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 24px; box-shadow: 0 0 30px rgba(46,139,87,0.4); }
+        .score-val { font-size: 40px; font-weight: 700; line-height: 1; }
+        .score-total { font-size: 16px; color: var(--text-muted); }
+        .score-msg { font-size: 20px; margin-bottom: 30px; }
+
+        @media (min-width: 768px) {
+            .pillars-grid { grid-template-columns: repeat(4, 1fr); }
+            .chat-container { height: calc(100vh - 250px); }
+        }
+    </style>
 </head>
 <body>
-  <script src="flutter_bootstrap.js" async></script>
+    <!-- Ambient Background -->
+    <div class="orb orb-emerald"></div>
+    <div class="orb orb-teal"></div>
+    <div class="orb orb-amber"></div>
+
+    <div class="container">
+        <!-- Topbar -->
+        <header class="topbar glass">
+            <div class="logo-area">
+                <div class="logo-mark">A</div>
+                <h3 style="font-size: 16px;">Arunachal Exam Prep</h3>
+            </div>
+            <div class="topbar-right">
+                <div class="streak-pill">🔥 12</div>
+                <button class="icon-btn">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>
+                    <div class="badge"></div>
+                </button>
+                <div class="avatar"></div>
+            </div>
+        </header>
+
+        <!-- PAGE 1: HOME -->
+        <div id="page-home" class="page active">
+            <div class="hero">
+                <h1 class="text-gradient">Good Morning, Student! 👋</h1>
+                <p>What do you want to learn today?</p>
+            </div>
+
+            <div class="banner">
+                <div class="banner-icon">📣</div>
+                <div class="banner-content">
+                    <h4>APSSB CGL 2025 Notification Released!</h4>
+                    <p>Application deadline: Nov 15, 2025. Check official pattern and syllabus now.</p>
+                </div>
+            </div>
+
+            <div class="wotd-card glass card">
+                <span class="wotd-label">✨ Word of the Day</span>
+                <div class="wotd-word">Viceroyalty</div>
+                <div class="wotd-pos">noun · historical</div>
+                <div class="wotd-def">The office or period of service of a viceroy; a territory under vice-regal governance. British India was administered as a Viceroyalty under the Crown.</div>
+                <div class="tags">
+                    <span class="tag">📌 APPSC History</span>
+                    <span class="tag">📌 APSSB GK</span>
+                </div>
+            </div>
+
+            <div class="daily-challenge glass card">
+                <div class="dc-info">
+                    <h3>⚡ Daily Sprint Challenge</h3>
+                    <p>Beat your best score! 10 rapid-fire questions</p>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 10px;">
+                    <div class="pill">10 min</div>
+                    <button class="btn btn-primary" onclick="openQuiz('sprint')">Start Sprint →</button>
+                </div>
+            </div>
+
+            <div class="pillars-grid">
+                <a href="#" class="pillar-card pillar-1 glass" onclick="navTo('exams', 0)">
+                    <div class="pillar-icon">📚</div>
+                    <h4>PYQ Bank</h4>
+                    <p>APPSC & APSSB Papers, Exam & Study Mode</p>
+                </a>
+                <a href="#" class="pillar-card pillar-2 glass" onclick="navTo('exams', 1)">
+                    <div class="pillar-icon">✅</div>
+                    <h4>Mock Tests</h4>
+                    <p>Maths, GK, English & Technical Sectionals</p>
+                </a>
+                <a href="#" class="pillar-card pillar-3 glass" onclick="navTo('exams', 2)">
+                    <div class="pillar-icon">🎯</div>
+                    <h4>Custom Test</h4>
+                    <p>Build Your Practice By Subject & Time</p>
+                </a>
+                <a href="#" class="pillar-card pillar-4 glass">
+                    <div class="pillar-icon">📖</div>
+                    <h4>Exam Syllabus</h4>
+                    <p>APSSB & APPSC Schemes, Marks & Negative</p>
+                </a>
+            </div>
+
+            <div class="grammar-card glass card">
+                <div>
+                    <h3 style="margin-bottom: 4px; display:flex; align-items:center; gap:8px;">📖 English Grammar & Quiz</h3>
+                    <p style="font-size:13px; color:#ddd;">Rules of SV Agreement, Voice & Practice Quizzes</p>
+                </div>
+                <button class="btn btn-ghost">STUDY →</button>
+            </div>
+
+            <div class="ca-section">
+                <div class="ca-section-header">
+                    <h3>📰 Daily Current Affairs & GK</h3>
+                    <a href="#" onclick="navTo('ca')">View All →</a>
+                </div>
+                <div class="ca-scroll" id="home-news-scroll">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 2: EXAMS -->
+        <div id="page-exams" class="page">
+            <div class="page-header">
+                <h2>📚 Exam Prep Center</h2>
+                <p>Official PYQs, Targeted Mocks & Custom Practice</p>
+            </div>
+
+            <div class="tab-switcher">
+                <div class="tab-btn active" onclick="switchExamTab(0)">📜 PYQ Papers</div>
+                <div class="tab-btn" onclick="switchExamTab(1)">✅ Mock Tests</div>
+                <div class="tab-btn" onclick="switchExamTab(2)">🎯 Custom Test</div>
+            </div>
+
+            <!-- Tab 1: PYQ -->
+            <div id="exam-tab-0" class="exam-tab-content active">
+                <div class="grid-list" id="pyq-grid"></div>
+            </div>
+
+            <!-- Tab 2: Mocks -->
+            <div id="exam-tab-1" class="exam-tab-content">
+                <input type="text" class="search-bar" id="mock-search" placeholder="Search mocks by name or subject..." oninput="filterMocks()">
+                <div class="filters" id="mock-filters">
+                    <div class="filter-chip active" onclick="setMockFilter('All', this)">All</div>
+                    <div class="filter-chip" onclick="setMockFilter('Maths', this)">Maths</div>
+                    <div class="filter-chip" onclick="setMockFilter('GK', this)">GK</div>
+                    <div class="filter-chip" onclick="setMockFilter('GA', this)">GA</div>
+                    <div class="filter-chip" onclick="setMockFilter('English', this)">English</div>
+                    <div class="filter-chip" onclick="setMockFilter('Grammar', this)">Grammar</div>
+                    <div class="filter-chip" onclick="setMockFilter('Technical', this)">Technical</div>
+                    <div class="filter-chip" onclick="setMockFilter('Full Mock', this)">Full Mock</div>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <select id="mock-diff" class="search-bar" style="width: auto; padding: 8px 16px;" onchange="filterMocks()">
+                        <option value="All">All Levels</option>
+                        <option value="Easy">Easy</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Hard">Hard</option>
+                    </select>
+                </div>
+                <div class="grid-list" id="mock-grid"></div>
+            </div>
+
+            <!-- Tab 3: Custom -->
+            <div id="exam-tab-2" class="exam-tab-content">
+                <div class="custom-test-builder glass card">
+                    <div class="form-group">
+                        <label>Select Subjects (Multiple)</label>
+                        <div class="multi-select">
+                            <div class="select-chip selected" onclick="this.classList.toggle('selected')">GK</div>
+                            <div class="select-chip selected" onclick="this.classList.toggle('selected')">Maths</div>
+                            <div class="select-chip" onclick="this.classList.toggle('selected')">English</div>
+                            <div class="select-chip" onclick="this.classList.toggle('selected')">Reasoning</div>
+                            <div class="select-chip" onclick="this.classList.toggle('selected')">Current Affairs</div>
+                            <div class="select-chip" onclick="this.classList.toggle('selected')">Science</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Number of Questions</label>
+                        <div class="slider-container">
+                            <input type="range" id="q-count" min="5" max="50" step="5" value="20" oninput="document.getElementById('slider-val').textContent=this.value">
+                            <span id="slider-val">20</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Time Limit</label>
+                        <select class="search-bar" id="t-limit" style="margin-bottom:0">
+                            <option value="10">10 Minutes</option>
+                            <option value="20" selected>20 Minutes</option>
+                            <option value="30">30 Minutes</option>
+                            <option value="60">60 Minutes</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Difficulty Level</label>
+                        <select class="search-bar" id="d-limit" style="margin-bottom:0">
+                            <option value="Mixed">Mixed</option>
+                            <option value="Easy">Easy</option>
+                            <option value="Hard">Hard</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 10px; padding: 14px;" onclick="openQuiz('custom')">Build My Test →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 3: AI TUTOR -->
+        <div id="page-ai" class="page">
+            <div class="page-header">
+                <h2>🤖 AI Exam Tutor</h2>
+                <p>Ask anything about APSSB & APPSC exams</p>
+            </div>
+            <div class="chat-container glass card" style="padding: 16px;">
+                <div class="chat-messages" id="chat-box">
+                    <div class="msg ai">Hello! I'm your APSSB & APPSC AI Tutor. Ask me about exam patterns, syllabus, AP history, or any topic. What would you like to study today? 📚</div>
+                    <div class="quick-questions">
+                        <div class="qq-chip" onclick="sendChat('What is the APSSB CGL pattern?')">What is the APSSB CGL pattern?</div>
+                        <div class="qq-chip" onclick="sendChat('Explain McMahon Line')">Explain McMahon Line</div>
+                        <div class="qq-chip" onclick="sendChat('AP state GK facts')">AP state GK facts</div>
+                        <div class="qq-chip" onclick="sendChat('APPSC Civil Services stages')">APPSC Civil Services stages</div>
+                    </div>
+                </div>
+                <div class="typing-indicator" id="typing">
+                    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" class="chat-input" id="chat-input" placeholder="Type your question..." onkeypress="if(event.key==='Enter') sendChatInput()">
+                    <button class="chat-send" onclick="sendChatInput()">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 4: CA & GK -->
+        <div id="page-ca" class="page">
+            <div class="page-header">
+                <h2>Current Affairs & GK</h2>
+                <p>Daily State & National Updates</p>
+            </div>
+            
+            <div class="banner" style="cursor:pointer; background: linear-gradient(135deg, rgba(46, 139, 87, 0.4), rgba(20, 184, 166, 0.2)); border-left-color: var(--neon);">
+                <div class="banner-icon">📘</div>
+                <div class="banner-content">
+                    <h4 style="color:white; font-size:16px;">Arunachal Pradesh State GK Compendium</h4>
+                    <p>Read the complete guide →</p>
+                </div>
+            </div>
+
+            <input type="text" class="search-bar" id="news-search" placeholder="Search news..." oninput="filterNews()">
+            
+            <div class="filters" id="news-filters">
+                <div class="filter-chip active" onclick="setNewsFilter('All', this)">All</div>
+                <div class="filter-chip" onclick="setNewsFilter('Recruitment & Exams', this)">Recruitment & Exams</div>
+                <div class="filter-chip" onclick="setNewsFilter('Governance & State GK', this)">Governance & State GK</div>
+                <div class="filter-chip" onclick="setNewsFilter('Infrastructure & Economy', this)">Infrastructure & Economy</div>
+                <div class="filter-chip" onclick="setNewsFilter('Environment & Wildlife', this)">Environment & Wildlife</div>
+                <div class="filter-chip" onclick="setNewsFilter('Art & Culture', this)">Art & Culture</div>
+                <div class="filter-chip" onclick="setNewsFilter('State News', this)">State News</div>
+            </div>
+
+            <div class="news-list" id="news-container"></div>
+        </div>
+
+        <!-- PAGE 5: PROFILE -->
+        <div id="page-profile" class="page">
+            <div class="profile-header">
+                <div class="profile-avatar-container">
+                    <div class="ring"></div>
+                    <div class="ring"></div>
+                    <div class="profile-avatar" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%23fff%22><path d=%22M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z%22/></svg>'); background-size: cover; background-position: center;"></div>
+                </div>
+                <h2>Student Name</h2>
+                <p>student@arunachalprep.com</p>
+                <div class="tier-badge">🏅 Silver Scholar</div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card glass">
+                    <div class="stat-value">24</div>
+                    <div class="stat-label">Tests Taken</div>
+                </div>
+                <div class="stat-card glass">
+                    <div class="stat-value">72%</div>
+                    <div class="stat-label">Avg Score</div>
+                </div>
+                <div class="stat-card glass">
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">Day Streak</div>
+                </div>
+            </div>
+
+            <div class="chart-container glass card" id="score-chart">
+                <!-- Bars added by JS -->
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-title">My Account</div>
+                <div class="menu-list glass">
+                    <a href="#" class="menu-item">
+                        <div class="menu-item-left"><span>📊</span> My Test History</div>
+                        <span style="color:var(--text-muted)">→</span>
+                    </a>
+                    <a href="#" class="menu-item">
+                        <div class="menu-item-left"><span>🏆</span> Achievements & Trophies</div>
+                        <span class="pill">7</span>
+                    </a>
+                    <a href="#" class="menu-item">
+                        <div class="menu-item-left"><span>🔖</span> Saved Bookmarks</div>
+                        <span class="pill">34</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-title">My Courses</div>
+                <div class="menu-list glass">
+                    <div class="menu-item">
+                        <div class="menu-item-left">
+                            <span>📗</span> 
+                            <div>
+                                <div style="font-size:14px;">APSSB CGL Prep</div>
+                                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">68% Completed</div>
+                            </div>
+                        </div>
+                        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 0" data-width="68%"></div></div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="menu-item-left">
+                            <span>🏛</span> 
+                            <div>
+                                <div style="font-size:14px;">APPSCCE Civil Services</div>
+                                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">41% Completed</div>
+                            </div>
+                        </div>
+                        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 0" data-width="41%"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-title">Settings</div>
+                <div class="menu-list glass">
+                    <a href="#" class="menu-item"><div class="menu-item-left"><span>🔒</span> Change Password</div></a>
+                    <a href="#" class="menu-item"><div class="menu-item-left"><span>🚪</span> Sign Out</div></a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Dock Navigation -->
+    <nav class="dock-container glass-panel">
+        <div class="dock-item active" onclick="nav('home', this)">
+            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            <span>Home</span>
+        </div>
+        <div class="dock-item" onclick="nav('exams', this)">
+            <svg viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+            <span>Exams</span>
+        </div>
+        <div class="dock-item" onclick="nav('ai', this)">
+            <svg viewBox="0 0 24 24"><path d="M12 2c5.52 0 10 4.48 10 10s-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm-1 3h2v4h-2V7zm1 9C10.9 16 10 15.1 10 14c0-1.1.9-2 2-2s2 .9 2 2c0 1.1-.9 2-2 2z"/></svg>
+            <span>AI Tutor</span>
+        </div>
+        <div class="dock-sep"></div>
+        <div class="dock-item" onclick="nav('ca', this)">
+            <svg viewBox="0 0 24 24"><path d="M20 3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H4V5h16v14zm-2-12H6v2h12V7zm0 4H6v2h12v-2zm-5 4H6v2h7v-2z"/></svg>
+            <span>CA & GK</span>
+        </div>
+        <div class="dock-item" onclick="nav('profile', this)">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            <span>Profile</span>
+        </div>
+    </nav>
+
+    <!-- Modals -->
+    <!-- News Detail Modal -->
+    <div id="news-modal" class="modal-overlay">
+        <div class="glass-panel">
+            <div class="modal-header">
+                <button class="back-btn" onclick="closeNewsModal()">←</button>
+                <div>
+                    <span class="news-cat" id="nm-cat">Category</span>
+                    <span style="font-size:11px; color:#ccc; margin-left:10px;" id="nm-date">Date</span>
+                </div>
+            </div>
+            <div class="news-detail-content">
+                <h2 class="news-detail-title" id="nm-title">Title</h2>
+                <div class="news-detail-body" id="nm-body">Body</div>
+                <div class="why-matters">
+                    <h4>Why It Matters for Exams</h4>
+                    <p>This is highly relevant for upcoming APSSB exams. Expect questions on dates, facts, and key figures related to this topic in the General Knowledge section.</p>
+                </div>
+                <button class="btn btn-ghost" style="width:100%" onclick="askAIAboutNews()">✨ Ask AI Tutor about this</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quiz Modal -->
+    <div id="quiz-modal" class="modal-overlay">
+        <div class="glass-panel">
+            <div class="quiz-topbar">
+                <div>
+                    <h3 id="quiz-title" style="font-size:16px;">Daily Sprint</h3>
+                    <div style="font-size:12px; color:var(--text-muted)" id="quiz-progress-text">Question 1 of 10</div>
+                </div>
+                <svg class="timer-ring" viewBox="0 0 40 40">
+                    <circle class="timer-bg" cx="20" cy="20" r="18"></circle>
+                    <circle class="timer-progress" id="timer-circle" cx="20" cy="20" r="18" transform="rotate(-90 20 20)"></circle>
+                    <text x="20" y="20" class="timer-text" id="timer-text">30</text>
+                </svg>
+            </div>
+            <div class="quiz-progress-bar">
+                <div class="quiz-progress-fill" id="quiz-bar"></div>
+            </div>
+            <div class="quiz-body" id="quiz-body">
+                <div class="q-cat" id="q-cat">CATEGORY</div>
+                <div class="q-text" id="q-text">Question text goes here?</div>
+                <div class="options-grid" id="q-opts">
+                    <!-- Options injected here -->
+                </div>
+            </div>
+            <div class="quiz-footer" id="quiz-footer">
+                <div class="feedback-text" id="q-feedback"></div>
+                <button class="btn btn-primary" id="q-next-btn" style="display:none;" onclick="nextQuestion()">Next →</button>
+            </div>
+
+            <!-- Score Screen -->
+            <div class="score-screen" id="score-screen">
+                <div class="score-circle">
+                    <div class="score-val" id="score-val">8</div>
+                    <div class="score-total" id="score-total">/ 10</div>
+                </div>
+                <h3 class="score-msg" id="score-msg">Great Job!</h3>
+                <button class="btn btn-primary" onclick="closeQuiz()">Return to Dashboard</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const pyqData = [
+            {code: 'APPSC-CCE', title: 'APPSC CCE Prelims 2023 GS Paper I', qs: 150, time: 120},
+            {code: 'APPSC-CCE', title: 'APPSC CCE Prelims 2022 GS Paper I', qs: 150, time: 120},
+            {code: 'APPSC-AE', title: 'APPSC AESE Civil Engineering 2023', qs: 100, time: 120},
+            {code: 'APPSC-AE', title: 'APPSC AESE Electrical Engineering 2023', qs: 100, time: 120},
+            {code: 'APSSB-CGL', title: 'APSSB CGL 2023 Full Paper', qs: 200, time: 120},
+            {code: 'APSSB-CGL', title: 'APSSB CGL 2022 Full Paper', qs: 200, time: 120},
+            {code: 'APSSB-CHSL', title: 'APSSB CHSL 2023 Full Paper', qs: 100, time: 60},
+            {code: 'APSSB-MTS', title: 'APSSB MTS 2023 Paper', qs: 100, time: 90},
+            {code: 'APSSB-Police', title: 'APSSB Constable 2022', qs: 80, time: 60},
+            {code: 'APSSB-DEO', title: 'APSSB DEO 2023', qs: 100, time: 60},
+            {code: 'APPSC-TGT', title: 'APPSC TGT English 2023', qs: 150, time: 120},
+            {code: 'APPSC-JE', title: 'APPSC JE Civil 2022', qs: 100, time: 120}
+        ];
+
+        const mockData = [
+            {cat: 'Maths', title: 'APSSB Elementary Maths Mock 3 (Formulas & Arithmetic)', qs: 12, time: 20, diff: 'Medium', code: 'APSSB-MOCK'},
+            {cat: 'Maths', title: 'APSSB Elementary Maths Mock 4 (Geometry & Mensuration)', qs: 15, time: 25, diff: 'Hard', code: 'APSSB-MOCK'},
+            {cat: 'GK', title: 'Arunachal GK Easy (State Symbols)', qs: 15, time: 15, diff: 'Easy', code: 'AP-GK'},
+            {cat: 'GK', title: 'Arunachal GK Medium (Tribes & Festivals)', qs: 20, time: 20, diff: 'Medium', code: 'AP-GK'},
+            {cat: 'GK', title: 'State & National GK Hard', qs: 25, time: 25, diff: 'Hard', code: 'APPSC-GK'},
+            {cat: 'GA', title: 'Arunachal & National Current Affairs Sprint', qs: 15, time: 15, diff: 'Easy', code: 'CA-SPRINT'},
+            {cat: 'English', title: 'APSSB General English (SV & Error Spotting)', qs: 20, time: 15, diff: 'Medium', code: 'APSSB-ENG'},
+            {cat: 'English', title: 'English Vocabulary & Idioms Sprint', qs: 15, time: 12, diff: 'Easy', code: 'ENG-SPRINT'},
+            {cat: 'Grammar', title: 'APSSB English Grammar Mock', qs: 20, time: 15, diff: 'Medium', code: 'APSSB-GRM'},
+            {cat: 'Grammar', title: 'APPSC Grammar Sprint (Articles & Prepositions)', qs: 15, time: 12, diff: 'Easy', code: 'APPSC-GRM'},
+            {cat: 'Technical', title: 'APPSC Civil Engineering Mock (Structures & Concrete)', qs: 25, time: 30, diff: 'Hard', code: 'AE-CIVIL'},
+            {cat: 'Full Mock', title: 'APSSB Full-Length Mock Exam 1', qs: 39, time: 45, diff: 'Medium', code: 'CGL-FULL'}
+        ];
+
+        const newsData = [
+            {cat: 'Recruitment & Exams', title: 'APSSB CGL 2025 Notification Released', date: 'Today', content: 'The Arunachal Pradesh Staff Selection Board (APSSB) has officially released the notification for the Combined Graduate Level (CGL) Examination 2025. Over 200 vacancies across various departments have been announced. Online registration begins on October 1st and closes on November 15th, 2025. Candidates are advised to check the official syllabus and exam pattern on the portal.', ready: true},
+            {cat: 'Governance & State GK', title: 'Arunachal Pradesh Cabinet Approves New Industrial Policy 2025', date: 'Yesterday', content: 'The state cabinet has approved the New Industrial Policy aimed at boosting local manufacturing and attracting investments. Key highlights include subsidies for indigenous entrepreneurs and a focus on agro-based industries.', ready: true},
+            {cat: 'Environment & Wildlife', title: 'Namdapha Tiger Reserve Records 47 Tigers in Latest Census', date: '2 days ago', content: 'In a positive sign for conservation, the latest census at Namdapha National Park and Tiger Reserve indicates a healthy population of 47 tigers. The reserve remains the only one in the world to host four big cat species.', ready: true},
+            {cat: 'Infrastructure & Economy', title: 'Sela Tunnel: World\'s Longest Twin-Lane Tunnel Above 13,000 Feet Inaugurated', date: '3 days ago', content: 'The strategic Sela Tunnel, constructed by the Border Roads Organisation (BRO), has been officially inaugurated. It ensures all-weather connectivity to Tawang and is critical for both military and civilian movement.', ready: true},
+            {cat: 'Governance & State GK', title: 'Arunachal Pradesh Celebrates 38th Statehood Day', date: 'Feb 20', content: 'Arunachal Pradesh celebrated its 38th Statehood Day with cultural showcases and development announcements. The state transitioned from NEFA to a Union Territory and finally attained statehood on Feb 20, 1987.', ready: true},
+            {cat: 'Infrastructure & Economy', title: 'RBI Monetary Policy: Repo Rate Held at 6.25%', date: '1 week ago', content: 'The Reserve Bank of India decided to keep the repo rate unchanged at 6.25% in its latest MPC meeting, focusing on inflation control while supporting growth.', ready: false},
+            {cat: 'State News', title: 'India Launches National Quantum Mission Phase II', date: '1 week ago', content: 'The Government of India has rolled out Phase II of the National Quantum Mission to accelerate research in quantum computing, communications, and sensing.', ready: true},
+            {cat: 'Environment & Wildlife', title: 'Great Himalayan Biodiversity Corridor Officially Notified', date: '2 weeks ago', content: 'A new biodiversity corridor linking protected areas across the Eastern Himalayas has been notified, promising better protection for endemic flora and fauna.', ready: true},
+            {cat: 'Art & Culture', title: 'Arunachal Pradesh Athletes Win 6 Medals at National Games', date: '2 weeks ago', content: 'Athletes from Arunachal showcased stellar performances at the recent National Games, bringing home 6 medals including 2 golds in weightlifting and martial arts.', ready: false},
+            {cat: 'Recruitment & Exams', title: 'APPSC Releases AE Civil & Electrical Exam Schedule 2025', date: '3 weeks ago', content: 'The Arunachal Pradesh Public Service Commission has published the examination calendar for Assistant Engineer (Civil & Electrical) posts. The prelims are scheduled for the first week of April 2025.', ready: true},
+            {cat: 'Infrastructure & Economy', title: 'Trans-Arunachal Highway Progress: 1,800 km Network Update', date: '1 month ago', content: 'The ambitious Trans-Arunachal Highway project has reached a major milestone with over 1,800 km of the network now fully operational, significantly reducing travel times between districts.', ready: true},
+            {cat: 'Governance & State GK', title: 'Adi Baane Kebang: Arunachal\'s Largest Tribe Governance Structure', date: '1 month ago', content: 'A special symposium highlighted the role of the Adi Baane Kebang, the traditional governance institution of the Adi tribe, in modern democratic setups and local administration.', ready: true}
+        ];
+
+        const quizData = [
+            {cat:'AP HISTORY', q:'Which convention demarcated the boundary between British India and Tibet through what is now Arunachal Pradesh?', opts:['Treaty of Yandabo','Simla Convention 1914 (McMahon Line)','Treaty of Sugauli','Lucknow Pact 1916'], ans:1},
+            {cat:'GEOGRAPHY', q:'The Namdapha National Park is located in which district of Arunachal Pradesh?', opts:['West Kameng','Changlang','Upper Siang','Tawang'], ans:1},
+            {cat:'POLITY', q:'APSSB was constituted under which Act for Group C recruitment?', opts:['AP Civil Services Act 1969','APSSB Act 2018','PSC Act 1951','NE Region Act 2004'], ans:1},
+            {cat:'ENVIRONMENT', q:'Which river, originating from Tibet, enters India through Arunachal Pradesh as the Siang?', opts:['Lohit','Subansiri','Tsangpo/Brahmaputra','Dibang'], ans:2},
+            {cat:'TRIBES & CULTURE', q:'The Tawang Monastery is associated with which Buddhist sect?', opts:['Hinayana','Vajrayana – Gelug Sect','Zen Buddhism','Theravada'], ans:1},
+            {cat:'SCIENCE & TECH', q:'NISAR, a joint NASA-ISRO satellite, primarily uses which technology?', opts:['Optical Multispectral','Synthetic Aperture Radar (SAR)','LiDAR','Hyperspectral Imaging'], ans:1},
+            {cat:'ECONOMY', q:'What is the repo rate set by RBI in the August 2025 MPC meeting?', opts:['5.75%','6.00%','6.25%','6.50%'], ans:2},
+            {cat:'AP GEOGRAPHY', q:'Arunachal Pradesh shares its longest international border with which country?', opts:['Bhutan','Myanmar','China','Bangladesh'], ans:2},
+            {cat:'CURRENT AFFAIRS', q:'The Sela Tunnel inaugurated in 2024 is the world\'s longest twin-lane tunnel at what altitude?', opts:['Above 9,000 ft','Above 11,000 ft','Above 13,000 ft','Above 15,000 ft'], ans:2},
+            {cat:'APSSB GK', q:'The headquarters of APSSB is located in which city?', opts:['Pasighat','Naharlagun','Tawang','Along'], ans:1},
+            {cat:'AP HISTORY', q:'Arunachal Pradesh was granted full statehood on which date?', opts:['20 Feb 1987','26 Jan 1960','15 Aug 1972','01 Dec 1986'], ans:0},
+            {cat:'GEOGRAPHY', q:'Which is the highest peak in Arunachal Pradesh?', opts:['Kangto','Nyegi Kangsang','Gombu (8,485m)','Kangchenjunga'], ans:2},
+            {cat:'TRIBES', q:'Which tribe is the largest tribal group in Arunachal Pradesh?', opts:['Nyishi','Adi','Garo','Apatani'], ans:1},
+            {cat:'POLITY', q:'Arunachal Pradesh sends how many members to the Lok Sabha?', opts:['1','2','3','4'], ans:1},
+            {cat:'ENVIRONMENT', q:'Namdapha is the only national park in India to have all four big cats. Which four?', opts:['Lion/Tiger/Leopard/Cheetah','Tiger/Leopard/Snow Leopard/Clouded Leopard','Tiger/Lion/Jaguar/Leopard','Cheetah/Tiger/Snow Leopard/Leopard'], ans:1},
+            {cat:'ECONOMY', q:'Which state scheme provides micro-credit to street vendors?', opts:['PM Awas Yojana','PM SVANidhi','PM Kisan','MGNREGS'], ans:1},
+            {cat:'AP HISTORY', q:'Before becoming Arunachal Pradesh, the region was known as?', opts:['North East Frontier Agency (NEFA)','Assam Hills Division','Eastern Himalayan Territory','Frontier Tribal Areas'], ans:0},
+            {cat:'SCIENCE', q:'Which is the first indigenously developed COVID-19 vaccine in India?', opts:['Covishield','COVAXIN','Sputnik V','Moderna'], ans:1},
+            {cat:'AP GK', q:'Ziro Valley in Arunachal Pradesh is associated with which tribe?', opts:['Adi','Nyishi','Apatani','Wancho'], ans:2},
+            {cat:'POLITY', q:'Article 315 of the Indian Constitution pertains to?', opts:['Fundamental Rights','Establishment of Public Service Commissions','Emergency Provisions','Finance Commission'], ans:1}
+        ];
+
+        // --- NAVIGATION ---
+        function nav(pageId, el) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-' + pageId).classList.add('active');
+            
+            document.querySelectorAll('.dock-item').forEach(d => d.classList.remove('active'));
+            if(el) el.classList.add('active');
+            window.scrollTo({top:0, behavior:'smooth'});
+
+            if(pageId === 'profile') animateProfile();
+        }
+
+        function navTo(pageId, tabIdx) {
+            const docks = document.querySelectorAll('.dock-item');
+            let targetDock;
+            if(pageId==='exams') targetDock = docks[1];
+            if(pageId==='ca') targetDock = docks[3];
+            nav(pageId, targetDock);
+            if(tabIdx !== undefined) switchExamTab(tabIdx);
+        }
+
+        // --- RENDER EXAMS ---
+        function renderPYQ() {
+            const grid = document.getElementById('pyq-grid');
+            grid.innerHTML = pyqData.map(item => `
+                <div class="exam-card glass card">
+                    <div class="exam-code">${item.code}</div>
+                    <h4>${item.title}</h4>
+                    <div class="exam-meta">
+                        <span>⏱ ${item.time}m</span>
+                        <span>📝 ${item.qs} Qs</span>
+                    </div>
+                    <div class="exam-actions">
+                        <button class="btn btn-ghost" onclick="openQuiz('pyq')">📖 Study</button>
+                        <button class="btn btn-primary" onclick="openQuiz('pyq')">⏱ Exam</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        let currentMockCat = 'All';
+        function renderMocks(searchTerm = '') {
+            const grid = document.getElementById('mock-grid');
+            const diff = document.getElementById('mock-diff').value;
+            
+            const filtered = mockData.filter(m => {
+                const matchSearch = m.title.toLowerCase().includes(searchTerm.toLowerCase());
+                const matchCat = currentMockCat === 'All' || m.cat === currentMockCat;
+                const matchDiff = diff === 'All' || m.diff === diff;
+                return matchSearch && matchCat && matchDiff;
+            });
+
+            grid.innerHTML = filtered.map(item => `
+                <div class="exam-card glass card">
+                    <div style="display:flex; justify-content:space-between">
+                        <div class="exam-code" style="background:rgba(20,184,166,0.2); color:#5EEAD4">${item.cat}</div>
+                        <div style="font-size:11px; padding:2px 8px; border-radius:10px; border:1px solid #ccc; color:#ccc">${item.diff}</div>
+                    </div>
+                    <h4>${item.title}</h4>
+                    <div class="exam-meta">
+                        <span>⏱ ${item.time}m</span>
+                        <span>📝 ${item.qs} Qs</span>
+                    </div>
+                    <div class="exam-actions">
+                        <button class="btn btn-primary" style="width:100%" onclick="openQuiz('mock')">Start Test →</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function switchExamTab(idx) {
+            document.querySelectorAll('.tab-btn').forEach((b, i) => {
+                b.classList.toggle('active', i === idx);
+            });
+            document.querySelectorAll('.exam-tab-content').forEach((c, i) => {
+                c.classList.toggle('active', i === idx);
+            });
+        }
+
+        function filterMocks() {
+            renderMocks(document.getElementById('mock-search').value);
+        }
+
+        function setMockFilter(cat, el) {
+            document.querySelectorAll('#mock-filters .filter-chip').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            currentMockCat = cat;
+            filterMocks();
+        }
+
+        // --- RENDER NEWS ---
+        let currentNewsCat = 'All';
+        function getCatClass(cat) {
+            if(cat.includes('Recruitment')) return 'cat-recruitment';
+            if(cat.includes('Governance')) return 'cat-governance';
+            if(cat.includes('Environment')) return 'cat-environment';
+            if(cat.includes('Infrastructure')) return 'cat-infrastructure';
+            return 'cat-default';
+        }
+
+        function renderNews(searchTerm = '') {
+            const cont = document.getElementById('news-container');
+            const filtered = newsData.filter(n => {
+                const matchSearch = n.title.toLowerCase().includes(searchTerm.toLowerCase());
+                const matchCat = currentNewsCat === 'All' || n.cat === currentNewsCat;
+                return matchSearch && matchCat;
+            });
+
+            cont.innerHTML = filtered.map((item, idx) => `
+                <div class="news-item glass card" onclick="openNews(${idx})">
+                    <div class="news-top">
+                        <span class="news-cat ${getCatClass(item.cat)}">${item.cat}</span>
+                        <span class="ca-date">${item.date}</span>
+                    </div>
+                    <h4>${item.title}</h4>
+                    <p class="news-excerpt">${item.content}</p>
+                    <div class="news-bottom">
+                        ${item.ready ? '<span class="exam-ready">🎯 Exam Ready</span>' : '<span></span>'}
+                        <button class="ask-ai-btn" onclick="event.stopPropagation(); askAIAboutNewsStr('${item.title.replace(/'/g, "\\'")}')">Ask AI ✨</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Also render home page news scroll
+            if(currentNewsCat === 'All' && searchTerm === '') {
+                const homeScroll = document.getElementById('home-news-scroll');
+                homeScroll.innerHTML = newsData.slice(0, 6).map((item, idx) => `
+                    <div class="ca-card glass card ${idx===0 ? 'featured' : ''}" onclick="openNews(${idx})">
+                        <span class="ca-badge ${getCatClass(item.cat)}">${item.cat}</span>
+                        <h4>${item.title}</h4>
+                        <span class="ca-date">${item.date}</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function filterNews() {
+            renderNews(document.getElementById('news-search').value);
+        }
+
+        function setNewsFilter(cat, el) {
+            document.querySelectorAll('#news-filters .filter-chip').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            currentNewsCat = cat;
+            filterNews();
+        }
+
+        function openNews(idx) {
+            const n = newsData[idx];
+            document.getElementById('nm-cat').textContent = n.cat;
+            document.getElementById('nm-cat').className = 'news-cat ' + getCatClass(n.cat);
+            document.getElementById('nm-date').textContent = n.date;
+            document.getElementById('nm-title').textContent = n.title;
+            document.getElementById('nm-body').textContent = n.content;
+            
+            document.getElementById('news-modal').classList.add('active');
+        }
+        function closeNewsModal() { document.getElementById('news-modal').classList.remove('active'); }
+
+        function askAIAboutNews() {
+            closeNewsModal();
+            askAIAboutNewsStr(document.getElementById('nm-title').textContent);
+        }
+        function askAIAboutNewsStr(title) {
+            navTo('ai');
+            setTimeout(() => {
+                document.getElementById('chat-input').value = "Tell me more about: " + title;
+                sendChatInput();
+            }, 300);
+        }
+
+        // --- AI TUTOR ---
+        function sendChat(text) {
+            const box = document.getElementById('chat-box');
+            box.innerHTML += `<div class="msg user">${text}</div>`;
+            box.scrollTop = box.scrollHeight;
+            
+            document.getElementById('typing').style.display = 'flex';
+            box.scrollTop = box.scrollHeight;
+
+            setTimeout(() => {
+                document.getElementById('typing').style.display = 'none';
+                const lower = text.toLowerCase();
+                let resp = "Great question! For APSSB & APPSC prep, focus on: 1) Arunachal Pradesh State GK (30-35% weightage), 2) General English, 3) Quantitative Aptitude, and 4) Reasoning. Which topic would you like to explore in depth?";
+                
+                if(lower.includes('mcmahon')) {
+                    resp = "The McMahon Line is the boundary between Tibet and British India, agreed upon at the Simla Convention of 1914. It forms the northern border of Arunachal Pradesh. Sir Henry McMahon was the chief British negotiator.";
+                } else if(lower.includes('cgl')) {
+                    resp = "The APSSB CGL (Combined Graduate Level) exam generally consists of 150 questions (300 marks) covering General English, Elementary Math, and General Knowledge. There is negative marking of 1/4th. Would you like a mock test for this?";
+                } else if(lower.includes('civil') || lower.includes('appsc')) {
+                    resp = "The APPSC Civil Services Exam has 3 stages: Prelims (2 objective papers), Mains (Written subjective papers including Essay, English, GS, and Optional subject), and finally the Interview. Start by mastering the state GK!";
+                } else if(lower.includes('tribe')) {
+                    resp = "Arunachal Pradesh has 26 major tribes and over 100 sub-tribes. The major ones include Nyishi (largest), Adi, Apatani, Galo, Tagin, and Monpa. Each has distinct festivals, like Nyokum (Nyishi) and Solung (Adi).";
+                } else if(lower.includes('capital') || lower.includes('itanagar')) {
+                    resp = "Itanagar is the capital of Arunachal Pradesh, located in the Papum Pare district. It is named after the historic Ita Fort (Fort of Bricks) built in the 14th century by the Chutiya kingdom.";
+                }
+
+                box.innerHTML += `<div class="msg ai">${resp}</div>`;
+                box.scrollTop = box.scrollHeight;
+            }, 1500);
+        }
+
+        function sendChatInput() {
+            const input = document.getElementById('chat-input');
+            const val = input.value.trim();
+            if(!val) return;
+            sendChat(val);
+            input.value = '';
+        }
+
+        // --- QUIZ SYSTEM ---
+        let currentQuiz = [];
+        let currentQIdx = 0;
+        let score = 0;
+        let timerInt;
+        let timeLeft = 30;
+        const TIME_PER_Q = 30;
+
+        function openQuiz(type) {
+            currentQuiz = [...quizData].sort(() => 0.5 - Math.random()).slice(0, 10); // pick 10 random
+            
+            let title = "Practice Quiz";
+            if(type==='sprint') title = "Daily Sprint Challenge";
+            if(type==='pyq') title = "PYQ Mock Exam";
+            if(type==='custom') title = "Custom Practice Test";
+            
+            document.getElementById('quiz-title').textContent = title;
+            currentQIdx = 0;
+            score = 0;
+            
+            document.getElementById('quiz-body').style.display = 'block';
+            document.getElementById('quiz-footer').style.display = 'flex';
+            document.getElementById('score-screen').style.display = 'none';
+            document.getElementById('quiz-modal').classList.add('active');
+            
+            loadQuestion();
+        }
+
+        function closeQuiz() {
+            clearInterval(timerInt);
+            document.getElementById('quiz-modal').classList.remove('active');
+        }
+
+        function loadQuestion() {
+            clearInterval(timerInt);
+            
+            const q = currentQuiz[currentQIdx];
+            document.getElementById('quiz-progress-text').textContent = `Question ${currentQIdx + 1} of ${currentQuiz.length}`;
+            document.getElementById('quiz-bar').style.width = `${((currentQIdx) / currentQuiz.length) * 100}%`;
+            
+            document.getElementById('q-cat').textContent = q.cat;
+            document.getElementById('q-text').textContent = q.q;
+            
+            const optsCont = document.getElementById('q-opts');
+            const letters = ['A','B','C','D'];
+            optsCont.innerHTML = q.opts.map((opt, i) => `
+                <button class="option-btn" onclick="selectOption(${i})">
+                    <div class="opt-letter">${letters[i]}</div>
+                    <div>${opt}</div>
+                </button>
+            `).join('');
+            
+            document.getElementById('q-feedback').textContent = '';
+            document.getElementById('q-next-btn').style.display = 'none';
+            
+            startTimer();
+        }
+
+        function startTimer() {
+            timeLeft = TIME_PER_Q;
+            updateTimerUI();
+            timerInt = setInterval(() => {
+                timeLeft--;
+                updateTimerUI();
+                if(timeLeft <= 0) {
+                    clearInterval(timerInt);
+                    timeUp();
+                }
+            }, 1000);
+        }
+
+        function updateTimerUI() {
+            const circle = document.getElementById('timer-circle');
+            document.getElementById('timer-text').textContent = timeLeft;
+            const offset = 113 - (timeLeft / TIME_PER_Q) * 113;
+            circle.style.strokeDashoffset = offset;
+            
+            if(timeLeft <= 10) circle.style.stroke = 'var(--red)';
+            else if(timeLeft <= 20) circle.style.stroke = 'var(--amber)';
+            else circle.style.stroke = 'var(--emerald)';
+        }
+
+        function selectOption(idx) {
+            clearInterval(timerInt);
+            const q = currentQuiz[currentQIdx];
+            const btns = document.querySelectorAll('.option-btn');
+            
+            btns.forEach(b => b.disabled = true);
+            
+            if(idx === q.ans) {
+                btns[idx].classList.add('correct');
+                document.getElementById('q-feedback').textContent = '✨ Correct!';
+                document.getElementById('q-feedback').className = 'feedback-text correct';
+                score++;
+            } else {
+                btns[idx].classList.add('wrong');
+                btns[q.ans].classList.add('correct');
+                document.getElementById('q-feedback').textContent = '❌ Incorrect. See correct answer highlighted.';
+                document.getElementById('q-feedback').className = 'feedback-text wrong';
+            }
+            
+            document.getElementById('q-next-btn').style.display = 'block';
+        }
+
+        function timeUp() {
+            const q = currentQuiz[currentQIdx];
+            const btns = document.querySelectorAll('.option-btn');
+            btns.forEach(b => b.disabled = true);
+            btns[q.ans].classList.add('correct');
+            
+            document.getElementById('q-feedback').textContent = '⏰ Time is up!';
+            document.getElementById('q-feedback').className = 'feedback-text wrong';
+            document.getElementById('q-next-btn').style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentQIdx++;
+            if(currentQIdx >= currentQuiz.length) {
+                showScore();
+            } else {
+                loadQuestion();
+            }
+        }
+
+        function showScore() {
+            document.getElementById('quiz-body').style.display = 'none';
+            document.getElementById('quiz-footer').style.display = 'none';
+            document.getElementById('score-screen').style.display = 'flex';
+            
+            document.getElementById('score-val').textContent = score;
+            document.getElementById('score-total').textContent = `/ ${currentQuiz.length}`;
+            
+            const pct = score / currentQuiz.length;
+            let msg = "Keep Practicing!";
+            if(pct >= 0.8) msg = "Outstanding! 🏆";
+            else if(pct >= 0.5) msg = "Good Effort! 👍";
+            
+            document.getElementById('score-msg').textContent = msg;
+        }
+
+        // --- PROFILE ANIMATIONS ---
+        let profileAnimated = false;
+        function animateProfile() {
+            if(profileAnimated) return;
+            profileAnimated = true;
+            
+            // Progress bars
+            setTimeout(() => {
+                document.querySelectorAll('.progress-bar-fill').forEach(bar => {
+                    bar.style.width = bar.getAttribute('data-width');
+                });
+            }, 300);
+
+            // Chart
+            const chart = document.getElementById('score-chart');
+            const data = [40, 55, 45, 60, 50, 75, 65, 80, 70, 85, 75, 90];
+            chart.innerHTML = data.map((val, i) => `
+                <div class="bar ${i===data.length-1 ? 'highlight' : ''}" style="height: 0%"></div>
+            `).join('');
+            
+            setTimeout(() => {
+                const bars = chart.querySelectorAll('.bar');
+                bars.forEach((bar, i) => {
+                    setTimeout(() => {
+                        bar.style.height = `${data[i]}%`;
+                    }, i * 50);
+                });
+            }, 400);
+        }
+
+        // --- INIT ---
+        window.onload = () => {
+            renderPYQ();
+            renderMocks();
+            renderNews();
+        };
+
+        // Mouse Parallax
+        document.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth - 0.5) * 20;
+            const y = (e.clientY / window.innerHeight - 0.5) * 20;
+            document.querySelectorAll('.orb').forEach(orb => {
+                orb.style.transform = `translate(${x}px, ${y}px)`;
+            });
+        });
+    </script>
 </body>
 </html>
