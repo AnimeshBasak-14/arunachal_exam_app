@@ -1,9 +1,11 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/services/current_affairs_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import 'news_details_screen.dart';
 
 class CurrentAffairsGkScreen extends ConsumerStatefulWidget {
   final bool isEmbedded;
@@ -28,6 +30,62 @@ class _CurrentAffairsGkScreenState
     'Art & Culture',
     'State News',
   ];
+
+  void _openNewsSheet(BuildContext context, CurrentAffairsItem item) {
+    final articleData = {
+      'id': item.id,
+      'title': item.title,
+      'description': item.summary,
+      'summary': item.summary,
+      'source': item.source,
+      'date': item.dateStr,
+      'link': item.link,
+      'pdfUrl': item.pdfUrl ?? item.link,
+      'keyPoints': [
+        'Important for APSSB (CGL, CHSL, CSLE) and APPSC exams.',
+        'Arunachal state governance and contemporary affairs.',
+      ],
+    };
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      enableDrag: true,
+      builder: (sheetContext) => ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+          child: Container(
+            height: MediaQuery.sizeOf(sheetContext).height * 0.90,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.96),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              border: Border.all(color: Colors.white, width: 1.5),
+            ),
+            child: Column(
+              children: [
+                Center(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(vertical: 10),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFCBD5E1),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: NewsDetailsScreen(article: articleData),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -259,25 +317,7 @@ class _CurrentAffairsGkScreenState
                                 ),
                                 child: InkWell(
                                   borderRadius: BorderRadius.circular(14),
-                                  onTap: () {
-                                    context.push(
-                                      '/news-details',
-                                      extra: {
-                                        'id': item.id,
-                                        'title': item.title,
-                                        'description': item.summary,
-                                        'summary': item.summary,
-                                        'source': item.source,
-                                        'date': item.dateStr,
-                                        'link': item.link,
-                                        'pdfUrl': item.pdfUrl ?? item.link,
-                                        'keyPoints': [
-                                          'Important for APSSB (CGL, CHSL, CSLE) and APPSC exams.',
-                                          'Arunachal state governance and contemporary affairs.',
-                                        ],
-                                      },
-                                    );
-                                  },
+                                  onTap: () => _openNewsSheet(context, item),
                                   child: Padding(
                                     padding:
                                         const EdgeInsets.all(AppSpacing.m),
@@ -396,12 +436,15 @@ class _CurrentAffairsGkScreenState
                                                       TextStyle(fontSize: 12)),
                                             ),
                                             const SizedBox(width: 12),
-                                            const Text(
-                                              'Read Full >',
-                                              style: TextStyle(
-                                                color: AppColors.primary,
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.bold,
+                                            GestureDetector(
+                                              onTap: () => _openNewsSheet(context, item),
+                                              child: const Text(
+                                                'Read Full >',
+                                                style: TextStyle(
+                                                  color: AppColors.primary,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                               ),
                                             ),
                                           ],

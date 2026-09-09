@@ -1,21 +1,18 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:sensors_plus/sensors_plus.dart';
 import '../theme/app_colors.dart';
 
-/// Three slow-drifting ambient light orbs on the deep-void background.
+/// Three slow-drifting ambient light orbs on the atmosphere background.
+///
+/// On mobile (Android/iOS), the orbs also respond to device gyroscope/
+/// accelerometer data for a true 3D depth effect (inverse translation).
+/// On web and desktop, only mouse-parallax is used.
 ///
 /// Place this as the bottom layer in any Scaffold body Stack.
-/// The orbs drift via AnimationController and also react to mouse
-/// movement via [_OrbParallaxController].
-///
-/// Usage:
-/// ```dart
-/// Stack(children: [
-///   const AmbientOrbs(),
-///   // ... page content
-/// ])
-/// ```
 class AmbientOrbs extends StatefulWidget {
   final Widget? child;
   const AmbientOrbs({super.key, this.child});
@@ -28,6 +25,9 @@ class _AmbientOrbsState extends State<AmbientOrbs>
     with SingleTickerProviderStateMixin {
   late AnimationController _drift;
   Offset _mouseOffset = Offset.zero;
+  // Gyro offset (mobile only) — inverse of device tilt
+  Offset _gyroOffset = Offset.zero;
+  StreamSubscription<AccelerometerEvent>? _accelSub;
 
   @override
   void initState() {
@@ -36,11 +36,29 @@ class _AmbientOrbsState extends State<AmbientOrbs>
       vsync: this,
       duration: const Duration(seconds: 20),
     )..repeat(reverse: true);
+
+    // Subscribe to accelerometer on mobile only
+    if (!kIsWeb && (defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS)) {
+      _accelSub = accelerometerEventStream(
+        samplingPeriod: SensorInterval.uiInterval,
+      ).listen((event) {
+        if (!mounted) return;
+        setState(() {
+          // Inverse translation: tilt left → orbs shift right
+          _gyroOffset = Offset(
+            -event.y.clamp(-5.0, 5.0) * 3.5,
+            event.x.clamp(-5.0, 5.0) * 3.5,
+          );
+        });
+      });
+    }
   }
 
   @override
   void dispose() {
     _drift.dispose();
+    _accelSub?.cancel();
     super.dispose();
   }
 
@@ -54,6 +72,8 @@ class _AmbientOrbsState extends State<AmbientOrbs>
       );
     });
   }
+
+  Offset get _combinedOffset => _mouseOffset + _gyroOffset;
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +89,7 @@ class _AmbientOrbsState extends State<AmbientOrbs>
           // Orb 1 — Mint tint (top-left)
           _AnimatedOrb(
             drift: _drift,
-            mouseOffset: _mouseOffset,
+            mouseOffset: _combinedOffset,
             color: AppColors.orbMint,
             width: 0.50,
             height: 0.50,
@@ -80,7 +100,7 @@ class _AmbientOrbsState extends State<AmbientOrbs>
           // Orb 2 — Sky tint (top-right)
           _AnimatedOrb(
             drift: _drift,
-            mouseOffset: _mouseOffset,
+            mouseOffset: _combinedOffset,
             color: AppColors.orbSky,
             width: 0.40,
             height: 0.40,
@@ -91,7 +111,7 @@ class _AmbientOrbsState extends State<AmbientOrbs>
           // Orb 3 — Amber tint (bottom-center)
           _AnimatedOrb(
             drift: _drift,
-            mouseOffset: _mouseOffset,
+            mouseOffset: _combinedOffset,
             color: AppColors.orbAmber,
             width: 0.55,
             height: 0.45,

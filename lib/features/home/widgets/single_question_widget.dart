@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../core/services/question_repository.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -264,7 +265,12 @@ class SingleQuestionWidget extends StatelessWidget {
           }
 
           return GestureDetector(
-            onTap: isSubmitted ? null : () => onSelectOption?.call(optionChar),
+            onTap: isSubmitted
+                ? null
+                : () {
+                    HapticFeedback.mediumImpact();
+                    onSelectOption?.call(optionChar);
+                  },
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               margin: const EdgeInsets.only(bottom: AppSpacing.s),

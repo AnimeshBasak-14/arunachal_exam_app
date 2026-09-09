@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math' as math;
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../core/services/question_repository.dart';
@@ -171,12 +172,21 @@ class _CustomPracticeModalState extends State<CustomPracticeModal> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final sheetContent = Container(
       decoration: BoxDecoration(
-        color: widget.isEmbedded ? AppColors.background : Colors.white,
+        color: widget.isEmbedded
+            ? AppColors.background
+            : Colors.white.withValues(alpha: 0.92),
         borderRadius: widget.isEmbedded
             ? BorderRadius.zero
             : const BorderRadius.vertical(top: Radius.circular(24)),
+        border: widget.isEmbedded
+            ? null
+            : const Border(
+                top: BorderSide(color: Colors.white, width: 1.5),
+                left: BorderSide(color: Colors.white, width: 1.5),
+                right: BorderSide(color: Colors.white, width: 1.5),
+              ),
       ),
       padding: EdgeInsets.fromLTRB(
         widget.isEmbedded ? 16 : 20,
@@ -497,6 +507,18 @@ class _CustomPracticeModalState extends State<CustomPracticeModal> {
             ),
           ],
         ),
+      ),
+    );
+
+    if (widget.isEmbedded) {
+      return sheetContent;
+    }
+
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+        child: sheetContent,
       ),
     );
   }

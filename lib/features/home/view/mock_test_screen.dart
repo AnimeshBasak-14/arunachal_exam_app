@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:ui';
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
@@ -13,6 +15,8 @@ import '../../../core/services/firebase_service.dart';
 import '../../../core/services/remote_config_service.dart';
 import '../../../core/utils/rank_utils.dart';
 import '../../../core/widgets/primary_button.dart';
+import '../../../core/widgets/ai_explain_sheet.dart';
+import '../../../core/widgets/typography_floating_control.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../widgets/single_question_widget.dart';
 import '../widgets/comprehension_group_widget.dart';
@@ -57,6 +61,9 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
   bool _isSubmitted = false;
   bool _isLoadingQuestions = true;
 
+  // ── Zen Mode (v1.4.0) ─────────────────────────────────────────────────────
+  bool _zenMode = false; // Activates after loading completes — hides orbs+dock
+
   // Calculated Results state
   double _scoreObtained = 0.0;
   double _maxScore = 0.0;
@@ -65,6 +72,11 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
   int _unattemptedCount = 0;
   int _ratingChange = 0;
   int _newRating = 1200;
+
+  bool get _isMobile =>
+      !kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.android ||
+          defaultTargetPlatform == TargetPlatform.iOS);
 
   @override
   void initState() {
@@ -202,6 +214,13 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
         if (!widget.isStudyMode) {
           _startTimer();
         }
+
+        // Activate Zen Mode 500ms after questions appear
+        if (!widget.isStudyMode) {
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (mounted) setState(() => _zenMode = true);
+          });
+        }
       } else {
         if (mounted) setState(() => _isLoadingQuestions = false);
         // Fallback: start timer with default duration if timed mode
@@ -226,15 +245,19 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_secondsRemaining == 0) {
         timer.cancel();
+        if (_isMobile) HapticFeedback.heavyImpact();
         _autoSubmit();
       } else {
         setState(() {
           _secondsRemaining--;
         });
+        // Haptic pulses in final 5 seconds (mobile only)
+        if (_isMobile && _secondsRemaining <= 5 && _secondsRemaining > 0) {
+          HapticFeedback.lightImpact();
+        }
       }
     });
   }
-
 
 
   void _autoSubmit() {
@@ -665,7 +688,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
     final isStudy = widget.isStudyMode;
     final showSolution = _showSolutions[question.id] ?? false;
 
-    return SingleQuestionWidget(
+    final questionWidget = SingleQuestionWidget(
       key: ValueKey(question.id),
       question: question,
       displayNum: displayNum,
@@ -693,6 +716,34 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
           : null,
       selectedSubjectFilter: widget.subject,
       discussionWidget: isStudy ? _buildActiveDiscussionWidget(question) : null,
+    );
+
+    // ── Highlight & Ask AI ─────────────────────────────────────────────────
+    // Wrap in SelectionArea with custom context menu injecting "✨ Ask AI"
+    String? localSelectedText;
+    return SelectionArea(
+      onSelectionChanged: (content) {
+        localSelectedText = content?.plainText;
+      },
+      contextMenuBuilder: (ctx, selectableRegionState) {
+        return AdaptiveTextSelectionToolbar.buttonItems(
+          anchors: selectableRegionState.contextMenuAnchors,
+          buttonItems: <ContextMenuButtonItem>[
+            ...selectableRegionState.contextMenuButtonItems,
+            ContextMenuButtonItem(
+              label: '✨ Ask AI',
+              onPressed: () {
+                ContextMenuController.removeAny();
+                final textToExplain = (localSelectedText != null && localSelectedText!.trim().isNotEmpty)
+                    ? localSelectedText!
+                    : question.questionText;
+                showAiExplainSheet(ctx, highlightedText: textToExplain);
+              },
+            ),
+          ],
+        );
+      },
+      child: questionWidget,
     );
   }
 
@@ -973,6 +1024,12 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                     ),
                   ],
                 ),
+        floatingActionButton: _zenMode
+            ? const Padding(
+                padding: EdgeInsets.only(bottom: 80),
+                child: TypographyFloatingControl(),
+              )
+            : null,
         bottomNavigationBar: !_isSubmitted
             ? ClipRect(
                 child: BackdropFilter(

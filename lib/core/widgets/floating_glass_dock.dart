@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
 
 /// Floating glass dock — replaces BottomNavigationBar.
@@ -66,7 +67,10 @@ class FloatingGlassDock extends StatelessWidget {
                   return _DockButton(
                     item: _items[i],
                     isSelected: selectedIndex == i,
-                    onTap: () => onIndexChanged(i),
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      onIndexChanged(i);
+                    },
                   );
                 }),
               ),
