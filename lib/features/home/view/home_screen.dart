@@ -351,10 +351,10 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                                     borderRadius: BorderRadius.circular(8)),
                               ),
                               onPressed: () =>
-                                  context.push('/admin/question-flagger'),
-                              icon: const Icon(Icons.flag_circle_rounded,
-                                  size: 18, color: AppColors.error),
-                              label: const Text('Admin Flagger',
+                                  context.push('/syllabus'),
+                              icon: const Icon(Icons.auto_stories_rounded,
+                                  size: 18, color: AppColors.primary),
+                              label: const Text('Exam Syllabus',
                                   style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.bold)),
@@ -811,24 +811,24 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                       ),
                       const SizedBox(width: AppSpacing.m),
 
-                      // 4. Admin Question Flagger & Review Card
+                      // 4. Official Exam Syllabus & Pattern Card
                       Expanded(
                         child: InkWell(
-                          onTap: () => context.push('/admin/question-flagger'),
+                          onTap: () => context.push('/syllabus'),
                           borderRadius: BorderRadius.circular(AppSpacing.radiusL),
                           child: Container(
                             padding: const EdgeInsets.all(AppSpacing.m),
                             height: 125,
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
-                                colors: [Color(0xFF991B1B), Color(0xFFDC2626)],
+                                colors: [Color(0xFF0F766E), Color(0xFF0D9488)],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
                               borderRadius: BorderRadius.circular(AppSpacing.radiusL),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF991B1B).withValues(alpha: 0.25),
+                                  color: const Color(0xFF0F766E).withValues(alpha: 0.25),
                                   blurRadius: 8,
                                   offset: const Offset(0, 4),
                                 ),
@@ -847,7 +847,7 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                                         color: Colors.white.withValues(alpha: 0.2),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
-                                      child: const Icon(Icons.flag_circle_rounded, color: Colors.white, size: 20),
+                                      child: const Icon(Icons.auto_stories_rounded, color: Colors.white, size: 20),
                                     ),
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -856,7 +856,7 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: const Text(
-                                        'Temporary / Dev',
+                                        'Official 2025-26',
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 8.5,
@@ -871,7 +871,7 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: const [
                                     Text(
-                                      'Admin QA / Flagger',
+                                      'Exam Syllabus',
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
@@ -880,7 +880,7 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                                     ),
                                     SizedBox(height: 2),
                                     Text(
-                                      'Review DB questions,\nverify or flag OCR defects',
+                                      'APSSB & APPSC Schemes,\nMarks & Negative Marking',
                                       style: TextStyle(color: Colors.white70, fontSize: 9.5, height: 1.2),
                                     ),
                                   ],

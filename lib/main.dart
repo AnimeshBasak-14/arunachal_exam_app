@@ -50,6 +50,7 @@ import 'features/home/view/mock_hub_screen.dart';
 import 'features/home/view/exams_hub_screen.dart';
 import 'features/admin/view/question_review_screen.dart';
 import 'features/admin/view/question_flagger_screen.dart';
+import 'features/syllabus/view/syllabus_screen.dart';
 import 'core/services/question_repository.dart';
 import 'core/services/current_affairs_service.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -439,6 +440,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/admin/question-flagger',
         builder: (context, state) => const QuestionFlaggerScreen(),
+      ),
+      GoRoute(
+        path: '/syllabus',
+        builder: (context, state) {
+          final tabStr = state.uri.queryParameters['tab'];
+          final initialTab = (int.tryParse(tabStr ?? '0') ?? 0).clamp(0, 3);
+          return SyllabusScreen(initialTabIndex: initialTab);
+        },
       ),
     ],
   );

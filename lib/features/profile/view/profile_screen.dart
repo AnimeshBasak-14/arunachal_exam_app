@@ -220,16 +220,16 @@ class ProfileScreen extends ConsumerWidget {
                 ),
                 const Divider(height: 1, color: AppColors.divider),
                 ListTile(
-                  leading: const Icon(Icons.admin_panel_settings_outlined,
+                  leading: const Icon(Icons.auto_stories_outlined,
                       color: AppColors.primary),
-                  title: const Text('ADMIN QUESTION REVIEW',
+                  title: const Text('OFFICIAL EXAM SYLLABUS',
                       style: TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: const Text('Quality triage, OCR fixes & flag reports',
+                  subtitle: const Text('APSSB & APPSC topic breakdowns, marks & patterns',
                       style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
                   trailing: const Icon(Icons.arrow_forward_ios_rounded,
                       size: 16, color: AppColors.textHint),
                   onTap: () {
-                    context.push('/admin/question-flagger');
+                    context.push('/syllabus');
                   },
                 ),
                 const Divider(height: 1, color: AppColors.divider),
