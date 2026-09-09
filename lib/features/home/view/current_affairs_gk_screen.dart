@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/services/current_affairs_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../core/widgets/antigravity_glass_card.dart';
 
 class CurrentAffairsGkScreen extends ConsumerStatefulWidget {
   final bool isEmbedded;

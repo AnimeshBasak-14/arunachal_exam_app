@@ -3,7 +3,6 @@ import '../../../core/services/question_repository.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/math_utils.dart';
-import '../../../core/widgets/antigravity_glass_card.dart';
 
 class SingleQuestionWidget extends StatelessWidget {
   final Question question;
@@ -234,7 +233,7 @@ class SingleQuestionWidget extends StatelessWidget {
           final isSelected = selectedOption == optionChar;
           final isCorrect = question.correctAnswer.toLowerCase() == optionChar;
 
-          BoxShadow? optionShadow;
+          List<BoxShadow>? optionShadow;
           Color optionBgColor = AppColors.glassBase;
           Color letterBgColor = AppColors.glassBase;
           Color letterBorderColor = AppColors.glassBorder;
@@ -272,7 +271,7 @@ class SingleQuestionWidget extends StatelessWidget {
                 color: optionBgColor,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppColors.glassBorder),
-                boxShadow: optionShadow != null ? [optionShadow] : null,
+                boxShadow: optionShadow,
               ),
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: 14),
               child: Row(
