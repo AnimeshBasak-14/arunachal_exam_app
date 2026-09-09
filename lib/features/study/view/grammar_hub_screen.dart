@@ -304,52 +304,72 @@ class _GrammarHubScreenState extends State<GrammarHubScreen> {
       ),
       child: Column(
         children: [
-          ListTile(
+          InkWell(
             onTap: () {
               setState(() {
                 _selectedTopicId = isExpanded ? null : topic.id;
               });
             },
-            leading: CircleAvatar(
-              radius: 20,
-              backgroundColor: AppColors.primaryLight,
-              child: const Icon(Icons.auto_stories_rounded, color: AppColors.primary, size: 20),
-            ),
-            title: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    topic.title,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusM),
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.m),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: AppColors.primaryLight,
+                    child: const Icon(Icons.auto_stories_rounded, color: AppColors.primary, size: 20),
                   ),
-                ),
-                _buildLevelBadge(topic.level),
-              ],
-            ),
-            subtitle: Text(
-              topic.subtitle,
-              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(10),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                topic.title,
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Icon(
+                              isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                              color: AppColors.textHint,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            _buildLevelBadge(topic.level),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                '${topic.rules.length} Rules',
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          topic.subtitle,
+                          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Text(
-                    '${topic.rules.length} Rules',
-                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Icon(
-                  isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
-                  color: AppColors.textHint,
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           if (isExpanded) ...[

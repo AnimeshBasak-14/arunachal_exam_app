@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/avatar_utils.dart';
@@ -16,8 +15,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../widgets/word_of_day_card.dart';
 import '../../../core/services/current_affairs_service.dart';
 import '../../../core/services/remote_config_service.dart';
-import 'pyq_hub_screen.dart';
-import 'mock_hub_screen.dart';
+import 'exams_hub_screen.dart';
+import '../../chatbot/view/chatbot_screen.dart';
 
 final currentTabProvider = StateProvider<int>((ref) => 0);
 
@@ -30,8 +29,8 @@ class HomeScreen extends ConsumerWidget {
 
     final tabs = [
       const HomeTabBody(),
-      const PyqHubScreen(),
-      const MockHubScreen(),
+      const ExamsHubScreen(),
+      const ChatbotScreen(isEmbedded: true),
       const BookmarksTabBody(),
       const ProfileScreen(),
     ];
@@ -42,15 +41,14 @@ class HomeScreen extends ConsumerWidget {
         child: tabs[selectedTab],
       ),
       floatingActionButton: selectedTab == 0
-          ? FloatingActionButton.extended(
-              onPressed: () => context.push('/chatbot'),
+          ? FloatingActionButton(
+              onPressed: () {
+                ref.read(currentTabProvider.notifier).state = 2; // Switch to AI Tutor tab
+              },
               backgroundColor: AppColors.primary,
-              icon: const Icon(Icons.psychology_rounded, color: Colors.white),
-              label: const Text(
-                'AI Tutor',
-                style:
-                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
+              elevation: 4,
+              tooltip: 'AI Tutor',
+              child: const Icon(Icons.psychology_rounded, color: Colors.white, size: 28),
             )
           : null,
       bottomNavigationBar: Container(
@@ -82,14 +80,14 @@ class HomeScreen extends ConsumerWidget {
               label: 'Home',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.history_edu_outlined),
-              activeIcon: Icon(Icons.history_edu_rounded),
-              label: 'PYQ Bank',
+              icon: Icon(Icons.assignment_outlined),
+              activeIcon: Icon(Icons.assignment_rounded),
+              label: 'Exams',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.assignment_turned_in_outlined),
-              activeIcon: Icon(Icons.assignment_turned_in_rounded),
-              label: 'Mock Tests',
+              icon: Icon(Icons.psychology_outlined),
+              activeIcon: Icon(Icons.psychology_rounded),
+              label: 'AI Tutor',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.bookmark_outline_rounded),
@@ -146,6 +144,116 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
     }
   }
 
+  void _openSearchModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: EdgeInsets.only(
+          left: AppSpacing.m,
+          right: AppSpacing.m,
+          top: AppSpacing.m,
+          bottom: MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.m,
+        ),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXL)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const Text(
+              'Search Exam Hub',
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              autofocus: true,
+              decoration: InputDecoration(
+                hintText: 'Search exams, subjects, topics...',
+                prefixIcon: const Icon(Icons.search_rounded, color: AppColors.primary),
+                filled: true,
+                fillColor: AppColors.background,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              onSubmitted: (val) {
+                Navigator.pop(ctx);
+                ref.read(currentTabProvider.notifier).state = 1; // Switch to Exams tab
+              },
+            ),
+            const SizedBox(height: 16),
+            const Text('Quick Access', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textSecondary)),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                ActionChip(
+                  avatar: const Icon(Icons.history_edu_rounded, size: 16, color: AppColors.primary),
+                  label: const Text('PYQ Papers'),
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    ref.read(currentTabProvider.notifier).state = 1;
+                  },
+                ),
+                ActionChip(
+                  avatar: const Icon(Icons.assignment_turned_in_rounded, size: 16, color: AppColors.primary),
+                  label: const Text('Mock Tests'),
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    ref.read(currentTabProvider.notifier).state = 1;
+                  },
+                ),
+                ActionChip(
+                  avatar: const Icon(Icons.psychology_rounded, size: 16, color: AppColors.primary),
+                  label: const Text('AI Tutor'),
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    ref.read(currentTabProvider.notifier).state = 2;
+                  },
+                ),
+                ActionChip(
+                  avatar: const Icon(Icons.menu_book_rounded, size: 16, color: AppColors.primary),
+                  label: const Text('English Grammar'),
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    context.push('/grammar-hub');
+                  },
+                ),
+                ActionChip(
+                  avatar: const Icon(Icons.flag_rounded, size: 16, color: AppColors.primary),
+                  label: const Text('Arunachal State GK'),
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    context.push('/state-gk');
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -156,7 +264,6 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authViewModelProvider);
     final userName = authState.user?.name ?? 'Student Name';
-    final searchQuery = ref.watch(searchFilterProvider);
 
     Color getAvatarColor(String? avatarName) {
       switch (avatarName) {
@@ -224,9 +331,18 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                       ),
                     ),
                     const SizedBox(width: AppSpacing.m),
-                    // Profile & Notification Badge
+                    // Header Action Buttons: Search, Notifications & Profile
                     Row(
                       children: [
+                        IconButton(
+                          onPressed: () => _openSearchModal(context),
+                          icon: const Icon(
+                            Icons.search_rounded,
+                            color: AppColors.textWhite,
+                            size: 26,
+                          ),
+                          tooltip: 'Search Exams & Topics',
+                        ),
                         Consumer(
                           builder: (context, ref, _) {
                             final hasUnread = ref.watch(hasUnreadNotifProvider);
@@ -241,13 +357,13 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                                 child: const Icon(
                                   Icons.notifications_none_rounded,
                                   color: AppColors.textWhite,
-                                  size: 28,
+                                  size: 26,
                                 ),
                               ),
                             );
                           },
                         ),
-                        const SizedBox(width: AppSpacing.s),
+                        const SizedBox(width: AppSpacing.xs),
                         GestureDetector(
                           onTap: () {
                             ref.read(currentTabProvider.notifier).state =
@@ -393,150 +509,14 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                   },
                 ),
 
-                // 2. Search & Filter Bar (Page 2 & 11)
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _searchController,
-                        onChanged: (val) {
-                          ref.read(searchFilterProvider.notifier).state = val;
-                        },
-                        decoration: InputDecoration(
-                          hintText: AppStrings.searchPlaceholder,
-                          prefixIcon: const Icon(Icons.search_rounded,
-                              color: AppColors.textSecondary),
-                          suffixIcon: searchQuery.isNotEmpty
-                              ? IconButton(
-                                  icon: const Icon(Icons.clear, size: 18),
-                                  onPressed: () {
-                                    _searchController.clear();
-                                    ref
-                                        .read(searchFilterProvider.notifier)
-                                        .state = '';
-                                  },
-                                )
-                              : null,
-                          fillColor: AppColors.surface,
-                          filled: true,
-                          contentPadding:
-                              const EdgeInsets.symmetric(vertical: 0),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.s),
-                    Container(
-                      height: 48,
-                      width: 90,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: InkWell(
-                        onTap: () {
-                          // Toggle simple filter helper
-                          ref.read(searchFilterProvider.notifier).state =
-                              searchQuery.isEmpty ? 'Exam' : '';
-                          _searchController.text =
-                              ref.read(searchFilterProvider);
-                        },
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.filter_list_rounded,
-                                color: AppColors.textWhite, size: 18),
-                            SizedBox(width: 4),
-                            Text(
-                              AppStrings.filterText,
-                              style: TextStyle(
-                                  color: AppColors.textWhite,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.l),
+                // Word of the Day Card
+                const WordOfDayCard(),
+                const SizedBox(height: AppSpacing.m),
 
-                // Render dynamic search results if active
-                if (searchQuery.isNotEmpty) ...[
-                  const SizedBox(height: AppSpacing.s),
-                  Container(
-                    padding: const EdgeInsets.all(AppSpacing.m),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusL),
-                      border: Border.all(color: AppColors.divider),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.search_rounded, size: 18, color: AppColors.primary),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                'Search results for "$searchQuery"',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.textPrimary),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'Find questions and papers in:',
-                          style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: () {
-                                  ref.read(searchFilterProvider.notifier).state = '';
-                                  _searchController.clear();
-                                  ref.read(currentTabProvider.notifier).state = 1;
-                                },
-                                icon: const Icon(Icons.history_edu_rounded, size: 16, color: AppColors.primary),
-                                label: const Text('PYQ Bank', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12)),
-                                style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.primary)),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: () {
-                                  ref.read(searchFilterProvider.notifier).state = '';
-                                  _searchController.clear();
-                                  ref.read(currentTabProvider.notifier).state = 2;
-                                },
-                                icon: const Icon(Icons.assignment_turned_in_rounded, size: 16, color: AppColors.primary),
-                                label: const Text('Mock Tests', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12)),
-                                style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.primary)),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.m),
-                ] else ...[
-                  // Word of the Day Card
-                  const WordOfDayCard(),
-                  const SizedBox(height: AppSpacing.m),
+                // Dynamic Daily Sprint / Weekend Mega Mock Card (Remote Config & A/B Testing)
+                const _DailyChallengeCard(),
+                const SizedBox(height: AppSpacing.m),
 
-                  // Dynamic Daily Sprint / Weekend Mega Mock Card (Remote Config & A/B Testing)
-                  const _DailyChallengeCard(),
-                  const SizedBox(height: AppSpacing.m),
 
                   // English Grammar & Quiz Shortcut Card
                   Container(
@@ -584,8 +564,9 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                         TextButton(
                           onPressed: () => context.push('/grammar-hub'),
                           style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            backgroundColor: const Color(0xFF3F51B5).withValues(alpha: 0.1),
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                            backgroundColor: const Color(0xFF3F51B5).withValues(alpha: 0.12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           ),
                           child: const Text(
                             'STUDY',
@@ -595,13 +576,6 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                               color: Color(0xFF3F51B5),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 4),
-                        IconButton(
-                          icon: const Icon(Icons.quiz_rounded,
-                              color: AppColors.accent, size: 22),
-                          tooltip: 'Grammar Quiz',
-                          onPressed: () => context.push('/grammar-quiz'),
                         ),
                       ],
                     ),
@@ -682,7 +656,7 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                       Expanded(
                         child: InkWell(
                           onTap: () {
-                            ref.read(currentTabProvider.notifier).state = 2;
+                            ref.read(currentTabProvider.notifier).state = 1;
                           },
                           borderRadius: BorderRadius.circular(AppSpacing.radiusL),
                           child: Container(
@@ -752,7 +726,6 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                   const _CurrentAffairsSection(),
                   const SizedBox(height: AppSpacing.xl),
                 ],
-              ],
             ),
           ),
         ],

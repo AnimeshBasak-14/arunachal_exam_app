@@ -318,6 +318,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           final paperType = state.uri.queryParameters['paperType'];
           final yearStr = state.uri.queryParameters['year'];
           final year = yearStr != null ? int.tryParse(yearStr) : null;
+          final durationStr = state.uri.queryParameters['duration'];
+          final duration = durationStr != null ? int.tryParse(durationStr) : null;
           return MockTestScreen(
             examCode: examCode,
             testType: type,
@@ -325,6 +327,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             difficulty: difficulty,
             paperType: paperType,
             year: year,
+            durationMinutes: duration,
           );
         },
       ),

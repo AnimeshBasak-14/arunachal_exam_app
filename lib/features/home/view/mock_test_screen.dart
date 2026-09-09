@@ -22,6 +22,7 @@ class MockTestScreen extends ConsumerStatefulWidget {
   final String? difficulty; // Optional difficulty filter (e.g., 'Easy', 'Medium', 'Hard')
   final String? paperType; // 'PYQ' or 'MOCK' — defaults to 'MOCK'
   final int? year; // Optional year filter for PYQ practice tests
+  final int? durationMinutes; // Optional test duration in minutes
 
   const MockTestScreen({
     super.key,
@@ -31,6 +32,7 @@ class MockTestScreen extends ConsumerStatefulWidget {
     this.difficulty,
     this.paperType,
     this.year,
+    this.durationMinutes,
   });
 
   @override
@@ -114,10 +116,17 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
       // 4. Apply optional subject filter
       if (widget.subject != null && widget.subject!.isNotEmpty && widget.subject != 'All') {
         final subjectLower = widget.subject!.toLowerCase();
-        final subjectFiltered = pool.where((q) =>
-          q.subject.toLowerCase().contains(subjectLower) ||
-          subjectLower.contains(q.subject.toLowerCase())
-        ).toList();
+        final isEnglishSearch = subjectLower.contains('english') || subjectLower.contains('comprehension');
+        final subjectFiltered = pool.where((q) {
+          final qSub = q.subject.toLowerCase();
+          if (isEnglishSearch) {
+            return qSub.contains('english') ||
+                   qSub.contains('comprehension') ||
+                   qSub.contains('grammar') ||
+                   qSub.contains('reading');
+          }
+          return qSub.contains(subjectLower) || subjectLower.contains(qSub);
+        }).toList();
         if (subjectFiltered.isNotEmpty) pool = subjectFiltered;
       }
 
@@ -144,8 +153,13 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
         final shuffled = List<Question>.from(pool)..shuffle(math.Random());
         final selectedQs = shuffled.take(count).toList();
 
-        // Dynamic timer: 1 min (60s) per question, minimum 5 mins (300s)
-        final totalSeconds = math.max(300, selectedQs.length * 60);
+        // Timer: Use explicit durationMinutes if provided (e.g. 120m for full paper or 5/10/20m for quick tests)
+        final int totalSeconds;
+        if (widget.durationMinutes != null && widget.durationMinutes! > 0) {
+          totalSeconds = widget.durationMinutes! * 60;
+        } else {
+          totalSeconds = math.max(300, selectedQs.length * 60);
+        }
 
         setState(() {
           _testQuestions = selectedQs;
@@ -623,7 +637,9 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  isPyq ? 'PYQ ${question.year}' : 'MOCK QUESTION',
+                  isPyq
+                      ? '${question.examCode}${question.year > 2000 ? ' ${question.year}' : ''}'
+                      : 'MOCK QUESTION',
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
@@ -989,7 +1005,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                                                   BorderRadius.circular(12),
                                             ),
                                             child: Text(
-                                              'PYQ ${question.year}',
+                                              '${question.examCode}${question.year > 2000 ? ' ${question.year}' : ''}',
                                               style: TextStyle(
                                                 fontSize: 10,
                                                 fontWeight: FontWeight.bold,

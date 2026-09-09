@@ -44,7 +44,8 @@ class PyqPaperItem {
 }
 
 class PyqHubScreen extends ConsumerStatefulWidget {
-  const PyqHubScreen({super.key});
+  final bool isEmbedded;
+  const PyqHubScreen({super.key, this.isEmbedded = false});
 
   @override
   ConsumerState<PyqHubScreen> createState() => _PyqHubScreenState();
@@ -84,6 +85,7 @@ class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerPr
     'General Studies',
     'Elementary Maths',
     'General English',
+    'Reading Comprehension',
     'Grammar',
     'Reasoning / CSAT',
     'Civil Engineering',
@@ -289,34 +291,44 @@ class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerPr
       return true;
     }).toList();
 
+    final boardTabBar = TabBar(
+      controller: _boardTabController,
+      indicatorColor: AppColors.primary,
+      indicatorWeight: 3,
+      labelColor: AppColors.primary,
+      unselectedLabelColor: AppColors.textSecondary,
+      labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+      tabs: const [
+        Tab(text: 'APSSB Papers', icon: Icon(Icons.school_rounded, size: 18)),
+        Tab(text: 'APPSC Papers', icon: Icon(Icons.account_balance_rounded, size: 18)),
+      ],
+    );
+
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text(
-          'Previous Year Papers (PYQ)',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-        ),
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: AppColors.textPrimary,
-        bottom: TabBar(
-          controller: _boardTabController,
-          indicatorColor: AppColors.primary,
-          indicatorWeight: 3,
-          labelColor: AppColors.primary,
-          unselectedLabelColor: AppColors.textSecondary,
-          labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          tabs: const [
-            Tab(text: 'APSSB Papers', icon: Icon(Icons.school_rounded, size: 20)),
-            Tab(text: 'APPSC Papers', icon: Icon(Icons.account_balance_rounded, size: 20)),
-          ],
-        ),
-      ),
+      appBar: widget.isEmbedded
+          ? null
+          : AppBar(
+              title: const Text(
+                'Previous Year Papers (PYQ)',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              elevation: 0,
+              backgroundColor: Colors.white,
+              foregroundColor: AppColors.textPrimary,
+              bottom: boardTabBar,
+            ),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 960),
           child: Column(
             children: [
+              if (widget.isEmbedded)
+                Container(
+                  color: Colors.white,
+                  child: boardTabBar,
+                ),
+
               // Search & Filter Header
               Container(
                 color: Colors.white,
@@ -440,7 +452,7 @@ class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerPr
                           onPressed: () {
                             // Choose exam code: use specific exam filter or 'ALL' for cross-exam practice
                             final examCode = _selectedExam != 'All Exams'
-                                ? '$activeBoard-${_selectedExam}'
+                                ? '$activeBoard-$_selectedExam'
                                 : 'ALL';
 
                             // Build URI — use PYQ paper type, with subject filter
@@ -688,7 +700,8 @@ class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerPr
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
-              context.push('/mock-test/${paper.examCode}/full');
+              final yearParam = paper.year > 2000 ? '&year=${paper.year}' : '';
+              context.push('/mock-test/${paper.examCode}/full?paperType=PYQ$yearParam&duration=${paper.durationMinutes}');
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,

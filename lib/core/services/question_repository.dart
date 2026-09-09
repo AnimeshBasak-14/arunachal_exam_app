@@ -224,6 +224,22 @@ class Question {
       }
     }
 
+    String rawQuestionText = (data['question_text'] ?? '').toString();
+    if (passageText == null) {
+      final passageMatch = RegExp(
+        r'^(Passage[\s\S]*?)(?=\n\n\d+[\.:\)]\s|\n\s*(?:Q\.?\s*)?\d+[\.:\)]\s|\n\nWhich|\n\nBased on|\Z)',
+        caseSensitive: false,
+      ).firstMatch(rawQuestionText);
+      if (passageMatch != null && passageMatch.group(1) != null) {
+        final extractedPassage = passageMatch.group(1)!.trim();
+        final remaining = rawQuestionText.substring(passageMatch.end).trim();
+        if (remaining.isNotEmpty) {
+          passageText = extractedPassage;
+          rawQuestionText = remaining;
+        }
+      }
+    }
+
     return Question(
       id: data['id']?.toString() ?? '',
       examCode: rawExamCode,
@@ -235,7 +251,7 @@ class Question {
       difficulty: (data['difficulty'] ?? 'Medium').toString(),
       groupId: data['group_id']?.toString(),
       passageOrDirection: passageText,
-      questionText: (data['question_text'] ?? '').toString(),
+      questionText: rawQuestionText,
       questionImage: data['question_image_url']?.toString(),
       options: parsedOptions,
       optionImages: parsedOptionImages,

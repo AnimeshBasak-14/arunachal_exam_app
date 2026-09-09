@@ -60,7 +60,8 @@ class MockTestItem {
 }
 
 class MockHubScreen extends ConsumerStatefulWidget {
-  const MockHubScreen({super.key});
+  final bool isEmbedded;
+  const MockHubScreen({super.key, this.isEmbedded = false});
 
   @override
   ConsumerState<MockHubScreen> createState() => _MockHubScreenState();
@@ -80,6 +81,7 @@ class _MockHubScreenState extends ConsumerState<MockHubScreen> {
     'GK',
     'GA',
     'English',
+    'Comprehension',
     'Grammar',
     'Technical',
     'Full Mock',
@@ -123,26 +125,36 @@ class _MockHubScreenState extends ConsumerState<MockHubScreen> {
       description: 'Advanced numerical questions on areas, volumes, coordinate geometry and speed-distance.',
     ),
 
-    // General Knowledge (GK)
+    // General Knowledge (GK) - 3 Tiers (Easy, Medium, Hard)
     MockTestItem(
-      id: 'mock_gk_arunachal',
-      title: 'Arunachal Pradesh State GK & Culture High-Yield Mock',
+      id: 'mock_gk_easy',
+      title: 'Arunachal GK (Easy - State Symbols, Geography & Basics)',
+      category: 'GK',
+      examCode: 'APSSB-CGLE',
+      questionCount: 15,
+      durationMinutes: 15,
+      difficulty: 'Easy',
+      description: 'Foundational state facts: state bird, flower, rivers, districts, and major state symbols.',
+    ),
+    MockTestItem(
+      id: 'mock_gk_medium',
+      title: 'Arunachal Pradesh GK (Medium - Tribes, Festivals & Heritage)',
       category: 'GK',
       examCode: 'APSSB-CGLE',
       questionCount: 20,
-      durationMinutes: 15,
+      durationMinutes: 20,
       difficulty: 'Medium',
-      description: 'Tribes, festivals, geography, rivers, state symbols, and historical milestones of Arunachal.',
+      description: 'Tribes, festivals (Losar, Nyokum, Mopin, Solung), crafts, historical evolution and folklore.',
     ),
     MockTestItem(
-      id: 'mock_gk_polity',
-      title: 'Indian Polity & Constitution Practice Test',
+      id: 'mock_gk_hard',
+      title: 'State & National GK (Hard - Indian Polity, History & Economy)',
       category: 'GK',
       examCode: 'APPSC-CCE',
       questionCount: 25,
-      durationMinutes: 20,
-      difficulty: 'Medium',
-      description: 'Fundamental rights, Parliament, Governor powers, and state constitutional provisions.',
+      durationMinutes: 25,
+      difficulty: 'Hard',
+      description: 'Advanced questions on constitutional provisions, NEFA reorganization, budget, and judicial system.',
     ),
 
     // General Awareness (GA & Current Affairs)
@@ -334,22 +346,24 @@ class _MockHubScreenState extends ConsumerState<MockHubScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text(
-          'Mock Test Center',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-        ),
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: AppColors.textPrimary,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.history_rounded, color: AppColors.primary),
-            tooltip: 'View Quiz History',
-            onPressed: () => context.push('/quiz-history'),
-          ),
-        ],
-      ),
+      appBar: widget.isEmbedded
+          ? null
+          : AppBar(
+              title: const Text(
+                'Mock Test Center',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              elevation: 0,
+              backgroundColor: Colors.white,
+              foregroundColor: AppColors.textPrimary,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.history_rounded, color: AppColors.primary),
+                  tooltip: 'View Quiz History',
+                  onPressed: () => context.push('/quiz-history'),
+                ),
+              ],
+            ),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 960),
@@ -489,6 +503,7 @@ class _MockHubScreenState extends ConsumerState<MockHubScreen> {
                               'GK': 'General Knowledge',
                               'GA': 'General Awareness',
                               'English': 'English',
+                              'Comprehension': 'Reading Comprehension',
                               'Grammar': 'Grammar',
                               'Technical': 'Technical',
                               'Full Mock': '',
@@ -498,11 +513,20 @@ class _MockHubScreenState extends ConsumerState<MockHubScreen> {
                                 : '';
                             final difficulty = _selectedLevel != 'All Levels' ? _selectedLevel : '';
 
+                            final int duration = _selectedMockType == '5 Questions'
+                                ? 5
+                                : _selectedMockType == '10 Questions'
+                                    ? 10
+                                    : _selectedMockType == '20 Questions'
+                                        ? 20
+                                        : 10;
+
                             // Build URI with optional query params
                             var uri = '/mock-test/APSSB-MOCK/$targetCount';
                             final params = <String>[];
                             if (subject.isNotEmpty) params.add('subject=${Uri.encodeComponent(subject)}');
                             if (difficulty.isNotEmpty) params.add('difficulty=${Uri.encodeComponent(difficulty)}');
+                            params.add('duration=$duration');
                             if (params.isNotEmpty) uri += '?${params.join('&')}';
 
                             context.push(uri);
@@ -694,67 +718,86 @@ class _MockHubScreenState extends ConsumerState<MockHubScreen> {
             ),
             const SizedBox(height: 12),
 
-            // Test Metrics Row
-            Row(
-              children: [
-                const Icon(Icons.help_outline_rounded, size: 14, color: AppColors.textHint),
-                const SizedBox(width: 4),
-                Builder(builder: (context) {
-                  final effectiveCount = _selectedMockType == '5 Questions'
-                      ? (test.questionCount > 5 ? 5 : test.questionCount)
-                      : _selectedMockType == '10 Questions'
-                          ? (test.questionCount > 10 ? 10 : test.questionCount)
-                          : _selectedMockType == '20 Questions'
-                              ? (test.questionCount > 20 ? 20 : test.questionCount)
-                              : test.questionCount;
-                  return Text(
-                    '$effectiveCount Questions',
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                  );
-                }),
-                const SizedBox(width: 12),
-                const Icon(Icons.timer_outlined, size: 14, color: AppColors.textHint),
-                const SizedBox(width: 4),
-                Text(
-                  '${test.durationMinutes} mins',
-                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                ),
-                const SizedBox(width: 12),
-                const Text(
-                  '+2 / -0.5 APSSB Marking',
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textHint),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
+            // Test Metrics Row (Count, Time, Marking - Compact & Mobile Safe)
+            Builder(builder: (context) {
+              int effectiveCount = test.questionCount;
+              int effectiveMins = test.durationMinutes;
 
-            // Start Mock Button - Full width, clean padding, no overflow
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  final targetCount = _selectedMockType == '5 Questions'
-                      ? '5'
-                      : _selectedMockType == '10 Questions'
-                          ? '10'
-                          : _selectedMockType == '20 Questions'
-                              ? '20'
-                              : 'full';
-                  context.push('/mock-test/${test.examCode}/$targetCount');
-                },
-                icon: const Icon(Icons.play_arrow_rounded, size: 18, color: Colors.white),
-                label: const Text(
-                  'Start Mock Test',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusM)),
-                  elevation: 0,
-                ),
-              ),
-            ),
+              if (_selectedMockType == '5 Questions') {
+                effectiveCount = test.questionCount > 5 ? 5 : test.questionCount;
+                effectiveMins = 5;
+              } else if (_selectedMockType == '10 Questions') {
+                effectiveCount = test.questionCount > 10 ? 10 : test.questionCount;
+                effectiveMins = 10;
+              } else if (_selectedMockType == '20 Questions') {
+                effectiveCount = test.questionCount > 20 ? 20 : test.questionCount;
+                effectiveMins = 20;
+              }
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.help_outline_rounded, size: 14, color: AppColors.textHint),
+                      const SizedBox(width: 4),
+                      Text(
+                        '$effectiveCount Questions',
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      ),
+                      const SizedBox(width: 10),
+                      const Icon(Icons.timer_outlined, size: 14, color: AppColors.textHint),
+                      const SizedBox(width: 4),
+                      Text(
+                        '$effectiveMins mins',
+                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                      ),
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Text(
+                          '+2 / -0.5',
+                          style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: AppColors.textHint),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Start Mock Button - Full width, clean padding, no overflow
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        final targetCount = _selectedMockType == '5 Questions'
+                            ? '5'
+                            : _selectedMockType == '10 Questions'
+                                ? '10'
+                                : _selectedMockType == '20 Questions'
+                                    ? '20'
+                                    : 'full';
+                        context.push('/mock-test/${test.examCode}/$targetCount?duration=$effectiveMins');
+                      },
+                      icon: const Icon(Icons.play_arrow_rounded, size: 18, color: Colors.white),
+                      label: const Text(
+                        'Start Mock Test',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusM)),
+                        elevation: 0,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }),
           ],
         ),
       ),

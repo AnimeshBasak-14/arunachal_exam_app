@@ -75,7 +75,8 @@ class _ChatSession {
 
 class ChatbotScreen extends StatefulWidget {
   final String? initialContext;
-  const ChatbotScreen({super.key, this.initialContext});
+  final bool isEmbedded;
+  const ChatbotScreen({super.key, this.initialContext, this.isEmbedded = false});
 
   @override
   State<ChatbotScreen> createState() => _ChatbotScreenState();
@@ -733,11 +734,19 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       backgroundColor: AppColors.background,
       drawer: _buildDrawer(),
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          tooltip: 'Back',
-          onPressed: () => context.pop(),
-        ),
+        leading: widget.isEmbedded
+            ? Builder(
+                builder: (ctx) => IconButton(
+                  icon: const Icon(Icons.history_rounded, color: AppColors.primary),
+                  tooltip: 'Chat History',
+                  onPressed: () => Scaffold.of(ctx).openDrawer(),
+                ),
+              )
+            : IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                tooltip: 'Back',
+                onPressed: () => context.pop(),
+              ),
         title: Row(
           children: [
             Container(
