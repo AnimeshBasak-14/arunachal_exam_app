@@ -3,6 +3,7 @@ import '../../../core/services/question_repository.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/math_utils.dart';
+import '../../../core/widgets/antigravity_glass_card.dart';
 
 class SingleQuestionWidget extends StatelessWidget {
   final Question question;
@@ -94,6 +95,7 @@ class SingleQuestionWidget extends StatelessWidget {
                         ? const Color(0xFF1565C0).withValues(alpha: 0.1)
                         : AppColors.primaryLight,
                     borderRadius: BorderRadius.circular(12),
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.4), blurRadius: 4, offset: const Offset(0, 2))],
                   ),
                   child: Text(
                     isInsideGroup
@@ -116,6 +118,7 @@ class SingleQuestionWidget extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: const Color(0xFF1565C0).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
+                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.4), blurRadius: 4, offset: const Offset(0, 2))],
                 ),
                 child: Text(
                   'Q$displayNum',
@@ -231,77 +234,103 @@ class SingleQuestionWidget extends StatelessWidget {
           final isSelected = selectedOption == optionChar;
           final isCorrect = question.correctAnswer.toLowerCase() == optionChar;
 
-          Color optionBorderColor = AppColors.divider;
-          Color optionBgColor = Colors.transparent;
+          BoxShadow? optionShadow;
+          Color optionBgColor = AppColors.glassBase;
+          Color letterBgColor = AppColors.glassBase;
+          Color letterBorderColor = AppColors.glassBorder;
+          Color letterTextColor = AppColors.textPrimary;
 
           final showFeedback = isSubmitted || (isStudyMode && selectedOption != null);
 
           if (showFeedback) {
             if (isCorrect) {
-              optionBorderColor = AppColors.success;
-              optionBgColor = AppColors.success.withValues(alpha: 0.08);
+              optionBgColor = AppColors.success.withValues(alpha: 0.15);
+              optionShadow = AppColors.emeraldGlowShadow();
+              letterBgColor = AppColors.success;
+              letterBorderColor = AppColors.success;
+              letterTextColor = Colors.white;
             } else if (isSelected) {
-              optionBorderColor = AppColors.error;
-              optionBgColor = AppColors.error.withValues(alpha: 0.08);
+              optionBgColor = AppColors.error.withValues(alpha: 0.15);
+              optionShadow = AppColors.redGlowShadow();
+              letterBgColor = AppColors.error;
+              letterBorderColor = AppColors.error;
+              letterTextColor = Colors.white;
             }
           } else if (isSelected) {
-            // Neutral selection during timed exam mode before submission
-            optionBorderColor = AppColors.primary;
-            optionBgColor = AppColors.primary.withValues(alpha: 0.08);
+            optionBgColor = AppColors.primary.withValues(alpha: 0.12);
+            letterBgColor = AppColors.primary;
+            letterBorderColor = AppColors.primary;
+            letterTextColor = Colors.white;
           }
 
-          return Container(
-            key: ValueKey('${question.id}_opt_$optIdx'),
-            margin: const EdgeInsets.only(bottom: AppSpacing.s),
-            decoration: BoxDecoration(
-              color: optionBgColor,
-              border: Border.all(
-                color: optionBorderColor,
-                width: isSelected || (showFeedback && isCorrect)
-                    ? 2.0
-                    : 1.0,
+          return GestureDetector(
+            onTap: isSubmitted ? null : () => onSelectOption?.call(optionChar),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              margin: const EdgeInsets.only(bottom: AppSpacing.s),
+              decoration: BoxDecoration(
+                color: optionBgColor,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.glassBorder),
+                boxShadow: optionShadow != null ? [optionShadow] : null,
               ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: InkWell(
-              onTap: isSubmitted
-                  ? null
-                  : () => onSelectOption?.call(optionChar),
-              borderRadius: BorderRadius.circular(12),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.m, vertical: 14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      MathUtils.formatMath(option),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: 14),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: letterBgColor,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: letterBorderColor),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      optionChar.toUpperCase(),
                       style: TextStyle(
-                        fontSize: 14,
-                        color: showFeedback && isCorrect
-                            ? AppColors.primaryDark
-                            : AppColors.textPrimary,
-                        fontWeight: isSelected || (showFeedback && isCorrect)
-                            ? FontWeight.bold
-                            : FontWeight.normal,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: letterTextColor,
                       ),
                     ),
-                    if (optIdx < question.optionImages.length &&
-                        question.optionImages[optIdx] != null &&
-                        question.optionImages[optIdx]!.isNotEmpty) ...[
-                      const SizedBox(height: 6),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: Image.network(
-                          question.optionImages[optIdx]!,
-                          height: 70,
-                          fit: BoxFit.contain,
-                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          MathUtils.formatMath(option),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: showFeedback && isCorrect
+                                ? AppColors.primaryDark
+                                : AppColors.textPrimary,
+                            fontWeight: isSelected || (showFeedback && isCorrect)
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
                         ),
-                      ),
-                    ],
-                  ],
-                ),
+                        if (optIdx < question.optionImages.length &&
+                            question.optionImages[optIdx] != null &&
+                            question.optionImages[optIdx]!.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: Image.network(
+                              question.optionImages[optIdx]!,
+                              height: 70,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           );

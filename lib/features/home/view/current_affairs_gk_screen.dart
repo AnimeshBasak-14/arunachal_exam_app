@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/services/current_affairs_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/antigravity_glass_card.dart';
 
 class CurrentAffairsGkScreen extends ConsumerStatefulWidget {
   final bool isEmbedded;
@@ -34,7 +35,7 @@ class _CurrentAffairsGkScreenState
     final affairsAsync = ref.watch(currentAffairsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         automaticallyImplyLeading: !widget.isEmbedded,
         leading: widget.isEmbedded
@@ -81,17 +82,13 @@ class _CurrentAffairsGkScreenState
                       child: Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF0F9D58), Color(0xFF0B8043)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(14),
+                          gradient: AppColors.tealBlueGradient,
+                          borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF0F9D58).withValues(alpha: 0.3),
-                              blurRadius: 8,
-                              offset: const Offset(0, 3),
+                              color: AppColors.secondary.withValues(alpha: 0.35),
+                              blurRadius: 24,
+                              offset: const Offset(0, 12),
                             ),
                           ],
                         ),
@@ -144,7 +141,7 @@ class _CurrentAffairsGkScreenState
                             prefixIcon: const Icon(Icons.search_rounded,
                                 color: AppColors.primary),
                             filled: true,
-                            fillColor: AppColors.surface,
+                            fillColor: Colors.white.withValues(alpha: 0.06),
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 10),
                             border: OutlineInputBorder(
@@ -253,12 +250,18 @@ class _CurrentAffairsGkScreenState
                           delegate: SliverChildBuilderDelegate(
                             (context, index) {
                               final item = filtered[index];
-                              return Card(
-                                margin: const EdgeInsets.only(
-                                    bottom: AppSpacing.m),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14)),
-                                elevation: 1.5,
+                              return Container(
+                                margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(14),
+                                  color: Colors.white.withValues(alpha: 0.04),
+                                  border: Border(
+                                    top: BorderSide(color: Colors.white.withValues(alpha: 0.15), width: 1),
+                                    left: BorderSide(color: Colors.white.withValues(alpha: 0.10), width: 1),
+                                    right: BorderSide(color: Colors.white.withValues(alpha: 0.06), width: 1),
+                                    bottom: BorderSide(color: Colors.white.withValues(alpha: 0.06), width: 1),
+                                  ),
+                                ),
                                 child: InkWell(
                                   borderRadius: BorderRadius.circular(14),
                                   onTap: () {

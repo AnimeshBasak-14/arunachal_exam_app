@@ -17,6 +17,8 @@ import 'exams_hub_screen.dart';
 import 'current_affairs_gk_screen.dart';
 import '../../chatbot/view/chatbot_screen.dart';
 import '../../../widgets/custom_practice_modal.dart';
+import '../../../core/widgets/ambient_orbs.dart';
+import '../../../core/widgets/floating_glass_dock.dart';
 
 final currentTabProvider = StateProvider<int>((ref) => 0);
 
@@ -36,71 +38,28 @@ class HomeScreen extends ConsumerWidget {
     ];
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: tabs[selectedTab],
-      ),
-      floatingActionButton: selectedTab == 0
-          ? FloatingActionButton(
-              onPressed: () {
-                ref.read(currentTabProvider.notifier).state = 2; // Switch to AI Tutor tab
-              },
-              backgroundColor: AppColors.primary,
-              elevation: 4,
-              tooltip: 'AI Tutor',
-              child: const Icon(Icons.psychology_rounded, color: Colors.white, size: 28),
-            )
-          : null,
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
+      backgroundColor: AppColors.void_,
+      extendBody: true,
+      body: Stack(
+        children: [
+          // Layer 0 — ambient deep-space orbs
+          const AmbientOrbs(),
+          // Layer 1 — tab content with bottom padding for dock
+          SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 110),
+              child: tabs[selectedTab],
             ),
-          ],
-        ),
-        child: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          currentIndex: selectedTab,
-          onTap: (index) {
-            ref.read(currentTabProvider.notifier).state = index;
-          },
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: AppColors.textHint,
-          selectedLabelStyle:
-              const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
-          unselectedLabelStyle: const TextStyle(fontSize: 11),
-          backgroundColor: AppColors.surface,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard_outlined),
-              activeIcon: Icon(Icons.dashboard_rounded),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.assignment_outlined),
-              activeIcon: Icon(Icons.assignment_rounded),
-              label: 'Exams',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.psychology_outlined),
-              activeIcon: Icon(Icons.psychology_rounded),
-              label: 'AI Tutor',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.newspaper_outlined),
-              activeIcon: Icon(Icons.newspaper_rounded),
-              label: 'CA & GK',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline_rounded),
-              activeIcon: Icon(Icons.person_rounded),
-              label: 'Profile',
-            ),
-          ],
-        ),
+          ),
+          // Layer 2 — floating glass dock
+          FloatingGlassDock(
+            selectedIndex: selectedTab,
+            onIndexChanged: (index) {
+              ref.read(currentTabProvider.notifier).state = index;
+            },
+          ),
+        ],
       ),
     );
   }

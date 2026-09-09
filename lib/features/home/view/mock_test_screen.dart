@@ -16,6 +16,8 @@ import '../../../core/widgets/primary_button.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../widgets/single_question_widget.dart';
 import '../widgets/comprehension_group_widget.dart';
+import '../../../core/widgets/antigravity_timer_ring.dart';
+import '../../../core/widgets/antigravity_glass_card.dart';
 
 class MockTestScreen extends ConsumerStatefulWidget {
   final String examCode;
@@ -449,7 +451,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
     final accuracy = _maxScore > 0 ? (_scoreObtained / _maxScore * 100) : 0.0;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.void_,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
@@ -537,12 +539,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
   }
 
   Widget _buildResultHeaderCard(double accuracy) {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusXL),
-        side: const BorderSide(color: AppColors.divider),
-      ),
+    return AntigravityGlassCard(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.l),
         child: Column(
@@ -759,7 +756,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
       },
       child: Scaffold(
         extendBody: true,
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.void_,
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(68),
           child: SafeArea(
@@ -843,48 +840,39 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: widget.isStudyMode
-                          ? const Color(0xFFE8F5E9)
-                          : (_secondsRemaining < 60
-                              ? AppColors.error.withValues(alpha: 0.12)
-                              : AppColors.primaryLight),
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          widget.isStudyMode
-                              ? Icons.auto_stories_rounded
-                              : Icons.timer_outlined,
-                          color: widget.isStudyMode
-                              ? const Color(0xFF2E7D32)
-                              : (_secondsRemaining < 60
-                                  ? AppColors.error
-                                  : AppColors.primary),
-                          size: 15,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          widget.isStudyMode
-                              ? 'Study Mode'
-                              : _formatTime(_secondsRemaining),
-                          style: TextStyle(
-                            color: widget.isStudyMode
-                                ? const Color(0xFF2E7D32)
-                                : (_secondsRemaining < 60
-                                    ? AppColors.error
-                                    : AppColors.primary),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12.5,
+                  if (widget.isStudyMode)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE8F5E9),
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.auto_stories_rounded,
+                            color: Color(0xFF2E7D32),
+                            size: 15,
                           ),
-                        ),
-                      ],
+                          SizedBox(width: 4),
+                          Text(
+                            'Study Mode',
+                            style: TextStyle(
+                              color: Color(0xFF2E7D32),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    AntigravityTimerRing(
+                      timeLeft: _secondsRemaining,
+                      totalTime: _initialSeconds,
+                      size: 64,
                     ),
-                  ),
                 ],
               ),
             ),
