@@ -38,6 +38,11 @@ class Question {
   final List<String> initialComments;
   final String? pyqText;
   final int questionNumber;
+  final String? directionText;
+  final String contentFormat; // 'text', 'latex', 'image_only'
+  final String? topic;
+  final String questionType; // 'mcq', 'multiple_select', 'numerical'
+  final String? adminNotes;
 
   const Question({
     required this.id,
@@ -52,6 +57,11 @@ class Question {
     this.passageId,
     this.passageOrDirection,
     this.passageImage,
+    this.directionText,
+    this.contentFormat = 'text',
+    this.topic,
+    this.questionType = 'mcq',
+    this.adminNotes,
     required this.questionText,
     this.questionImage,
     this.imageUrl,
@@ -88,6 +98,11 @@ class Question {
     String? passageId,
     String? passageOrDirection,
     String? passageImage,
+    String? directionText,
+    String? contentFormat,
+    String? topic,
+    String? questionType,
+    String? adminNotes,
     String? questionText,
     String? questionImage,
     String? imageUrl,
@@ -123,6 +138,11 @@ class Question {
       passageId: passageId ?? this.passageId,
       passageOrDirection: passageOrDirection ?? this.passageOrDirection,
       passageImage: passageImage ?? this.passageImage,
+      directionText: directionText ?? this.directionText,
+      contentFormat: contentFormat ?? this.contentFormat,
+      topic: topic ?? this.topic,
+      questionType: questionType ?? this.questionType,
+      adminNotes: adminNotes ?? this.adminNotes,
       questionText: questionText ?? this.questionText,
       questionImage: questionImage ?? this.questionImage,
       imageUrl: imageUrl ?? this.imageUrl,
@@ -213,6 +233,11 @@ class Question {
       passageOrDirection: data['passageOrDirection']?.toString() ??
           data['passage_or_direction']?.toString(),
       passageImage: data['passageImage']?.toString() ?? data['passage_image']?.toString(),
+      directionText: data['directionText']?.toString() ?? data['direction_text']?.toString(),
+      contentFormat: (data['contentFormat'] ?? data['content_format'] ?? 'text').toString(),
+      topic: data['topic']?.toString(),
+      questionType: (data['questionType'] ?? data['question_type'] ?? 'mcq').toString(),
+      adminNotes: data['adminNotes']?.toString() ?? data['admin_notes']?.toString(),
       questionText: (data['questionText'] ?? data['question_text'] ?? '').toString(),
       questionImage: data['questionImage']?.toString() ??
           data['question_image_url']?.toString() ??
@@ -311,6 +336,7 @@ class Question {
     }
 
     // Passage / Direction handling
+    String? directionText = data['direction_text']?.toString();
     String? passageText;
     String? passageImage;
     String? passageId = data['passage_id']?.toString();
@@ -322,10 +348,15 @@ class Question {
     } else if (groups != null) {
       final gTitle = groups['title']?.toString();
       final pText = groups['passage_text']?.toString();
-      final gInst = groups['instructions']?.toString();
+      final gInst = groups['direction_text']?.toString() ??
+          groups['instructions']?.toString();
+      passageImage = groups['passage_image_url']?.toString() ??
+          groups['image_url']?.toString();
+      if (gInst != null && gInst.trim().isNotEmpty) {
+        directionText ??= gInst.trim();
+      }
       final parts = [
         if (gTitle != null && gTitle.isNotEmpty) gTitle,
-        if (gInst != null && gInst.isNotEmpty) gInst,
         if (pText != null && pText.isNotEmpty) pText,
       ];
       if (parts.isNotEmpty) {
@@ -378,6 +409,11 @@ class Question {
       passageId: passageId,
       passageOrDirection: passageText,
       passageImage: passageImage,
+      directionText: directionText,
+      contentFormat: (data['content_format'] ?? 'text').toString(),
+      topic: data['topic']?.toString(),
+      questionType: (data['question_type'] ?? 'mcq').toString(),
+      adminNotes: data['admin_notes']?.toString(),
       questionText: rawQuestionText,
       questionImage: data['image_url']?.toString() ??
           data['question_image_url']?.toString() ??

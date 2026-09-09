@@ -273,31 +273,9 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
   // ─── Direct Action 1: Mark Correct / Approved ─────────────────────────────
   Future<void> _markCorrect(Question q) async {
     // 1. Optimistic UI update immediately
-    final updated = Question(
-      id: q.id,
-      examCode: q.examCode,
-      year: q.year,
-      paperType: q.paperType,
-      testId: q.testId,
-      testTitle: q.testTitle,
-      subject: q.subject,
-      difficulty: q.difficulty,
-      groupId: q.groupId,
-      passageId: q.passageId,
-      passageOrDirection: q.passageOrDirection,
-      passageImage: q.passageImage,
-      questionText: q.questionText,
-      questionImage: q.questionImage,
-      imageUrl: q.imageUrl,
-      hasImage: q.hasImage,
+    final updated = q.copyWith(
       reviewStatus: 'approved',
       flagReasons: const [],
-      modeAvailability: q.modeAvailability,
-      options: q.options,
-      optionImages: q.optionImages,
-      correctAnswer: q.correctAnswer,
-      officialAnswer: q.officialAnswer,
-      solution: q.solution,
     );
 
     setState(() {
@@ -387,31 +365,9 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
       existingReasons.add(issueCategory);
     }
 
-    final updated = Question(
-      id: q.id,
-      examCode: q.examCode,
-      year: q.year,
-      paperType: q.paperType,
-      testId: q.testId,
-      testTitle: q.testTitle,
-      subject: q.subject,
-      difficulty: q.difficulty,
-      groupId: q.groupId,
-      passageId: q.passageId,
-      passageOrDirection: q.passageOrDirection,
-      passageImage: q.passageImage,
-      questionText: q.questionText,
-      questionImage: q.questionImage,
-      imageUrl: q.imageUrl,
-      hasImage: q.hasImage,
+    final updated = q.copyWith(
       reviewStatus: 'flagged',
       flagReasons: existingReasons,
-      modeAvailability: q.modeAvailability,
-      options: q.options,
-      optionImages: q.optionImages,
-      correctAnswer: q.correctAnswer,
-      officialAnswer: q.officialAnswer,
-      solution: q.solution,
     );
 
     setState(() {
@@ -541,6 +497,18 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
 
     String selectedStatus = 'approved';
 
+    final directionController =
+        TextEditingController(text: q.directionText ?? '');
+    final passageController =
+        TextEditingController(text: q.passageOrDirection ?? '');
+    final imageUrlController =
+        TextEditingController(text: q.imageUrl ?? q.questionImage ?? '');
+    final topicController = TextEditingController(text: q.topic ?? '');
+    String selectedFormat = q.contentFormat;
+    if (!['text', 'latex', 'image_only'].contains(selectedFormat)) {
+      selectedFormat = 'text';
+    }
+
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
@@ -565,12 +533,45 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
             ],
           ),
           content: SizedBox(
-            width: 560,
+            width: 580,
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // 1. Direction / Instructions Field
+                  const Text('Direction / Instructions (Optional):',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: directionController,
+                    maxLines: 2,
+                    style: const TextStyle(fontSize: 12),
+                    decoration: const InputDecoration(
+                      hintText: 'e.g. Direction (Q. 1 to 5): Choose the correct antonym...',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // 2. Passage / Comprehension Field
+                  const Text('Passage / Reading Context (Optional):',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: passageController,
+                    maxLines: 3,
+                    style: const TextStyle(fontSize: 12),
+                    decoration: const InputDecoration(
+                      hintText: 'Enter full reading comprehension text...',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // 3. Question Prompt Field
                   const Text('Question Text / Prompt:',
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
@@ -587,6 +588,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                   ),
                   const SizedBox(height: 12),
 
+                  // 4. Options A-D Fields
                   const Text('Options (a–d):',
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
@@ -600,7 +602,94 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                   _buildOptionEditField('D', optDController),
                   const SizedBox(height: 12),
 
-                  // Correct Answer & Status Row
+                  // 5. Topic, Content Format & Image URL Row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Topic (Optional):',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 12)),
+                            const SizedBox(height: 6),
+                            TextField(
+                              controller: topicController,
+                              style: const TextStyle(fontSize: 12),
+                              decoration: const InputDecoration(
+                                hintText: 'e.g. Ancient History',
+                                border: OutlineInputBorder(),
+                                isDense: true,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Format / Math:',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 12)),
+                            const SizedBox(height: 6),
+                            Container(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 12),
+                              decoration: BoxDecoration(
+                                border:
+                                    Border.all(color: Colors.grey.shade400),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  isExpanded: true,
+                                  value: selectedFormat,
+                                  items: const [
+                                    DropdownMenuItem(
+                                        value: 'text',
+                                        child: Text('Standard Text')),
+                                    DropdownMenuItem(
+                                        value: 'latex',
+                                        child: Text('📐 LaTeX Math')),
+                                    DropdownMenuItem(
+                                        value: 'image_only',
+                                        child: Text('🖼️ Image Only')),
+                                  ],
+                                  onChanged: (val) {
+                                    if (val != null) {
+                                      setDialogState(
+                                          () => selectedFormat = val);
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // 6. Image URL Field
+                  const Text('Question Image URL (Optional):',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: imageUrlController,
+                    style: const TextStyle(fontSize: 12),
+                    decoration: const InputDecoration(
+                      hintText: 'https://... or image filename',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // 7. Correct Answer & Status Row
                   Row(
                     children: [
                       Expanded(
@@ -697,6 +786,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                   ),
                   const SizedBox(height: 12),
 
+                  // 8. Explanation / Solution
                   const Text('Explanation / Solution:',
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
@@ -714,6 +804,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                   ),
                   const SizedBox(height: 12),
 
+                  // 9. Admin Notes
                   const Text('Admin Note (Stored in admin_notes):',
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
@@ -742,6 +833,10 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
               onPressed: () async {
                 final newNotes = noteController.text.trim();
                 final newQText = questionTextController.text.trim();
+                final newDirection = directionController.text.trim();
+                final newPassage = passageController.text.trim();
+                final newImageUrl = imageUrlController.text.trim();
+                final newTopic = topicController.text.trim();
                 final cleanOptions = [
                   '(a) ${optAController.text.trim()}',
                   '(b) ${optBController.text.trim()}',
@@ -759,6 +854,24 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                 try {
                   final patchUrl =
                       '$_supabaseUrl/rest/v1/questions?id=eq.${q.id}';
+                  final patchPayload = <String, dynamic>{
+                    'question_text': newQText,
+                    'options': cleanOptions,
+                    'correct_answer': selectedCorrect,
+                    'correct_option': selectedCorrect,
+                    'explanation': newSolution,
+                    'admin_notes': newNotes,
+                    'review_status': selectedStatus,
+                    'direction_text': newDirection.isNotEmpty ? newDirection : null,
+                    'content_format': selectedFormat,
+                    'topic': newTopic.isNotEmpty ? newTopic : null,
+                    if (newImageUrl.isNotEmpty) 'question_image_url': newImageUrl,
+                    'flagged_issues': selectedStatus == 'approved'
+                        ? []
+                        : q.flagReasons,
+                    'last_reviewed_at': DateTime.now().toIso8601String(),
+                  };
+
                   final patchRes = await http.patch(
                     Uri.parse(patchUrl),
                     headers: {
@@ -766,23 +879,11 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                       'Authorization': 'Bearer $_supabaseKey',
                       'Content-Type': 'application/json',
                     },
-                    body: jsonEncode({
-                      'question_text': newQText,
-                      'options': cleanOptions,
-                      'correct_answer': selectedCorrect,
-                      'explanation': newSolution,
-                      'admin_notes': newNotes,
-                      'review_status': selectedStatus,
-                      'flagged_issues': selectedStatus == 'approved'
-                          ? []
-                          : q.flagReasons,
-                      'last_reviewed_at': DateTime.now().toIso8601String(),
-                    }),
+                    body: jsonEncode(patchPayload),
                   );
 
-                  if (patchRes.statusCode >= 400 &&
-                      patchRes.body.contains('review_status')) {
-                    setState(() => _dbNeedsMigration = true);
+                  // Resilient fallback if schema update is still pending
+                  if (patchRes.statusCode >= 400) {
                     await http.patch(
                       Uri.parse(patchUrl),
                       headers: {
@@ -804,33 +905,22 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                     final idx =
                         _questions.indexWhere((item) => item.id == q.id);
                     if (idx != -1) {
-                      _questions[idx] = Question(
-                        id: q.id,
-                        examCode: q.examCode,
-                        year: q.year,
-                        paperType: q.paperType,
-                        testId: q.testId,
-                        testTitle: q.testTitle,
-                        subject: q.subject,
-                        difficulty: q.difficulty,
-                        groupId: q.groupId,
-                        passageId: q.passageId,
-                        passageOrDirection: q.passageOrDirection,
-                        passageImage: q.passageImage,
+                      _questions[idx] = q.copyWith(
                         questionText: newQText,
-                        questionImage: q.questionImage,
-                        imageUrl: q.imageUrl,
-                        hasImage: q.hasImage,
+                        options: cleanOptions,
+                        correctAnswer: selectedCorrect,
+                        solution: newSolution,
+                        directionText: newDirection.isNotEmpty ? newDirection : null,
+                        passageOrDirection: newPassage.isNotEmpty ? newPassage : null,
+                        imageUrl: newImageUrl.isNotEmpty ? newImageUrl : null,
+                        questionImage: newImageUrl.isNotEmpty ? newImageUrl : null,
+                        contentFormat: selectedFormat,
+                        topic: newTopic.isNotEmpty ? newTopic : null,
                         reviewStatus: selectedStatus,
                         flagReasons: selectedStatus == 'approved'
                             ? const []
                             : q.flagReasons,
-                        modeAvailability: q.modeAvailability,
-                        options: cleanOptions,
-                        optionImages: q.optionImages,
-                        correctAnswer: selectedCorrect,
-                        officialAnswer: q.officialAnswer,
-                        solution: newSolution,
+                        adminNotes: newNotes,
                       );
                     }
                   });
@@ -1305,6 +1395,35 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                         '${q.examCode} ${q.year} • ${q.paperType}',
                         style: const TextStyle(fontSize: 10, color: AppColors.textHint),
                       ),
+                      if (q.topic != null && q.topic!.trim().isNotEmpty) ...[
+                        Text(
+                          ' • ${q.topic}',
+                          style: const TextStyle(fontSize: 10, color: AppColors.primary, fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                      if (q.contentFormat == 'latex') ...[
+                        const SizedBox(width: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEDE9FE),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Text('📐 LaTeX',
+                              style: TextStyle(fontSize: 9, color: Color(0xFF6D28D9), fontWeight: FontWeight.bold)),
+                        ),
+                      ] else if (q.contentFormat == 'image_only') ...[
+                        const SizedBox(width: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE0F2FE),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Text('🖼️ Image',
+                              style: TextStyle(fontSize: 9, color: Color(0xFF0369A1), fontWeight: FontWeight.bold)),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -1344,7 +1463,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
               const SizedBox(height: 10),
             ],
 
-            // ─── Linked Passage / Direction Box (Collapsible) ─────────────
+            // ─── Linked Passage Box (Collapsible) ─────────────────────────
             if (q.passageOrDirection != null && q.passageOrDirection!.trim().isNotEmpty) ...[
               Container(
                 width: double.infinity,
@@ -1362,7 +1481,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                         const Icon(Icons.menu_book_rounded, size: 13, color: AppColors.primary),
                         const SizedBox(width: 6),
                         const Text(
-                          'Passage / Direction Box',
+                          'Passage / Comprehension Box',
                           style: TextStyle(
                             fontSize: 10.5,
                             fontWeight: FontWeight.bold,
@@ -1393,11 +1512,57 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                         q.passageOrDirection!,
                         style: const TextStyle(fontSize: 11.5, color: AppColors.textPrimary, height: 1.35),
                       ),
+                      if (q.passageImage != null && q.passageImage!.trim().isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: Image.network(
+                            q.passageImage!,
+                            height: 140,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => const Text('Passage figure failed to load',
+                                style: TextStyle(fontSize: 10, color: AppColors.error)),
+                          ),
+                        ),
+                      ],
                     ],
                   ],
                 ),
               ),
               const SizedBox(height: 10),
+            ],
+
+            // ─── Direction / Instruction Banner ───────────────────────────
+            if (q.directionText != null &&
+                q.directionText!.trim().isNotEmpty &&
+                q.directionText != q.passageOrDirection) ...[
+              Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF6FF),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFBFDBFE)),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.info_outline_rounded, size: 14, color: AppColors.primary),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        q.directionText!,
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1E40AF),
+                          height: 1.35,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
 
             // ─── Image Container (Preview or Missing Alert) ────────────────
@@ -1578,6 +1743,24 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                                 child: Text('⚠️ Next Question Bleed Inside Option',
                                     style: TextStyle(fontSize: 9.5, color: AppColors.error, fontWeight: FontWeight.bold)),
                               ),
+                            if (optIdx < q.optionImages.length &&
+                                q.optionImages[optIdx] != null &&
+                                q.optionImages[optIdx]!.trim().isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(4),
+                                child: Image.network(
+                                  q.optionImages[optIdx]!,
+                                  height: 75,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (_, __, ___) => const Text(
+                                    'Option image load failed',
+                                    style: TextStyle(
+                                        color: AppColors.error, fontSize: 9.5),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -1686,6 +1869,19 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                           : FontStyle.italic,
                     ),
                   ),
+                  if (q.solutionImage != null && q.solutionImage!.trim().isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: Image.network(
+                        q.solutionImage!,
+                        height: 130,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => const Text('Solution diagram load failed',
+                            style: TextStyle(color: AppColors.error, fontSize: 10)),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
