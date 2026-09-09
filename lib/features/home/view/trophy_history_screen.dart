@@ -267,7 +267,7 @@ class TrophyHistoryScreen extends ConsumerWidget {
           borderRadius: BorderRadius.circular(AppSpacing.radiusL),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFFF9800).withOpacity(0.3),
+              color: const Color(0xFFFF9800).withValues(alpha: 0.3),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -278,7 +278,7 @@ class TrophyHistoryScreen extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: const Text('🔥', style: TextStyle(fontSize: 28)),
@@ -303,7 +303,7 @@ class TrophyHistoryScreen extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.25),
+                          color: Colors.white.withValues(alpha: 0.25),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -486,7 +486,7 @@ class TrophyHistoryScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isUnlocked
-                        ? AppColors.primary.withOpacity(0.4)
+                        ? AppColors.primary.withValues(alpha: 0.4)
                         : Colors.grey.shade300,
                   ),
                 ),

@@ -121,7 +121,7 @@ class _GrammarHubScreenState extends State<GrammarHubScreen> {
         borderRadius: BorderRadius.circular(AppSpacing.radiusL),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1E3C72).withOpacity(0.25),
+            color: const Color(0xFF1E3C72).withValues(alpha: 0.25),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -135,7 +135,7 @@ class _GrammarHubScreenState extends State<GrammarHubScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.18),
+                  color: Colors.white.withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.menu_book_rounded, color: Colors.white, size: 22),
@@ -292,11 +292,11 @@ class _GrammarHubScreenState extends State<GrammarHubScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(AppSpacing.radiusM),
         border: Border.all(
-          color: isExpanded ? AppColors.primary.withOpacity(0.3) : Colors.grey.shade200,
+          color: isExpanded ? AppColors.primary.withValues(alpha: 0.3) : Colors.grey.shade200,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -425,9 +425,9 @@ class _GrammarHubScreenState extends State<GrammarHubScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: AppColors.error.withOpacity(0.08),
+              color: AppColors.error.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: AppColors.error.withOpacity(0.2)),
+              border: Border.all(color: AppColors.error.withValues(alpha: 0.2)),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -452,9 +452,9 @@ class _GrammarHubScreenState extends State<GrammarHubScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: AppColors.success.withOpacity(0.08),
+              color: AppColors.success.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: AppColors.success.withOpacity(0.2)),
+              border: Border.all(color: AppColors.success.withValues(alpha: 0.2)),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -553,7 +553,7 @@ class _GrammarHubScreenState extends State<GrammarHubScreen> {
                 borderRadius: BorderRadius.circular(AppSpacing.radiusM),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.02),
+                    color: Colors.black.withValues(alpha: 0.02),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),

@@ -222,6 +222,34 @@ class ProfileScreen extends ConsumerWidget {
                 ),
                 const Divider(height: 1, color: AppColors.divider),
                 ListTile(
+                  leading: const Icon(Icons.lock_outline_rounded,
+                      color: AppColors.primary),
+                  title: const Text('CHANGE PASSWORD',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: const Text('Update your account security password',
+                      style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                  trailing: const Icon(Icons.arrow_forward_ios_rounded,
+                      size: 16, color: AppColors.textHint),
+                  onTap: () {
+                    context.push('/change-password');
+                  },
+                ),
+                const Divider(height: 1, color: AppColors.divider),
+                ListTile(
+                  leading: const Icon(Icons.lock_reset_rounded,
+                      color: AppColors.primary),
+                  title: const Text('RESET / FORGOT PASSWORD',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: const Text('Send password recovery email to your inbox',
+                      style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                  trailing: const Icon(Icons.arrow_forward_ios_rounded,
+                      size: 16, color: AppColors.textHint),
+                  onTap: () {
+                    context.push('/forgot-password');
+                  },
+                ),
+                const Divider(height: 1, color: AppColors.divider),
+                ListTile(
                   leading: const Icon(Icons.settings_outlined,
                       color: AppColors.primary),
                   title: const Text('SETTING',
@@ -230,20 +258,6 @@ class ProfileScreen extends ConsumerWidget {
                       size: 16, color: AppColors.textHint),
                   onTap: () {
                     context.push('/edit-profile');
-                  },
-                ),
-                const Divider(height: 1, color: AppColors.divider),
-                ListTile(
-                  leading: const Icon(Icons.auto_stories_outlined,
-                      color: AppColors.primary),
-                  title: const Text('OFFICIAL EXAM SYLLABUS',
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: const Text('APSSB & APPSC topic breakdowns, marks & patterns',
-                      style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                  trailing: const Icon(Icons.arrow_forward_ios_rounded,
-                      size: 16, color: AppColors.textHint),
-                  onTap: () {
-                    context.push('/syllabus');
                   },
                 ),
                 const Divider(height: 1, color: AppColors.divider),

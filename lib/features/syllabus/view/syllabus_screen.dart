@@ -304,31 +304,37 @@ class _SyllabusScreenState extends State<SyllabusScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        item.parameter,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      if (item.note != null)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.amber.shade50,
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(color: Colors.amber.shade300),
-                          ),
-                          child: Text(
-                            item.note!,
-                            style: TextStyle(fontSize: 10, color: Colors.amber.shade900, fontWeight: FontWeight.bold),
+                  SizedBox(
+                    width: double.infinity,
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      alignment: WrapAlignment.spaceBetween,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(
+                          item.parameter,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: AppColors.primary,
                           ),
                         ),
-                    ],
+                        if (item.note != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.amber.shade50,
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(color: Colors.amber.shade300),
+                            ),
+                            child: Text(
+                              item.note!,
+                              style: TextStyle(fontSize: 10, color: Colors.amber.shade900, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                   const Divider(height: 16),
                   _buildComparisonRow('APSSB', item.apssb, const Color(0xFF0284C7)),
@@ -620,6 +626,7 @@ class _SyllabusScreenState extends State<SyllabusScreen>
         final q = _searchQuery;
         return item.examName.toLowerCase().contains(q) ||
             item.paperName.toLowerCase().contains(q) ||
+            item.targetCadres.toLowerCase().contains(q) ||
             item.primaryCurriculum.toLowerCase().contains(q) ||
             item.arunachalComponent.toLowerCase().contains(q);
       }
@@ -801,13 +808,15 @@ class _SyllabusScreenState extends State<SyllabusScreen>
                       children: const [
                         Icon(Icons.terrain_rounded, size: 16, color: Color(0xFFB45309)),
                         SizedBox(width: 6),
-                        Text(
-                          'ARUNACHAL PRADESH SPECIFIC FOCUS (30-35% WEIGHTAGE)',
-                          style: TextStyle(
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
-                            color: Color(0xFFB45309),
+                        Expanded(
+                          child: Text(
+                            'ARUNACHAL PRADESH SPECIFIC FOCUS (30-35% WEIGHTAGE)',
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                              color: Color(0xFFB45309),
+                            ),
                           ),
                         ),
                       ],

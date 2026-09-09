@@ -169,7 +169,7 @@ class _GrammarQuizScreenState extends ConsumerState<GrammarQuizScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
+                    color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -210,12 +210,12 @@ class _GrammarQuizScreenState extends ConsumerState<GrammarQuizScreen> {
                   if (_isAnswerRevealed) {
                     if (isCorrect) {
                       borderColor = AppColors.success;
-                      bgColor = AppColors.success.withOpacity(0.08);
+                      bgColor = AppColors.success.withValues(alpha: 0.08);
                       textColor = AppColors.success;
                       statusIcon = Icons.check_circle_rounded;
                     } else if (isSelected && !isCorrect) {
                       borderColor = AppColors.error;
-                      bgColor = AppColors.error.withOpacity(0.08);
+                      bgColor = AppColors.error.withValues(alpha: 0.08);
                       textColor = AppColors.error;
                       statusIcon = Icons.cancel_rounded;
                     }
@@ -232,7 +232,7 @@ class _GrammarQuizScreenState extends ConsumerState<GrammarQuizScreen> {
                       border: Border.all(color: borderColor, width: isSelected || (_isAnswerRevealed && isCorrect) ? 1.5 : 1),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.02),
+                          color: Colors.black.withValues(alpha: 0.02),
                           blurRadius: 4,
                           offset: const Offset(0, 1),
                         ),
@@ -250,7 +250,7 @@ class _GrammarQuizScreenState extends ConsumerState<GrammarQuizScreen> {
                               height: 28,
                               decoration: BoxDecoration(
                                 color: isSelected || (_isAnswerRevealed && isCorrect)
-                                    ? borderColor.withOpacity(0.2)
+                                    ? borderColor.withValues(alpha: 0.2)
                                     : Colors.grey.shade100,
                                 shape: BoxShape.circle,
                               ),
@@ -295,7 +295,7 @@ class _GrammarQuizScreenState extends ConsumerState<GrammarQuizScreen> {
                       border: Border.all(color: Colors.blue.shade100),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.blue.withOpacity(0.05),
+                          color: Colors.blue.withValues(alpha: 0.05),
                           blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),
@@ -343,7 +343,7 @@ class _GrammarQuizScreenState extends ConsumerState<GrammarQuizScreen> {
             color: Colors.white,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 8,
                 offset: const Offset(0, -2),
               ),
@@ -402,7 +402,7 @@ class _GrammarQuizScreenState extends ConsumerState<GrammarQuizScreen> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: (isPassed ? AppColors.accent : AppColors.primary).withOpacity(0.12),
+                color: (isPassed ? AppColors.accent : AppColors.primary).withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -435,7 +435,7 @@ class _GrammarQuizScreenState extends ConsumerState<GrammarQuizScreen> {
                 borderRadius: BorderRadius.circular(AppSpacing.radiusL),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
