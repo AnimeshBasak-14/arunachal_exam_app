@@ -146,37 +146,14 @@ class _AntigravityGlassCardState extends State<AntigravityGlassCard>
                   duration: const Duration(milliseconds: 300),
                   padding: widget.padding,
                   decoration: BoxDecoration(
-                    gradient: widget.backgroundGradient ??
-                        LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Colors.white.withValues(
-                                alpha: (_isHovered || _isPressed)
-                                    ? widget.backgroundOpacity * 2.5
-                                    : widget.backgroundOpacity),
-                            Colors.white.withValues(
-                                alpha: (_isHovered || _isPressed)
-                                    ? widget.backgroundOpacity * 1.5
-                                    : widget.backgroundOpacity * 0.5),
-                          ],
-                        ),
+                    color: Colors.white.withValues(
+                        alpha: (_isHovered || _isPressed)
+                            ? 0.90
+                            : widget.backgroundOpacity),
                     borderRadius: radius,
-                    border: Border(
-                      top: BorderSide(
-                        color: Colors.white.withValues(
-                            alpha: (_isHovered || _isPressed) ? 0.25 : 0.15),
-                        width: 1,
-                      ),
-                      left: BorderSide(
-                        color: Colors.white.withValues(
-                            alpha: (_isHovered || _isPressed) ? 0.20 : 0.10),
-                        width: 1,
-                      ),
-                      right: const BorderSide(
-                          color: AppColors.glassBorder, width: 1),
-                      bottom: const BorderSide(
-                          color: AppColors.glassBorder, width: 1),
+                    border: Border.all(
+                      color: Colors.white,
+                      width: 1.0,
                     ),
                   ),
                   child: widget.child,

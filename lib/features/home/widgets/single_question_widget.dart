@@ -233,10 +233,10 @@ class SingleQuestionWidget extends StatelessWidget {
           final isSelected = selectedOption == optionChar;
           final isCorrect = question.correctAnswer.toLowerCase() == optionChar;
 
-          List<BoxShadow>? optionShadow;
+          List<BoxShadow>? optionShadow = AppColors.glassShadow;
           Color optionBgColor = AppColors.glassBase;
-          Color letterBgColor = AppColors.glassBase;
-          Color letterBorderColor = AppColors.glassBorder;
+          Color letterBgColor = Colors.white;
+          Color letterBorderColor = AppColors.border;
           Color letterTextColor = AppColors.textPrimary;
 
           final showFeedback = isSubmitted || (isStudyMode && selectedOption != null);
@@ -257,6 +257,7 @@ class SingleQuestionWidget extends StatelessWidget {
             }
           } else if (isSelected) {
             optionBgColor = AppColors.primary.withValues(alpha: 0.12);
+            optionShadow = AppColors.emeraldGlowShadow(intensity: 0.8);
             letterBgColor = AppColors.primary;
             letterBorderColor = AppColors.primary;
             letterTextColor = Colors.white;

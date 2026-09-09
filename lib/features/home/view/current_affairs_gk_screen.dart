@@ -250,16 +250,12 @@ class _CurrentAffairsGkScreenState
                             (context, index) {
                               final item = filtered[index];
                               return Container(
-                                margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                                margin: const EdgeInsets.only(bottom: AppSpacing.l),
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(14),
-                                  color: Colors.white.withValues(alpha: 0.04),
-                                  border: Border(
-                                    top: BorderSide(color: Colors.white.withValues(alpha: 0.15), width: 1),
-                                    left: BorderSide(color: Colors.white.withValues(alpha: 0.10), width: 1),
-                                    right: BorderSide(color: Colors.white.withValues(alpha: 0.06), width: 1),
-                                    bottom: BorderSide(color: Colors.white.withValues(alpha: 0.06), width: 1),
-                                  ),
+                                  borderRadius: BorderRadius.circular(16),
+                                  color: AppColors.glassSurface,
+                                  border: Border.all(color: Colors.white, width: 1.0),
+                                  boxShadow: AppColors.glassShadow,
                                 ),
                                 child: InkWell(
                                   borderRadius: BorderRadius.circular(14),

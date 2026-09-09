@@ -148,7 +148,7 @@ class _AnimatedOrb extends AnimatedWidget {
               final screenWidth = MediaQuery.sizeOf(context).width;
               final screenHeight = MediaQuery.sizeOf(context).height;
               return ImageFiltered(
-                imageFilter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
+                imageFilter: ImageFilter.blur(sigmaX: 110, sigmaY: 110),
                 child: Container(
                   width: screenWidth * width,
                   height: screenHeight * height,
@@ -156,7 +156,7 @@ class _AnimatedOrb extends AnimatedWidget {
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        color.withValues(alpha: 0.45),
+                        color.withValues(alpha: 0.60),
                         color.withValues(alpha: 0.0),
                       ],
                     ),
