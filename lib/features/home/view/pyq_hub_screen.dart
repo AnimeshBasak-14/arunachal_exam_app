@@ -15,6 +15,8 @@ class PyqPaperItem {
   final String subject;
   final int questionCount;
   final int durationMinutes;
+  final double marksPerCorrect;
+  final double negativeMarks;
 
   const PyqPaperItem({
     required this.id,
@@ -25,11 +27,27 @@ class PyqPaperItem {
     required this.subject,
     required this.questionCount,
     required this.durationMinutes,
+    this.marksPerCorrect = 2.0,
+    this.negativeMarks = 0.5,
   });
 
   factory PyqPaperItem.fromSupabase(Map<String, dynamic> data) {
     final examCode = (data['exam_code'] ?? 'APSSB-CGLE').toString().toUpperCase();
     final board = examCode.startsWith('APPSC') ? 'APPSC' : 'APSSB';
+
+    int qCount = 50;
+    if (data['questions'] is List && (data['questions'] as List).isNotEmpty) {
+      final f = (data['questions'] as List).first;
+      if (f is Map && f['count'] != null) {
+        qCount = int.tryParse(f['count'].toString()) ?? 50;
+      }
+    } else if (data['total_questions'] != null) {
+      qCount = int.tryParse(data['total_questions'].toString()) ?? 50;
+    }
+
+    final dur = int.tryParse(data['duration_minutes']?.toString() ?? '') ??
+        (qCount > 0 ? (qCount <= 30 ? 30 : (qCount <= 60 ? 60 : 120)) : 120);
+
     return PyqPaperItem(
       id: data['id']?.toString() ?? '',
       title: data['title']?.toString() ?? 'Previous Year Paper',
@@ -37,8 +55,10 @@ class PyqPaperItem {
       examCode: examCode,
       year: int.tryParse(data['year']?.toString() ?? '') ?? 2024,
       subject: data['subject']?.toString() ?? 'General Studies',
-      questionCount: int.tryParse(data['total_questions']?.toString() ?? '50') ?? 50,
-      durationMinutes: int.tryParse(data['duration_minutes']?.toString() ?? '120') ?? 120,
+      questionCount: qCount,
+      durationMinutes: dur,
+      marksPerCorrect: (data['marks_per_correct'] as num?)?.toDouble() ?? 2.0,
+      negativeMarks: (data['negative_marks'] as num?)?.toDouble() ?? 0.5,
     );
   }
 }
@@ -153,8 +173,10 @@ class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerPr
       examCode: 'APSSB-CGLE',
       year: 2024,
       subject: 'General Studies',
-      questionCount: 100,
-      durationMinutes: 120,
+      questionCount: 54, // Calibrated to live DB count
+      durationMinutes: 60,
+      marksPerCorrect: 2.0,
+      negativeMarks: 0.5,
     ),
     PyqPaperItem(
       id: 'apssb_cgl_2023_full',
@@ -163,8 +185,10 @@ class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerPr
       examCode: 'APSSB-CGLE',
       year: 2023,
       subject: 'General Studies',
-      questionCount: 100,
-      durationMinutes: 120,
+      questionCount: 50,
+      durationMinutes: 60,
+      marksPerCorrect: 2.0,
+      negativeMarks: 0.5,
     ),
     PyqPaperItem(
       id: 'apssb_chsl_2024_full',
@@ -173,8 +197,10 @@ class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerPr
       examCode: 'APSSB-CHSL',
       year: 2024,
       subject: 'General Studies',
-      questionCount: 100,
-      durationMinutes: 120,
+      questionCount: 50,
+      durationMinutes: 60,
+      marksPerCorrect: 2.0,
+      negativeMarks: 0.5,
     ),
     PyqPaperItem(
       id: 'apssb_csle_2024_full',
@@ -183,8 +209,10 @@ class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerPr
       examCode: 'APSSB-CSLE',
       year: 2024,
       subject: 'General Studies',
-      questionCount: 100,
-      durationMinutes: 120,
+      questionCount: 50,
+      durationMinutes: 60,
+      marksPerCorrect: 2.0,
+      negativeMarks: 0.5,
     ),
     PyqPaperItem(
       id: 'apssb_udc_2023_full',
@@ -193,8 +221,10 @@ class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerPr
       examCode: 'APSSB-UDC',
       year: 2023,
       subject: 'General Studies',
-      questionCount: 100,
-      durationMinutes: 120,
+      questionCount: 50,
+      durationMinutes: 60,
+      marksPerCorrect: 2.0,
+      negativeMarks: 0.5,
     ),
   ];
 
@@ -218,7 +248,7 @@ class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerPr
     setState(() => _isLoading = true);
     try {
       const url =
-          'https://fllopztywwblbucvaths.supabase.co/rest/v1/tests?paper_type=eq.PYQ&order=year.desc,created_at.desc';
+          'https://fllopztywwblbucvaths.supabase.co/rest/v1/tests?select=*,questions(count)&paper_type=eq.PYQ&order=year.desc,created_at.desc';
       final response = await http.get(
         Uri.parse(url),
         headers: {
@@ -291,6 +321,71 @@ class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerPr
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterDropdown({
+    required String value,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+    required IconData icon,
+    required String allLabel,
+  }) {
+    final isFiltered = value != allLabel;
+    return Container(
+      height: 36,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: isFiltered ? AppColors.primary.withValues(alpha: 0.08) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isFiltered ? AppColors.primary.withValues(alpha: 0.4) : const Color(0xFFE2E8F0),
+          width: isFiltered ? 1.4 : 1.0,
+        ),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: value,
+          isExpanded: true,
+          icon: Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: isFiltered ? AppColors.primary : const Color(0xFF94A3B8),
+            size: 16,
+          ),
+          dropdownColor: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          elevation: 4,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: isFiltered ? FontWeight.bold : FontWeight.w600,
+            color: isFiltered ? AppColors.primary : AppColors.textPrimary,
+          ),
+          items: items.map((item) {
+            final isItemSel = item == value;
+            return DropdownMenuItem(
+              value: item,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      item,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: isItemSel ? FontWeight.bold : FontWeight.normal,
+                        color: isItemSel ? AppColors.primary : AppColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                  if (isItemSel)
+                    const Icon(Icons.check_rounded, size: 14, color: AppColors.primary),
+                ],
+              ),
+            );
+          }).toList(),
+          onChanged: onChanged,
         ),
       ),
     );
@@ -397,81 +492,42 @@ class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerPr
                       children: [
                         // 1. Exam Dropdown
                         Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            decoration: BoxDecoration(
-                              color: AppColors.background,
-                              borderRadius: BorderRadius.circular(AppSpacing.radiusM),
-                              border: Border.all(color: Colors.grey.shade300),
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                value: _selectedExam,
-                                isExpanded: true,
-                                icon: const Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary, size: 18),
-                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                                items: _exams.map((e) {
-                                  return DropdownMenuItem(value: e, child: Text(e, overflow: TextOverflow.ellipsis));
-                                }).toList(),
-                                onChanged: (val) {
-                                  if (val != null) setState(() => _selectedExam = val);
-                                },
-                              ),
-                            ),
+                          child: _buildFilterDropdown(
+                            value: _selectedExam,
+                            items: _exams,
+                            onChanged: (val) {
+                              if (val != null) setState(() => _selectedExam = val);
+                            },
+                            icon: Icons.school_rounded,
+                            allLabel: 'All Exams',
                           ),
                         ),
                         const SizedBox(width: 6),
 
                         // 2. Year Dropdown
                         Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            decoration: BoxDecoration(
-                              color: AppColors.background,
-                              borderRadius: BorderRadius.circular(AppSpacing.radiusM),
-                              border: Border.all(color: Colors.grey.shade300),
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                value: _selectedYear,
-                                isExpanded: true,
-                                icon: const Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary, size: 18),
-                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                                items: _years.map((y) {
-                                  return DropdownMenuItem(value: y, child: Text(y, overflow: TextOverflow.ellipsis));
-                                }).toList(),
-                                onChanged: (val) {
-                                  if (val != null) setState(() => _selectedYear = val);
-                                },
-                              ),
-                            ),
+                          child: _buildFilterDropdown(
+                            value: _selectedYear,
+                            items: _years,
+                            onChanged: (val) {
+                              if (val != null) setState(() => _selectedYear = val);
+                            },
+                            icon: Icons.calendar_today_rounded,
+                            allLabel: 'All Years',
                           ),
                         ),
                         const SizedBox(width: 6),
 
                         // 3. Subject Dropdown
                         Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            decoration: BoxDecoration(
-                              color: AppColors.background,
-                              borderRadius: BorderRadius.circular(AppSpacing.radiusM),
-                              border: Border.all(color: Colors.grey.shade300),
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                value: _selectedSubject,
-                                isExpanded: true,
-                                icon: const Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary, size: 18),
-                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                                items: _subjects.map((s) {
-                                  return DropdownMenuItem(value: s, child: Text(s, overflow: TextOverflow.ellipsis));
-                                }).toList(),
-                                onChanged: (val) {
-                                  if (val != null) setState(() => _selectedSubject = val);
-                                },
-                              ),
-                            ),
+                          child: _buildFilterDropdown(
+                            value: _selectedSubject,
+                            items: _subjects,
+                            onChanged: (val) {
+                              if (val != null) setState(() => _selectedSubject = val);
+                            },
+                            icon: Icons.menu_book_rounded,
+                            allLabel: 'All Subjects',
                           ),
                         ),
                       ],
@@ -600,6 +656,24 @@ class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerPr
                     ),
                   ),
                 ),
+                const SizedBox(width: 8),
+
+                // Marking Scheme Badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF059669).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    '+${paper.marksPerCorrect.toStringAsFixed(0)} / -${paper.negativeMarks.toStringAsFixed(1)}',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF059669),
+                    ),
+                  ),
+                ),
                 const Spacer(),
                 Row(
                   children: [
@@ -627,7 +701,7 @@ class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerPr
             ),
             const SizedBox(height: 6),
 
-            // Metadata row — question count (no misleading "General Studies" subject for full papers)
+            // Metadata row — question count, duration & marking
             Row(
               children: [
                 const Icon(Icons.help_outline_rounded, size: 14, color: AppColors.textHint),
@@ -642,6 +716,13 @@ class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerPr
                 Text(
                   '${paper.durationMinutes} mins',
                   style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                ),
+                const SizedBox(width: 12),
+                const Icon(Icons.verified_outlined, size: 14, color: Color(0xFF059669)),
+                const SizedBox(width: 4),
+                Text(
+                  '+${paper.marksPerCorrect.toStringAsFixed(0)} / -${paper.negativeMarks.toStringAsFixed(1)} Marking',
+                  style: const TextStyle(fontSize: 11.5, color: Color(0xFF059669), fontWeight: FontWeight.w600),
                 ),
               ],
             ),
@@ -719,9 +800,9 @@ class _PyqHubScreenState extends ConsumerState<PyqHubScreen> with SingleTickerPr
           children: [
             Text('You are about to start "${paper.title}" in Exam Mode.', style: const TextStyle(fontSize: 13)),
             const SizedBox(height: 12),
-            const Text('• Full test timer with automatic submission.', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+            Text('• ${paper.questionCount} Questions (${paper.durationMinutes} mins CBT simulation).', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
             const SizedBox(height: 4),
-            const Text('• APPSC/APSSB marking (+2 per correct, -0.5 negative marks).', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+            Text('• APPSC/APSSB marking (+${paper.marksPerCorrect.toStringAsFixed(0)} per correct, -${paper.negativeMarks.toStringAsFixed(1)} negative marks).', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
             const SizedBox(height: 4),
             const Text('• Instant rank scorecard and performance analysis at the end.', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
           ],

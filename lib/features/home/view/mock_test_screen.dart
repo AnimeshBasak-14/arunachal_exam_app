@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
@@ -577,11 +577,11 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
             const SizedBox(height: AppSpacing.s),
             if (question.passageOrDirection != null &&
                 question.passageOrDirection!.trim().isNotEmpty) ...[
-              _buildPassageWidget(MathUtils.formatMath(question.passageOrDirection!.trim())),
+              _buildPassageWidget(MathUtils.formatDirectionRange(question.passageOrDirection!.trim(), index + 1)),
               const SizedBox(height: AppSpacing.s),
             ],
             Text(
-              'Q${index + 1}. ${MathUtils.cleanQuestionText(question.questionText)}',
+              'Q${index + 1}. ${MathUtils.cleanQuestionText(question.questionText, index + 1)}',
               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
             ),
             if (question.questionImage != null &&
@@ -862,15 +862,33 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
               overflow: TextOverflow.ellipsis,
             ),
-            if (widget.difficulty != null && widget.difficulty!.isNotEmpty)
-              Text(
-                '${widget.difficulty} Â· ${_testQuestions.isEmpty ? '...' : '${_testQuestions.length} Qs'}',
-                style: const TextStyle(fontSize: 10, color: Colors.white70, fontWeight: FontWeight.normal),
-              )
-            else if (!_isLoadingQuestions)
-              Text(
-                '${_testQuestions.length} Questions',
-                style: const TextStyle(fontSize: 10, color: Colors.white70, fontWeight: FontWeight.normal),
+            if (!_isLoadingQuestions)
+              Row(
+                children: [
+                  if (widget.difficulty != null && widget.difficulty!.isNotEmpty) ...[
+                    Text(
+                      widget.difficulty!,
+                      style: const TextStyle(fontSize: 10, color: Colors.white70, fontWeight: FontWeight.normal),
+                    ),
+                    const Text(' · ', style: TextStyle(fontSize: 10, color: Colors.white70)),
+                  ],
+                  Text(
+                    '${_testQuestions.length} Questions',
+                    style: const TextStyle(fontSize: 10, color: Colors.white70, fontWeight: FontWeight.normal),
+                  ),
+                  const Text(' · ', style: TextStyle(fontSize: 10, color: Colors.white70)),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Text(
+                      '+2 / -0.5 Marking',
+                      style: TextStyle(fontSize: 9, color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
               ),
           ],
         ),
@@ -1042,11 +1060,11 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
                                   const SizedBox(height: AppSpacing.s),
                                   if (question.passageOrDirection != null &&
                                       question.passageOrDirection!.trim().isNotEmpty) ...[
-                                    _buildPassageWidget(MathUtils.formatMath(question.passageOrDirection!.trim())),
+                                    _buildPassageWidget(MathUtils.formatDirectionRange(question.passageOrDirection!.trim(), index + 1)),
                                     const SizedBox(height: AppSpacing.s),
                                   ],
                                   Text(
-                                    'Q${index + 1}. ${MathUtils.cleanQuestionText(question.questionText)}',
+                                    'Q${index + 1}. ${MathUtils.cleanQuestionText(question.questionText, index + 1)}',
                                     style: const TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,

@@ -1,13 +1,36 @@
-﻿class MathUtils {
+class MathUtils {
   MathUtils._();
 
-  static String cleanQuestionText(String text) {
+  static String cleanQuestionText(String text, [int? currentQNum]) {
     var cleaned = text.trim();
     cleaned = cleaned.replaceFirst(
       RegExp(r'''^(?:Q\s*\d+[\.:\)\s]+|\d+[\.:\)\s]+)''', caseSensitive: false),
       '',
     ).trim();
+    if (currentQNum != null && currentQNum > 0) {
+      cleaned = formatDirectionRange(cleaned, currentQNum);
+    }
     return formatMath(cleaned);
+  }
+
+  /// Dynamically replaces hardcoded direction question numbers (e.g. "Q. No. 90 and 91")
+  /// with the test's actual dynamic question numbers (e.g. "Q. No. 1 to 2")
+  static String formatDirectionRange(String text, int displayStart, [int? displayEnd]) {
+    if (text.isEmpty) return text;
+    final rangeText = (displayEnd != null && displayEnd > displayStart)
+        ? '$displayStart to $displayEnd'
+        : '$displayStart';
+
+    var s = text.replaceAllMapped(
+      RegExp(r'(?:Q\.?\s*(?:No\.?|Nos\.?)?\s*)\d+\s*(?:to|and|&|-|–|—)\s*\d+', caseSensitive: false),
+      (_) => 'Q. No. $rangeText',
+    );
+    // Also match standalone "(Q. No. 90)" or "Q. 90"
+    s = s.replaceAllMapped(
+      RegExp(r'(?:Q\.?\s*(?:No\.?|Nos\.?)?\s*)\d+\b', caseSensitive: false),
+      (_) => 'Q. No. $rangeText',
+    );
+    return formatMath(s);
   }
 
   static String formatMath(String text) {

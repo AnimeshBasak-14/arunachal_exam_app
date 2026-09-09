@@ -23,6 +23,24 @@ class PyqPaperScreen extends ConsumerStatefulWidget {
   ConsumerState<PyqPaperScreen> createState() => _PyqPaperScreenState();
 }
 
+class _QuestionDisplayGroup {
+  final String? groupId;
+  final String? passage;
+  final List<Question> questions;
+  final int startIndex;
+  final int endIndex;
+
+  _QuestionDisplayGroup({
+    this.groupId,
+    this.passage,
+    required this.questions,
+    required this.startIndex,
+    required this.endIndex,
+  });
+
+  bool get isGroup => questions.length > 1;
+}
+
 class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
   late List<Question> _questions;
   final Map<String, String> _selectedAnswers =
@@ -54,6 +72,60 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
   String _selectedSubject = 'All';
   List<String> _allSubjects = ['All'];
   List<Question> _filteredQuestions = [];
+
+  List<_QuestionDisplayGroup> _buildDisplayGroups() {
+    final groups = <_QuestionDisplayGroup>[];
+    int currentQIndex = 1;
+
+    int i = 0;
+    while (i < _filteredQuestions.length) {
+      final q = _filteredQuestions[i];
+      final gId = q.groupId;
+
+      if (gId != null && gId.isNotEmpty) {
+        final siblingQuestions = <Question>[q];
+        int j = i + 1;
+        while (j < _filteredQuestions.length && _filteredQuestions[j].groupId == gId) {
+          siblingQuestions.add(_filteredQuestions[j]);
+          j++;
+        }
+
+        final start = currentQIndex;
+        final end = currentQIndex + siblingQuestions.length - 1;
+
+        String? groupPassage = q.passageOrDirection;
+        if (groupPassage == null || groupPassage.isEmpty) {
+          for (final sq in siblingQuestions) {
+            if (sq.passageOrDirection != null && sq.passageOrDirection!.isNotEmpty) {
+              groupPassage = sq.passageOrDirection;
+              break;
+            }
+          }
+        }
+
+        groups.add(_QuestionDisplayGroup(
+          groupId: gId,
+          passage: groupPassage,
+          questions: siblingQuestions,
+          startIndex: start,
+          endIndex: end,
+        ));
+        currentQIndex += siblingQuestions.length;
+        i = j;
+      } else {
+        groups.add(_QuestionDisplayGroup(
+          groupId: null,
+          passage: q.passageOrDirection,
+          questions: [q],
+          startIndex: currentQIndex,
+          endIndex: currentQIndex,
+        ));
+        currentQIndex++;
+        i++;
+      }
+    }
+    return groups;
+  }
 
   @override
   void initState() {
@@ -449,872 +521,818 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                         ),
                       ),
                     Expanded(
-                      child: ListView.builder(
-                        physics: const BouncingScrollPhysics(),
-                        padding: EdgeInsets.fromLTRB(
-                          AppSpacing.m,
-                          AppSpacing.m,
-                          AppSpacing.m,
-                          MediaQuery.of(context).padding.bottom + 48,
-                        ),
-                        itemCount: _filteredQuestions.length,
-                        itemBuilder: (context, index) {
-                          final question = _filteredQuestions[index];
-                          final isBookmarked =
-                              bookmarkedIds.contains(question.id);
-                          final selectedOption = _selectedAnswers[question.id];
-                          final showSolution =
-                              _showSolutions[question.id] ?? false;
-                          final comments = _questionComments[question.id] ?? [];
+                      child: Builder(
+                        builder: (context) {
+                          final displayGroups = _buildDisplayGroups();
+                          return ListView.builder(
+                            physics: const BouncingScrollPhysics(),
+                            padding: EdgeInsets.fromLTRB(
+                              AppSpacing.m,
+                              AppSpacing.m,
+                              AppSpacing.m,
+                              MediaQuery.of(context).padding.bottom + 48,
+                            ),
+                            itemCount: displayGroups.length,
+                            itemBuilder: (context, gIdx) {
+                              final group = displayGroups[gIdx];
+                              final isGroup = group.isGroup;
 
-                          // ─── Group Question Detection ─────────────────────
-                          // Determine if this question starts a new group OR is the first in its group
-                          final isGrouped = question.groupId != null && question.groupId!.isNotEmpty;
-                          final prevQuestion = index > 0 ? _filteredQuestions[index - 1] : null;
-                          final isFirstInGroup = isGrouped &&
-                              (prevQuestion == null || prevQuestion.groupId != question.groupId);
-                          // For subsequent questions in a group, hide duplicate passage
-                          final showPassage = question.passageOrDirection != null &&
-                              question.passageOrDirection!.trim().isNotEmpty &&
-                              (!isGrouped || isFirstInGroup);
-
-                          return Column(
-                            key: ValueKey('col_${question.id}'),
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              // ─── Group Header Banner ──────────────────────
-                              if (isFirstInGroup) ...[
-                                Container(
-                                  margin: const EdgeInsets.only(bottom: 4),
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF1565C0).withValues(alpha: 0.07),
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: const Color(0xFF1565C0).withValues(alpha: 0.2)),
+                              if (isGroup) {
+                                return Card(
+                                  key: ValueKey('group_${group.groupId ?? gIdx}'),
+                                  margin: const EdgeInsets.only(bottom: AppSpacing.m),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(AppSpacing.radiusL),
+                                    side: const BorderSide(
+                                      color: Color(0xFF1565C0),
+                                      width: 1.5,
+                                    ),
                                   ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.layers_rounded, size: 15, color: Color(0xFF1565C0)),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        '📚 Group Questions — Passage',
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xFF1565C0),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(AppSpacing.m),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      children: [
+                                        // ─── Group Header Banner ──────────────────────────────
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF1565C0).withValues(alpha: 0.08),
+                                            borderRadius: BorderRadius.circular(8),
+                                            border: Border.all(
+                                              color: const Color(0xFF1565C0).withValues(alpha: 0.25),
+                                            ),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              const Icon(Icons.layers_rounded, size: 16, color: Color(0xFF1565C0)),
+                                              const SizedBox(width: 8),
+                                              Expanded(
+                                                child: Text(
+                                                  '📚 Comprehension / Group Questions (Q${group.startIndex} – Q${group.endIndex})',
+                                                  style: const TextStyle(
+                                                    fontSize: 12.5,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Color(0xFF1565C0),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                              ],
+                                        const SizedBox(height: AppSpacing.m),
 
-                              Card(
+                                        // ─── Shared Passage (shown ONCE at top of group card) ─
+                                        if (group.passage != null && group.passage!.trim().isNotEmpty) ...[
+                                          Container(
+                                            padding: const EdgeInsets.all(12),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFF8FAFC),
+                                              borderRadius: BorderRadius.circular(8),
+                                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                                            ),
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    const Icon(Icons.menu_book_rounded,
+                                                        size: 14, color: AppColors.primary),
+                                                    const SizedBox(width: 6),
+                                                    Text(
+                                                      'Directions (Q${group.startIndex} – Q${group.endIndex})',
+                                                      style: const TextStyle(
+                                                        fontSize: 11,
+                                                        fontWeight: FontWeight.bold,
+                                                        color: AppColors.primary,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 6),
+                                                Text(
+                                                  MathUtils.formatDirectionRange(
+                                                    group.passage!.trim(),
+                                                    group.startIndex,
+                                                    group.endIndex,
+                                                  ),
+                                                  style: const TextStyle(
+                                                    fontSize: 13,
+                                                    fontStyle: FontStyle.italic,
+                                                    color: AppColors.textSecondary,
+                                                    height: 1.45,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(height: AppSpacing.m),
+                                        ],
+
+                                        // ─── Sub-Questions stacked inside this single Card ────
+                                        for (int qSubIdx = 0; qSubIdx < group.questions.length; qSubIdx++) ...[
+                                          if (qSubIdx > 0)
+                                            const Padding(
+                                              padding: EdgeInsets.symmetric(vertical: AppSpacing.m),
+                                              child: Divider(color: AppColors.divider, thickness: 1.2),
+                                            ),
+                                          _buildQuestionItem(
+                                            question: group.questions[qSubIdx],
+                                            displayNum: group.startIndex + qSubIdx,
+                                            bookmarkedIds: bookmarkedIds,
+                                            isInsideGroup: true,
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              // ─── Standalone Question ───────────────────────────
+                              final question = group.questions.first;
+                              final displayNum = group.startIndex;
+                              return Card(
                                 key: ValueKey(question.id),
-                                margin: EdgeInsets.only(
-                                  bottom: AppSpacing.m,
-                                  left: isGrouped ? 4 : 0,
-                                ),
+                                margin: const EdgeInsets.only(bottom: AppSpacing.m),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(AppSpacing.radiusL),
-                                  side: BorderSide(
-                                    color: isGrouped ? const Color(0xFF1565C0).withValues(alpha: 0.25) : AppColors.divider,
-                                    width: isGrouped ? 1.5 : 1.0,
-                                  ),
+                                  side: const BorderSide(color: AppColors.divider, width: 1.0),
                                 ),
                                 child: Padding(
                                   padding: const EdgeInsets.all(AppSpacing.m),
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  // Question Header (Subject & Actions)
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
                                     children: [
-                                      Flexible(
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 10, vertical: 4),
+                                      if (question.passageOrDirection != null &&
+                                          question.passageOrDirection!.trim().isNotEmpty) ...[
+                                        Container(
+                                          padding: const EdgeInsets.all(10),
                                           decoration: BoxDecoration(
-                                            color: AppColors.primaryLight,
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                          ),
-                                          child: Text(
-                                            question.subject,
-                                            style: const TextStyle(
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.bold,
-                                              color: AppColors.primary,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          _buildLikeButton(question.id),
-                                          IconButton(
-                                            icon: const Icon(
-                                                Icons.share_outlined,
-                                                color: AppColors.textHint,
-                                                size: 20),
-                                            onPressed: () =>
-                                                _shareQuestion(question),
-                                            tooltip: 'Share Question',
-                                            padding: EdgeInsets.zero,
-                                            constraints: const BoxConstraints(
-                                                minWidth: 32, minHeight: 32),
-                                          ),
-                                          IconButton(
-                                            icon: Icon(
-                                              isBookmarked
-                                                  ? Icons.bookmark_rounded
-                                                  : Icons
-                                                      .bookmark_border_rounded,
-                                              color: isBookmarked
-                                                  ? AppColors.accent
-                                                  : AppColors.textHint,
-                                              size: 20,
-                                            ),
-                                            onPressed: () async {
-                                              await ref
-                                                  .read(
-                                                      bookmarkedQuestionsProvider
-                                                          .notifier)
-                                                  .toggleBookmark(question.id);
-                                            },
-                                            tooltip: 'Bookmark Question',
-                                            padding: EdgeInsets.zero,
-                                            constraints: const BoxConstraints(
-                                                minWidth: 32, minHeight: 32),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: AppSpacing.s),
-
-                                  // Passage / Direction — only shown on first question of group
-                                  if (showPassage) ...[
-                                    Container(
-                                      padding: const EdgeInsets.all(10),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFF8FAFC),
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(color: const Color(0xFFE2E8F0)),
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              const Icon(Icons.menu_book_rounded,
-                                                  size: 14,
-                                                  color: AppColors.primary),
-                                              const SizedBox(width: 6),
-                                              Text(
-                                                isGrouped ? 'Comprehension / Direction' : 'Direction / Passage',
-                                                style: const TextStyle(
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: AppColors.primary,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 6),
-                                          Text(
-                                            MathUtils.formatMath(question.passageOrDirection!.trim()),
-                                            style: const TextStyle(
-                                              fontSize: 13,
-                                              fontStyle: FontStyle.italic,
-                                              color: AppColors.textSecondary,
-                                              height: 1.45,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(height: AppSpacing.s),
-                                  ],
-
-                                  // Question Text
-                                  Text(
-                                    'Q${index + 1}. ${MathUtils.cleanQuestionText(question.questionText)}',
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.textPrimary,
-                                    ),
-                                  ),
-                                  if (question.questionImage != null &&
-                                      question.questionImage!.isNotEmpty) ...[
-                                    const SizedBox(height: AppSpacing.s),
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: Image.network(
-                                        question.questionImage!,
-                                        fit: BoxFit.contain,
-                                        loadingBuilder: (ctx, child, progress) => progress == null
-                                            ? child
-                                            : const SizedBox(
-                                                height: 48,
-                                                child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                                              ),
-                                        errorBuilder: (_, __, ___) => Container(
-                                          height: 48,
-                                          decoration: BoxDecoration(
-                                            color: AppColors.background,
+                                            color: const Color(0xFFF8FAFC),
                                             borderRadius: BorderRadius.circular(8),
-                                            border: Border.all(color: AppColors.divider),
+                                            border: Border.all(color: const Color(0xFFE2E8F0)),
                                           ),
-                                          child: const Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              Icon(Icons.broken_image_rounded, size: 20, color: AppColors.textHint),
-                                              SizedBox(width: 8),
-                                              Text('Image unavailable', style: TextStyle(fontSize: 12, color: AppColors.textHint)),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                  const SizedBox(height: AppSpacing.m),
-
-                                  // Options List
-                                  ...List.generate(question.options.length,
-                                      (optIdx) {
-                                    final option = question.options[optIdx];
-                                    final optionChar =
-                                        _extractOptionChar(option, optIdx);
-                                    final isSelected =
-                                        selectedOption == optionChar;
-                                    final isCorrect =
-                                        question.correctAnswer == optionChar;
-
-                                    Color optionBorderColor = AppColors.divider;
-                                    Color optionBgColor = Colors.transparent;
-
-                                    if (selectedOption != null) {
-                                      if (isCorrect) {
-                                        optionBorderColor = AppColors.success;
-                                        optionBgColor = AppColors.success
-                                            .withValues(alpha: 0.06);
-                                      } else if (isSelected) {
-                                        optionBorderColor = AppColors.error;
-                                        optionBgColor = AppColors.error
-                                            .withValues(alpha: 0.06);
-                                      }
-                                    }
-
-                                    return Container(
-                                      key: ValueKey(
-                                          '${question.id}_opt_$optIdx'),
-                                      margin: const EdgeInsets.only(
-                                          bottom: AppSpacing.s),
-                                      decoration: BoxDecoration(
-                                        color: optionBgColor,
-                                        border: Border.all(
-                                            color: optionBorderColor,
-                                            width: isSelected ||
-                                                    (selectedOption != null &&
-                                                        isCorrect)
-                                                ? 2.0
-                                                : 1.0),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: InkWell(
-                                        onTap: selectedOption != null
-                                            ? null
-                                            : () {
-                                                setState(() {
-                                                  _selectedAnswers[
-                                                      question.id] = optionChar;
-                                                  _showSolutions[question.id] =
-                                                      true; // Auto reveal explanation
-                                                });
-                                              },
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: AppSpacing.m,
-                                              vertical: 14),
                                           child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              Text(
-                                                MathUtils.formatMath(option),
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  color: selectedOption != null &&
-                                                          isCorrect
-                                                      ? AppColors.primaryDark
-                                                      : AppColors.textPrimary,
-                                                  fontWeight: isSelected ||
-                                                          (selectedOption != null &&
-                                                              isCorrect)
-                                                      ? FontWeight.bold
-                                                      : FontWeight.normal,
-                                                ),
-                                              ),
-                                              if (optIdx <
-                                                      question.optionImages.length &&
-                                                  question.optionImages[optIdx] !=
-                                                      null &&
-                                                  question
-                                                      .optionImages[optIdx]!
-                                                      .isNotEmpty) ...[
-                                                const SizedBox(height: 6),
-                                                ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(6),
-                                                  child: Image.network(
-                                                    question
-                                                        .optionImages[optIdx]!,
-                                                    height: 70,
-                                                    fit: BoxFit.contain,
-                                                    errorBuilder: (_, __, ___) =>
-                                                        const SizedBox.shrink(),
-                                                  ),
-                                                ),
-                                              ],
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  }),
-                                  const SizedBox(height: AppSpacing.s),
-
-                                  // Show solution button
-                                  Align(
-                                    alignment: Alignment.centerRight,
-                                    child: TextButton.icon(
-                                      onPressed: () {
-                                        setState(() {
-                                          _showSolutions[question.id] =
-                                              !showSolution;
-                                        });
-                                      },
-                                      icon: Icon(
-                                        showSolution
-                                            ? Icons.lightbulb_outline_rounded
-                                            : Icons.lightbulb_rounded,
-                                        size: 18,
-                                        color: AppColors.primary,
-                                      ),
-                                      label: Text(
-                                        showSolution
-                                            ? 'Hide Solution'
-                                            : 'Show Solution',
-                                        style: const TextStyle(
-                                            color: AppColors.primary,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                  ),
-
-                                  // Solution Drawer (GoClasses style explanation)
-                                  if (showSolution) ...[
-                                    const SizedBox(height: AppSpacing.s),
-                                    Container(
-                                      padding:
-                                          const EdgeInsets.all(AppSpacing.m),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.primaryLight
-                                            .withValues(alpha: 0.3),
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(
-                                            color: AppColors.primary
-                                                .withValues(alpha: 0.2)),
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Expanded(
-                                                child: Row(
-                                                  children: [
-                                                    const Icon(
-                                                        Icons
-                                                            .check_circle_outline_rounded,
-                                                        color:
-                                                            AppColors.primary,
-                                                        size: 18),
-                                                    const SizedBox(width: 6),
-                                                    Flexible(
-                                                      child: Text(
-                                                        'Official Answer: ${question.officialAnswer}',
-                                                        style: const TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color: AppColors
-                                                                .primaryDark,
-                                                            fontSize: 13),
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              // Helpful / Solution Like toggle
-                                              InkWell(
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                                onTap: () {
-                                                  setState(() {
-                                                    _likedSolutions[
-                                                            question.id] =
-                                                        !(_likedSolutions[
-                                                                question.id] ??
-                                                            false);
-                                                  });
-                                                },
-                                                child: Padding(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                      horizontal: 6,
-                                                      vertical: 4),
-                                                  child: Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    children: [
-                                                      Icon(
-                                                        (_likedSolutions[
-                                                                    question
-                                                                        .id] ??
-                                                                false)
-                                                            ? Icons
-                                                                .thumb_up_rounded
-                                                            : Icons
-                                                                .thumb_up_outlined,
-                                                        color: (_likedSolutions[
-                                                                    question
-                                                                        .id] ??
-                                                                false)
-                                                            ? AppColors.primary
-                                                            : AppColors
-                                                                .textSecondary,
-                                                        size: 15,
-                                                      ),
-                                                      const SizedBox(width: 4),
-                                                      const Text(
-                                                        'Helpful',
-                                                        style: TextStyle(
-                                                            fontSize: 11,
-                                                            color: AppColors
-                                                                .textSecondary,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .w600),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: AppSpacing.s),
-                                          const Text(
-                                            'Explanation:',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 13,
-                                                color: AppColors.textPrimary),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            MathUtils.formatMath(question.solution),
-                                            style: const TextStyle(
-                                                fontSize: 13,
-                                                color: AppColors.textSecondary,
-                                                height: 1.4),
-                                          ),
-                                          if (question.solutionImage != null &&
-                                              question
-                                                  .solutionImage!.isNotEmpty) ...[
-                                            const SizedBox(height: 8),
-                                            ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(6),
-                                              child: Image.network(
-                                                question.solutionImage!,
-                                                fit: BoxFit.contain,
-                                                errorBuilder: (_, __, ___) =>
-                                                    const SizedBox.shrink(),
-                                              ),
-                                            ),
-                                          ],
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-
-                                  const Divider(height: AppSpacing.l),
-
-                                  // Comments Section
-                                  const Text(
-                                    'Candidate Discussion',
-                                    style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.textPrimary),
-                                  ),
-                                  const SizedBox(height: AppSpacing.s),
-
-                                  // List of comments
-                                  if (comments.isEmpty)
-                                    const Padding(
-                                      padding: EdgeInsets.symmetric(
-                                          vertical: AppSpacing.s),
-                                      child: Text(
-                                        'No comments posted yet. Be the first to start the discussion!',
-                                        style: TextStyle(
-                                            color: AppColors.textHint,
-                                            fontSize: 12,
-                                            fontStyle: FontStyle.italic),
-                                      ),
-                                    )
-                                  else
-                                    ListView.builder(
-                                      shrinkWrap: true,
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      itemCount: comments.length,
-                                      itemBuilder: (context, cIndex) {
-                                        final comment = comments[cIndex];
-
-                                        final isCommentLiked =
-                                            _commentUserLiked[question.id]
-                                                    ?[cIndex] ??
-                                                false;
-                                        final commentLikes =
-                                            _commentLikesCount[question.id]
-                                                    ?[cIndex] ??
-                                                0;
-                                        final repliesList =
-                                            _commentReplies[question.id]
-                                                    ?[cIndex] ??
-                                                [];
-
-                                        return Padding(
-                                          padding:
-                                              const EdgeInsets.only(bottom: 10),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.stretch,
-                                            children: [
-                                              // Parent Comment
-                                              Row(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
+                                              const Row(
                                                 children: [
-                                                  const Padding(
-                                                    padding: EdgeInsets.only(
-                                                        top: 2.0),
-                                                    child: Icon(
-                                                        Icons.forum_outlined,
-                                                        size: 14,
-                                                        color: AppColors
-                                                            .textSecondary),
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                  Expanded(
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Text(
-                                                          comment,
-                                                          style: const TextStyle(
-                                                              color: AppColors
-                                                                  .textSecondary,
-                                                              fontSize: 12),
-                                                        ),
-                                                        const SizedBox(
-                                                            height: 2),
-                                                        Row(
-                                                          children: [
-                                                            GestureDetector(
-                                                              onTap: () {
-                                                                setState(() {
-                                                                  _replyingToCommentText =
-                                                                      comment;
-                                                                  _replyingToCommentIndex =
-                                                                      cIndex;
-                                                                  _activeReplyingQuestionId =
-                                                                      question
-                                                                          .id;
-                                                                });
-                                                              },
-                                                              child: const Text(
-                                                                'Reply',
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        11,
-                                                                    color: AppColors
-                                                                        .primary,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold),
-                                                              ),
-                                                            ),
-                                                            const SizedBox(
-                                                                width: 12),
-                                                            Text(
-                                                              '$commentLikes likes',
-                                                              style: const TextStyle(
-                                                                  fontSize: 11,
-                                                                  color: AppColors
-                                                                      .textHint),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 4),
-                                                  GestureDetector(
-                                                    onTap: () =>
-                                                        _toggleCommentLike(
-                                                            question.id,
-                                                            cIndex),
-                                                    child: Icon(
-                                                      isCommentLiked
-                                                          ? Icons
-                                                              .favorite_rounded
-                                                          : Icons
-                                                              .favorite_border_rounded,
-                                                      size: 16,
-                                                      color: isCommentLiked
-                                                          ? Colors.red
-                                                          : AppColors.textHint,
+                                                  Icon(Icons.menu_book_rounded,
+                                                      size: 14, color: AppColors.primary),
+                                                  SizedBox(width: 6),
+                                                  Text(
+                                                    'Direction / Passage',
+                                                    style: TextStyle(
+                                                      fontSize: 11,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: AppColors.primary,
                                                     ),
                                                   ),
                                                 ],
                                               ),
-
-                                              // Nested Replies (Instagram Style)
-                                              if (repliesList.isNotEmpty)
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          left: 28.0, top: 6.0),
-                                                  child: Column(
-                                                    children: repliesList
-                                                        .asMap()
-                                                        .entries
-                                                        .map((replyEntry) {
-                                                      final rIndex =
-                                                          replyEntry.key;
-                                                      final reply =
-                                                          replyEntry.value;
-
-                                                      final isReplyLiked =
-                                                          _replyUserLiked[question
-                                                                          .id]
-                                                                      ?[cIndex]
-                                                                  ?[rIndex] ??
-                                                              false;
-                                                      final replyLikes =
-                                                          _replyLikesCount[question
-                                                                          .id]
-                                                                      ?[cIndex]
-                                                                  ?[rIndex] ??
-                                                              0;
-
-                                                      return Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .only(
-                                                                bottom: 6.0),
-                                                        child: Row(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          children: [
-                                                            const Padding(
-                                                              padding: EdgeInsets
-                                                                  .only(
-                                                                      top: 2.0,
-                                                                      right:
-                                                                          6.0),
-                                                              child: Icon(
-                                                                  Icons
-                                                                      .subdirectory_arrow_right_rounded,
-                                                                  size: 12,
-                                                                  color: AppColors
-                                                                      .textHint),
-                                                            ),
-                                                            Expanded(
-                                                              child: Column(
-                                                                crossAxisAlignment:
-                                                                    CrossAxisAlignment
-                                                                        .start,
-                                                                children: [
-                                                                  Text(
-                                                                    reply,
-                                                                    style: const TextStyle(
-                                                                        color: AppColors
-                                                                            .textSecondary,
-                                                                        fontSize:
-                                                                            11.5),
-                                                                  ),
-                                                                  const SizedBox(
-                                                                      height:
-                                                                          2),
-                                                                  Text(
-                                                                    '$replyLikes likes',
-                                                                    style: const TextStyle(
-                                                                        fontSize:
-                                                                            10,
-                                                                        color: AppColors
-                                                                            .textHint),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ),
-                                                            const SizedBox(
-                                                                width: 4),
-                                                            GestureDetector(
-                                                              onTap: () =>
-                                                                  _toggleReplyLike(
-                                                                      question
-                                                                          .id,
-                                                                      cIndex,
-                                                                      rIndex),
-                                                              child: Icon(
-                                                                isReplyLiked
-                                                                    ? Icons
-                                                                        .favorite_rounded
-                                                                    : Icons
-                                                                        .favorite_border_rounded,
-                                                                size: 14,
-                                                                color: isReplyLiked
-                                                                    ? Colors.red
-                                                                    : AppColors
-                                                                        .textHint,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      );
-                                                    }).toList(),
-                                                  ),
+                                              const SizedBox(height: 6),
+                                              Text(
+                                                MathUtils.formatDirectionRange(
+                                                  question.passageOrDirection!.trim(),
+                                                  displayNum,
                                                 ),
+                                                style: const TextStyle(
+                                                  fontSize: 13,
+                                                  fontStyle: FontStyle.italic,
+                                                  color: AppColors.textSecondary,
+                                                  height: 1.45,
+                                                ),
+                                              ),
                                             ],
                                           ),
-                                        );
-                                      },
-                                    ),
-                                  const SizedBox(height: AppSpacing.s),
-
-                                  // Replying Header Banner
-                                  if (_replyingToCommentText != null &&
-                                      _activeReplyingQuestionId == question.id)
-                                    Container(
-                                      color: AppColors.primaryLight
-                                          .withValues(alpha: 0.4),
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: AppSpacing.m,
-                                          vertical: 4),
-                                      margin: const EdgeInsets.only(
-                                          bottom: AppSpacing.s),
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              'Replying to: "$_replyingToCommentText"',
-                                              style: const TextStyle(
-                                                  fontSize: 11,
-                                                  fontStyle: FontStyle.italic,
-                                                  color: AppColors.primaryDark),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                          IconButton(
-                                            icon: const Icon(
-                                                Icons.close_rounded,
-                                                size: 14,
-                                                color: AppColors.error),
-                                            onPressed: () {
-                                              setState(() {
-                                                _replyingToCommentText = null;
-                                                _replyingToCommentIndex = null;
-                                                _activeReplyingQuestionId =
-                                                    null;
-                                              });
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-
-                                  // Write comment text field
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: TextField(
-                                          controller:
-                                              _commentControllers[question.id],
-                                          style: const TextStyle(fontSize: 13),
-                                          decoration: InputDecoration(
-                                            hintText: _replyingToCommentText !=
-                                                        null &&
-                                                    _activeReplyingQuestionId ==
-                                                        question.id
-                                                ? 'Write a reply...'
-                                                : 'Ask a question or comment...',
-                                            contentPadding:
-                                                const EdgeInsets.symmetric(
-                                                    horizontal: AppSpacing.m,
-                                                    vertical: 8),
-                                            fillColor: AppColors.background,
-                                            filled: true,
-                                            border: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(20),
-                                              borderSide: BorderSide.none,
-                                            ),
-                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(width: AppSpacing.s),
-                                      IconButton(
-                                        icon: const Icon(Icons.send_rounded,
-                                            color: AppColors.primary),
-                                        onPressed: () =>
-                                            _addComment(question.id),
+                                        const SizedBox(height: AppSpacing.s),
+                                      ],
+                                      _buildQuestionItem(
+                                        question: question,
+                                        displayNum: displayNum,
+                                        bookmarkedIds: bookmarkedIds,
+                                        isInsideGroup: false,
                                       ),
                                     ],
                                   ),
-                                 ],
-                               ),
-                             ),
-                           ),  // end Card
-                           ],  // end outer Column children
-                         );  // end outer Column
+                                ),
+                              );
+                            },
+                          );
                         },
                       ),
                     ),
                   ],
                 ),
+    );
+  }
+
+  Widget _buildQuestionItem({
+    required Question question,
+    required int displayNum,
+    required List<String> bookmarkedIds,
+    required bool isInsideGroup,
+  }) {
+    final isBookmarked = bookmarkedIds.contains(question.id);
+    final selectedOption = _selectedAnswers[question.id];
+    final showSolution = _showSolutions[question.id] ?? false;
+    final comments = _questionComments[question.id] ?? [];
+    final commentController = _commentControllers.putIfAbsent(
+      question.id,
+      () => TextEditingController(),
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Question Header (Subject & Actions)
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Flexible(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isInsideGroup
+                      ? const Color(0xFF1565C0).withValues(alpha: 0.1)
+                      : AppColors.primaryLight,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  isInsideGroup
+                      ? 'Q$displayNum • ${question.subject}'
+                      : question.subject,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: isInsideGroup
+                        ? const Color(0xFF1565C0)
+                        : AppColors.primary,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildLikeButton(question.id),
+                IconButton(
+                  icon: const Icon(Icons.share_outlined,
+                      color: AppColors.textHint, size: 20),
+                  onPressed: () => _shareQuestion(question),
+                  tooltip: 'Share Question',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                ),
+                IconButton(
+                  icon: Icon(
+                    isBookmarked
+                        ? Icons.bookmark_rounded
+                        : Icons.bookmark_border_rounded,
+                    color: isBookmarked ? AppColors.accent : AppColors.textHint,
+                    size: 20,
+                  ),
+                  onPressed: () async {
+                    await ref
+                        .read(bookmarkedQuestionsProvider.notifier)
+                        .toggleBookmark(question.id);
+                  },
+                  tooltip: 'Bookmark Question',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                ),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.s),
+
+        // Question Text
+        Text(
+          'Q$displayNum. ${MathUtils.cleanQuestionText(question.questionText, displayNum)}',
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        if (question.questionImage != null &&
+            question.questionImage!.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.s),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.network(
+              question.questionImage!,
+              fit: BoxFit.contain,
+              loadingBuilder: (ctx, child, progress) => progress == null
+                  ? child
+                  : const SizedBox(
+                      height: 48,
+                      child: Center(
+                          child: CircularProgressIndicator(strokeWidth: 2)),
+                    ),
+              errorBuilder: (_, __, ___) => Container(
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppColors.background,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.divider),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.broken_image_rounded,
+                        size: 20, color: AppColors.textHint),
+                    SizedBox(width: 8),
+                    Text('Image unavailable',
+                        style: TextStyle(
+                            fontSize: 12, color: AppColors.textHint)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+        const SizedBox(height: AppSpacing.m),
+
+        // Options List
+        ...List.generate(question.options.length, (optIdx) {
+          final option = question.options[optIdx];
+          final optionChar = _extractOptionChar(option, optIdx);
+          final isSelected = selectedOption == optionChar;
+          final isCorrect = question.correctAnswer == optionChar;
+
+          Color optionBorderColor = AppColors.divider;
+          Color optionBgColor = Colors.transparent;
+
+          if (selectedOption != null) {
+            if (isCorrect) {
+              optionBorderColor = AppColors.success;
+              optionBgColor = AppColors.success.withValues(alpha: 0.06);
+            } else if (isSelected) {
+              optionBorderColor = AppColors.error;
+              optionBgColor = AppColors.error.withValues(alpha: 0.06);
+            }
+          }
+
+          return Container(
+            key: ValueKey('${question.id}_opt_$optIdx'),
+            margin: const EdgeInsets.only(bottom: AppSpacing.s),
+            decoration: BoxDecoration(
+              color: optionBgColor,
+              border: Border.all(
+                  color: optionBorderColor,
+                  width: isSelected || (selectedOption != null && isCorrect)
+                      ? 2.0
+                      : 1.0),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: InkWell(
+              onTap: selectedOption != null
+                  ? null
+                  : () {
+                      setState(() {
+                        _selectedAnswers[question.id] = optionChar;
+                        _showSolutions[question.id] = true;
+                      });
+                    },
+              borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.m, vertical: 14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      MathUtils.formatMath(option),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: selectedOption != null && isCorrect
+                            ? AppColors.primaryDark
+                            : AppColors.textPrimary,
+                        fontWeight: isSelected ||
+                                (selectedOption != null && isCorrect)
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+                    ),
+                    if (optIdx < question.optionImages.length &&
+                        question.optionImages[optIdx] != null &&
+                        question.optionImages[optIdx]!.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: Image.network(
+                          question.optionImages[optIdx]!,
+                          height: 70,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          );
+        }),
+        const SizedBox(height: AppSpacing.s),
+
+        // Show solution button
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton.icon(
+            onPressed: () {
+              setState(() {
+                _showSolutions[question.id] = !showSolution;
+              });
+            },
+            icon: Icon(
+              showSolution
+                  ? Icons.lightbulb_outline_rounded
+                  : Icons.lightbulb_rounded,
+              size: 18,
+              color: AppColors.primary,
+            ),
+            label: Text(
+              showSolution ? 'Hide Solution' : 'Show Solution',
+              style: const TextStyle(
+                  color: AppColors.primary, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
+
+        // Solution Drawer
+        if (showSolution) ...[
+          const SizedBox(height: AppSpacing.s),
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.m),
+            decoration: BoxDecoration(
+              color: AppColors.primaryLight.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(12),
+              border:
+                  Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          const Icon(Icons.check_circle_outline_rounded,
+                              color: AppColors.primary, size: 18),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              'Official Answer: ${question.officialAnswer}',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.primaryDark,
+                                  fontSize: 13),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: () {
+                        setState(() {
+                          _likedSolutions[question.id] =
+                              !(_likedSolutions[question.id] ?? false);
+                        });
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 4),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              (_likedSolutions[question.id] ?? false)
+                                  ? Icons.thumb_up_rounded
+                                  : Icons.thumb_up_outlined,
+                              color: (_likedSolutions[question.id] ?? false)
+                                  ? AppColors.primary
+                                  : AppColors.textSecondary,
+                              size: 15,
+                            ),
+                            const SizedBox(width: 4),
+                            const Text(
+                              'Helpful',
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.textSecondary,
+                                  fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.s),
+                const Text(
+                  'Explanation:',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      color: AppColors.textPrimary),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  MathUtils.formatMath(question.solution),
+                  style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                      height: 1.4),
+                ),
+                if (question.solutionImage != null &&
+                    question.solutionImage!.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Image.network(
+                      question.solutionImage!,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+
+        const Divider(height: AppSpacing.l),
+
+        // Comments Section
+        const Text(
+          'Candidate Discussion',
+          style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary),
+        ),
+        const SizedBox(height: AppSpacing.s),
+
+        if (comments.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: AppSpacing.s),
+            child: Text(
+              'No comments posted yet. Be the first to start the discussion!',
+              style: TextStyle(
+                  color: AppColors.textHint,
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic),
+            ),
+          )
+        else
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: comments.length,
+            itemBuilder: (context, cIndex) {
+              final comment = comments[cIndex];
+              final isCommentLiked =
+                  _commentUserLiked[question.id]?[cIndex] ?? false;
+              final commentLikes =
+                  _commentLikesCount[question.id]?[cIndex] ?? 0;
+              final repliesList =
+                  _commentReplies[question.id]?[cIndex] ?? [];
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.only(top: 2.0),
+                          child: Icon(Icons.forum_outlined,
+                              size: 14, color: AppColors.textSecondary),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                comment,
+                                style: const TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 12),
+                              ),
+                              const SizedBox(height: 2),
+                              Row(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _replyingToCommentText = comment;
+                                        _replyingToCommentIndex = cIndex;
+                                        _activeReplyingQuestionId =
+                                            question.id;
+                                      });
+                                    },
+                                    child: const Text(
+                                      'Reply',
+                                      style: TextStyle(
+                                          fontSize: 11,
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    '$commentLikes likes',
+                                    style: const TextStyle(
+                                        fontSize: 11,
+                                        color: AppColors.textHint),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        GestureDetector(
+                          onTap: () =>
+                              _toggleCommentLike(question.id, cIndex),
+                          child: Icon(
+                            isCommentLiked
+                                ? Icons.favorite_rounded
+                                : Icons.favorite_border_rounded,
+                            size: 16,
+                            color: isCommentLiked
+                                ? Colors.red
+                                : AppColors.textHint,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (repliesList.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            left: 28.0, top: 6.0),
+                        child: Column(
+                          children:
+                              repliesList.asMap().entries.map((replyEntry) {
+                            final rIndex = replyEntry.key;
+                            final reply = replyEntry.value;
+                            final isReplyLiked = _replyUserLiked[question.id]
+                                    ?[cIndex]?[rIndex] ??
+                                false;
+                            final replyLikes = _replyLikesCount[question.id]
+                                    ?[cIndex]?[rIndex] ??
+                                0;
+
+                            return Padding(
+                              padding:
+                                  const EdgeInsets.only(bottom: 6.0),
+                              child: Row(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  const Padding(
+                                    padding: EdgeInsets.only(
+                                        top: 2.0, right: 6.0),
+                                    child: Icon(
+                                        Icons
+                                            .subdirectory_arrow_right_rounded,
+                                        size: 12,
+                                        color: AppColors.textHint),
+                                  ),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          reply,
+                                          style: const TextStyle(
+                                              color: AppColors
+                                                  .textSecondary,
+                                              fontSize: 11.5),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          '$replyLikes likes',
+                                          style: const TextStyle(
+                                              fontSize: 10,
+                                              color: AppColors.textHint),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  GestureDetector(
+                                    onTap: () => _toggleReplyLike(
+                                        question.id, cIndex, rIndex),
+                                    child: Icon(
+                                      isReplyLiked
+                                          ? Icons.favorite_rounded
+                                          : Icons
+                                              .favorite_border_rounded,
+                                      size: 14,
+                                      color: isReplyLiked
+                                          ? Colors.red
+                                          : AppColors.textHint,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            },
+          ),
+        const SizedBox(height: AppSpacing.s),
+
+        // Replying Header Banner
+        if (_replyingToCommentText != null &&
+            _activeReplyingQuestionId == question.id)
+          Container(
+            color: AppColors.primaryLight.withValues(alpha: 0.4),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.m, vertical: 4),
+            margin: const EdgeInsets.only(bottom: AppSpacing.s),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Replying to: "$_replyingToCommentText"',
+                    style: const TextStyle(
+                        fontSize: 11,
+                        fontStyle: FontStyle.italic,
+                        color: AppColors.primaryDark),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded,
+                      size: 14, color: AppColors.error),
+                  onPressed: () {
+                    setState(() {
+                      _replyingToCommentText = null;
+                      _replyingToCommentIndex = null;
+                      _activeReplyingQuestionId = null;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+
+        // Write comment text field
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: commentController,
+                style: const TextStyle(fontSize: 13),
+                decoration: InputDecoration(
+                  hintText: _replyingToCommentText != null &&
+                          _activeReplyingQuestionId == question.id
+                      ? 'Write a reply...'
+                      : 'Ask a question or comment...',
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.m, vertical: 8),
+                  fillColor: AppColors.background,
+                  filled: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.s),
+            IconButton(
+              icon: const Icon(Icons.send_rounded,
+                  color: AppColors.primary),
+              onPressed: () => _addComment(question.id),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

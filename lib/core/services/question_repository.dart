@@ -30,6 +30,7 @@ class Question {
   final String? scenarioTags;
   final List<String> initialComments;
   final String? pyqText;
+  final int questionNumber;
 
   const Question({
     required this.id,
@@ -57,6 +58,7 @@ class Question {
     this.scenarioTags,
     this.initialComments = const [],
     this.pyqText,
+    this.questionNumber = 0,
   });
 
   factory Question.fromMap(String docId, Map<String, dynamic> data) {
@@ -150,6 +152,8 @@ class Question {
       scenarioTags: data['scenarioTags']?.toString(),
       initialComments: const [],
       pyqText: '[$rawExamCode $parsedYear]',
+      questionNumber: int.tryParse(data['questionNumber']?.toString() ?? '') ??
+          int.tryParse(data['question_number']?.toString() ?? '') ?? 0,
     );
   }
 
@@ -167,6 +171,8 @@ class Question {
     final paperType = tests?['paper_type']?.toString() ?? 'PYQ';
     final testId = data['test_id']?.toString() ?? '';
     final testTitle = tests?['title']?.toString() ?? '';
+    final qNum = (data['question_number'] as int?) ??
+        int.tryParse(data['question_number']?.toString() ?? '') ?? 0;
 
     // Options parsing from JSONB array
     List<String> parsedOptions = [];
@@ -227,16 +233,32 @@ class Question {
     String rawQuestionText = (data['question_text'] ?? '').toString();
     if (passageText == null) {
       final passageMatch = RegExp(
-        r'^(Passage[\s\S]*?)(?=\n\n\d+[\.:\)]\s|\n\s*(?:Q\.?\s*)?\d+[\.:\)]\s|\n\nWhich|\n\nBased on|\Z)',
+        r'^(?:(?:Passage|Direction|Directions|Read the following)[\s\S]*?)(?=\n\n\d+[\.:\)]\s|\n\s*(?:Q\.?\s*)?\d+[\.:\)]\s|\n\nWhich|\n\nBased on|\n\nAccording to|\Z)',
         caseSensitive: false,
       ).firstMatch(rawQuestionText);
-      if (passageMatch != null && passageMatch.group(1) != null) {
-        final extractedPassage = passageMatch.group(1)!.trim();
+      if (passageMatch != null && passageMatch.group(0) != null) {
+        final extractedPassage = passageMatch.group(0)!.trim();
         final remaining = rawQuestionText.substring(passageMatch.end).trim();
-        if (remaining.isNotEmpty) {
+        if (remaining.isNotEmpty && extractedPassage.length > 20) {
           passageText = extractedPassage;
           rawQuestionText = remaining;
         }
+      }
+    }
+
+    // If passage contains a range like (Q. No. 90 to 91), synthesize a groupId so siblings group together
+    String? synthGroupId = data['group_id']?.toString();
+    if (synthGroupId == null && passageText != null && passageText.isNotEmpty) {
+      final rangeMatch = RegExp(
+        r'(?:Q\.?\s*(?:No\.?|Nos\.?)?\s*)(\d+)\s*(?:to|and|&|-|–|—)\s*(\d+)',
+        caseSensitive: false,
+      ).firstMatch(passageText);
+      if (rangeMatch != null) {
+        final start = rangeMatch.group(1);
+        final end = rangeMatch.group(2);
+        synthGroupId = 'synth_group_${testId}_${start}_$end';
+      } else {
+        synthGroupId = 'passage_${testId}_${passageText.hashCode.abs()}';
       }
     }
 
@@ -249,7 +271,7 @@ class Question {
       testTitle: testTitle,
       subject: (data['subject'] ?? 'General').toString(),
       difficulty: (data['difficulty'] ?? 'Medium').toString(),
-      groupId: data['group_id']?.toString(),
+      groupId: synthGroupId,
       passageOrDirection: passageText,
       questionText: rawQuestionText,
       questionImage: data['question_image_url']?.toString(),
@@ -268,6 +290,7 @@ class Question {
       scenarioTags: null,
       initialComments: const [],
       pyqText: '[$rawExamCode $parsedYear]',
+      questionNumber: qNum,
     );
   }
 }

@@ -312,6 +312,72 @@ class _MockHubScreenState extends ConsumerState<MockHubScreen> {
     }
   }
 
+  Widget _buildFilterDropdown({
+    required String value,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+    required IconData icon,
+    required String allLabel,
+  }) {
+    final isFiltered = value != allLabel;
+    return Container(
+      height: 36,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: isFiltered ? AppColors.primary.withValues(alpha: 0.08) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isFiltered ? AppColors.primary.withValues(alpha: 0.4) : const Color(0xFFE2E8F0),
+          width: isFiltered ? 1.4 : 1.0,
+        ),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: value,
+          isExpanded: true,
+          icon: Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: isFiltered ? AppColors.primary : const Color(0xFF94A3B8),
+            size: 16,
+          ),
+          dropdownColor: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          elevation: 4,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: isFiltered ? FontWeight.bold : FontWeight.w600,
+            color: isFiltered ? AppColors.primary : AppColors.textPrimary,
+          ),
+          items: items.map((item) {
+            final isItemSel = item == value;
+            final itemLabel = (item == 'All' && allLabel == 'All') ? 'All Topics' : item;
+            return DropdownMenuItem(
+              value: item,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      itemLabel,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: isItemSel ? FontWeight.bold : FontWeight.normal,
+                        color: isItemSel ? AppColors.primary : AppColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                  if (isItemSel)
+                    const Icon(Icons.check_rounded, size: 14, color: AppColors.primary),
+                ],
+              ),
+            );
+          }).toList(),
+          onChanged: onChanged,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final filteredMocks = _mockTests.where((test) {
@@ -401,81 +467,42 @@ class _MockHubScreenState extends ConsumerState<MockHubScreen> {
                       children: [
                         // 1. Question Level Dropdown
                         Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            decoration: BoxDecoration(
-                              color: AppColors.background,
-                              borderRadius: BorderRadius.circular(AppSpacing.radiusM),
-                              border: Border.all(color: Colors.grey.shade300),
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                value: _selectedLevel,
-                                isExpanded: true,
-                                icon: const Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary, size: 18),
-                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                                items: _levels.map((lvl) {
-                                  return DropdownMenuItem(value: lvl, child: Text(lvl, overflow: TextOverflow.ellipsis));
-                                }).toList(),
-                                onChanged: (val) {
-                                  if (val != null) setState(() => _selectedLevel = val);
-                                },
-                              ),
-                            ),
+                          child: _buildFilterDropdown(
+                            value: _selectedLevel,
+                            items: _levels,
+                            onChanged: (val) {
+                              if (val != null) setState(() => _selectedLevel = val);
+                            },
+                            icon: Icons.tune_rounded,
+                            allLabel: 'All Levels',
                           ),
                         ),
                         const SizedBox(width: 6),
 
                         // 2. Topic Dropdown
                         Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            decoration: BoxDecoration(
-                              color: AppColors.background,
-                              borderRadius: BorderRadius.circular(AppSpacing.radiusM),
-                              border: Border.all(color: Colors.grey.shade300),
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                value: _selectedCategory,
-                                isExpanded: true,
-                                icon: const Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary, size: 18),
-                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                                items: _topics.map((t) {
-                                  return DropdownMenuItem(value: t, child: Text(t == 'All' ? 'All Topics' : t, overflow: TextOverflow.ellipsis));
-                                }).toList(),
-                                onChanged: (val) {
-                                  if (val != null) setState(() => _selectedCategory = val);
-                                },
-                              ),
-                            ),
+                          child: _buildFilterDropdown(
+                            value: _selectedCategory,
+                            items: _topics,
+                            onChanged: (val) {
+                              if (val != null) setState(() => _selectedCategory = val);
+                            },
+                            icon: Icons.menu_book_rounded,
+                            allLabel: 'All',
                           ),
                         ),
                         const SizedBox(width: 6),
 
                         // 3. Mock Type Dropdown
                         Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            decoration: BoxDecoration(
-                              color: AppColors.background,
-                              borderRadius: BorderRadius.circular(AppSpacing.radiusM),
-                              border: Border.all(color: Colors.grey.shade300),
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                value: _selectedMockType,
-                                isExpanded: true,
-                                icon: const Icon(Icons.arrow_drop_down_rounded, color: AppColors.primary, size: 18),
-                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                                items: _mockTypes.map((mt) {
-                                  return DropdownMenuItem(value: mt, child: Text(mt, overflow: TextOverflow.ellipsis));
-                                }).toList(),
-                                onChanged: (val) {
-                                  if (val != null) setState(() => _selectedMockType = val);
-                                },
-                              ),
-                            ),
+                          child: _buildFilterDropdown(
+                            value: _selectedMockType,
+                            items: _mockTypes,
+                            onChanged: (val) {
+                              if (val != null) setState(() => _selectedMockType = val);
+                            },
+                            icon: Icons.format_list_numbered_rounded,
+                            allLabel: 'All Types',
                           ),
                         ),
                       ],

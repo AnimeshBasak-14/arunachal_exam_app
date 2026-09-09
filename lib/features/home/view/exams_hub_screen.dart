@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import 'pyq_hub_screen.dart';
 import 'mock_hub_screen.dart';
@@ -25,22 +25,47 @@ class _ExamsHubScreenState extends State<ExamsHubScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text(
-          'Exams & Tests Hub',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        titleSpacing: 16,
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.school_rounded, color: AppColors.primary, size: 18),
+            ),
+            const SizedBox(width: 10),
+            const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Exam Prep Center',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary),
+                ),
+                Text(
+                  'Official PYQs & Targeted Mocks',
+                  style: TextStyle(fontSize: 10.5, color: AppColors.textSecondary, fontWeight: FontWeight.normal),
+                ),
+              ],
+            ),
+          ],
         ),
-        elevation: 0,
+        elevation: 0.5,
         backgroundColor: Colors.white,
         foregroundColor: AppColors.textPrimary,
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(56),
+          preferredSize: const Size.fromHeight(46),
           child: Container(
             color: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
             child: Container(
-              height: 40,
+              height: 38,
+              padding: const EdgeInsets.all(3),
               decoration: BoxDecoration(
-                color: AppColors.background,
+                color: const Color(0xFFF1F5F9),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Row(
@@ -69,22 +94,35 @@ class _ExamsHubScreenState extends State<ExamsHubScreen> {
       child: GestureDetector(
         onTap: () => setState(() => _selectedIndex = index),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 180),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primary : Colors.transparent,
+            color: isSelected ? Colors.white : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.07),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1.5),
+                    )
+                  ]
+                : null,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 16, color: isSelected ? Colors.white : AppColors.textSecondary),
+              Icon(
+                icon,
+                size: 15,
+                color: isSelected ? AppColors.primary : const Color(0xFF64748B),
+              ),
               const SizedBox(width: 6),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? Colors.white : AppColors.textSecondary,
+                  fontSize: 12.5,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  color: isSelected ? AppColors.primary : const Color(0xFF64748B),
                 ),
               ),
             ],
