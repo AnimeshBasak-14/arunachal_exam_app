@@ -14,7 +14,9 @@ class Question {
   final String subject; // 'English', 'Mathematics', 'General Knowledge'
   final String difficulty;
   final String? groupId;
+  final String? passageId;
   final String? passageOrDirection;
+  final String? passageImage;
   final String questionText;
   final String? questionImage;
   final List<String> options; // ['(a) ...', '(b) ...']
@@ -42,7 +44,9 @@ class Question {
     required this.subject,
     this.difficulty = 'Medium',
     this.groupId,
+    this.passageId,
     this.passageOrDirection,
+    this.passageImage,
     required this.questionText,
     this.questionImage,
     required this.options,
@@ -108,45 +112,38 @@ class Question {
     }
 
     final rawExamCode = (data['examCode'] ?? 'APSSB-CGLE').toString();
-    int parsedYear = int.tryParse(data['year']?.toString() ?? '') ?? 2021;
-    String rawPaperType = (data['paperType'] ?? '').toString().toUpperCase();
-
-    // Strict Year Constraints:
-    // If year <= 2000 or year > current year or paperType == 'MOCK', classify as MOCK test (year 2000).
-    if (parsedYear <= 2000 ||
-        parsedYear > DateTime.now().year ||
-        rawPaperType == 'MOCK') {
-      rawPaperType = 'MOCK';
-      parsedYear = 2000;
-    } else if (rawPaperType.isEmpty) {
-      rawPaperType = 'PYQ';
-    }
+    final parsedYear = int.tryParse(data['year']?.toString() ?? '') ?? 2024;
+    final paperType = (data['paperType'] ?? 'PYQ').toString();
+    final testId = (data['testId'] ?? '').toString();
+    final testTitle = (data['testTitle'] ?? '').toString();
 
     return Question(
       id: docId,
       examCode: rawExamCode,
       year: parsedYear,
-      paperType: rawPaperType,
-      testId: (data['testId'] ?? '').toString(),
-      testTitle: (data['testTitle'] ?? '').toString(),
+      paperType: paperType,
+      testId: testId,
+      testTitle: testTitle,
       subject: (data['subject'] ?? 'General').toString(),
       difficulty: (data['difficulty'] ?? 'Medium').toString(),
-      groupId: data['groupId']?.toString(),
-      passageOrDirection: data['passageOrDirection']?.toString(),
-      questionText: (data['questionText'] ?? '').toString(),
-      questionImage: data['questionImage']?.toString(),
+      groupId: data['groupId']?.toString() ?? data['group_id']?.toString(),
+      passageId: data['passageId']?.toString() ?? data['passage_id']?.toString(),
+      passageOrDirection: data['passageOrDirection']?.toString() ??
+          data['passage_or_direction']?.toString(),
+      passageImage: data['passageImage']?.toString() ?? data['passage_image']?.toString(),
+      questionText: (data['questionText'] ?? data['question_text'] ?? '').toString(),
+      questionImage: data['questionImage']?.toString() ??
+          data['question_image_url']?.toString(),
       options: parsedOptions,
       optionImages: parsedOptionImages,
       correctAnswer: cleanCorrect,
       officialAnswer: official,
-      solution: (data['solution'] ?? 'Verified with official key.').toString(),
-      solutionImage: data['solutionImage']?.toString(),
-      timeLimitMins:
-          int.tryParse(data['timeLimitMins']?.toString() ?? '') ?? 120,
-      marksPerCorrect:
-          double.tryParse(data['marksPerCorrect']?.toString() ?? '') ?? 2.0,
-      negativeMarks:
-          double.tryParse(data['negativeMarks']?.toString() ?? '') ?? 0.5,
+      solution: (data['solution'] ?? data['explanation'] ?? '').toString(),
+      solutionImage: data['solutionImage']?.toString() ??
+          data['explanation_image_url']?.toString(),
+      timeLimitMins: int.tryParse(data['timeLimitMins']?.toString() ?? '') ?? 120,
+      marksPerCorrect: (data['marksPerCorrect'] as num?)?.toDouble() ?? 2.0,
+      negativeMarks: (data['negativeMarks'] as num?)?.toDouble() ?? 0.5,
       isScenarioTest: data['isScenarioTest'] == true ||
           data['isScenarioTest']?.toString().toLowerCase() == 'true',
       scenarioTags: data['scenarioTags']?.toString(),
@@ -164,6 +161,7 @@ class Question {
 
   factory Question.fromSupabase(Map<String, dynamic> data) {
     final tests = data['tests'] as Map<String, dynamic>?;
+    final passages = data['passages'] as Map<String, dynamic>?;
     final groups = data['question_groups'] as Map<String, dynamic>?;
 
     final rawExamCode = tests?['exam_code']?.toString() ?? 'APPSC';
@@ -171,7 +169,8 @@ class Question {
     final paperType = tests?['paper_type']?.toString() ?? 'PYQ';
     final testId = data['test_id']?.toString() ?? '';
     final testTitle = tests?['title']?.toString() ?? '';
-    final qNum = (data['question_number'] as int?) ??
+    final qNum = (data['order_index'] as int?) ??
+        (data['question_number'] as int?) ??
         int.tryParse(data['question_number']?.toString() ?? '') ?? 0;
 
     // Options parsing from JSONB array
@@ -182,27 +181,24 @@ class Question {
       for (int i = 0; i < list.length; i++) {
         final item = list[i];
         if (item is Map) {
-          final id = (item['id'] ?? String.fromCharCode(97 + i)).toString();
-          final text = item['text']?.toString() ?? '';
-          parsedOptions.add(text.startsWith('(') ? text : '($id) $text');
-          if (i < 4 && item['image'] != null) {
-            parsedOptionImages[i] = item['image'].toString();
+          final id = (item['key'] ?? item['id'] ?? String.fromCharCode(97 + i)).toString();
+          final text = (item['text'] ?? item['value'] ?? '').toString().trim();
+          if (text.isNotEmpty && !RegExp(r'^Option\s+[A-D]$', caseSensitive: false).hasMatch(text)) {
+            parsedOptions.add(text.startsWith('(') ? text : '($id) $text');
+            if (i < 4 && item['image'] != null) {
+              parsedOptionImages[i] = item['image'].toString();
+            }
           }
-        } else if (item is String) {
-          parsedOptions.add(item);
+        } else if (item is String && item.trim().isNotEmpty) {
+          final text = item.trim();
+          if (!RegExp(r'^Option\s+[A-D]$', caseSensitive: false).hasMatch(text)) {
+            parsedOptions.add(text);
+          }
         }
       }
     }
-    if (parsedOptions.isEmpty) {
-      parsedOptions = [
-        '(a) Option A',
-        '(b) Option B',
-        '(c) Option C',
-        '(d) Option D'
-      ];
-    }
 
-    final rawCorrect = (data['correct_answer'] ?? 'a')
+    final rawCorrect = (data['correct_option'] ?? data['correct_answer'] ?? 'a')
         .toString()
         .toLowerCase()
         .replaceAll(RegExp(r'[^a-d]'), '');
@@ -216,7 +212,14 @@ class Question {
 
     // Passage / Direction handling
     String? passageText;
-    if (groups != null) {
+    String? passageImage;
+    String? passageId = data['passage_id']?.toString();
+
+    if (passages != null) {
+      passageText = passages['content']?.toString();
+      passageImage = passages['image_url']?.toString();
+      passageId ??= passages['id']?.toString();
+    } else if (groups != null) {
       final gTitle = groups['title']?.toString();
       final pText = groups['passage_text']?.toString();
       final gInst = groups['instructions']?.toString();
@@ -246,9 +249,9 @@ class Question {
       }
     }
 
-    // If passage contains a range like (Q. No. 90 to 91), synthesize a groupId so siblings group together
-    String? synthGroupId = data['group_id']?.toString();
-    if (synthGroupId == null && passageText != null && passageText.isNotEmpty) {
+    // Synthesize or resolve group ID so multi-question passages link together
+    String? effectiveGroupId = passageId ?? data['group_id']?.toString();
+    if (effectiveGroupId == null && passageText != null && passageText.isNotEmpty) {
       final rangeMatch = RegExp(
         r'(?:Q\.?\s*(?:No\.?|Nos\.?)?\s*)(\d+)\s*(?:to|and|&|-|–|—)\s*(\d+)',
         caseSensitive: false,
@@ -256,9 +259,9 @@ class Question {
       if (rangeMatch != null) {
         final start = rangeMatch.group(1);
         final end = rangeMatch.group(2);
-        synthGroupId = 'synth_group_${testId}_${start}_$end';
+        effectiveGroupId = 'synth_group_${testId}_${start}_$end';
       } else {
-        synthGroupId = 'passage_${testId}_${passageText.hashCode.abs()}';
+        effectiveGroupId = 'passage_${testId}_${passageText.hashCode.abs()}';
       }
     }
 
@@ -271,8 +274,10 @@ class Question {
       testTitle: testTitle,
       subject: (data['subject'] ?? 'General').toString(),
       difficulty: (data['difficulty'] ?? 'Medium').toString(),
-      groupId: synthGroupId,
+      groupId: effectiveGroupId,
+      passageId: passageId,
       passageOrDirection: passageText,
+      passageImage: passageImage,
       questionText: rawQuestionText,
       questionImage: data['question_image_url']?.toString(),
       options: parsedOptions,
@@ -286,7 +291,7 @@ class Question {
       marksPerCorrect:
           (tests?['marks_per_correct'] as num?)?.toDouble() ?? 2.0,
       negativeMarks: (tests?['negative_marks'] as num?)?.toDouble() ?? 0.5,
-      isScenarioTest: groups != null,
+      isScenarioTest: passages != null || groups != null,
       scenarioTags: null,
       initialComments: const [],
       pyqText: '[$rawExamCode $parsedYear]',
@@ -306,11 +311,11 @@ class QuestionRepository {
   }) async {
     final cleanCode = examCode.trim().toUpperCase();
 
-    // 1. Query Supabase (Relational PostgreSQL DB with Question Groups / Passages support)
+    // 1. Query Supabase (Relational PostgreSQL DB with Passages / Question Groups support)
     try {
-      // Build Supabase REST query using correct PostgREST nested filter syntax
+      // Build Supabase REST query selecting passages and tests
       var supaUrl =
-          'https://fllopztywwblbucvaths.supabase.co/rest/v1/questions?select=*,question_groups(*),tests!inner(*)&order=question_number';
+          'https://fllopztywwblbucvaths.supabase.co/rest/v1/questions?select=*,passages(*),question_groups(*),tests!inner(*)&order=question_number';
 
       // Only filter by exam_code if a specific code is provided (not empty or 'ALL')
       if (cleanCode.isNotEmpty && cleanCode != 'ALL') {
