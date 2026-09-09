@@ -19,6 +19,7 @@ class SingleQuestionWidget extends StatelessWidget {
   final bool isInsideGroup;
   final bool isHelpfulLiked;
   final VoidCallback? onToggleHelpful;
+  final bool isStudyMode;
   final Widget? discussionWidget;
   final Widget? likeButton;
   final Widget? trailingHeader;
@@ -30,6 +31,7 @@ class SingleQuestionWidget extends StatelessWidget {
     this.selectedOption,
     this.onSelectOption,
     this.isSubmitted = false,
+    this.isStudyMode = false,
     this.showSolution = false,
     this.onToggleSolution,
     this.isBookmarked = false,
@@ -232,7 +234,9 @@ class SingleQuestionWidget extends StatelessWidget {
           Color optionBorderColor = AppColors.divider;
           Color optionBgColor = Colors.transparent;
 
-          if (selectedOption != null || isSubmitted) {
+          final showFeedback = isSubmitted || (isStudyMode && selectedOption != null);
+
+          if (showFeedback) {
             if (isCorrect) {
               optionBorderColor = AppColors.success;
               optionBgColor = AppColors.success.withValues(alpha: 0.08);
@@ -240,6 +244,10 @@ class SingleQuestionWidget extends StatelessWidget {
               optionBorderColor = AppColors.error;
               optionBgColor = AppColors.error.withValues(alpha: 0.08);
             }
+          } else if (isSelected) {
+            // Neutral selection during timed exam mode before submission
+            optionBorderColor = AppColors.primary;
+            optionBgColor = AppColors.primary.withValues(alpha: 0.08);
           }
 
           return Container(
@@ -249,14 +257,14 @@ class SingleQuestionWidget extends StatelessWidget {
               color: optionBgColor,
               border: Border.all(
                 color: optionBorderColor,
-                width: isSelected || ((selectedOption != null || isSubmitted) && isCorrect)
+                width: isSelected || (showFeedback && isCorrect)
                     ? 2.0
                     : 1.0,
               ),
               borderRadius: BorderRadius.circular(12),
             ),
             child: InkWell(
-              onTap: (isSubmitted || (selectedOption != null && onToggleSolution == null))
+              onTap: isSubmitted
                   ? null
                   : () => onSelectOption?.call(optionChar),
               borderRadius: BorderRadius.circular(12),
@@ -270,11 +278,10 @@ class SingleQuestionWidget extends StatelessWidget {
                       MathUtils.formatMath(option),
                       style: TextStyle(
                         fontSize: 14,
-                        color: (selectedOption != null || isSubmitted) && isCorrect
+                        color: showFeedback && isCorrect
                             ? AppColors.primaryDark
                             : AppColors.textPrimary,
-                        fontWeight: isSelected ||
-                                ((selectedOption != null || isSubmitted) && isCorrect)
+                        fontWeight: isSelected || (showFeedback && isCorrect)
                             ? FontWeight.bold
                             : FontWeight.normal,
                       ),
@@ -300,8 +307,8 @@ class SingleQuestionWidget extends StatelessWidget {
           );
         }),
 
-        // ─── Show Solution Button (Practice / PYQ mode) ────────────────
-        if (onToggleSolution != null) ...[
+        // ─── Show Solution Button (Practice / PYQ / Study mode) ───────
+        if (onToggleSolution != null && (isStudyMode || isSubmitted)) ...[
           const SizedBox(height: AppSpacing.s),
           Align(
             alignment: Alignment.centerRight,
@@ -324,7 +331,7 @@ class SingleQuestionWidget extends StatelessWidget {
         ],
 
         // ─── Solution Drawer ───────────────────────────────────────────
-        if (showSolution) ...[
+        if (showSolution && (isStudyMode || isSubmitted)) ...[
           const SizedBox(height: AppSpacing.s),
           Container(
             padding: const EdgeInsets.all(AppSpacing.m),

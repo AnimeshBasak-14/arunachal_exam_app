@@ -305,6 +305,7 @@ void main() {
                       SingleQuestionWidget(
                         question: q,
                         displayNum: 1,
+                        isStudyMode: true,
                         onSelectOption: (_) {},
                         isSubmitted: false,
                         showSolution: solutionShown,

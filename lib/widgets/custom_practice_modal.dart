@@ -16,7 +16,8 @@ void showCustomPracticeModal(BuildContext context) {
 }
 
 class CustomPracticeModal extends StatefulWidget {
-  const CustomPracticeModal({super.key});
+  final bool isEmbedded;
+  const CustomPracticeModal({super.key, this.isEmbedded = false});
 
   @override
   State<CustomPracticeModal> createState() => _CustomPracticeModalState();
@@ -139,7 +140,9 @@ class _CustomPracticeModalState extends State<CustomPracticeModal> {
       final selectedQs = shuffled.take(_questionCount).toList();
 
       if (!mounted) return;
-      Navigator.of(context).pop(); // Close bottom sheet
+      if (!widget.isEmbedded) {
+        Navigator.of(context).pop(); // Close bottom sheet if opened as modal
+      }
 
       // Navigate to MockTestScreen with selected questions and mode
       Navigator.of(context).push(
@@ -169,33 +172,37 @@ class _CustomPracticeModalState extends State<CustomPracticeModal> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: widget.isEmbedded ? AppColors.background : Colors.white,
+        borderRadius: widget.isEmbedded
+            ? BorderRadius.zero
+            : const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.fromLTRB(
-        20,
-        14,
-        20,
-        MediaQuery.of(context).viewInsets.bottom + 24,
+        widget.isEmbedded ? 16 : 20,
+        widget.isEmbedded ? 14 : 14,
+        widget.isEmbedded ? 16 : 20,
+        widget.isEmbedded ? 100 : (MediaQuery.of(context).viewInsets.bottom + 24),
       ),
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Handle bar
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFCBD5E1),
-                  borderRadius: BorderRadius.circular(2),
+            // Handle bar (modal only)
+            if (!widget.isEmbedded) ...[
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFCBD5E1),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
+            ],
 
             // Header Title
             Row(

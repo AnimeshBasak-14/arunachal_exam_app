@@ -14,25 +14,24 @@ class ExamsHubScreen extends StatefulWidget {
 
 class _ExamsHubScreenState extends State<ExamsHubScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  String _selectedSubject = 'All Subjects';
-
-  final List<String> _subjects = [
-    'All Subjects',
-    'General Studies',
-    'Elementary Maths',
-    'General English',
-    'Reasoning',
-    'Arunachal GK',
-    'Technical',
-  ];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this, initialIndex: widget.initialTabIndex);
+    _tabController = TabController(length: 3, vsync: this, initialIndex: widget.initialTabIndex.clamp(0, 2));
     _tabController.addListener(() {
       if (mounted) setState(() {});
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant ExamsHubScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialTabIndex != oldWidget.initialTabIndex &&
+        widget.initialTabIndex >= 0 &&
+        widget.initialTabIndex < 3) {
+      _tabController.animateTo(widget.initialTabIndex);
+    }
   }
 
   @override
@@ -45,15 +44,6 @@ class _ExamsHubScreenState extends State<ExamsHubScreen> with SingleTickerProvid
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => showCustomPracticeModal(context),
-        backgroundColor: AppColors.primary,
-        icon: const Icon(Icons.tune_rounded, color: Colors.white, size: 20),
-        label: const Text(
-          'Custom Practice',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-        ),
-      ),
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
@@ -86,61 +76,16 @@ class _ExamsHubScreenState extends State<ExamsHubScreen> with SingleTickerProvid
                         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary),
                       ),
                       Text(
-                        'Official PYQs & Targeted Mocks',
+                        'Official PYQs, Targeted Mocks & Custom Practice',
                         style: TextStyle(fontSize: 10.5, color: AppColors.textSecondary, fontWeight: FontWeight.normal),
                       ),
                     ],
                   ),
                 ],
               ),
-              bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(52),
-                child: Container(
-                  height: 48,
-                  color: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: _subjects.length,
-                    itemBuilder: (context, index) {
-                      final subject = _subjects[index];
-                      final isSelected = _selectedSubject == subject;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: FilterChip(
-                          selected: isSelected,
-                          showCheckmark: false,
-                          label: Text(
-                            subject,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                              color: isSelected ? Colors.white : AppColors.textPrimary,
-                            ),
-                          ),
-                          backgroundColor: const Color(0xFFF1F5F9),
-                          selectedColor: AppColors.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                            side: BorderSide(
-                              color: isSelected ? AppColors.primary : const Color(0xFFE2E8F0),
-                            ),
-                          ),
-                          onSelected: (selected) {
-                            setState(() {
-                              _selectedSubject = subject;
-                            });
-                          },
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
             ),
 
-            // ─── Pinned Tab Bar Switcher ──────────────────────────────────
+            // ─── Pinned 3-Segment Tab Bar Switcher ─────────────────────────
             SliverPersistentHeader(
               pinned: true,
               delegate: _ExamsHubTabBarDelegate(
@@ -159,6 +104,7 @@ class _ExamsHubScreenState extends State<ExamsHubScreen> with SingleTickerProvid
                       children: [
                         _buildTab(0, Icons.history_edu_rounded, 'PYQ Papers'),
                         _buildTab(1, Icons.assignment_turned_in_rounded, 'Mock Tests'),
+                        _buildTab(2, Icons.tune_rounded, 'Custom Test'),
                       ],
                     ),
                   ),
@@ -172,6 +118,7 @@ class _ExamsHubScreenState extends State<ExamsHubScreen> with SingleTickerProvid
           children: const [
             PyqHubScreen(isEmbedded: true),
             MockHubScreen(isEmbedded: true),
+            CustomPracticeModal(isEmbedded: true),
           ],
         ),
       ),

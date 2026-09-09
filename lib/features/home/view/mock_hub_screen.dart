@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../widgets/custom_practice_modal.dart';
 
 class MockTestItem {
   final String id;
@@ -71,7 +70,6 @@ class MockHubScreen extends ConsumerStatefulWidget {
 class _MockHubScreenState extends ConsumerState<MockHubScreen> {
   String _selectedCategory = 'All';
   String _selectedLevel = 'All Levels';
-  String _selectedMockType = 'All Types';
   String _searchQuery = '';
   bool _isLoading = false;
   List<MockTestItem> _mockTests = [];
@@ -93,14 +91,6 @@ class _MockHubScreenState extends ConsumerState<MockHubScreen> {
     'Easy',
     'Medium',
     'Hard',
-  ];
-
-  final List<String> _mockTypes = [
-    'All Types',
-    '5 Questions',
-    '10 Questions',
-    '20 Questions',
-    'Full Mock',
   ];
 
   static const List<MockTestItem> _defaultCatalog = [
@@ -313,6 +303,200 @@ class _MockHubScreenState extends ConsumerState<MockHubScreen> {
     }
   }
 
+  void _showModeSelectionModal(BuildContext context, MockTestItem test) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFCBD5E1),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.speed_rounded, color: AppColors.primary, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Select Test Mode',
+                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      ),
+                      Text(
+                        test.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 18),
+
+            // Mode 1: Timed Exam Mode
+            InkWell(
+              onTap: () {
+                Navigator.pop(ctx);
+                context.push('/mock-test/${test.examCode}/${test.questionCount}?duration=${test.durationMinutes}&mode=timed');
+              },
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.03),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFF0F172A).withValues(alpha: 0.15)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E3A8A).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.timer_rounded, color: Color(0xFF1E3A8A), size: 22),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Row(
+                            children: [
+                              Text(
+                                'Timed Exam Mode',
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.textPrimary),
+                              ),
+                              SizedBox(width: 6),
+                              DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: Color(0xFFEFF6FF),
+                                  borderRadius: BorderRadius.all(Radius.circular(4)),
+                                ),
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  child: Text(
+                                    'REAL EXAM',
+                                    style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF1E40AF)),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 3),
+                          Text(
+                            'Live countdown timer · Choices recorded neutrally without revealing answers until final submission',
+                            style: TextStyle(fontSize: 11, color: AppColors.textSecondary, height: 1.3),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right_rounded, color: AppColors.textHint),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Mode 2: Study Mode
+            InkWell(
+              onTap: () {
+                Navigator.pop(ctx);
+                context.push('/mock-test/${test.examCode}/${test.questionCount}?duration=${test.durationMinutes}&mode=study');
+              },
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.03),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFF0F172A).withValues(alpha: 0.15)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF047857).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.menu_book_rounded, color: Color(0xFF047857), size: 22),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Row(
+                            children: [
+                              Text(
+                                'Study & Practice Mode',
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.textPrimary),
+                              ),
+                              SizedBox(width: 6),
+                              DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: Color(0xFFECFDF5),
+                                  borderRadius: BorderRadius.all(Radius.circular(4)),
+                                ),
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  child: Text(
+                                    'PRACTICE',
+                                    style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF047857)),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 3),
+                          Text(
+                            'Immediate right/wrong feedback on tap · Step-by-step explanations · Candidate doubt discussion',
+                            style: TextStyle(fontSize: 11, color: AppColors.textSecondary, height: 1.3),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right_rounded, color: AppColors.textHint),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildFilterDropdown({
     required String value,
     required List<String> items,
@@ -388,18 +572,6 @@ class _MockHubScreenState extends ConsumerState<MockHubScreen> {
       if (_selectedLevel != 'All Levels' && test.difficulty.toLowerCase() != _selectedLevel.toLowerCase()) {
         return false;
       }
-      if (_selectedMockType == '5 Questions' && test.questionCount > 8) {
-        return false;
-      }
-      if (_selectedMockType == '10 Questions' && (test.questionCount < 8 || test.questionCount > 15)) {
-        return false;
-      }
-      if (_selectedMockType == '20 Questions' && (test.questionCount < 15 || test.questionCount > 35)) {
-        return false;
-      }
-      if (_selectedMockType == 'Full Mock' && test.questionCount < 35 && test.category != 'Full Mock') {
-        return false;
-      }
       if (_searchQuery.isNotEmpty) {
         final q = _searchQuery.toLowerCase();
         if (!test.title.toLowerCase().contains(q) &&
@@ -462,25 +634,10 @@ class _MockHubScreenState extends ConsumerState<MockHubScreen> {
                             : null,
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.s),
-                    // 3 Dropdown Filters: Level, Topic, Mock Type
+                    // 2 Dropdown Filters: Topic & Level
                     Row(
                       children: [
-                        // 1. Question Level Dropdown
-                        Expanded(
-                          child: _buildFilterDropdown(
-                            value: _selectedLevel,
-                            items: _levels,
-                            onChanged: (val) {
-                              if (val != null) setState(() => _selectedLevel = val);
-                            },
-                            icon: Icons.tune_rounded,
-                            allLabel: 'All Levels',
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-
-                        // 2. Topic Dropdown
+                        // 1. Topic Dropdown
                         Expanded(
                           child: _buildFilterDropdown(
                             value: _selectedCategory,
@@ -492,81 +649,21 @@ class _MockHubScreenState extends ConsumerState<MockHubScreen> {
                             allLabel: 'All',
                           ),
                         ),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 8),
 
-                        // 3. Mock Type Dropdown
+                        // 2. Question Level Dropdown
                         Expanded(
                           child: _buildFilterDropdown(
-                            value: _selectedMockType,
-                            items: _mockTypes,
+                            value: _selectedLevel,
+                            items: _levels,
                             onChanged: (val) {
-                              if (val != null) setState(() => _selectedMockType = val);
+                              if (val != null) setState(() => _selectedLevel = val);
                             },
-                            icon: Icons.format_list_numbered_rounded,
-                            allLabel: 'All Types',
+                            icon: Icons.tune_rounded,
+                            allLabel: 'All Levels',
                           ),
                         ),
                       ],
-                    ),
-
-                    // ─── Build Custom Practice Card ──────────────────────────────
-                    const SizedBox(height: AppSpacing.s),
-                    Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF1E3A8A), Color(0xFF2563EB)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusM),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF1E3A8A).withValues(alpha: 0.25),
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () => showCustomPracticeModal(context),
-                          borderRadius: BorderRadius.circular(AppSpacing.radiusM),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.18),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Icon(Icons.tune_rounded, color: Colors.white, size: 20),
-                                ),
-                                const SizedBox(width: 12),
-                                const Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Build Custom Practice',
-                                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13.5),
-                                      ),
-                                      Text(
-                                        'Pick topics, question count & exam mode',
-                                        style: TextStyle(color: Colors.white70, fontSize: 11),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 14),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
                     ),
                   ],
                 ),
@@ -740,20 +837,6 @@ class _MockHubScreenState extends ConsumerState<MockHubScreen> {
 
             // Test Metrics Row (Count, Time, Marking - Compact & Mobile Safe)
             Builder(builder: (context) {
-              int effectiveCount = test.questionCount;
-              int effectiveMins = test.durationMinutes;
-
-              if (_selectedMockType == '5 Questions') {
-                effectiveCount = test.questionCount > 5 ? 5 : test.questionCount;
-                effectiveMins = 5;
-              } else if (_selectedMockType == '10 Questions') {
-                effectiveCount = test.questionCount > 10 ? 10 : test.questionCount;
-                effectiveMins = 10;
-              } else if (_selectedMockType == '20 Questions') {
-                effectiveCount = test.questionCount > 20 ? 20 : test.questionCount;
-                effectiveMins = 20;
-              }
-
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -762,14 +845,14 @@ class _MockHubScreenState extends ConsumerState<MockHubScreen> {
                       const Icon(Icons.help_outline_rounded, size: 14, color: AppColors.textHint),
                       const SizedBox(width: 4),
                       Text(
-                        '$effectiveCount Questions',
+                        '${test.questionCount} Questions',
                         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                       ),
                       const SizedBox(width: 10),
                       const Icon(Icons.timer_outlined, size: 14, color: AppColors.textHint),
                       const SizedBox(width: 4),
                       Text(
-                        '$effectiveMins mins',
+                        '${test.durationMinutes} mins',
                         style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                       ),
                       const Spacer(),
@@ -788,20 +871,11 @@ class _MockHubScreenState extends ConsumerState<MockHubScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Start Mock Button - Full width, clean padding, no overflow
+                  // Start Mock Button with Mode Selection
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: () {
-                        final targetCount = _selectedMockType == '5 Questions'
-                            ? '5'
-                            : _selectedMockType == '10 Questions'
-                                ? '10'
-                                : _selectedMockType == '20 Questions'
-                                    ? '20'
-                                    : 'full';
-                        context.push('/mock-test/${test.examCode}/$targetCount?duration=$effectiveMins');
-                      },
+                      onPressed: () => _showModeSelectionModal(context, test),
                       icon: const Icon(Icons.play_arrow_rounded, size: 18, color: Colors.white),
                       label: const Text(
                         'Start Mock Test',

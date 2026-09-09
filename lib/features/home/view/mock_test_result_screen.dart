@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/services/question_repository.dart';
+import '../../../core/utils/math_utils.dart';
 import '../../../core/widgets/primary_button.dart';
 
 class MockTestResultScreen extends ConsumerStatefulWidget {
@@ -32,6 +33,13 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
         _expandedIds.add(id);
       }
     });
+  }
+
+  String _extractOptionChar(String option, int fallbackIndex) {
+    final trimmed = option.trim();
+    final match = RegExp(r'^[\(\[]?([a-dA-D])[\)\]\.\s]').firstMatch(trimmed);
+    if (match != null) return match.group(1)!.toLowerCase();
+    return String.fromCharCode(97 + fallbackIndex);
   }
 
   Widget _buildStatChip(
@@ -112,11 +120,38 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
     final mins = timeTaken ~/ 60;
     final secs = timeTaken % 60;
 
-    // Load questions for review (fall back to first 5 if no exam-specific match)
-    final allQuestions = QuestionRepository.allQuestions;
-    var testQuestions =
-        allQuestions.where((q) => q.examCode == examCode).take(5).toList();
-    if (testQuestions.isEmpty) testQuestions = allQuestions.take(5).toList();
+    // Load questions for review from resultData['questions'] if provided
+    List<Question> testQuestions = [];
+    final rawQs = resultData['questions'];
+    if (rawQs is List) {
+      testQuestions = rawQs.map((item) {
+        if (item is Question) return item;
+        if (item is Map) {
+          final m = Map<String, dynamic>.from(item);
+          return Question(
+            id: m['id']?.toString() ?? '',
+            questionText: m['questionText']?.toString() ?? '',
+            options: (m['options'] as List?)?.map((e) => e.toString()).toList() ?? [],
+            correctAnswer: m['correctAnswer']?.toString() ?? 'a',
+            officialAnswer: m['officialAnswer']?.toString() ?? m['correctAnswer']?.toString() ?? 'a',
+            solution: m['solution']?.toString() ?? '',
+            subject: m['subject']?.toString() ?? '',
+            examCode: m['examCode']?.toString() ?? examCode,
+            difficulty: m['difficulty']?.toString() ?? 'Medium',
+            year: (m['year'] as num?)?.toInt() ?? 2024,
+            passageOrDirection: m['passageOrDirection']?.toString() ?? m['passage']?.toString(),
+            passageImage: m['passageImage']?.toString(),
+            questionImage: m['questionImage']?.toString(),
+          );
+        }
+        return null;
+      }).whereType<Question>().toList();
+    }
+    if (testQuestions.isEmpty) {
+      final allQuestions = QuestionRepository.allQuestions;
+      testQuestions = allQuestions.where((q) => q.examCode == examCode).take(10).toList();
+      if (testQuestions.isEmpty) testQuestions = allQuestions.take(10).toList();
+    }
 
     // Grade label based on accuracy
     String gradeLabel;
@@ -530,153 +565,166 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                                   ),
                                   const SizedBox(height: 12),
 
-                                  // Options — only show if wrong or skipped (to show correct vs selected)
-                                  // For correct: show concise "You answered correctly" message
-                                  if (isCorrect)
-                                    Container(
-                                      padding: const EdgeInsets.all(10),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.success
-                                            .withValues(alpha: 0.07),
-                                        borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(
-                                            color: AppColors.success
-                                                .withValues(alpha: 0.3)),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          const Icon(Icons.check_circle_rounded,
-                                              color: AppColors.success,
-                                              size: 16),
-                                          const SizedBox(width: 8),
-                                          Flexible(
-                                            child: Text(
-                                              'You selected the correct answer — Option ${question.correctAnswer.toUpperCase()}',
-                                              style: const TextStyle(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: AppColors.primaryDark),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    )
-                                  else ...[
-                                    // Show all options with highlights
-                                    ...question.options.map((option) {
-                                      final optionChar = option
-                                          .trim()
-                                          .substring(1, 2)
-                                          .toLowerCase();
-                                      final isUserPick =
-                                          selectedOption == optionChar;
-                                      final isRightAnswer =
-                                          question.correctAnswer == optionChar;
+                                   // Passage or Directions (if present)
+                                   if (question.passageOrDirection != null && question.passageOrDirection!.trim().isNotEmpty) ...[
+                                     Container(
+                                       padding: const EdgeInsets.all(10),
+                                       decoration: BoxDecoration(
+                                         color: const Color(0xFFF1F5F9),
+                                         borderRadius: BorderRadius.circular(8),
+                                         border: Border.all(color: const Color(0xFFE2E8F0)),
+                                       ),
+                                       child: Column(
+                                         crossAxisAlignment: CrossAxisAlignment.start,
+                                         children: [
+                                           const Row(
+                                             children: [
+                                               Icon(Icons.menu_book_rounded, size: 14, color: AppColors.primary),
+                                               SizedBox(width: 6),
+                                               Text(
+                                                 'Directions / Passage Context',
+                                                 style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary),
+                                               ),
+                                             ],
+                                           ),
+                                           const SizedBox(height: 6),
+                                           Text(
+                                             question.passageOrDirection!,
+                                             style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, height: 1.4),
+                                           ),
+                                         ],
+                                       ),
+                                     ),
+                                     const SizedBox(height: 10),
+                                   ],
 
-                                      Color borderColor = AppColors.divider;
-                                      Color bgColor = Colors.transparent;
-                                      Color textColor = AppColors.textPrimary;
+                                   // User selection vs Official Answer banner
+                                   Container(
+                                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                     decoration: BoxDecoration(
+                                       color: statusColor.withValues(alpha: 0.08),
+                                       borderRadius: BorderRadius.circular(8),
+                                       border: Border.all(color: statusColor.withValues(alpha: 0.3)),
+                                     ),
+                                     child: Row(
+                                       children: [
+                                         Icon(statusIcon, color: statusColor, size: 16),
+                                         const SizedBox(width: 8),
+                                         Expanded(
+                                           child: Text(
+                                             isSkipped
+                                                 ? 'Not Attempted · Correct Answer: Option ${question.correctAnswer.toUpperCase()}'
+                                                 : (isCorrect
+                                                     ? 'Correct Answer! You picked Option ${question.correctAnswer.toUpperCase()}'
+                                                     : 'Your Choice: Option ${selectedOption.toUpperCase()} · Correct: Option ${question.correctAnswer.toUpperCase()}'),
+                                             style: TextStyle(
+                                               fontSize: 12,
+                                               fontWeight: FontWeight.bold,
+                                               color: isCorrect ? AppColors.primaryDark : statusColor,
+                                             ),
+                                           ),
+                                         ),
+                                       ],
+                                     ),
+                                   ),
+                                   const SizedBox(height: 10),
 
-                                      if (isRightAnswer) {
-                                        borderColor = AppColors.success;
-                                        bgColor = AppColors.success
-                                            .withValues(alpha: 0.06);
-                                        textColor = AppColors.primaryDark;
-                                      } else if (isUserPick) {
-                                        borderColor = AppColors.error;
-                                        bgColor = AppColors.error
-                                            .withValues(alpha: 0.06);
-                                        textColor = AppColors.error;
-                                      }
+                                   // Show all options with clear status highlights
+                                   ...question.options.asMap().entries.map((optEntry) {
+                                     final optIdx = optEntry.key;
+                                     final option = optEntry.value;
+                                     final optionChar = _extractOptionChar(option, optIdx);
+                                     final isUserPick = selectedOption == optionChar;
+                                     final isRightAnswer = question.correctAnswer.toLowerCase() == optionChar;
 
-                                      return Container(
-                                        margin:
-                                            const EdgeInsets.only(bottom: 6),
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 10),
-                                        decoration: BoxDecoration(
-                                          color: bgColor,
-                                          border: Border.all(
-                                              color: borderColor,
-                                              width: isRightAnswer || isUserPick
-                                                  ? 1.5
-                                                  : 1),
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              child: Text(
-                                                option,
-                                                style: TextStyle(
-                                                    fontSize: 13,
-                                                    color: textColor,
-                                                    fontWeight: isRightAnswer ||
-                                                            isUserPick
-                                                        ? FontWeight.bold
-                                                        : FontWeight.normal),
-                                              ),
-                                            ),
-                                            if (isRightAnswer)
-                                              const Icon(
-                                                  Icons.check_circle_rounded,
-                                                  color: AppColors.success,
-                                                  size: 16)
-                                            else if (isUserPick)
-                                              const Icon(Icons.cancel_rounded,
-                                                  color: AppColors.error,
-                                                  size: 16),
-                                          ],
-                                        ),
-                                      );
-                                    }),
-                                    const SizedBox(height: 8),
-                                    // Explanation box (for wrong/skipped)
-                                    Container(
-                                      padding:
-                                          const EdgeInsets.all(AppSpacing.m),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.primaryLight
-                                            .withValues(alpha: 0.25),
-                                        borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(
-                                            color: AppColors.primary
-                                                .withValues(alpha: 0.15)),
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            isSkipped
-                                                ? 'You did not attempt this question.'
-                                                : 'You selected Option ${selectedOption.toUpperCase()} — that was incorrect.',
-                                            style: const TextStyle(
-                                                fontSize: 11,
-                                                color: AppColors.textSecondary,
-                                                fontStyle: FontStyle.italic),
-                                          ),
-                                          const SizedBox(height: 6),
-                                          const Text(
-                                            'Explanation:',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 12,
-                                                color: AppColors.textPrimary),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            question.solution,
-                                            style: const TextStyle(
-                                                fontSize: 12.5,
-                                                color: AppColors.textSecondary,
-                                                height: 1.5),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
+                                     Color borderColor = AppColors.divider;
+                                     Color bgColor = Colors.transparent;
+                                     Color textColor = AppColors.textPrimary;
+
+                                     if (isRightAnswer) {
+                                       borderColor = AppColors.success;
+                                       bgColor = AppColors.success.withValues(alpha: 0.08);
+                                       textColor = AppColors.primaryDark;
+                                     } else if (isUserPick) {
+                                       borderColor = AppColors.error;
+                                       bgColor = AppColors.error.withValues(alpha: 0.08);
+                                       textColor = AppColors.error;
+                                     }
+
+                                     return Container(
+                                       margin: const EdgeInsets.only(bottom: 6),
+                                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                       decoration: BoxDecoration(
+                                         color: bgColor,
+                                         border: Border.all(
+                                           color: borderColor,
+                                           width: isRightAnswer || isUserPick ? 1.6 : 1,
+                                         ),
+                                         borderRadius: BorderRadius.circular(10),
+                                       ),
+                                       child: Row(
+                                         children: [
+                                           Expanded(
+                                             child: Text(
+                                               MathUtils.formatMath(option),
+                                               style: TextStyle(
+                                                 fontSize: 13,
+                                                 color: textColor,
+                                                 fontWeight: isRightAnswer || isUserPick
+                                                     ? FontWeight.bold
+                                                     : FontWeight.normal,
+                                               ),
+                                             ),
+                                           ),
+                                           if (isRightAnswer)
+                                             const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 16)
+                                           else if (isUserPick)
+                                             const Icon(Icons.cancel_rounded, color: AppColors.error, size: 16),
+                                         ],
+                                       ),
+                                     );
+                                   }),
+                                   const SizedBox(height: 8),
+
+                                   // Detailed Step-by-Step Explanation Box
+                                   Container(
+                                     padding: const EdgeInsets.all(AppSpacing.m),
+                                     decoration: BoxDecoration(
+                                       color: AppColors.primaryLight.withValues(alpha: 0.25),
+                                       borderRadius: BorderRadius.circular(10),
+                                       border: Border.all(color: AppColors.primary.withValues(alpha: 0.15)),
+                                     ),
+                                     child: Column(
+                                       crossAxisAlignment: CrossAxisAlignment.start,
+                                       children: [
+                                         Row(
+                                           children: [
+                                             const Icon(Icons.lightbulb_rounded, size: 16, color: AppColors.primary),
+                                             const SizedBox(width: 6),
+                                             Text(
+                                               'Official Solution & Detailed Explanation:',
+                                               style: const TextStyle(
+                                                 fontWeight: FontWeight.bold,
+                                                 fontSize: 12,
+                                                 color: AppColors.primaryDark,
+                                               ),
+                                             ),
+                                           ],
+                                         ),
+                                         const SizedBox(height: 6),
+                                         Text(
+                                           question.solution.isNotEmpty
+                                               ? MathUtils.formatMath(question.solution)
+                                               : 'Correct Answer: Option ${question.correctAnswer.toUpperCase()}',
+                                           style: const TextStyle(
+                                             fontSize: 12.5,
+                                             color: AppColors.textSecondary,
+                                             height: 1.5,
+                                           ),
+                                         ),
+                                       ],
+                                     ),
+                                   ),
                                 ],
                               ),
                             )

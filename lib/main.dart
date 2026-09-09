@@ -49,6 +49,7 @@ import 'features/home/view/pyq_hub_screen.dart';
 import 'features/home/view/mock_hub_screen.dart';
 import 'features/home/view/exams_hub_screen.dart';
 import 'features/admin/view/question_review_screen.dart';
+import 'features/admin/view/question_flagger_screen.dart';
 import 'core/services/question_repository.dart';
 import 'core/services/current_affairs_service.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -420,13 +421,17 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/exams-hub',
         builder: (context, state) {
           final tabStr = state.uri.queryParameters['tab'];
-          final initialTab = tabStr == '1' ? 1 : 0;
+          final initialTab = (int.tryParse(tabStr ?? '0') ?? 0).clamp(0, 2);
           return ExamsHubScreen(initialTabIndex: initialTab);
         },
       ),
       GoRoute(
         path: '/admin/question-review',
         builder: (context, state) => const QuestionReviewScreen(),
+      ),
+      GoRoute(
+        path: '/admin/question-flagger',
+        builder: (context, state) => const QuestionFlaggerScreen(),
       ),
     ],
   );

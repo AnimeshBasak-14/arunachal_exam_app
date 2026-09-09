@@ -375,6 +375,21 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
       'timeTaken': timeTaken,
       'date': dateStr,
       'selectedAnswers': _selectedAnswers,
+      'questions': _testQuestions.map((q) => {
+        'id': q.id,
+        'questionText': q.questionText,
+        'subject': q.subject,
+        'examCode': q.examCode,
+        'options': q.options,
+        'correctAnswer': q.correctAnswer,
+        'officialAnswer': q.officialAnswer,
+        'solution': q.solution,
+        'difficulty': q.difficulty,
+        'year': q.year,
+        'passageOrDirection': q.passageOrDirection,
+        'passageImage': q.passageImage,
+        'questionImage': q.questionImage,
+      }).toList(),
     });
     historyList.insert(0, recordJson); // Add most recent first
     await storage.saveQuizHistory(historyList);
@@ -663,6 +678,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
       displayNum: displayNum,
       isInsideGroup: isInsideGroup,
       selectedOption: selectedOption,
+      isStudyMode: isStudy,
       onSelectOption: _isSubmitted
           ? null
           : (val) {

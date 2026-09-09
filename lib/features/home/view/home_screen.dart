@@ -17,6 +17,7 @@ import '../../../core/services/current_affairs_service.dart';
 import '../../../core/services/remote_config_service.dart';
 import 'exams_hub_screen.dart';
 import '../../chatbot/view/chatbot_screen.dart';
+import '../../../widgets/custom_practice_modal.dart';
 
 final currentTabProvider = StateProvider<int>((ref) => 0);
 
@@ -581,15 +582,13 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.m),
-                  // Core Pillars: PYQ Bank & Mock Test Center
+                  // Core Pillars: 4 Primary Action Cards (PYQ, Mock, Custom Test, Admin Flagger)
                   Row(
                     children: [
-                      // PYQ Bank Card
+                      // 1. PYQ Bank Card
                       Expanded(
                         child: InkWell(
-                          onTap: () {
-                            ref.read(currentTabProvider.notifier).state = 1;
-                          },
+                          onTap: () => context.push('/exams-hub?tab=0'),
                           borderRadius: BorderRadius.circular(AppSpacing.radiusL),
                           child: Container(
                             padding: const EdgeInsets.all(AppSpacing.m),
@@ -635,7 +634,7 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 16,
+                                        fontSize: 15,
                                       ),
                                     ),
                                     SizedBox(height: 2),
@@ -652,12 +651,10 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                       ),
                       const SizedBox(width: AppSpacing.m),
 
-                      // Mock Test Center Card
+                      // 2. Mock Tests Card
                       Expanded(
                         child: InkWell(
-                          onTap: () {
-                            ref.read(currentTabProvider.notifier).state = 1;
-                          },
+                          onTap: () => context.push('/exams-hub?tab=1'),
                           borderRadius: BorderRadius.circular(AppSpacing.radiusL),
                           child: Container(
                             padding: const EdgeInsets.all(AppSpacing.m),
@@ -703,12 +700,162 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 16,
+                                        fontSize: 15,
                                       ),
                                     ),
                                     SizedBox(height: 2),
                                     Text(
                                       'Maths, GK, English &\nTechnical Sectionals',
+                                      style: TextStyle(color: Colors.white70, fontSize: 10, height: 1.2),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.m),
+                  Row(
+                    children: [
+                      // 3. Custom Mock Test Card
+                      Expanded(
+                        child: InkWell(
+                          onTap: () => showCustomPracticeModal(context),
+                          borderRadius: BorderRadius.circular(AppSpacing.radiusL),
+                          child: Container(
+                            padding: const EdgeInsets.all(AppSpacing.m),
+                            height: 125,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF004D40), Color(0xFF00796B)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(AppSpacing.radiusL),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF004D40).withValues(alpha: 0.25),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Icon(Icons.tune_rounded, color: Colors.white, size: 20),
+                                    ),
+                                    const Icon(Icons.arrow_forward_rounded, color: Colors.white70, size: 16),
+                                  ],
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: const [
+                                    Text(
+                                      'Custom Test',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                    SizedBox(height: 2),
+                                    Text(
+                                      'Build Your Practice\nBy Subject & Time',
+                                      style: TextStyle(color: Colors.white70, fontSize: 10, height: 1.2),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.m),
+
+                      // 4. Admin Question Flagger & Review Card
+                      Expanded(
+                        child: InkWell(
+                          onTap: () => context.push('/admin/question-flagger'),
+                          borderRadius: BorderRadius.circular(AppSpacing.radiusL),
+                          child: Container(
+                            padding: const EdgeInsets.all(AppSpacing.m),
+                            height: 125,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF991B1B), Color(0xFFDC2626)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(AppSpacing.radiusL),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF991B1B).withValues(alpha: 0.25),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Icon(Icons.flag_circle_rounded, color: Colors.white, size: 20),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(alpha: 0.25),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: const Text(
+                                        'ADMIN / QA',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 8.5,
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: const [
+                                    Text(
+                                      'Question Flagger',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                    SizedBox(height: 2),
+                                    Text(
+                                      'Audit OCR Defects\n& Quality Triage',
                                       style: TextStyle(color: Colors.white70, fontSize: 10, height: 1.2),
                                     ),
                                   ],
