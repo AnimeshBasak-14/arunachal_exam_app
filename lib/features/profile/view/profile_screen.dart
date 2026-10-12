@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme/theme_mode_provider.dart';
 import '../../../core/services/service_providers.dart';
 import '../../../core/utils/rank_utils.dart';
 import '../../../core/utils/avatar_utils.dart';
@@ -246,6 +247,54 @@ class ProfileScreen extends ConsumerWidget {
                       size: 16, color: AppColors.textHint),
                   onTap: () {
                     context.push('/forgot-password');
+                  },
+                ),
+                const Divider(height: 1, color: AppColors.divider),
+                Consumer(
+                  builder: (context, ref, _) {
+                    final currentMode = ref.watch(themeModeProvider);
+                    final modeLabel = currentMode == ThemeMode.system
+                        ? 'Auto (System)'
+                        : (currentMode == ThemeMode.dark ? 'Dark (Night)' : 'Light (Signal)');
+                    return ListTile(
+                      leading: Icon(
+                        currentMode == ThemeMode.dark
+                            ? Icons.dark_mode_rounded
+                            : (currentMode == ThemeMode.light
+                                ? Icons.light_mode_rounded
+                                : Icons.brightness_auto_rounded),
+                        color: AppColors.primary,
+                      ),
+                      title: const Text('THEME',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text(modeLabel,
+                          style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                      trailing: DropdownButtonHideUnderline(
+                        child: DropdownButton<ThemeMode>(
+                          value: currentMode,
+                          dropdownColor: AppColors.surface,
+                          items: const [
+                            DropdownMenuItem(
+                              value: ThemeMode.system,
+                              child: Text('Auto', style: TextStyle(fontSize: 12)),
+                            ),
+                            DropdownMenuItem(
+                              value: ThemeMode.light,
+                              child: Text('Light', style: TextStyle(fontSize: 12)),
+                            ),
+                            DropdownMenuItem(
+                              value: ThemeMode.dark,
+                              child: Text('Dark', style: TextStyle(fontSize: 12)),
+                            ),
+                          ],
+                          onChanged: (mode) {
+                            if (mode != null) {
+                              ref.read(themeModeProvider.notifier).setThemeMode(mode);
+                            }
+                          },
+                        ),
+                      ),
+                    );
                   },
                 ),
                 const Divider(height: 1, color: AppColors.divider),

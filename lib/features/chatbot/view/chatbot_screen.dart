@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/constants/app_secrets.dart';
 
 class _ChatMessage {
   final String text;
@@ -97,12 +98,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
   static const String _model = 'gemini-3.6-flash';
 
-  static String get _apiKey {
-    const envKey = String.fromEnvironment('GEMINI_API_KEY');
-    if (envKey.isNotEmpty) return envKey.trim();
-    return utf8.decode(base64Decode(
-        'QVEuQWI4Uk42S1h1cTBTaUdTc012eW5VZmMyU2hWUTdETUtVbU1xVTFqbDNOeWFqVGFyQlE='));
-  }
+  static String get _apiKey => AppSecrets.geminiApiKey;
 
   static const String _systemPrompt =
       'You are an expert APSSB/APPSC exam preparation tutor for Arunachal Pradesh government job exams.\n'
@@ -338,7 +334,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       } else {
         final errMsg = response.statusCode == 429
             ? '⚠️ AI is busy right now. Please try again in a moment.'
-            : '⚠️ AI summary failed (HTTP ${response.statusCode}). Tap the mic or type your question below.';
+            : '⚠️ The AI tutor is unavailable right now. Please try again later.';
         if (mounted) {
           setState(() {
             _messages.add(_ChatMessage(
@@ -713,6 +709,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                             ),
                           ),
                           trailing: IconButton(
+                            tooltip: 'Delete',
                             icon: const Icon(Icons.delete_outline_rounded,
                                 size: 16, color: AppColors.textHint),
                             onPressed: () => _deleteSession(s.id),
@@ -850,6 +847,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             ),
           ),
           IconButton(
+            tooltip: 'Close',
             icon: const Icon(Icons.close_rounded,
                 size: 20, color: AppColors.textHint),
             onPressed: () {

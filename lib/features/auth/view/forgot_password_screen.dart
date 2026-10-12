@@ -9,6 +9,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/widgets/primary_button.dart';
+import '../../../core/utils/validators.dart';
 import '../viewmodel/auth_viewmodel.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
@@ -85,7 +86,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     if (rawInput.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please enter your registered Gmail or Phone number'),
+          content: Text('Please enter your registered email or phone number'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -93,14 +94,14 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     }
 
     final cleanInput = rawInput.toLowerCase();
-    final isGmail = cleanInput.endsWith('@gmail.com');
+    final isEmail = Validators.isEmail(cleanInput);
     final isPhone = RegExp(r'^\d{10}$').hasMatch(cleanInput);
 
-    if (!isGmail && !isPhone) {
+    if (!isEmail && !isPhone) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content:
-              Text('Please enter a valid Gmail (@gmail.com) or 10-digit Phone'),
+              Text(Validators.invalidIdMessage),
           backgroundColor: AppColors.error,
         ),
       );
@@ -116,7 +117,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     final registeredName = storage.getRegisteredName(cleanInput);
 
     bool accountExists = registeredPwd != null || registeredName != null;
-    if (!accountExists && isGmail) {
+    if (!accountExists && isEmail) {
       try {
         final firebase = ref.read(firebaseServiceProvider);
         final remoteUser = await firebase.fetchUserProfile(cleanInput);
@@ -141,7 +142,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-                'No account found with this Gmail or Phone. Please register first.'),
+                'No account found with this email or phone. Please register first.'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -325,6 +326,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         title: const Text('Forgot Password',
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         leading: IconButton(
+          tooltip: 'Back',
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => context.pop(),
         ),
@@ -364,7 +366,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 const Text(
-                  'Enter your registered Gmail or Phone number. We will send a secure verification code to reset your password.',
+                  'Enter your registered email or phone number. We will send a secure verification code to reset your password.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 13,
@@ -376,19 +378,19 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
                 // Email / Phone Field
                 CustomTextField(
-                  label: 'Registered Gmail or Phone number',
+                  label: 'Registered email or phone number',
                   controller: _emailPhoneController,
                   keyboardType: TextInputType.emailAddress,
                   prefixIcon: Icons.alternate_email_rounded,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Please enter Gmail or Phone number';
+                      return 'Please enter email or phone number';
                     }
                     final clean = value.trim().toLowerCase();
-                    final isGmail = clean.endsWith('@gmail.com');
+                    final isEmail = Validators.isEmail(clean);
                     final isPhone = RegExp(r'^\d{10}$').hasMatch(clean);
-                    if (!isGmail && !isPhone) {
-                      return 'Only Gmail (@gmail.com) or 10-digit Phone numbers allowed';
+                    if (!isEmail && !isPhone) {
+                      return Validators.invalidIdMessage;
                     }
                     return null;
                   },

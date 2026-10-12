@@ -155,6 +155,7 @@ class _ExamDetailScreenState extends ConsumerState<ExamDetailScreen> {
                     Row(
                       children: [
                         IconButton(
+                          tooltip: 'Back',
                           icon: const Icon(Icons.arrow_back_ios_new_rounded,
                               color: AppColors.textWhite),
                           onPressed: () => context.pop(),
@@ -171,6 +172,7 @@ class _ExamDetailScreenState extends ConsumerState<ExamDetailScreen> {
                       ],
                     ),
                     IconButton(
+                      tooltip: 'Bookmark',
                       icon: Icon(
                         exam.isBookmarked
                             ? Icons.bookmark_rounded

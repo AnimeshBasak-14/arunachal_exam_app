@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
+import '../../../core/services/admin_session.dart';
 import '../../../core/services/question_repository.dart';
+import '../../../core/config/supabase_config.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/math_utils.dart';
@@ -15,8 +17,8 @@ class QuestionFlaggerScreen extends StatefulWidget {
 }
 
 class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
-  static const String _supabaseUrl = 'https://fllopztywwblbucvaths.supabase.co';
-  static const String _supabaseKey = 'sb_publishable_y68QKKHxBTZxBP3Sf1X7tw_zfFnXX8M';
+  static String get _supabaseUrl => SupabaseConfig.url;
+  static String get _supabaseKey => SupabaseConfig.anonKey;
 
   // Filters state - default Status is 'all' so admin immediately sees database records
   String _selectedStatus = 'all'; // 'all', 'unreviewed', 'flagged', 'approved'
@@ -171,7 +173,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
         Uri.parse(requestUrl),
         headers: {
           'apikey': _supabaseKey,
-          'Authorization': 'Bearer $_supabaseKey',
+          'Authorization': AdminSession.bearer,
           'Range': '$offset-${offset + _pageSize - 1}',
           'Range-Unit': 'items',
           'Prefer': 'return=representation',
@@ -187,7 +189,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
           Uri.parse(requestUrl),
           headers: {
             'apikey': _supabaseKey,
-            'Authorization': 'Bearer $_supabaseKey',
+            'Authorization': AdminSession.bearer,
             'Range': '$offset-${offset + _pageSize - 1}',
             'Range-Unit': 'items',
             'Prefer': 'return=representation',
@@ -294,7 +296,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
         Uri.parse(patchUrl),
         headers: {
           'apikey': _supabaseKey,
-          'Authorization': 'Bearer $_supabaseKey',
+          'Authorization': AdminSession.bearer,
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
@@ -310,7 +312,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('⚠️ Marked in session. Run migrations/003_admin_flagger.sql in Supabase to persist!'),
+              content: Text('⚠️ Could not save to the server. Sign in again as admin and retry.'),
               backgroundColor: Colors.orange,
               duration: Duration(seconds: 4),
             ),
@@ -325,7 +327,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
         Uri.parse(flagUrl),
         headers: {
           'apikey': _supabaseKey,
-          'Authorization': 'Bearer $_supabaseKey',
+          'Authorization': AdminSession.bearer,
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
@@ -399,7 +401,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
         Uri.parse(patchUrl),
         headers: {
           'apikey': _supabaseKey,
-          'Authorization': 'Bearer $_supabaseKey',
+          'Authorization': AdminSession.bearer,
           'Content-Type': 'application/json',
         },
         body: jsonEncode(patchBody),
@@ -411,7 +413,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
           final label = issueCatalog.firstWhere((i) => i['id'] == issueCategory, orElse: () => {'label': issueCategory})['label'];
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('⚠️ $label (Flagged in session. Run migrations/003_admin_flagger.sql to persist)'),
+              content: Text('⚠️ $label could not be saved to the server. Sign in again as admin and retry.'),
               backgroundColor: Colors.orange,
               duration: const Duration(seconds: 4),
             ),
@@ -426,7 +428,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
         Uri.parse(flagUrl),
         headers: {
           'apikey': _supabaseKey,
-          'Authorization': 'Bearer $_supabaseKey',
+          'Authorization': AdminSession.bearer,
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
@@ -876,7 +878,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                     Uri.parse(patchUrl),
                     headers: {
                       'apikey': _supabaseKey,
-                      'Authorization': 'Bearer $_supabaseKey',
+                      'Authorization': AdminSession.bearer,
                       'Content-Type': 'application/json',
                     },
                     body: jsonEncode(patchPayload),
@@ -888,7 +890,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                       Uri.parse(patchUrl),
                       headers: {
                         'apikey': _supabaseKey,
-                        'Authorization': 'Bearer $_supabaseKey',
+                        'Authorization': AdminSession.bearer,
                         'Content-Type': 'application/json',
                       },
                       body: jsonEncode({
@@ -1011,6 +1013,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
               top: 8,
               right: 8,
               child: IconButton(
+                tooltip: 'Close',
                 icon: const Icon(Icons.close_rounded, color: Colors.black87),
                 onPressed: () => Navigator.pop(ctx),
               ),
@@ -1031,6 +1034,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
         elevation: 0.5,
         titleSpacing: 0,
         leading: IconButton(
+          tooltip: 'Back',
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
         ),
@@ -1084,6 +1088,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                     prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColors.textHint),
                     suffixIcon: _searchQuery.isNotEmpty
                         ? IconButton(
+                            tooltip: 'Clear',
                             icon: const Icon(Icons.clear_rounded, size: 18),
                             onPressed: () {
                               _searchController.clear();
@@ -2060,6 +2065,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
             ),
           ),
           IconButton(
+            tooltip: 'Close',
             icon: const Icon(Icons.close_rounded, size: 16, color: Color(0xFF92400E)),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 24, minHeight: 24),

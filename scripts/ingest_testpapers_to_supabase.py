@@ -23,10 +23,12 @@ if hasattr(sys.stdout, 'reconfigure'):
 
 # --- Supabase Configuration ---
 SUPABASE_URL = os.environ.get('SUPABASE_URL', 'https://fllopztywwblbucvaths.supabase.co')
-SUPABASE_KEY = os.environ.get('SUPABASE_KEY', 'sb_publishable_y68QKKHxBTZxBP3Sf1X7tw_zfFnXX8M')
+from _env import supabase_key, supabase_apikey
+SUPABASE_KEY = supabase_key()
+SUPABASE_APIKEY = supabase_apikey()
 
 HEADERS = {
-    'apikey': SUPABASE_KEY,
+    'apikey': SUPABASE_APIKEY,
     'Authorization': f'Bearer {SUPABASE_KEY}',
     'Content-Type': 'application/json',
     'Prefer': 'return=representation',
@@ -386,7 +388,7 @@ def ingest_folder(folder_path, folder_category):
 
 
 def main():
-    base_dir = r"C:\Users\basak\Desktop\Arunachal Exam App\arunachal_exam_app\TESTPAPER"
+    base_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "TESTPAPER")
 
     folders_to_ingest = [
         (os.path.join(base_dir, "mock"), "MOCK"),

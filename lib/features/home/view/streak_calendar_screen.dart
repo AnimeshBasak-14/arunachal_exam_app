@@ -117,6 +117,7 @@ class _StreakCalendarScreenState extends ConsumerState<StreakCalendarScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
+          tooltip: 'Previous',
           icon: const Icon(Icons.chevron_left),
           onPressed: isMinMonth ? null : _previousMonth,
         ),
@@ -125,6 +126,7 @@ class _StreakCalendarScreenState extends ConsumerState<StreakCalendarScreen> {
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         IconButton(
+          tooltip: 'Next',
           icon: const Icon(Icons.chevron_right),
           onPressed: isCurrentMonth ? null : _nextMonth,
         ),

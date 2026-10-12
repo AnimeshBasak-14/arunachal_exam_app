@@ -3,6 +3,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:arunachal_exam_app/features/auth/viewmodel/auth_viewmodel.dart';
 import 'package:arunachal_exam_app/core/services/storage_service.dart';
 import 'package:arunachal_exam_app/core/services/firebase_service.dart';
+import 'package:arunachal_exam_app/core/utils/validators.dart';
 import 'package:arunachal_exam_app/models/user_model.dart';
 
 class MockStorageService extends Mock implements StorageService {}
@@ -74,16 +75,24 @@ void main() {
   });
 
   group('AuthViewModel.login - Validation & Failure Cases', () {
-    test('login fails when email is non-gmail and phone is invalid format', () async {
-      final result = await authViewModel.login('user@yahoo.com', 'password123');
+    test('login fails when input is neither a valid email nor a phone', () async {
+      final result = await authViewModel.login('not-an-email', 'password123');
 
       expect(result, false);
       expect(authViewModel.state.isLoggedIn, false);
       expect(authViewModel.state.isLoading, false);
-      expect(
-        authViewModel.state.errorMessage,
-        'Invalid ID. Only Gmail (@gmail.com) or 10-digit Phone numbers allowed.',
-      );
+      expect(authViewModel.state.errorMessage, Validators.invalidIdMessage);
+    });
+
+    test('non-Gmail email addresses pass validation', () async {
+      when(() => mockStorage.getRegisteredPassword('user@yahoo.com'))
+          .thenAnswer((_) async => null);
+
+      final result = await authViewModel.login('user@yahoo.com', 'password123');
+
+      expect(result, false);
+      expect(authViewModel.state.errorMessage,
+          'Account does not exist. Please register first.');
     });
 
     test('login fails when phone number is not 10 digits', () async {
@@ -92,10 +101,7 @@ void main() {
       expect(result, false);
       expect(authViewModel.state.isLoggedIn, false);
       expect(authViewModel.state.isLoading, false);
-      expect(
-        authViewModel.state.errorMessage,
-        'Invalid ID. Only Gmail (@gmail.com) or 10-digit Phone numbers allowed.',
-      );
+      expect(authViewModel.state.errorMessage, Validators.invalidIdMessage);
     });
 
     test('login fails when account does not exist in registered storage', () async {

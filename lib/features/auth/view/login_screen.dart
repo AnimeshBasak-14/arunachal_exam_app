@@ -8,6 +8,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/widgets/social_button.dart';
+import '../../../core/utils/validators.dart';
 import '../viewmodel/auth_viewmodel.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -94,6 +95,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: IconButton(
+          tooltip: 'Back',
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => context.pop(),
         ),
@@ -132,19 +134,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: AppSpacing.xxl),
                 // Inputs
                 CustomTextField(
-                  label: 'Gmail or Phone number',
+                  label: 'Email or phone number',
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   prefixIcon: Icons.alternate_email_rounded,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Please enter Gmail or phone number';
+                      return 'Please enter email or phone number';
                     }
                     final clean = value.trim().toLowerCase();
-                    final isGmail = clean.endsWith('@gmail.com');
+                    final isEmail = Validators.isEmail(clean);
                     final isPhone = RegExp(r'^\d{10}$').hasMatch(clean);
-                    if (!isGmail && !isPhone) {
-                      return 'Only Gmail (@gmail.com) or 10-digit Phone numbers allowed';
+                    if (!isEmail && !isPhone) {
+                      return Validators.invalidIdMessage;
                     }
                     return null;
                   },

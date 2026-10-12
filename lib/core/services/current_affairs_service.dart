@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../constants/app_secrets.dart';
 
 class CurrentAffairsItem {
   final String id;
@@ -31,12 +32,7 @@ class CurrentAffairsItem {
 class CurrentAffairsService {
   static const String _model = 'gemini-3.6-flash';
 
-  static String get _apiKey {
-    const envKey = String.fromEnvironment('GEMINI_API_KEY');
-    if (envKey.isNotEmpty) return envKey.trim();
-    return utf8.decode(base64Decode(
-        'QVEuQWI4Uk42S1h1cTBTaUdTc012eW5VZmMyU2hWUTdETUtVbU1xVTFqbDNOeWFqVGFyQlE='));
-  }
+  static String get _apiKey => AppSecrets.geminiApiKey;
 
   static List<CurrentAffairsItem>? _cache;
   static DateTime? _cacheTime;

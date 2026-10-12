@@ -42,8 +42,12 @@ class _ExamsHubScreenState extends State<ExamsHubScreen> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
+    final bgColor = Theme.of(context).scaffoldBackgroundColor;
+    final surfaceColor = Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface;
+    final outlineColor = Theme.of(context).colorScheme.outline;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: bgColor,
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
@@ -52,16 +56,17 @@ class _ExamsHubScreenState extends State<ExamsHubScreen> with SingleTickerProvid
               floating: true,
               pinned: false,
               snap: true,
-              elevation: 0.5,
-              backgroundColor: Colors.white,
-              foregroundColor: AppColors.textPrimary,
+              elevation: 0,
+              scrolledUnderElevation: 0,
+              backgroundColor: bgColor,
+              foregroundColor: Theme.of(context).colorScheme.onSurface,
               titleSpacing: 16,
               title: Row(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
+                      color: AppColors.primary.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(Icons.school_rounded, color: AppColors.primary, size: 18),
@@ -71,14 +76,18 @@ class _ExamsHubScreenState extends State<ExamsHubScreen> with SingleTickerProvid
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
-                      children: const [
+                      children: [
                         Text(
                           'Exam Prep Center',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                         ),
-                        Text(
+                        const Text(
                           'Official PYQs, Targeted Mocks & Custom Practice',
                           style: TextStyle(fontSize: 10.5, color: AppColors.textSecondary, fontWeight: FontWeight.normal),
                           overflow: TextOverflow.ellipsis,
@@ -97,14 +106,15 @@ class _ExamsHubScreenState extends State<ExamsHubScreen> with SingleTickerProvid
               delegate: _ExamsHubTabBarDelegate(
                 tabController: _tabController,
                 child: Container(
-                  color: Colors.white,
+                  color: bgColor,
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
                   child: Container(
-                    height: 38,
+                    height: 40,
                     padding: const EdgeInsets.all(3),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF1F5F9),
+                      color: surfaceColor,
                       borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: outlineColor, width: 1),
                     ),
                     child: Row(
                       children: [
@@ -133,6 +143,7 @@ class _ExamsHubScreenState extends State<ExamsHubScreen> with SingleTickerProvid
 
   Widget _buildTab(int index, IconData icon, String label) {
     final isSelected = _tabController.index == index;
+
     return Expanded(
       child: GestureDetector(
         onTap: () {
@@ -142,17 +153,8 @@ class _ExamsHubScreenState extends State<ExamsHubScreen> with SingleTickerProvid
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           decoration: BoxDecoration(
-            color: isSelected ? Colors.white : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.07),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1.5),
-                    )
-                  ]
-                : null,
+            color: isSelected ? AppColors.primary : Colors.transparent,
+            borderRadius: BorderRadius.circular(7),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -160,15 +162,19 @@ class _ExamsHubScreenState extends State<ExamsHubScreen> with SingleTickerProvid
               Icon(
                 icon,
                 size: 15,
-                color: isSelected ? AppColors.primary : const Color(0xFF64748B),
+                color: isSelected ? Colors.white : AppColors.textSecondary,
               ),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                  color: isSelected ? AppColors.primary : const Color(0xFF64748B),
+              const SizedBox(width: 5),
+              Flexible(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: isSelected ? Colors.white : AppColors.textSecondary,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ),
             ],
@@ -191,10 +197,10 @@ class _ExamsHubTabBarDelegate extends SliverPersistentHeaderDelegate {
   }
 
   @override
-  double get maxExtent => 50.0;
+  double get maxExtent => 52.0;
 
   @override
-  double get minExtent => 50.0;
+  double get minExtent => 52.0;
 
   @override
   bool shouldRebuild(covariant _ExamsHubTabBarDelegate oldDelegate) {

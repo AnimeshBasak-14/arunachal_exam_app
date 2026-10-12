@@ -146,13 +146,11 @@ class _AntigravityGlassCardState extends State<AntigravityGlassCard>
                   duration: const Duration(milliseconds: 300),
                   padding: widget.padding,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(
-                        alpha: (_isHovered || _isPressed)
-                            ? 0.90
-                            : widget.backgroundOpacity),
+                    color: Theme.of(context).cardTheme.color ??
+                        Theme.of(context).colorScheme.surface,
                     borderRadius: radius,
                     border: Border.all(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.outline,
                       width: 1.0,
                     ),
                   ),

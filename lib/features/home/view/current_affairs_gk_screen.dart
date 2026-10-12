@@ -98,6 +98,7 @@ class _CurrentAffairsGkScreenState
         leading: widget.isEmbedded
             ? null
             : IconButton(
+                tooltip: 'Back',
                 icon: const Icon(Icons.arrow_back_ios_new_rounded),
                 onPressed: () => context.pop(),
               ),

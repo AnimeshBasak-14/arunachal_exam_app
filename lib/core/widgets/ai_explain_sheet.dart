@@ -1,11 +1,12 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import '../constants/app_secrets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 
 /// Frosted-glass bottom sheet that explains a highlighted text snippet
-/// using Gemini 1.5 Flash. Slide-up with drag-to-dismiss.
+/// using Gemini Flash. Slide-up with drag-to-dismiss.
 ///
 /// Usage:
 /// ```dart
@@ -33,8 +34,6 @@ class _AiExplainSheetState extends State<AiExplainSheet> {
   bool _loading = true;
   String? _error;
 
-  // Replace with your actual Gemini API key or read from RemoteConfig
-  static const _geminiApiKey = 'AIzaSyC-4sD1Ai-WXc3wJyGjt5e_N-ZeJBNVXrQ';
 
   @override
   void initState() {
@@ -45,8 +44,8 @@ class _AiExplainSheetState extends State<AiExplainSheet> {
   Future<void> _fetchExplanation() async {
     try {
       final model = GenerativeModel(
-        model: 'gemini-1.5-flash',
-        apiKey: _geminiApiKey,
+        model: 'gemini-3.6-flash',
+        apiKey: AppSecrets.geminiApiKey,
       );
       final prompt = '''You are an expert tutor for competitive exams in Arunachal Pradesh (APSSB, APPSC, etc.).
 Explain the following highlighted text in a concise, easy-to-understand way for an exam aspirant.
@@ -87,16 +86,13 @@ Highlighted text:
             filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.88),
+                color: Theme.of(context).cardTheme.color ??
+                    Theme.of(context).colorScheme.surface,
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                border: Border.all(color: Colors.white, width: 1.5),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.10),
-                    blurRadius: 40,
-                    offset: const Offset(0, -8),
-                  ),
-                ],
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline,
+                  width: 1.0,
+                ),
               ),
               child: SingleChildScrollView(
                 controller: scrollController,
@@ -123,11 +119,7 @@ Highlighted text:
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [AppColors.primary, AppColors.secondary],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
+                            color: AppColors.primary,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Text('✨', style: TextStyle(fontSize: 18)),
@@ -155,6 +147,7 @@ Highlighted text:
                         ),
                         const Spacer(),
                         IconButton(
+                          tooltip: 'Close',
                           icon: const Icon(Icons.close_rounded, color: AppColors.textSecondary),
                           onPressed: () => Navigator.pop(context),
                           padding: EdgeInsets.zero,

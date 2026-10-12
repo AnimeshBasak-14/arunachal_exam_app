@@ -49,6 +49,7 @@ class _StateGkScreenState extends State<StateGkScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: IconButton(
+          tooltip: 'Back',
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => context.pop(),
         ),

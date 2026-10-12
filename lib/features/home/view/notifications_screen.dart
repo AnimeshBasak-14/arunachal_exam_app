@@ -174,6 +174,7 @@ class NotificationsScreen extends ConsumerWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: IconButton(
+          tooltip: 'Back',
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => context.pop(),
         ),
@@ -315,6 +316,7 @@ class NotificationsScreen extends ConsumerWidget {
                           ),
                           // Dismiss button
                           IconButton(
+                            tooltip: 'Close',
                             icon: const Icon(Icons.close_rounded,
                                 size: 18, color: AppColors.textHint),
                             constraints: const BoxConstraints(

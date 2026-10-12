@@ -14,10 +14,12 @@ from openpyxl.utils import get_column_letter
 import requests
 
 SUPABASE_URL = os.environ.get('SUPABASE_URL', 'https://fllopztywwblbucvaths.supabase.co')
-SUPABASE_KEY = os.environ.get('SUPABASE_KEY', 'sb_publishable_y68QKKHxBTZxBP3Sf1X7tw_zfFnXX8M')
+from _env import supabase_key, supabase_apikey
+SUPABASE_KEY = supabase_key()
+SUPABASE_APIKEY = supabase_apikey()
 
 HEADERS = {
-    'apikey': SUPABASE_KEY,
+    'apikey': SUPABASE_APIKEY,
     'Authorization': f'Bearer {SUPABASE_KEY}',
     'Content-Type': 'application/json',
 }

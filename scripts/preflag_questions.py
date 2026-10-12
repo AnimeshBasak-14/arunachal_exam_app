@@ -27,7 +27,9 @@ ISSUE_MISSING_IMAGE = 'missing_image'
 ISSUE_OTHER = 'other'
 
 SUPABASE_URL = 'https://fllopztywwblbucvaths.supabase.co'
-SUPABASE_KEY = 'sb_publishable_y68QKKHxBTZxBP3Sf1X7tw_zfFnXX8M'
+from _env import supabase_key, supabase_apikey
+SUPABASE_KEY = supabase_key()
+SUPABASE_APIKEY = supabase_apikey()
 
 
 def detect_question_issues(q: Dict[str, Any]) -> List[str]:
@@ -163,7 +165,7 @@ def main():
     req = urllib.request.Request(
         f"{SUPABASE_URL}/rest/v1/questions?select=id,question_text,options,image_url,has_image,review_status&review_status=eq.unreviewed&limit=100",
         headers={
-            'apikey': SUPABASE_KEY,
+            'apikey': SUPABASE_APIKEY,
             'Authorization': f'Bearer {SUPABASE_KEY}',
         }
     )
@@ -186,7 +188,7 @@ def main():
                                 'flag_reasons': issues,
                             }).encode('utf-8'),
                             headers={
-                                'apikey': SUPABASE_KEY,
+                                'apikey': SUPABASE_APIKEY,
                                 'Authorization': f'Bearer {SUPABASE_KEY}',
                                 'Content-Type': 'application/json',
                             },

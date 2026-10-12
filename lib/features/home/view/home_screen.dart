@@ -95,8 +95,14 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('🔥 Streak Check-in! You earned $pending Trophies!'),
-            backgroundColor: AppColors.success,
+            content: Row(
+              children: [
+                const Text('🔥 ', style: TextStyle(fontSize: 16)),
+                Expanded(
+                  child: Text('Streak Check-in! You earned $pending Trophies!'),
+                ),
+              ],
+            ),
           ),
         );
       }
@@ -355,6 +361,7 @@ class _HomeTabBodyState extends ConsumerState<HomeTabBody> {
                           builder: (context, ref, _) {
                             final hasUnread = ref.watch(hasUnreadNotifProvider);
                             return IconButton(
+                              tooltip: 'Notifications',
                               onPressed: () {
                                 context.push('/notifications');
                               },

@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
+import '../../../core/utils/validators.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 
 class ChangeEmailScreen extends ConsumerStatefulWidget {
@@ -54,12 +55,12 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
 
   void _sendOtp() {
     final email = _emailController.text.trim();
-    if (email.isEmpty || !email.toLowerCase().endsWith('@gmail.com')) {
+    if (email.isEmpty || !Validators.isEmail(email.toLowerCase())) {
       if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content:
-              Text('Please enter a valid Gmail (@gmail.com) address first'),
+              Text('Please enter a valid email address first'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -230,7 +231,7 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Gmail address updated successfully!'),
+            content: Text('Email address updated successfully!'),
             backgroundColor: AppColors.success,
           ),
         );
@@ -245,10 +246,11 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: IconButton(
+          tooltip: 'Back',
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => context.pop(),
         ),
-        title: const Text('CHANGE GMAIL'),
+        title: const Text('CHANGE EMAIL'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -303,7 +305,7 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
               const SizedBox(height: AppSpacing.l),
 
               const Text(
-                'OR UPDATE GMAIL MANUALLY',
+                'OR UPDATE EMAIL MANUALLY',
                 style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
@@ -319,19 +321,16 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     CustomTextField(
-                      label: 'New Gmail Address',
+                      label: 'New email address',
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       prefixIcon: Icons.email_outlined,
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
-                          return 'Please enter Gmail';
+                          return 'Please enter an email address';
                         }
-                        if (!value
-                            .trim()
-                            .toLowerCase()
-                            .endsWith('@gmail.com')) {
-                          return 'Only Gmail (@gmail.com) allowed';
+                        if (!Validators.isEmail(value.trim().toLowerCase())) {
+                          return 'Please enter a valid email address';
                         }
                         return null;
                       },
@@ -396,7 +395,7 @@ class _ChangeEmailScreenState extends ConsumerState<ChangeEmailScreen> {
                     ),
                     const SizedBox(height: AppSpacing.l),
                     PrimaryButton(
-                      text: 'VERIFY & SAVE GMAIL',
+                      text: 'VERIFY & SAVE EMAIL',
                       onPressed: _submit,
                     ),
                   ],

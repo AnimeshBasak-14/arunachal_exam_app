@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/services/question_repository.dart';
+import '../../../core/services/exam_repository.dart';
 import '../../../core/services/service_providers.dart';
 import '../../../core/services/firebase_service.dart';
 import '../../../core/services/remote_config_service.dart';
@@ -22,10 +23,12 @@ import '../widgets/single_question_widget.dart';
 import '../widgets/comprehension_group_widget.dart';
 import '../../../core/widgets/antigravity_timer_ring.dart';
 import '../../../core/widgets/antigravity_glass_card.dart';
+import '../../../core/widgets/leave_test_dialog.dart';
 
 class MockTestScreen extends ConsumerStatefulWidget {
   final String examCode;
   final String testType; // 'topic', 'full', '5', '10', '20'
+  final String? testId; // Specific paper test_id from tests table
   final String? subject; // Optional subject/topic filter (e.g., 'English', 'Mathematics')
   final String? difficulty; // Optional difficulty filter (e.g., 'Easy', 'Medium', 'Hard')
   final String? paperType; // 'PYQ' or 'MOCK' — defaults to 'MOCK'
@@ -38,6 +41,7 @@ class MockTestScreen extends ConsumerStatefulWidget {
     super.key,
     required this.examCode,
     required this.testType,
+    this.testId,
     this.subject,
     this.difficulty,
     this.paperType,
@@ -108,6 +112,26 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
   Future<void> _loadLiveMockQuestions() async {
     setState(() => _isLoadingQuestions = true);
     try {
+      if (widget.testId != null && widget.testId!.isNotEmpty) {
+        final testQs = await ExamRepository.instance.fetchQuestionsForTest(widget.testId!);
+        if (testQs.isNotEmpty && mounted) {
+          setState(() {
+            _testQuestions = testQs;
+            _isLoadingQuestions = false;
+            final mins = widget.durationMinutes ??
+                (_testQuestions.length <= 10
+                    ? 15
+                    : (_testQuestions.length <= 20 ? 30 : 60));
+            _secondsRemaining = mins * 60;
+            _initialSeconds = _secondsRemaining;
+          });
+          if (!widget.isStudyMode) {
+            _startTimer();
+          }
+          return;
+        }
+      }
+
       final targetPaperType = widget.paperType?.toUpperCase() ?? 'MOCK';
 
       // 1. Fetch questions for the given examCode
@@ -272,10 +296,14 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
     int correctCount = 0;
     int incorrectCount = 0;
     int unattemptedCount = 0;
+    int ungradedCount = 0;
 
     for (final q in _testQuestions) {
       final answer = _selectedAnswers[q.id];
-      if (answer == null) {
+      if (!q.hasAnswerKey) {
+        // No official key yet: neither reward nor penalise.
+        ungradedCount++;
+      } else if (answer == null) {
         unattemptedCount++;
       } else if (answer == q.correctAnswer) {
         correctCount++;
@@ -287,7 +315,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
     // Standard APSSB marking scheme: +2 for correct, -0.5 for wrong
     double totalPoints = (correctCount * 2.0) - (incorrectCount * 0.5);
     if (totalPoints < 0) totalPoints = 0.0;
-    double maxPoints = _testQuestions.length * 2.0;
+    double maxPoints = (_testQuestions.length - ungradedCount) * 2.0;
 
     // ELO Rating calculation
     final user = ref.read(authViewModelProvider).user;
@@ -299,17 +327,20 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
     final double expectedScore = 1.0 / (1.0 + math.pow(10.0, exponent));
 
     // Actual score percentage S
-    final double actualScore = totalPoints / maxPoints;
+    // If no question had an answer key, nothing can be scored or rated.
+    final bool isGradable = maxPoints > 0;
+    final double actualScore = isGradable ? totalPoints / maxPoints : 0.0;
 
     // Rating adjustment (K-factor = 32)
-    final int ratingChange = (32 * (actualScore - expectedScore)).round();
+    final int ratingChange =
+        isGradable ? (32 * (actualScore - expectedScore)).round() : 0;
 
     final int timeTaken = _initialSeconds - _secondsRemaining;
 
     // Speed Bonus: awarded only if accuracy >= 40%; max 10 trophies
     // Formula: timeLeft ratio Ã— 10, rounded. Faster completion = higher bonus.
     int speedBonus = 0;
-    if (actualScore >= 0.40 && timeTaken < _initialSeconds) {
+    if (isGradable && actualScore >= 0.40 && timeTaken < _initialSeconds) {
       final double timeLeftRatio =
           (_secondsRemaining / _initialSeconds.toDouble());
       speedBonus = (timeLeftRatio * 10).round();
@@ -319,7 +350,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
     final int totalChange = (rawChange * multiplier).round();
 
     // Persist new rating (score + speed)
-    if (user != null) {
+    if (user != null && isGradable) {
       ref.read(authViewModelProvider.notifier).updateRating(totalChange);
     }
 
@@ -473,6 +504,7 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
       backgroundColor: AppColors.void_,
       appBar: AppBar(
         leading: IconButton(
+          tooltip: 'Back',
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => context.pop(),
         ),
@@ -624,7 +656,20 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
     final isCorrect = selectedOption == question.correctAnswer;
 
     Widget? statusBadge;
-    if (selectedOption == null) {
+    if (!question.hasAnswerKey) {
+      statusBadge = const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.help_outline_rounded, color: AppColors.textHint, size: 16),
+          SizedBox(width: 4),
+          Text('Answer key pending · not scored',
+              style: TextStyle(
+                  color: AppColors.textHint,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold)),
+        ],
+      );
+    } else if (selectedOption == null) {
       statusBadge = const Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -783,22 +828,15 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
 
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (!didPop && !_isSubmitted) {
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('Cannot Go Back'),
-              content: const Text(
-                  'You must submit the test before leaving. Tap SUBMIT MOCK TEST to finish.'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('OK'),
-                ),
-              ],
-            ),
-          );
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final navigator = Navigator.of(context);
+        if (_isSubmitted ||
+            await confirmLeaveTest(context,
+                message:
+                    'Your answers will be lost and this attempt will not be scored. '
+                    'To get your score, tap SUBMIT MOCK TEST instead.')) {
+          navigator.pop();
         }
       },
       child: Scaffold(
@@ -812,30 +850,10 @@ class _MockTestScreenState extends ConsumerState<MockTestScreen> {
               toolbarHeight: 68,
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Quit Test?'),
-                      content: const Text(
-                          'Are you sure you want to exit? Your progress will not be saved.'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('CANCEL'),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            context.pop();
-                          },
-                          child: const Text('QUIT',
-                              style: TextStyle(color: AppColors.error)),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+                tooltip: 'Quit test',
+                // Goes through PopScope so the app bar and system back
+                // button share one confirmation dialog.
+                onPressed: () => Navigator.maybePop(context),
               ),
               title: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

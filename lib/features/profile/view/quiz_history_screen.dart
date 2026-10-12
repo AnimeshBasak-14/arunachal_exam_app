@@ -232,6 +232,7 @@ class _QuizHistoryScreenState extends ConsumerState<QuizHistoryScreen> {
             ),
             suffixIcon: _searchQuery.isNotEmpty
                 ? IconButton(
+                    tooltip: 'Clear',
                     icon: const Icon(Icons.clear_rounded, size: 18, color: AppColors.textHint),
                     onPressed: () => setState(() => _searchQuery = ''),
                   )

@@ -17,6 +17,7 @@ class MyCoursesScreen extends ConsumerWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: IconButton(
+          tooltip: 'Back',
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => context.pop(),
         ),
@@ -104,6 +105,7 @@ class MyCoursesScreen extends ConsumerWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
+                                tooltip: 'Bookmark',
                                 icon: const Icon(Icons.bookmark_rounded,
                                     color: AppColors.primary),
                                 onPressed: () {

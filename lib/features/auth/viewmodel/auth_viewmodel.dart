@@ -9,6 +9,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import '../../../core/services/service_providers.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../core/services/firebase_service.dart';
+import '../../../core/utils/validators.dart';
 import '../../../models/user_model.dart';
 
 class AuthState {
@@ -152,14 +153,14 @@ class AuthViewModel extends StateNotifier<AuthState> {
     await Future.delayed(const Duration(milliseconds: 500));
 
     final cleanInput = emailOrPhone.trim().toLowerCase();
-    final isGmail = cleanInput.endsWith('@gmail.com');
+    final isEmail = Validators.isEmail(cleanInput);
     final isPhone = RegExp(r'^\d{10}$').hasMatch(cleanInput);
 
-    if (!isGmail && !isPhone) {
+    if (!isEmail && !isPhone) {
       state = state.copyWith(
         isLoading: false,
         errorMessage:
-            'Invalid ID. Only Gmail (@gmail.com) or 10-digit Phone numbers allowed.',
+            Validators.invalidIdMessage,
       );
       return false;
     }
@@ -186,7 +187,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
     UserModel user = existingAccount ??
         UserModel(
           name: _storage.getRegisteredName(cleanInput) ?? 'Student Name',
-          email: isGmail ? cleanInput : '',
+          email: isEmail ? cleanInput : '',
           phone: isPhone ? cleanInput : '',
           profilePic: _storage.userProfilePic,
           dob: _storage.getRegisteredDob(cleanInput) ?? '2000-01-01',
@@ -264,7 +265,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
     await Future.delayed(const Duration(milliseconds: 500));
 
     final cleanInput = emailOrPhone.trim().toLowerCase();
-    final isGmail = cleanInput.endsWith('@gmail.com');
+    final isEmail = Validators.isEmail(cleanInput);
     final isPhone = RegExp(r'^\d{10}$').hasMatch(cleanInput);
 
     if (name.trim().isEmpty) {
@@ -273,11 +274,11 @@ class AuthViewModel extends StateNotifier<AuthState> {
       return false;
     }
 
-    if (!isGmail && !isPhone) {
+    if (!isEmail && !isPhone) {
       state = state.copyWith(
         isLoading: false,
         errorMessage:
-            'Only Gmail (@gmail.com) or 10-digit Phone numbers are allowed.',
+            Validators.invalidIdMessage,
       );
       return false;
     }
@@ -288,7 +289,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
       state = state.copyWith(
         isLoading: false,
         errorMessage:
-            'An account already exists for this Gmail/Phone. Please log in.',
+            'An account already exists for this email/phone. Please log in.',
       );
       return false;
     }
@@ -315,7 +316,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
 
     final user = UserModel(
       name: name,
-      email: isGmail ? cleanInput : '',
+      email: isEmail ? cleanInput : '',
       phone: isPhone ? cleanInput : '',
       profilePic: 'avatar_green',
       dob: dob,

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/services/service_providers.dart';
+import '../../../core/widgets/leave_test_dialog.dart';
 import '../../../data/grammar_data.dart';
 import '../../home/view/home_screen.dart';
 
@@ -106,7 +107,16 @@ class _GrammarQuizScreenState extends ConsumerState<GrammarQuizScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: _isFinished || _userAnswers.isEmpty,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final navigator = Navigator.of(context);
+        if (await confirmLeaveTest(context, title: 'Leave this quiz?')) {
+          navigator.pop();
+        }
+      },
+      child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text(
@@ -141,6 +151,7 @@ class _GrammarQuizScreenState extends ConsumerState<GrammarQuizScreen> {
         ],
       ),
       body: _isFinished ? _buildResultView() : _buildQuizView(),
+      ),
     );
   }
 

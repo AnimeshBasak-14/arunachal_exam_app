@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import '../../../core/services/question_repository.dart';
 import '../../../core/services/service_providers.dart';
+import '../../../core/config/supabase_config.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../viewmodel/exam_viewmodel.dart';
@@ -22,6 +23,7 @@ class BookmarksScreen extends StatelessWidget {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
+          tooltip: 'Back',
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => context.pop(),
         ),
@@ -71,14 +73,10 @@ class _BookmarksTabBodyState extends ConsumerState<BookmarksTabBody>
       final results = <Question>[];
       final idParams = ids.map((id) => '"$id"').join(',');
       final url =
-          'https://fllopztywwblbucvaths.supabase.co/rest/v1/questions?id=in.($idParams)&select=*,tests(*)';
+          '${SupabaseConfig.url}/rest/v1/questions?id=in.($idParams)&select=*,tests(*)';
       final response = await http.get(
         Uri.parse(url),
-        headers: {
-          'apikey': 'sb_publishable_y68QKKHxBTZxBP3Sf1X7tw_zfFnXX8M',
-          'Authorization':
-              'Bearer sb_publishable_y68QKKHxBTZxBP3Sf1X7tw_zfFnXX8M',
-        },
+        headers: SupabaseConfig.authHeaders,
       );
       if (response.statusCode == 200) {
         final List list = jsonDecode(response.body);
@@ -193,6 +191,7 @@ class _BookmarksTabBodyState extends ConsumerState<BookmarksTabBody>
                                 overflow: TextOverflow.ellipsis,
                               ),
                               trailing: IconButton(
+                                tooltip: 'Bookmark',
                                 icon: const Icon(Icons.bookmark_rounded,
                                     color: AppColors.primary),
                                 onPressed: () {

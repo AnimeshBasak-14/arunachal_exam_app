@@ -9,6 +9,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'core/services/firebase_service.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_mode_provider.dart';
 import 'core/services/service_providers.dart';
 import 'features/onboarding/view/onboarding_screen.dart';
 import 'features/onboarding/viewmodel/onboarding_viewmodel.dart';
@@ -50,6 +51,7 @@ import 'features/home/view/mock_hub_screen.dart';
 import 'features/home/view/exams_hub_screen.dart';
 import 'features/admin/view/question_review_screen.dart';
 import 'features/admin/view/question_flagger_screen.dart';
+import 'features/admin/view/admin_gate.dart';
 import 'features/syllabus/view/syllabus_screen.dart';
 import 'features/home/view/bookmarks_screen.dart';
 import 'core/services/question_repository.dart';
@@ -179,7 +181,9 @@ final routerProvider = Provider<GoRouter>((ref) {
           isGoingToRegister ||
           isGoingToForgotPassword;
 
-      // Allow direct access to news articles and admin screens via web URL / deep-link
+      // Allow direct access to news articles and admin screens via web URL / deep-link.
+      // Admin screens are wrapped in AdminGate (Supabase admin sign-in), and RLS
+      // rejects writes from anyone who is not in public.admin_users.
       final isPublicRoute = state.matchedLocation.startsWith('/news-details') ||
           state.matchedLocation.startsWith('/admin');
 
@@ -326,7 +330,14 @@ final routerProvider = Provider<GoRouter>((ref) {
               'APSSB-CGL';
           final yearText = state.uri.queryParameters['year'] ?? '2024';
           final year = int.tryParse(yearText) ?? 2024;
-          return PyqPaperScreen(examCode: examCode, year: year);
+          final testId = state.uri.queryParameters['testId'] ??
+              state.uri.queryParameters['id'] ??
+              state.uri.queryParameters['test_id'];
+          return PyqPaperScreen(
+            examCode: examCode,
+            year: year,
+            testId: testId,
+          );
         },
       ),
       GoRoute(
@@ -334,6 +345,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final examCode = state.pathParameters['examCode'] ?? '';
           final type = state.pathParameters['type'] ?? '';
+          final testId = state.uri.queryParameters['testId'] ??
+              state.uri.queryParameters['id'] ??
+              state.uri.queryParameters['test_id'];
           // Optional filter params via query string: ?subject=English&difficulty=Easy&paperType=MOCK&year=2024
           final subject = state.uri.queryParameters['subject'];
           final difficulty = state.uri.queryParameters['difficulty'];
@@ -349,6 +363,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           return MockTestScreen(
             examCode: examCode,
             testType: type,
+            testId: testId,
             subject: subject,
             difficulty: difficulty,
             paperType: paperType,
@@ -445,11 +460,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/admin/question-review',
-        builder: (context, state) => const QuestionReviewScreen(),
+        builder: (context, state) =>
+            const AdminGate(child: QuestionReviewScreen()),
       ),
       GoRoute(
         path: '/admin/question-flagger',
-        builder: (context, state) => const QuestionFlaggerScreen(),
+        builder: (context, state) =>
+            const AdminGate(child: QuestionFlaggerScreen()),
       ),
       GoRoute(
         path: '/syllabus',
@@ -473,11 +490,14 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
       title: 'Arunachal Exam Prep',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeMode,
       routerConfig: router,
       scrollBehavior: const MaterialScrollBehavior().copyWith(
         dragDevices: {
@@ -488,7 +508,15 @@ class MyApp extends ConsumerWidget {
         },
       ),
       builder: (context, child) {
-        return child ?? const SizedBox.shrink();
+        final mediaQuery = MediaQuery.of(context);
+        final clampedScaler = mediaQuery.textScaler.clamp(
+          minScaleFactor: 0.85,
+          maxScaleFactor: 1.4,
+        );
+        return MediaQuery(
+          data: mediaQuery.copyWith(textScaler: clampedScaler),
+          child: child ?? const SizedBox.shrink(),
+        );
       },
     );
   }

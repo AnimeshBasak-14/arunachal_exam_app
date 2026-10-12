@@ -207,6 +207,7 @@ class _GrammarHubScreenState extends State<GrammarHubScreen> {
         ),
         suffixIcon: _searchQuery.isNotEmpty
             ? IconButton(
+                tooltip: 'Clear',
                 icon: const Icon(Icons.clear_rounded, size: 18, color: AppColors.textHint),
                 onPressed: () => setState(() => _searchQuery = ''),
               )

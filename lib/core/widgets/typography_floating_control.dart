@@ -1,4 +1,4 @@
-﻿import 'dart:ui';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/text_scale_provider.dart';
@@ -60,16 +60,13 @@ class _TypographyFloatingControlState extends ConsumerState<TypographyFloatingCo
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.88),
+                    color: Theme.of(context).cardTheme.color ??
+                        Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: Colors.white, width: 1.5),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.12),
-                        blurRadius: 20,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outline,
+                      width: 1.0,
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -142,19 +139,14 @@ class _TypographyFloatingControlState extends ConsumerState<TypographyFloatingCo
             duration: const Duration(milliseconds: 200),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              color: _expanded ? AppColors.primary : Colors.white.withValues(alpha: 0.92),
+              color: _expanded
+                  ? AppColors.primary
+                  : (Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: _expanded ? AppColors.primary : Colors.white,
-                width: 1.5,
+                color: _expanded ? AppColors.primary : Theme.of(context).colorScheme.outline,
+                width: 1.0,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: _expanded ? 0.25 : 0.1),
-                  blurRadius: 16,
-                  offset: const Offset(0, 4),
-                ),
-              ],
             ),
             child: Text(
               'Aa',

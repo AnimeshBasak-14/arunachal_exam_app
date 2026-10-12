@@ -56,6 +56,7 @@ class _ApssbCategoriesScreenState extends ConsumerState<ApssbCategoriesScreen> {
                 Row(
                   children: [
                     IconButton(
+                      tooltip: 'Back',
                       icon: const Icon(Icons.arrow_back_ios_new_rounded,
                           color: AppColors.textWhite),
                       onPressed: () => context.pop(),
@@ -106,6 +107,7 @@ class _ApssbCategoriesScreenState extends ConsumerState<ApssbCategoriesScreen> {
                     color: AppColors.textSecondary),
                 suffixIcon: _query.isNotEmpty
                     ? IconButton(
+                        tooltip: 'Clear',
                         icon: const Icon(Icons.clear, size: 18),
                         onPressed: () {
                           _searchController.clear();
@@ -180,6 +182,7 @@ class _ApssbCategoriesScreenState extends ConsumerState<ApssbCategoriesScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
+                                tooltip: 'Bookmark',
                                 icon: Icon(
                                   exam.isBookmarked
                                       ? Icons.bookmark_rounded

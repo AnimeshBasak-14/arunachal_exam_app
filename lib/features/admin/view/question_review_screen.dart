@@ -2,7 +2,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
+import '../../../core/services/admin_session.dart';
+import '../../../core/constants/app_secrets.dart';
 import '../../../core/services/question_repository.dart';
+import '../../../core/config/supabase_config.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/math_utils.dart';
@@ -15,8 +18,8 @@ class QuestionReviewScreen extends StatefulWidget {
 }
 
 class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
-  static const String _supabaseUrl = 'https://fllopztywwblbucvaths.supabase.co';
-  static const String _supabaseKey = 'sb_publishable_y68QKKHxBTZxBP3Sf1X7tw_zfFnXX8M';
+  static String get _supabaseUrl => SupabaseConfig.url;
+  static String get _supabaseKey => SupabaseConfig.anonKey;
 
   // Filters
   String _selectedSource = 'All'; // 'All', 'PYQ', 'MOCK'
@@ -146,7 +149,7 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
         Uri.parse(requestUrl),
         headers: {
           'apikey': _supabaseKey,
-          'Authorization': 'Bearer $_supabaseKey',
+          'Authorization': AdminSession.bearer,
           'Prefer': 'return=representation',
         },
       ).timeout(const Duration(seconds: 10));
@@ -160,7 +163,7 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
           Uri.parse(requestUrl),
           headers: {
             'apikey': _supabaseKey,
-            'Authorization': 'Bearer $_supabaseKey',
+            'Authorization': AdminSession.bearer,
             'Prefer': 'return=representation',
           },
         ).timeout(const Duration(seconds: 10));
@@ -235,7 +238,7 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
         Uri.parse(url),
         headers: {
           'apikey': _supabaseKey,
-          'Authorization': 'Bearer $_supabaseKey',
+          'Authorization': AdminSession.bearer,
           'Content-Type': 'application/json',
           'Prefer': 'return=representation',
         },
@@ -248,7 +251,7 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
           Uri.parse(url),
           headers: {
             'apikey': _supabaseKey,
-            'Authorization': 'Bearer $_supabaseKey',
+            'Authorization': AdminSession.bearer,
             'Content-Type': 'application/json',
             'Prefer': 'return=representation',
           },
@@ -265,7 +268,7 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Question approved & updated successfully in Supabase!'),
+              content: Text('Question approved and saved.'),
               backgroundColor: AppColors.success,
               duration: Duration(seconds: 2),
             ),
@@ -274,7 +277,7 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
           // Saved locally in memory
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Saved locally. Run migrations/003_admin_flagger.sql to enable status in Supabase'),
+              content: Text('⚠️ Could not save to the server. Sign in again as admin and retry.'),
               backgroundColor: AppColors.warning,
             ),
           );
@@ -313,7 +316,7 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
         Uri.parse(url),
         headers: {
           'apikey': _supabaseKey,
-          'Authorization': 'Bearer $_supabaseKey',
+          'Authorization': AdminSession.bearer,
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
@@ -328,7 +331,7 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
         Uri.parse(flagUrl),
         headers: {
           'apikey': _supabaseKey,
-          'Authorization': 'Bearer $_supabaseKey',
+          'Authorization': AdminSession.bearer,
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
@@ -380,8 +383,7 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
           'Option D: ${_optDController.text}\n'
           'Return a valid JSON object with keys: "question", "option_a", "option_b", "option_c", "option_d", "correct_option", "explanation".';
 
-      const apiKey = String.fromEnvironment('GEMINI_API_KEY',
-          defaultValue: 'sb_publishable_y68QKKHxBTZxBP3Sf1X7tw_zfFnXX8M');
+      const apiKey = AppSecrets.geminiApiKey;
       final res = await http.post(
         Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey'),
         headers: {'Content-Type': 'application/json'},
@@ -460,6 +462,7 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
         elevation: 0.5,
         titleSpacing: 16,
         leading: IconButton(
+          tooltip: 'Back',
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
         ),

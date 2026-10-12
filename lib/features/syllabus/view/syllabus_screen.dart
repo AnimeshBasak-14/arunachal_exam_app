@@ -106,6 +106,7 @@ class _SyllabusScreenState extends State<SyllabusScreen>
                           prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColors.primary),
                           suffixIcon: _searchQuery.isNotEmpty
                               ? IconButton(
+                                  tooltip: 'Clear',
                                   icon: const Icon(Icons.clear, size: 18, color: AppColors.textHint),
                                   onPressed: () {
                                     _searchController.clear();

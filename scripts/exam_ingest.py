@@ -51,9 +51,12 @@ DB_PASSWORD = os.environ.get("SUPABASE_DB_PASS", "")
 DB_USER = os.environ.get("SUPABASE_DB_USER", "")
 DB_HOST = os.environ.get("SUPABASE_DB_HOST", "aws-0-ap-northeast-1.pooler.supabase.com")
 DB_PORT = int(os.environ.get("SUPABASE_DB_PORT", "6543"))
+from _env import load_env
+load_env()
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://fllopztywwblbucvaths.supabase.co")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "sb_publishable_y68QKKHxBTZxBP3Sf1X7tw_zfFnXX8M")
+from _env import supabase_key
+SUPABASE_KEY = supabase_key()
 
 def log(msg):
     print(msg, flush=True)

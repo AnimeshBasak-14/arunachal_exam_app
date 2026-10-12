@@ -77,18 +77,20 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
   }
 
   Color _getStatusColor(String? selectedOption, String correctAnswer) {
-    if (selectedOption == null) return AppColors.textHint;
+    if (correctAnswer.isEmpty || selectedOption == null) return AppColors.textHint;
     if (selectedOption == correctAnswer) return AppColors.success;
     return AppColors.error;
   }
 
   IconData _getStatusIcon(String? selectedOption, String correctAnswer) {
+    if (correctAnswer.isEmpty) return Icons.help_outline_rounded;
     if (selectedOption == null) return Icons.remove_circle_outline_rounded;
     if (selectedOption == correctAnswer) return Icons.check_circle_rounded;
     return Icons.cancel_rounded;
   }
 
   String _getStatusLabel(String? selectedOption, String correctAnswer) {
+    if (correctAnswer.isEmpty) return 'Not scored';
     if (selectedOption == null) return 'Skipped';
     if (selectedOption == correctAnswer) return 'Correct +2.0';
     return 'Wrong −0.5';
@@ -132,8 +134,8 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
             id: m['id']?.toString() ?? '',
             questionText: m['questionText']?.toString() ?? '',
             options: (m['options'] as List?)?.map((e) => e.toString()).toList() ?? [],
-            correctAnswer: m['correctAnswer']?.toString() ?? 'a',
-            officialAnswer: m['officialAnswer']?.toString() ?? m['correctAnswer']?.toString() ?? 'a',
+            correctAnswer: m['correctAnswer']?.toString() ?? '',
+            officialAnswer: m['officialAnswer']?.toString() ?? m['correctAnswer']?.toString() ?? '',
             solution: m['solution']?.toString() ?? '',
             subject: m['subject']?.toString() ?? '',
             examCode: m['examCode']?.toString() ?? examCode,
@@ -173,6 +175,7 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: IconButton(
+          tooltip: 'Back',
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => context.pop(),
         ),
@@ -612,7 +615,9 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                                          const SizedBox(width: 8),
                                          Expanded(
                                            child: Text(
-                                             isSkipped
+                                             !question.hasAnswerKey
+                                                 ? 'Answer key not yet available · this question was not scored'
+                                                 : isSkipped
                                                  ? 'Not Attempted · Correct Answer: Option ${question.correctAnswer.toUpperCase()}'
                                                  : (isCorrect
                                                      ? 'Correct Answer! You picked Option ${question.correctAnswer.toUpperCase()}'
@@ -715,7 +720,9 @@ class _MockTestResultScreenState extends ConsumerState<MockTestResultScreen> {
                                          Text(
                                            question.solution.isNotEmpty
                                                ? MathUtils.formatMath(question.solution)
-                                               : 'Correct Answer: Option ${question.correctAnswer.toUpperCase()}',
+                                               : (question.hasAnswerKey
+                                                   ? 'Correct Answer: Option ${question.correctAnswer.toUpperCase()}'
+                                                   : 'Answer key not yet available.'),
                                            style: const TextStyle(
                                              fontSize: 12.5,
                                              color: AppColors.textSecondary,

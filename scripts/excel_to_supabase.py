@@ -7,7 +7,7 @@ Handles:
 - Agency & Branch linking (APSSB/APPSC, CE/EE/ME/CSE/AGRI/GEN)
 - Subject codes (ENG, MATH, GK, APGK, CE_SOM, etc.) & Topic codes
 - Question groups (Comprehension Passages, Directions, and Charts)
-- Image uploading to Supabase Storage bucket 'exam-assets'
+- Image uploading to Supabase Storage bucket 'question_assets' (STORAGE_BUCKET)
 - Mathematics formatting (LaTeX, Unicode, Image-Only)
 - Full relational integrity with graceful schema compatibility fallback
 """
@@ -20,10 +20,13 @@ import openpyxl
 import requests
 
 SUPABASE_URL = os.environ.get('SUPABASE_URL', 'https://fllopztywwblbucvaths.supabase.co')
-SUPABASE_KEY = os.environ.get('SUPABASE_KEY', 'sb_publishable_y68QKKHxBTZxBP3Sf1X7tw_zfFnXX8M')
+from _env import supabase_key, supabase_apikey
+SUPABASE_KEY = supabase_key()
+SUPABASE_APIKEY = supabase_apikey()
+STORAGE_BUCKET = os.environ.get('SUPABASE_STORAGE_BUCKET', 'question_assets')
 
 HEADERS = {
-    'apikey': SUPABASE_KEY,
+    'apikey': SUPABASE_APIKEY,
     'Authorization': f'Bearer {SUPABASE_KEY}',
     'Content-Type': 'application/json',
     'Prefer': 'return=representation'
@@ -110,12 +113,12 @@ def upload_image_if_exists(image_name_or_url, images_dir, test_code):
     mime_type = mime_type or 'image/png'
     remote_path = f"{test_code}/{os.path.basename(local_path)}"
 
-    storage_url = f"{SUPABASE_URL}/storage/v1/object/exam-assets/{remote_path}"
+    storage_url = f"{SUPABASE_URL}/storage/v1/object/{STORAGE_BUCKET}/{remote_path}"
     with open(local_path, 'rb') as f:
         file_bytes = f.read()
 
     upload_headers = {
-        'apikey': SUPABASE_KEY,
+        'apikey': SUPABASE_APIKEY,
         'Authorization': f'Bearer {SUPABASE_KEY}',
         'Content-Type': mime_type,
         'x-upsert': 'true'
@@ -124,7 +127,7 @@ def upload_image_if_exists(image_name_or_url, images_dir, test_code):
     try:
         res = requests.post(storage_url, headers=upload_headers, data=file_bytes)
         if res.status_code in (200, 201):
-            public_url = f"{SUPABASE_URL}/storage/v1/object/public/exam-assets/{remote_path}"
+            public_url = f"{SUPABASE_URL}/storage/v1/object/public/{STORAGE_BUCKET}/{remote_path}"
             print(f"  [Storage] Uploaded {val} -> {public_url}")
             return public_url
         else:
@@ -281,7 +284,10 @@ def main():
         opt_d_img = get_val('option_d_image')
 
         correct = get_val('correct_answer').lower().replace('(', '').replace(')', '').strip()
-        explanation = get_val('explanation', 'Verified with official key.')
+        if not correct or correct[0] not in 'abcd':
+            print(f"  [WARN] Q{q_num}: missing/invalid correct_answer '{correct}'. Saved WITHOUT an answer key; fix it in the sheet.")
+            correct = ''
+        explanation = get_val('explanation', '')
         exp_img_file = get_val('explanation_image')
 
         test_id = get_or_create_test(test_code, agency, branch, year, paper_type, exam_raw)
@@ -350,8 +356,10 @@ def main():
             'question_image_url': q_img_url,
             'image_url': q_img_url,
             'options': options_json,
-            'correct_answer': correct[0] if correct else 'a',
-            'correct_option': correct[0] if correct else 'a',
+            # Never invent an answer key: a missing key used to default to 'a',
+            # which grades students against the wrong answer.
+            'correct_answer': correct[0] if correct else '',
+            'correct_option': correct[0] if correct else None,
             'explanation': explanation,
             'explanation_image_url': exp_img_url,
             'review_status': 'approved',

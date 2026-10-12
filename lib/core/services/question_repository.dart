@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import '../config/supabase_config.dart';
 
 class Question {
   final String id;
@@ -26,7 +27,7 @@ class Question {
   final List<String> modeAvailability; // ['timed', 'study']
   final List<String> options; // ['(a) ...', '(b) ...']
   final List<String?> optionImages;
-  final String correctAnswer; // 'a', 'b', 'c', 'd'
+  final String correctAnswer; // 'a', 'b', 'c', 'd', or '' when the key is missing
   final String officialAnswer;
   final String solution;
   final String? solutionImage;
@@ -44,6 +45,10 @@ class Question {
   final String questionType; // 'mcq', 'multiple_select', 'numerical'
   final String? adminNotes;
 
+
+  /// False when the source data has no usable answer key. Such questions are
+  /// shown to students but never graded.
+  bool get hasAnswerKey => const {'a', 'b', 'c', 'd'}.contains(correctAnswer);
   const Question({
     required this.id,
     required this.examCode,
@@ -200,15 +205,16 @@ class Question {
       ];
     }
 
-    final rawCorrect = (data['correctAnswer'] ?? 'a')
+    final rawCorrect = (data['correctAnswer'] ?? '')
         .toString()
         .toLowerCase()
         .replaceAll(RegExp(r'[^a-d]'), '');
-    final cleanCorrect = rawCorrect.isNotEmpty ? rawCorrect[0] : 'a';
+    // No key in the data means no key: never assume 'a'.
+    final cleanCorrect = rawCorrect.isNotEmpty ? rawCorrect[0] : '';
 
     // Find official answer string
-    String official = '($cleanCorrect)';
-    final correctIdx = cleanCorrect.codeUnitAt(0) - 97;
+    String official = cleanCorrect.isEmpty ? '' : '($cleanCorrect)';
+    final correctIdx = cleanCorrect.isEmpty ? -1 : cleanCorrect.codeUnitAt(0) - 97;
     if (correctIdx >= 0 && correctIdx < parsedOptions.length) {
       official = parsedOptions[correctIdx];
     }
@@ -323,14 +329,15 @@ class Question {
       }
     }
 
-    final rawCorrect = (data['correct_option'] ?? data['correct_answer'] ?? 'a')
+    final rawCorrect = (data['correct_option'] ?? data['correct_answer'] ?? '')
         .toString()
         .toLowerCase()
         .replaceAll(RegExp(r'[^a-d]'), '');
-    final cleanCorrect = rawCorrect.isNotEmpty ? rawCorrect[0] : 'a';
+    // No key in the data means no key: never assume 'a'.
+    final cleanCorrect = rawCorrect.isNotEmpty ? rawCorrect[0] : '';
 
-    String official = '($cleanCorrect)';
-    final correctIdx = cleanCorrect.codeUnitAt(0) - 97;
+    String official = cleanCorrect.isEmpty ? '' : '($cleanCorrect)';
+    final correctIdx = cleanCorrect.isEmpty ? -1 : cleanCorrect.codeUnitAt(0) - 97;
     if (correctIdx >= 0 && correctIdx < parsedOptions.length) {
       official = parsedOptions[correctIdx];
     }
@@ -466,7 +473,7 @@ class QuestionRepository {
     // 1. Query Supabase (Relational PostgreSQL DB)
     try {
       var supaUrl =
-          'https://fllopztywwblbucvaths.supabase.co/rest/v1/questions?select=*,question_groups(*),tests!inner(*)&order=question_number';
+          '${SupabaseConfig.url}/rest/v1/questions?select=*,question_groups(*),tests!inner(*)&order=question_number';
 
       // Only filter by exam_code if a specific code is provided (not empty or 'ALL')
       if (cleanCode.isNotEmpty && cleanCode != 'ALL') {
@@ -484,9 +491,7 @@ class QuestionRepository {
       final response = await http.get(
         Uri.parse(supaUrl),
         headers: {
-          'apikey': 'sb_publishable_y68QKKHxBTZxBP3Sf1X7tw_zfFnXX8M',
-          'Authorization':
-              'Bearer sb_publishable_y68QKKHxBTZxBP3Sf1X7tw_zfFnXX8M',
+          ...SupabaseConfig.authHeaders,
           'Prefer': 'return=representation',
         },
       ).timeout(const Duration(seconds: 8));

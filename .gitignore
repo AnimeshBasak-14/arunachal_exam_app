@@ -51,3 +51,6 @@ TESTPAPER/
 
 # Binary APKs
 *.apk
+
+# Stack dumps
+*.stackdump

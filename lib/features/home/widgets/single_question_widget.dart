@@ -87,7 +87,7 @@ class SingleQuestionWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             if (showSubjectChip)
-              IntrinsicWidth(
+              Flexible(
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
@@ -95,7 +95,7 @@ class SingleQuestionWidget extends StatelessWidget {
                         ? const Color(0xFF1565C0).withValues(alpha: 0.1)
                         : AppColors.primaryLight,
                     borderRadius: BorderRadius.circular(12),
-                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.4), blurRadius: 4, offset: const Offset(0, 2))],
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 4, offset: const Offset(0, 2))],
                   ),
                   child: Text(
                     isInsideGroup
@@ -109,6 +109,7 @@ class SingleQuestionWidget extends StatelessWidget {
                           : AppColors.primary,
                     ),
                     maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               )
@@ -118,7 +119,7 @@ class SingleQuestionWidget extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: const Color(0xFF1565C0).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
-                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.4), blurRadius: 4, offset: const Offset(0, 2))],
+                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 4, offset: const Offset(0, 2))],
                 ),
                 child: Text(
                   'Q$displayNum',
@@ -242,7 +243,7 @@ class SingleQuestionWidget extends StatelessWidget {
 
           final showFeedback = isSubmitted || (isStudyMode && selectedOption != null);
 
-          if (showFeedback) {
+          if (showFeedback && question.hasAnswerKey) {
             if (isCorrect) {
               optionBgColor = AppColors.success.withValues(alpha: 0.15);
               optionShadow = AppColors.emeraldGlowShadow();
@@ -389,7 +390,9 @@ class SingleQuestionWidget extends StatelessWidget {
                           const SizedBox(width: 6),
                           Flexible(
                             child: Text(
-                              'Official Answer: ${question.officialAnswer}',
+                              question.hasAnswerKey
+                                  ? 'Official Answer: ${question.officialAnswer}'
+                                  : 'Answer key not yet available',
                               style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: AppColors.primaryDark,

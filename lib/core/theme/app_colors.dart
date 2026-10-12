@@ -132,4 +132,10 @@ class AppColors {
           spreadRadius: 2,
         ),
       ];
+
+  // ── Compatibility Aliases ────────────────────────────────────────────────
+  static const Color textOnOrange = textWhite;
+  static const Color darkWarning = warning;
+  static const Color darkGreen = success;
+  static const Color darkRed = error;
 }

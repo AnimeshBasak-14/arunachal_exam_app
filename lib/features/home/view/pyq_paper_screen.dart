@@ -2,22 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/services/question_repository.dart';
+import '../../../core/services/exam_repository.dart';
 import '../../../core/services/service_providers.dart';
 import '../widgets/single_question_widget.dart';
 import '../widgets/comprehension_group_widget.dart';
+import '../../../core/widgets/leave_test_dialog.dart';
 
 class PyqPaperScreen extends ConsumerStatefulWidget {
   final String examCode;
   final int year;
+  final String? testId;
 
   const PyqPaperScreen({
     super.key,
     required this.examCode,
     required this.year,
+    this.testId,
   });
 
   @override
@@ -77,6 +80,24 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
 
   Future<void> _loadLiveQuestions() async {
     try {
+      if (widget.testId != null && widget.testId!.isNotEmpty) {
+        final testQs = await ExamRepository.instance.fetchQuestionsForTest(widget.testId!);
+        if (testQs.isNotEmpty && mounted) {
+          setState(() {
+            _questions = testQs;
+            _initQuestionMetadata();
+            final subjects = [
+              'All',
+              ...{...testQs.map((q) => q.subject)}.where((s) => s.isNotEmpty)
+            ];
+            _allSubjects = subjects;
+            _selectedSubject = 'All';
+            _filteredQuestions = testQs;
+          });
+          return;
+        }
+      }
+
       final live = await QuestionRepository.fetchLiveQuestions(
         examCode: widget.examCode,
         year: widget.year > 2000 ? widget.year : null,
@@ -317,6 +338,7 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
+          tooltip: 'Mark helpful',
           icon: Icon(
             isLiked ? Icons.thumb_up_rounded : Icons.thumb_up_outlined,
             color: isLiked ? AppColors.primary : AppColors.textHint,
@@ -353,12 +375,22 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
   Widget build(BuildContext context) {
     final bookmarkedIds = ref.watch(bookmarkedQuestionsProvider);
 
-    return Scaffold(
+    return PopScope(
+      canPop: _selectedAnswers.isEmpty,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final navigator = Navigator.of(context);
+        if (await confirmLeaveTest(context, title: 'Leave this paper?')) {
+          navigator.pop();
+        }
+      },
+      child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () => context.pop(),
+          tooltip: 'Back',
+          onPressed: () => Navigator.maybePop(context),
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -509,6 +541,7 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                     ),
                   ],
                 ),
+      ),
     );
   }
 
@@ -781,6 +814,7 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
                   ),
                 ),
                 IconButton(
+                  tooltip: 'Close',
                   icon: const Icon(Icons.close_rounded,
                       size: 14, color: AppColors.error),
                   onPressed: () {
@@ -820,6 +854,7 @@ class _PyqPaperScreenState extends ConsumerState<PyqPaperScreen> {
             ),
             const SizedBox(width: AppSpacing.s),
             IconButton(
+              tooltip: 'Send',
               icon: const Icon(Icons.send_rounded,
                   color: AppColors.primary),
               onPressed: () => _addComment(question.id),

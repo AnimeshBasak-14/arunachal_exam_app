@@ -25,7 +25,7 @@ class PrimaryButton extends StatelessWidget {
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.textWhite,
+          foregroundColor: AppColors.textOnOrange,
           disabledBackgroundColor: AppColors.divider,
           disabledForegroundColor: AppColors.textHint,
           shape: RoundedRectangleBorder(
@@ -40,7 +40,7 @@ class PrimaryButton extends StatelessWidget {
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   valueColor:
-                      AlwaysStoppedAnimation<Color>(AppColors.textWhite),
+                      AlwaysStoppedAnimation<Color>(AppColors.textOnOrange),
                 ),
               )
             : Row(

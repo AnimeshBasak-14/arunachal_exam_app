@@ -37,7 +37,8 @@ if hasattr(sys.stdout, 'reconfigure'):
         pass
 
 SUPABASE_URL = os.environ.get('SUPABASE_URL', 'https://fllopztywwblbucvaths.supabase.co')
-SUPABASE_KEY = os.environ.get('SUPABASE_KEY', 'sb_publishable_y68QKKHxBTZxBP3Sf1X7tw_zfFnXX8M')
+from _env import supabase_key
+SUPABASE_KEY = supabase_key()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
