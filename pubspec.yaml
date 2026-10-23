@@ -1,5 +1,5 @@
 name: arunachal_exam_app
-description: "A new Flutter project."
+description: "Donyi Prep: PYQs and exam-condition mock tests for Arunachal Pradesh state exams."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -53,14 +53,11 @@ dependencies:
   url_launcher: ^6.3.2
   flutter_markdown: ^0.7.4
   speech_to_text: ^7.0.0
-  firebase_storage: ^13.5.0
   google_sign_in: ^6.2.2
   firebase_crashlytics: ^5.3.0
   firebase_remote_config: ^6.6.0
   firebase_messaging: ^16.6.0
   firebase_performance: ^0.11.5
-  sensors_plus: ^6.1.0
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -84,9 +81,7 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  assets:
-    - assets/images/state_emblem.jpg
-    - assets/images/forest_background.jpg
+  # assets/images/ holds the old welcome artwork; not bundled since the redesign.
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

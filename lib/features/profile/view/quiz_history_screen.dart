@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/services/service_providers.dart';
-import '../../home/view/home_screen.dart';
+import '../../shell/view/app_shell.dart';
 
 class QuizHistoryScreen extends ConsumerStatefulWidget {
   const QuizHistoryScreen({super.key});

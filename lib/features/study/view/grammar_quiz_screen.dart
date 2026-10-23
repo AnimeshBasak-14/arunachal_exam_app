@@ -7,7 +7,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/services/service_providers.dart';
 import '../../../core/widgets/leave_test_dialog.dart';
 import '../../../data/grammar_data.dart';
-import '../../home/view/home_screen.dart';
+import '../../shell/view/app_shell.dart';
 
 class GrammarQuizScreen extends ConsumerStatefulWidget {
   const GrammarQuizScreen({super.key});

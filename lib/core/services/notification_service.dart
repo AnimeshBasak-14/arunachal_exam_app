@@ -92,6 +92,49 @@ class NotificationService {
     }
   }
 
+  /// One-off reminder. Returns false when it could not be scheduled, so the
+  /// UI never claims a reminder that does not exist.
+  static Future<bool> scheduleAt({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime when,
+  }) async {
+    if (kIsWeb || !_initialized) return false;
+    try {
+      final scheduled = tz.TZDateTime.from(when, tz.local);
+      if (scheduled.isBefore(tz.TZDateTime.now(tz.local))) return false;
+      const androidDetails = AndroidNotificationDetails(
+        'daily_streak_channel',
+        'Daily Study Reminder',
+        channelDescription: 'Exam and study reminders',
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: '@mipmap/ic_launcher',
+      );
+      await _plugin.zonedSchedule(
+        id: id,
+        title: title,
+        body: body,
+        scheduledDate: scheduled,
+        notificationDetails: const NotificationDetails(android: androidDetails),
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      );
+      return true;
+    } catch (e) {
+      debugPrint('[NotificationService] scheduleAt error: $e');
+      return false;
+    }
+  }
+
+  static Future<void> cancel(int id) async {
+    try {
+      await _plugin.cancel(id: id);
+    } catch (e) {
+      debugPrint('[NotificationService] Cancel error: $e');
+    }
+  }
+
   static tz.TZDateTime _nextInstanceOf8AM() {
     final now = tz.TZDateTime.now(tz.local);
     var scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, 8);

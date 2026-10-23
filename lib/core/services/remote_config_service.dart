@@ -27,6 +27,11 @@ class RemoteConfigService {
   static const String keyWeeklyMegaMockActive = 'weekly_mega_mock_active';
   static const String keyWeeklyMegaMockTitle = 'weekly_mega_mock_title';
   static const String keyTrophiesMultiplier = 'trophies_multiplier';
+  // Live Mock Arena: ISO-8601 start time with offset, e.g. 2026-11-02T10:00:00+05:30
+  static const String keyLiveMockStart = 'live_mock_start';
+  static const String keyLiveMockTitle = 'live_mock_title';
+  static const String keyLiveMockTestId = 'live_mock_test_id';
+  static const String keyLiveMockDuration = 'live_mock_duration_minutes';
 
   // In-app defaults
   static const Map<String, dynamic> _defaults = {
@@ -43,6 +48,10 @@ class RemoteConfigService {
     keyWeeklyMegaMockActive: false,
     keyWeeklyMegaMockTitle: '🎯 Weekend APSSB Grand Mock Challenge',
     keyTrophiesMultiplier: 1.0,
+    keyLiveMockStart: '',
+    keyLiveMockTitle: '',
+    keyLiveMockTestId: '',
+    keyLiveMockDuration: 0,
   };
 
   Future<void> initialize() async {
@@ -180,6 +189,27 @@ class RemoteConfigService {
           : (_defaults[keyTrophiesMultiplier] as double);
     } catch (_) {
       return _defaults[keyTrophiesMultiplier] as double;
+    }
+  }
+
+  String _string(String key) {
+    try {
+      return _remoteConfig?.getString(key).trim() ??
+          (_defaults[key] as String);
+    } catch (_) {
+      return _defaults[key] as String;
+    }
+  }
+
+  String get liveMockStart => _string(keyLiveMockStart);
+  String get liveMockTitle => _string(keyLiveMockTitle);
+  String get liveMockTestId => _string(keyLiveMockTestId);
+
+  int get liveMockDurationMinutes {
+    try {
+      return _remoteConfig?.getInt(keyLiveMockDuration) ?? 0;
+    } catch (_) {
+      return 0;
     }
   }
 }

@@ -18,7 +18,6 @@ import 'features/auth/view/login_screen.dart';
 import 'features/auth/view/register_screen.dart';
 import 'features/auth/view/forgot_password_screen.dart';
 import 'features/auth/viewmodel/auth_viewmodel.dart';
-import 'features/home/view/home_screen.dart';
 import 'features/home/view/appsc_categories.dart';
 import 'features/home/view/apssb_categories.dart';
 import 'features/home/view/exam_detail_screen.dart';
@@ -28,9 +27,6 @@ import 'features/profile/view/bio_screen.dart';
 import 'features/profile/view/change_email_screen.dart';
 import 'features/profile/view/change_phone_screen.dart';
 import 'features/profile/view/change_password_screen.dart';
-import 'features/home/view/pyq_paper_screen.dart';
-import 'features/home/view/mock_test_screen.dart';
-import 'features/home/view/mock_test_result_screen.dart';
 import 'features/home/view/scoreboard_screen.dart';
 import 'features/home/view/trophy_history_screen.dart';
 import 'features/profile/view/quiz_history_screen.dart';
@@ -46,9 +42,6 @@ import 'features/home/view/state_gk_screen.dart';
 import 'features/home/view/current_affairs_gk_screen.dart';
 import 'features/study/view/grammar_hub_screen.dart';
 import 'features/study/view/grammar_quiz_screen.dart';
-import 'features/home/view/pyq_hub_screen.dart';
-import 'features/home/view/mock_hub_screen.dart';
-import 'features/home/view/exams_hub_screen.dart';
 import 'features/admin/view/question_review_screen.dart';
 import 'features/admin/view/question_flagger_screen.dart';
 import 'features/admin/view/admin_gate.dart';
@@ -60,6 +53,11 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_performance/firebase_performance.dart';
 import 'core/services/remote_config_service.dart';
 import 'core/services/fcm_service.dart';
+import 'features/account/view/account_screen.dart';
+import 'features/exam/data/attempt.dart';
+import 'features/exam/view/exam_screen.dart';
+import 'features/exam/view/result_screen.dart';
+import 'features/shell/view/app_shell.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -99,7 +97,7 @@ void main() async {
       await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
       // Handshake log so Firebase Console immediately verifies the SDK installation
       await FirebaseCrashlytics.instance
-          .log("Arunachal Exam Prep started (v1.2.0)");
+          .log("Donyi Prep started");
     } catch (_) {}
 
     FlutterError.onError = (errorDetails) {
@@ -210,6 +208,8 @@ final routerProvider = Provider<GoRouter>((ref) {
             state.matchedLocation == '/state-gk' ||
             state.matchedLocation == '/current-affairs-gk' ||
             state.matchedLocation == '/exams-hub' ||
+            state.matchedLocation == '/pyq-hub' ||
+            state.matchedLocation == '/mock-hub' ||
             state.matchedLocation == '/grammar-hub' ||
             state.matchedLocation == '/bookmarks') {
           return null;
@@ -236,9 +236,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/',
         builder: (context, state) => const Scaffold(
-          body: Center(
-            child: CircularProgressIndicator(),
-          ),
+          body: Center(child: CircularProgressIndicator(strokeWidth: 1.6)),
         ),
       ),
       GoRoute(
@@ -257,155 +255,155 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/register',
         builder: (context, state) {
           final extra = state.extra;
-          if (extra is Map<String, dynamic>) {
-            return RegisterScreen(
-              initialEmail: extra['email'] as String?,
-              initialName: extra['name'] as String?,
-            );
-          }
-          return const RegisterScreen();
+          return _legacy(extra is Map<String, dynamic>
+              ? RegisterScreen(
+                  initialEmail: extra['email'] as String?,
+                  initialName: extra['name'] as String?,
+                )
+              : const RegisterScreen());
         },
       ),
       GoRoute(
         path: '/forgot-password',
-        builder: (context, state) => const ForgotPasswordScreen(),
+        builder: (context, state) => _legacy(const ForgotPasswordScreen()),
       ),
       GoRoute(
         path: '/home',
-        builder: (context, state) => const HomeScreen(),
+        builder: (context, state) => AppShell(
+          initialTab: int.tryParse(state.uri.queryParameters['tab'] ?? ''),
+        ),
+      ),
+      // Older entry points now open the matching tab.
+      GoRoute(path: '/pyq-hub', redirect: (_, __) => '/home?tab=1'),
+      GoRoute(path: '/mock-hub', redirect: (_, __) => '/home?tab=2'),
+      GoRoute(
+        path: '/exams-hub',
+        redirect: (_, state) =>
+            state.uri.queryParameters['tab'] == '1' ? '/home?tab=2' : '/home?tab=1',
+      ),
+      GoRoute(
+        path: '/account',
+        builder: (context, state) => const AccountScreen(),
       ),
       GoRoute(
         path: '/appsc',
-        builder: (context, state) => const AppscCategoriesScreen(),
+        builder: (context, state) => _legacy(const AppscCategoriesScreen()),
       ),
       GoRoute(
         path: '/apssb',
-        builder: (context, state) => const ApssbCategoriesScreen(),
+        builder: (context, state) => _legacy(const ApssbCategoriesScreen()),
       ),
       GoRoute(
         path: '/exam-detail/:id',
-        builder: (context, state) {
-          final id = state.pathParameters['id'] ?? '';
-          return ExamDetailScreen(examId: id);
-        },
+        builder: (context, state) =>
+            _legacy(ExamDetailScreen(examId: state.pathParameters['id'] ?? '')),
       ),
       GoRoute(
         path: '/edit-profile',
-        builder: (context, state) => const EditProfileScreen(),
+        builder: (context, state) => _legacy(const EditProfileScreen()),
       ),
       GoRoute(
         path: '/my-courses',
-        builder: (context, state) => const MyCoursesScreen(),
+        builder: (context, state) => _legacy(const MyCoursesScreen()),
       ),
       GoRoute(
         path: '/bio',
-        builder: (context, state) => const BioScreen(),
+        builder: (context, state) => _legacy(const BioScreen()),
       ),
       GoRoute(
         path: '/change-email',
-        builder: (context, state) => const ChangeEmailScreen(),
+        builder: (context, state) => _legacy(const ChangeEmailScreen()),
       ),
       GoRoute(
         path: '/change-phone',
-        builder: (context, state) => const ChangePhoneScreen(),
+        builder: (context, state) => _legacy(const ChangePhoneScreen()),
       ),
       GoRoute(
         path: '/change-password',
-        builder: (context, state) => const ChangePasswordScreen(),
+        builder: (context, state) => _legacy(const ChangePasswordScreen()),
       ),
+      // Study a whole paper (older links): same engine, study mode.
       GoRoute(
         path: '/pyqs/:examCode/:year',
-        builder: (context, state) {
-          final examCode = state.pathParameters['examCode'] ?? '';
-          final yearText = state.pathParameters['year'] ?? '';
-          final year = int.tryParse(yearText) ?? 2021;
-          return PyqPaperScreen(examCode: examCode, year: year);
-        },
+        builder: (context, state) => ExamScreen(
+          examCode: state.pathParameters['examCode'] ?? '',
+          testType: 'full',
+          paperType: 'PYQ',
+          year: int.tryParse(state.pathParameters['year'] ?? ''),
+          isStudyMode: true,
+        ),
       ),
       GoRoute(
         path: '/pyq-paper',
         builder: (context, state) {
-          final examCode = state.uri.queryParameters['code'] ??
-              state.uri.queryParameters['examCode'] ??
-              'APSSB-CGL';
-          final yearText = state.uri.queryParameters['year'] ?? '2024';
-          final year = int.tryParse(yearText) ?? 2024;
-          final testId = state.uri.queryParameters['testId'] ??
-              state.uri.queryParameters['id'] ??
-              state.uri.queryParameters['test_id'];
-          return PyqPaperScreen(
-            examCode: examCode,
-            year: year,
-            testId: testId,
+          final q = state.uri.queryParameters;
+          return ExamScreen(
+            examCode: q['code'] ?? q['examCode'] ?? 'ALL',
+            testType: 'full',
+            paperType: 'PYQ',
+            year: int.tryParse(q['year'] ?? ''),
+            testId: q['testId'] ?? q['id'] ?? q['test_id'],
+            title: q['title'],
+            isStudyMode: true,
           );
         },
       ),
       GoRoute(
         path: '/mock-test/:examCode/:type',
         builder: (context, state) {
-          final examCode = state.pathParameters['examCode'] ?? '';
-          final type = state.pathParameters['type'] ?? '';
-          final testId = state.uri.queryParameters['testId'] ??
-              state.uri.queryParameters['id'] ??
-              state.uri.queryParameters['test_id'];
-          // Optional filter params via query string: ?subject=English&difficulty=Easy&paperType=MOCK&year=2024
-          final subject = state.uri.queryParameters['subject'];
-          final difficulty = state.uri.queryParameters['difficulty'];
-          final paperType = state.uri.queryParameters['paperType'];
-          final yearStr = state.uri.queryParameters['year'];
-          final year = yearStr != null ? int.tryParse(yearStr) : null;
-          final durationStr = state.uri.queryParameters['duration'];
-          final duration = durationStr != null ? int.tryParse(durationStr) : null;
-          final isStudy = state.uri.queryParameters['study'] == 'true' ||
-              state.uri.queryParameters['mode'] == 'study';
-          final extraQs =
-              (state.extra is List<Question>) ? (state.extra as List<Question>) : null;
-          return MockTestScreen(
-            examCode: examCode,
-            testType: type,
-            testId: testId,
-            subject: subject,
-            difficulty: difficulty,
-            paperType: paperType,
-            year: year,
-            durationMinutes: duration,
-            isStudyMode: isStudy,
-            initialQuestions: extraQs,
+          // Optional query: testId, title, subject, difficulty, paperType,
+          // year, duration, study=true
+          final q = state.uri.queryParameters;
+          final extra = state.extra;
+          return ExamScreen(
+            examCode: state.pathParameters['examCode'] ?? '',
+            testType: state.pathParameters['type'] ?? '',
+            testId: q['testId'] ?? q['id'] ?? q['test_id'],
+            title: q['title'],
+            subject: q['subject'],
+            difficulty: q['difficulty'],
+            paperType: q['paperType'],
+            year: int.tryParse(q['year'] ?? ''),
+            durationMinutes: int.tryParse(q['duration'] ?? ''),
+            isStudyMode: q['study'] == 'true' || q['mode'] == 'study',
+            initialQuestions: extra is List<Question> ? extra : null,
           );
         },
       ),
       GoRoute(
         path: '/mock-test-result',
         builder: (context, state) {
-          final data = state.extra as Map<String, dynamic>? ?? {};
-          return MockTestResultScreen(resultData: data);
+          final extra = state.extra;
+          final data = extra is Map
+              ? Map<String, dynamic>.from(extra)
+              : <String, dynamic>{};
+          return ResultScreen(attempt: Attempt.fromJson(data));
         },
       ),
       GoRoute(
         path: '/scoreboard',
-        builder: (context, state) => const ScoreboardScreen(),
+        builder: (context, state) => _legacy(const ScoreboardScreen()),
       ),
       GoRoute(
         path: '/trophy-history',
-        builder: (context, state) => const TrophyHistoryScreen(),
+        builder: (context, state) => _legacy(const TrophyHistoryScreen()),
       ),
       GoRoute(
         path: '/quiz-history',
-        builder: (context, state) => const QuizHistoryScreen(),
+        builder: (context, state) => _legacy(const QuizHistoryScreen()),
       ),
       GoRoute(
         path: '/notifications',
-        builder: (context, state) => const NotificationsScreen(),
+        builder: (context, state) => _legacy(const NotificationsScreen()),
       ),
       GoRoute(
         path: '/chatbot',
-        builder: (context, state) => ChatbotScreen(
-          initialContext: state.extra as String?,
-        ),
+        builder: (context, state) =>
+            _legacy(ChatbotScreen(initialContext: state.extra as String?)),
       ),
       GoRoute(
         path: '/streak-calendar',
-        builder: (context, state) => const StreakCalendarScreen(),
+        builder: (context, state) => _legacy(const StreakCalendarScreen()),
       ),
       GoRoute(
         path: '/news-details',
@@ -416,73 +414,59 @@ final routerProvider = Provider<GoRouter>((ref) {
                   ? extraArticle
                   : CurrentAffairsService.getArticleMapById(
                       state.uri.queryParameters['id']);
-          return NewsDetailsScreen(article: article);
+          return _legacy(NewsDetailsScreen(article: article));
         },
       ),
       GoRoute(
         path: '/public-profile',
-        builder: (context, state) {
-          final user = state.extra as Map<String, dynamic>? ?? {};
-          return PublicProfileScreen(user: user);
-        },
+        builder: (context, state) => _legacy(PublicProfileScreen(
+            user: state.extra as Map<String, dynamic>? ?? {})),
       ),
       GoRoute(
         path: '/state-gk',
-        builder: (context, state) => const StateGkScreen(),
+        builder: (context, state) => _legacy(const StateGkScreen()),
       ),
       GoRoute(
         path: '/current-affairs-gk',
-        builder: (context, state) => const CurrentAffairsGkScreen(),
+        builder: (context, state) => _legacy(const CurrentAffairsGkScreen()),
       ),
       GoRoute(
         path: '/grammar-hub',
-        builder: (context, state) => const GrammarHubScreen(),
+        builder: (context, state) => _legacy(const GrammarHubScreen()),
       ),
       GoRoute(
         path: '/grammar-quiz',
-        builder: (context, state) => const GrammarQuizScreen(),
-      ),
-      GoRoute(
-        path: '/pyq-hub',
-        builder: (context, state) => const PyqHubScreen(),
-      ),
-      GoRoute(
-        path: '/mock-hub',
-        builder: (context, state) => const MockHubScreen(),
-      ),
-      GoRoute(
-        path: '/exams-hub',
-        builder: (context, state) {
-          final tabStr = state.uri.queryParameters['tab'];
-          final initialTab = (int.tryParse(tabStr ?? '0') ?? 0).clamp(0, 2);
-          return ExamsHubScreen(initialTabIndex: initialTab);
-        },
+        builder: (context, state) => _legacy(const GrammarQuizScreen()),
       ),
       GoRoute(
         path: '/admin/question-review',
         builder: (context, state) =>
-            const AdminGate(child: QuestionReviewScreen()),
+            _legacy(const AdminGate(child: QuestionReviewScreen())),
       ),
       GoRoute(
         path: '/admin/question-flagger',
         builder: (context, state) =>
-            const AdminGate(child: QuestionFlaggerScreen()),
+            _legacy(const AdminGate(child: QuestionFlaggerScreen())),
       ),
       GoRoute(
         path: '/syllabus',
         builder: (context, state) {
           final tabStr = state.uri.queryParameters['tab'];
           final initialTab = (int.tryParse(tabStr ?? '0') ?? 0).clamp(0, 3);
-          return SyllabusScreen(initialTabIndex: initialTab);
+          return _legacy(SyllabusScreen(initialTabIndex: initialTab));
         },
       ),
       GoRoute(
         path: '/bookmarks',
-        builder: (context, state) => const BookmarksScreen(),
+        builder: (context, state) => _legacy(const BookmarksScreen()),
       ),
     ],
   );
 });
+
+/// Screens not yet redesigned hardcode light colours; keep them on the light
+/// theme so they stay readable when the app is in dark mode.
+Widget _legacy(Widget child) => Theme(data: AppTheme.legacyTheme, child: child);
 
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
@@ -493,7 +477,7 @@ class MyApp extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
-      title: 'Arunachal Exam Prep',
+      title: 'Donyi Prep',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,

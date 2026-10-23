@@ -1,185 +1,79 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_strings.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_spacing.dart';
-import '../../../core/widgets/secondary_button.dart';
-import '../../../core/widgets/social_button.dart';
-import '../viewmodel/auth_viewmodel.dart';
+import '../../../core/theme/aura.dart';
+import '../../../core/widgets/aura/aura_widgets.dart';
+import '../../../core/widgets/aura/wordmark.dart';
+import 'google_sign_in.dart';
 
 class WelcomeScreen extends ConsumerWidget {
   const WelcomeScreen({super.key});
 
-  Future<void> _handleSocialLogin(
-      BuildContext context, WidgetRef ref, String provider) async {
-    final result = await ref
-        .read(authViewModelProvider.notifier)
-        .loginWithGoogleNative();
-    if (!context.mounted) return;
-
-    if (result.status == GoogleAuthStatus.authenticated) {
-      context.go('/home');
-    } else if (result.status == GoogleAuthStatus.notRegistered) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-              'Google account not registered yet. Please complete registration to continue.'),
-          backgroundColor: AppColors.primary,
-          duration: Duration(seconds: 4),
-        ),
-      );
-      context.push('/register', extra: {
-        'email': result.email,
-        'name': result.displayName,
-      });
-    } else if (result.status == GoogleAuthStatus.error) {
-      final err = result.errorMessage ??
-          ref.read(authViewModelProvider).errorMessage;
-      if (err != null && err.isNotEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(err),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final a = context.aura;
     return Scaffold(
-      body: Stack(
-        children: [
-          // Background Image with soft blur
-          Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/images/forest_background.jpg'),
-                fit: BoxFit.cover,
+      body: AuraBackground(
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, c) => SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 28),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: c.maxHeight),
+                child: IntrinsicHeight(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const SizedBox(height: 28),
+                      const Align(alignment: Alignment.centerLeft, child: Wordmark()),
+                      const Spacer(),
+                      const SizedBox(height: 48),
+                      Text('Prepare with calm.\nPerform with clarity.',
+                          style: AuraType.serif(36, a.ink, height: 1.15)),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Previous year papers and exam-condition mock tests for APPSC, APSSB and Arunachal Police recruitment.',
+                        style: AuraType.sans(15.5, a.inkMuted, height: 1.55),
+                      ),
+                      const SizedBox(height: 40),
+                      FilledButton(
+                        onPressed: () => context.push('/register'),
+                        child: const Text('Create account'),
+                      ),
+                      const SizedBox(height: 12),
+                      OutlinedButton(
+                        onPressed: () => context.push('/login'),
+                        child: const Text('Sign in'),
+                      ),
+                      const SizedBox(height: 12),
+                      TextButton(
+                        onPressed: () => signInWithGoogle(context, ref),
+                        style: TextButton.styleFrom(
+                          foregroundColor: a.ink,
+                          minimumSize: const Size.fromHeight(50),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('G', style: AuraType.sans(17, a.ink, weight: FontWeight.w700)),
+                            const SizedBox(width: 10),
+                            const Text('Continue with Google'),
+                          ],
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => context.push('/forgot-password'),
+                        style: TextButton.styleFrom(foregroundColor: a.inkMuted),
+                        child: const Text('Forgot password?'),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
-          // Blur Overlay
-          Container(
-            color: Colors.black.withValues(alpha: 0.3),
-          ),
-          BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0),
-            child: const SizedBox.expand(),
-          ),
-          // Content
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-              child: Column(
-                children: [
-                  const Spacer(),
-                  // State Emblem Logo
-                  Container(
-                    width: 140,
-                    height: 140,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.12),
-                          blurRadius: 16,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                    padding: const EdgeInsets.all(AppSpacing.s),
-                    child: ClipOval(
-                      child: Image.asset(
-                        'assets/images/state_emblem.jpg',
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
-                  // Welcome Title
-                  Text(
-                    AppStrings.welcome,
-                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                      color: AppColors.textWhite,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 2.0,
-                      fontSize: 36,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black.withValues(alpha: 0.4),
-                          offset: const Offset(0, 2),
-                          blurRadius: 6,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.s),
-                  Text(
-                    AppStrings.welcomeSubtitle,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textWhite.withValues(alpha: 0.85),
-                          fontWeight: FontWeight.w500,
-                        ),
-                  ),
-                  const Spacer(),
-                  // Action Buttons
-                  SecondaryButton(
-                    text: AppStrings.createAccount,
-                    isOutlined: true,
-                    borderColor: AppColors.textWhite,
-                    textColor: AppColors.textWhite,
-                    onPressed: () => context.push('/register'),
-                  ),
-                  const SizedBox(height: AppSpacing.m),
-                  SecondaryButton(
-                    text: AppStrings.loginIn,
-                    isOutlined: true,
-                    borderColor: AppColors.textWhite,
-                    textColor: AppColors.textWhite,
-                    onPressed: () => context.push('/login'),
-                  ),
-                  const SizedBox(height: AppSpacing.xxl),
-                  // Social Login section
-                  Text(
-                    'Or Connect with Gmail',
-                    style: TextStyle(
-                      color: AppColors.textWhite.withValues(alpha: 0.7),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.m),
-                  SocialButton(
-                    type: SocialType.google,
-                    onPressed: () => _handleSocialLogin(context, ref, 'google'),
-                  ),
-                  const SizedBox(height: AppSpacing.s),
-                  TextButton(
-                    onPressed: () => context.push('/forgot-password'),
-                    child: const Text(
-                      'Forgot Password?',
-                      style: TextStyle(
-                        color: AppColors.textWhite,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                        decoration: TextDecoration.underline,
-                        decorationColor: Colors.white70,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
-                ],
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

@@ -1,15 +1,12 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_strings.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_spacing.dart';
-import '../../../core/widgets/primary_button.dart';
-import '../../../core/widgets/custom_text_field.dart';
-import '../../../core/widgets/social_button.dart';
+import '../../../core/theme/aura.dart';
 import '../../../core/utils/validators.dart';
+import '../../../core/widgets/aura/aura_widgets.dart';
 import '../viewmodel/auth_viewmodel.dart';
+import 'google_sign_in.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -20,233 +17,154 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final _id = TextEditingController();
+  final _password = TextEditingController();
+  bool _obscure = true;
 
   @override
   void initState() {
     super.initState();
     Future.microtask(() {
-      if (mounted) {
-        ref.read(authViewModelProvider.notifier).clearError();
-      }
+      if (mounted) ref.read(authViewModelProvider.notifier).clearError();
     });
   }
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
+    _id.dispose();
+    _password.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
-    if (_formKey.currentState?.validate() ?? false) {
-      final success = await ref.read(authViewModelProvider.notifier).login(
-            _emailController.text,
-            _passwordController.text,
-          );
-      if (success && mounted) {
-        context.go('/home');
-      }
-    }
-  }
-
-  Future<void> _handleSocialLogin(String provider) async {
-    final result = await ref
-        .read(authViewModelProvider.notifier)
-        .loginWithGoogleNative();
-    if (!mounted) return;
-
-    if (result.status == GoogleAuthStatus.authenticated) {
-      context.go('/home');
-    } else if (result.status == GoogleAuthStatus.notRegistered) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-              'Google account not registered yet. Please complete registration to continue.'),
-          backgroundColor: AppColors.primary,
-          duration: Duration(seconds: 4),
-        ),
-      );
-      context.push('/register', extra: {
-        'email': result.email,
-        'name': result.displayName,
-      });
-    } else if (result.status == GoogleAuthStatus.error) {
-      final err = result.errorMessage ??
-          ref.read(authViewModelProvider).errorMessage;
-      if (err != null && err.isNotEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(err),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    }
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    final ok = await ref.read(authViewModelProvider.notifier).login(_id.text, _password.text);
+    if (ok && mounted) context.go('/home');
   }
 
   @override
   Widget build(BuildContext context) {
+    final a = context.aura;
     final state = ref.watch(authViewModelProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: IconButton(
           tooltip: 'Back',
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => context.pop(),
+          icon: const Icon(CupertinoIcons.back),
         ),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: AppSpacing.l),
-                // Heading
-                Text(
-                  AppStrings.welcome,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.5,
-                        fontSize: 32,
-                      ),
-                ),
-                const SizedBox(height: AppSpacing.s),
-                Text(
-                  AppStrings.loginSubtitle,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                        letterSpacing: 1.1,
-                      ),
-                ),
-                const SizedBox(height: AppSpacing.xxl),
-                // Inputs
-                CustomTextField(
-                  label: 'Email or phone number',
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  prefixIcon: Icons.alternate_email_rounded,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter email or phone number';
-                    }
-                    final clean = value.trim().toLowerCase();
-                    final isEmail = Validators.isEmail(clean);
-                    final isPhone = RegExp(r'^\d{10}$').hasMatch(clean);
-                    if (!isEmail && !isPhone) {
-                      return Validators.invalidIdMessage;
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: AppSpacing.m),
-                CustomTextField(
-                  label: AppStrings.password,
-                  controller: _passwordController,
-                  isPassword: true,
-                  prefixIcon: Icons.lock_outline_rounded,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your password';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {
-                      final emailPhone = _emailController.text.trim();
-                      context.push(
-                        '/forgot-password',
-                        extra: emailPhone.isNotEmpty ? emailPhone : null,
-                      );
+      body: AuraBackground(
+        child: SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(28, 8, 28, 28),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text('Welcome back', style: AuraType.serif(32, a.ink)),
+                  const SizedBox(height: 8),
+                  Text('Sign in to continue your preparation.',
+                      style: AuraType.sans(15, a.inkMuted)),
+                  const SizedBox(height: 34),
+                  TextFormField(
+                    controller: _id,
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
+                    autofillHints: const [AutofillHints.email, AutofillHints.telephoneNumber],
+                    decoration: const InputDecoration(
+                      labelText: 'Email or phone number',
+                      prefixIcon: Icon(CupertinoIcons.at, size: 19),
+                    ),
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) return 'Please enter email or phone number';
+                      final clean = v.trim().toLowerCase();
+                      if (!Validators.isEmail(clean) && !Validators.isPhone(clean)) {
+                        return Validators.invalidIdMessage;
+                      }
+                      return null;
                     },
-                    child: const Text(
-                      'Forgot Password?',
-                      style: TextStyle(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
+                  ),
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: _password,
+                    obscureText: _obscure,
+                    textInputAction: TextInputAction.done,
+                    autofillHints: const [AutofillHints.password],
+                    onFieldSubmitted: (_) => _submit(),
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      prefixIcon: const Icon(CupertinoIcons.lock, size: 19),
+                      suffixIcon: IconButton(
+                        tooltip: _obscure ? 'Show password' : 'Hide password',
+                        onPressed: () => setState(() => _obscure = !_obscure),
+                        icon: Icon(_obscure ? CupertinoIcons.eye : CupertinoIcons.eye_slash, size: 19),
                       ),
+                    ),
+                    validator: (v) => (v == null || v.isEmpty) ? 'Please enter your password' : null,
+                  ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () {
+                        final id = _id.text.trim();
+                        context.push('/forgot-password', extra: id.isEmpty ? null : id);
+                      },
+                      child: const Text('Forgot password?'),
                     ),
                   ),
-                ),
-
-                // Form Inline Error Display
-                if (state.errorMessage != null) ...[
-                  const SizedBox(height: AppSpacing.m),
-                  Container(
-                    padding: const EdgeInsets.all(AppSpacing.s),
-                    decoration: BoxDecoration(
-                      color: AppColors.error.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                          color: AppColors.error.withValues(alpha: 0.3)),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.error_outline_rounded,
-                            color: AppColors.error, size: 18),
-                        const SizedBox(width: AppSpacing.s),
-                        Expanded(
-                          child: Text(
-                            state.errorMessage!,
-                            style: const TextStyle(
-                              color: AppColors.error,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 220),
+                    child: state.errorMessage == null
+                        ? const SizedBox(width: double.infinity)
+                        : Padding(
+                            padding: const EdgeInsets.only(bottom: 14),
+                            child: Text(state.errorMessage!,
+                                style: AuraType.sans(13.5, a.danger, height: 1.45)),
                           ),
-                        ),
+                  ),
+                  FilledButton(
+                    onPressed: state.isLoading ? null : _submit,
+                    child: state.isLoading
+                        ? SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: a.onAccent),
+                          )
+                        : const Text('Sign in'),
+                  ),
+                  const SizedBox(height: 22),
+                  Row(children: [
+                    Expanded(child: Divider(color: a.hairline)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Text('or', style: AuraType.sans(12.5, a.inkFaint)),
+                    ),
+                    Expanded(child: Divider(color: a.hairline)),
+                  ]),
+                  const SizedBox(height: 22),
+                  OutlinedButton(
+                    onPressed: state.isLoading ? null : () => signInWithGoogle(context, ref),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('G', style: AuraType.sans(17, a.ink, weight: FontWeight.w700)),
+                        const SizedBox(width: 10),
+                        const Text('Continue with Google'),
                       ],
                     ),
                   ),
-                ],
-
-                const SizedBox(height: AppSpacing.xl),
-                // Action Button
-                PrimaryButton(
-                  text: AppStrings.signIn,
-                  isLoading: state.isLoading,
-                  onPressed: _submit,
-                ),
-                const SizedBox(height: AppSpacing.xxl),
-                // Footer
-                Text(
-                  'Or Connect with Gmail',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: AppColors.textSecondary.withValues(alpha: 0.8),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
+                  const SizedBox(height: 18),
+                  TextButton(
+                    onPressed: () => context.pushReplacement('/register'),
+                    style: TextButton.styleFrom(foregroundColor: a.inkMuted),
+                    child: const Text('New here? Create an account'),
                   ),
-                ),
-                const SizedBox(height: AppSpacing.m),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SocialButton(
-                      type: SocialType.google,
-                      onPressed: () => _handleSocialLogin('google'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.l),
-              ],
+                ],
+              ),
             ),
           ),
         ),
