@@ -29,7 +29,8 @@ migrate_working_dir/
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-/build/
+build/
+**/build/
 
 # Symbolication related
 app.*.symbols
@@ -52,5 +53,12 @@ TESTPAPER/
 # Binary APKs
 *.apk
 
-# Stack dumps
+# Crash dumps, logs & diagnostics
+*.log
 *.stackdump
+hs_err_pid*
+replay_pid*
+analyze_output.txt
+
+# Web prototype duplicates
+web_portal.html
