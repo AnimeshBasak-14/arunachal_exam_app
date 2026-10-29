@@ -1,308 +1,151 @@
 import 'dart:convert';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
+import '../../../core/config/supabase_config.dart';
 import '../../../core/services/question_repository.dart';
 import '../../../core/services/service_providers.dart';
-import '../../../core/config/supabase_config.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_spacing.dart';
-import '../viewmodel/exam_viewmodel.dart';
+import '../../../core/theme/aura.dart';
+import '../../../core/widgets/aura/aura_widgets.dart';
+import '../../learn/view/study_widgets.dart';
 
-class BookmarksScreen extends StatelessWidget {
+final _bookmarkedQuestionsProvider =
+    FutureProvider.autoDispose.family<List<Question>, String>((ref, joinedIds) async {
+  if (joinedIds.isEmpty) return const [];
+  final ids = joinedIds.split(',').map((id) => '"$id"').join(',');
+  final res = await http
+      .get(
+        Uri.parse('${SupabaseConfig.url}/rest/v1/questions?id=in.($ids)&select=*,tests(*)'),
+        headers: SupabaseConfig.authHeaders,
+      )
+      .timeout(const Duration(seconds: 12));
+  if (res.statusCode != 200) throw Exception('HTTP ${res.statusCode}');
+  return [
+    for (final item in jsonDecode(res.body) as List)
+      Question.fromSupabase(item as Map<String, dynamic>)
+  ];
+});
+
+class BookmarksScreen extends ConsumerWidget {
   const BookmarksScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text(
-          'Saved Bookmarks',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        leading: IconButton(
-          tooltip: 'Back',
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () => context.pop(),
-        ),
-      ),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 900),
-            child: const BookmarksTabBody(showHeader: false),
-          ),
-        ),
-      ),
-    );
-  }
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ids = ref.watch(bookmarkedQuestionsProvider);
+    final async = ref.watch(_bookmarkedQuestionsProvider(ids.join(',')));
 
-class BookmarksTabBody extends ConsumerStatefulWidget {
-  final bool showHeader;
-  const BookmarksTabBody({super.key, this.showHeader = true});
-
-  @override
-  ConsumerState<BookmarksTabBody> createState() => _BookmarksTabBodyState();
-}
-
-class _BookmarksTabBodyState extends ConsumerState<BookmarksTabBody>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  List<Question> _bookmarkedQs = [];
-  bool _loadingQs = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
-
-  Future<void> _loadBookmarkedQuestions(List<String> ids) async {
-    if (ids.isEmpty) {
-      setState(() {
-        _bookmarkedQs = [];
-        _loadingQs = false;
-      });
-      return;
-    }
-    setState(() => _loadingQs = true);
-    try {
-      final results = <Question>[];
-      final idParams = ids.map((id) => '"$id"').join(',');
-      final url =
-          '${SupabaseConfig.url}/rest/v1/questions?id=in.($idParams)&select=*,tests(*)';
-      final response = await http.get(
-        Uri.parse(url),
-        headers: SupabaseConfig.authHeaders,
-      );
-      if (response.statusCode == 200) {
-        final List list = jsonDecode(response.body);
-        results.addAll(
-          list.map(
-            (item) => Question.fromSupabase(item as Map<String, dynamic>),
-          ),
-        );
-      }
-      if (mounted) {
-        setState(() {
-          _bookmarkedQs = results;
-          _loadingQs = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) setState(() => _loadingQs = false);
-    }
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final bookmarkedExams = ref.watch(bookmarkedExamsProvider);
-
-    // Load question bookmarks
-    final bookmarkedQuestionIds = ref.watch(bookmarkedQuestionsProvider);
-
-    if (!_loadingQs &&
-        _bookmarkedQs.isEmpty &&
-        bookmarkedQuestionIds.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _loadBookmarkedQuestions(bookmarkedQuestionIds);
-      });
-    }
-
-    final bookmarkedQuestions = _bookmarkedQs;
-
-    // Group by Exam Code
-    final Map<String, List<Question>> groupedByExam = {};
-    for (final q in bookmarkedQuestions) {
-      groupedByExam.putIfAbsent(q.examCode, () => []).add(q);
-    }
-
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.m),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Header (if showHeader is true)
-          if (widget.showHeader) ...[
-            Text(
-              'Bookmarks',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: AppSpacing.s),
-          ],
-
-          // Tab Selector
-          TabBar(
-            controller: _tabController,
-            labelColor: AppColors.primary,
-            unselectedLabelColor: AppColors.textSecondary,
-            indicatorColor: AppColors.primary,
-            indicatorWeight: 3.0,
-            tabs: const [
-              Tab(text: 'SAVED EXAMS'),
-              Tab(text: 'QUESTIONS'),
+    return StudyPage(
+      title: 'Bookmarked questions',
+      children: [
+        if (ids.isEmpty)
+          const AuraEmpty(
+            icon: CupertinoIcons.bookmark,
+            title: 'No bookmarks yet',
+            message: 'Tap the bookmark on any question while practising a paper to keep it here for revision.',
+          )
+        else
+          ...async.when(
+            loading: () => [
+              for (int i = 0; i < 4; i++)
+                const Padding(padding: EdgeInsets.only(bottom: 12), child: SkeletonBox(height: 96)),
+            ],
+            error: (_, __) => [
+              AuraEmpty(
+                icon: CupertinoIcons.wifi_slash,
+                title: 'Couldn\'t load bookmarks',
+                message: 'Check your connection and try again.',
+                actionLabel: 'Retry',
+                onAction: () => ref.invalidate(_bookmarkedQuestionsProvider),
+              ),
+            ],
+            data: (qs) => [
+              Text('${qs.length} saved', style: AuraType.sans(13, context.aura.inkFaint)),
+              const SizedBox(height: 12),
+              for (final q in qs) ...[_QuestionCard(q: q), const SizedBox(height: 12)],
             ],
           ),
-          const SizedBox(height: AppSpacing.m),
-
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                // Tab 1: Saved Exams
-                bookmarkedExams.isEmpty
-                    ? _buildEmptyState(
-                        icon: Icons.bookmark_outline_rounded,
-                        title: 'No saved exams',
-                        subtitle: 'Browse exams and tap the star to save them.',
-                      )
-                    : ListView.builder(
-                        itemCount: bookmarkedExams.length,
-                        physics: const BouncingScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          final exam = bookmarkedExams[index];
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: AppSpacing.s),
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: AppColors.primaryLight,
-                                child:
-                                    Icon(exam.icon, color: AppColors.primary),
-                              ),
-                              title: Text(
-                                exam.code,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              subtitle: Text(
-                                exam.name,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              trailing: IconButton(
-                                tooltip: 'Bookmark',
-                                icon: const Icon(Icons.bookmark_rounded,
-                                    color: AppColors.primary),
-                                onPressed: () {
-                                  ref
-                                      .read(examViewModelProvider.notifier)
-                                      .toggleBookmark(exam.id);
-                                },
-                              ),
-                              onTap: () {
-                                context.push('/exam-detail/${exam.id}');
-                              },
-                            ),
-                          );
-                        },
-                      ),
-
-                // Tab 2: Grouped Questions
-                bookmarkedQuestions.isEmpty
-                    ? _buildEmptyState(
-                        icon: Icons.question_answer_outlined,
-                        title: 'No bookmarked questions',
-                        subtitle:
-                            'Read through PYQs and tap bookmark to save questions here.',
-                      )
-                    : ListView.builder(
-                        itemCount: groupedByExam.keys.length,
-                        physics: const BouncingScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          final examCode = groupedByExam.keys.elementAt(index);
-                          final questions = groupedByExam[examCode]!;
-
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: AppSpacing.s,
-                                    horizontal: AppSpacing.xs),
-                                child: Text(
-                                  '$examCode QUESTIONS (${questions.length})',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.primary,
-                                    fontSize: 12,
-                                    letterSpacing: 1.1,
-                                  ),
-                                ),
-                              ),
-                              ...questions.map((q) {
-                                return Card(
-                                  margin: const EdgeInsets.only(
-                                      bottom: AppSpacing.s),
-                                  child: ListTile(
-                                    title: Text(
-                                      q.questionText,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600),
-                                    ),
-                                    subtitle: Text(
-                                      '${q.subject} • ${q.year} Paper',
-                                      style: const TextStyle(fontSize: 11),
-                                    ),
-                                    trailing: const Icon(
-                                        Icons.arrow_forward_ios_rounded,
-                                        size: 14),
-                                    onTap: () {
-                                      context.push(
-                                          '/pyqs/${q.examCode}/${q.year}');
-                                    },
-                                  ),
-                                );
-                              }),
-                              const SizedBox(height: AppSpacing.m),
-                            ],
-                          );
-                        },
-                      ),
-              ],
-            ),
-          ),
-        ],
-      ),
+      ],
     );
   }
+}
 
-  Widget _buildEmptyState(
-      {required IconData icon,
-      required String title,
-      required String subtitle}) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(icon, size: 72, color: AppColors.textHint.withValues(alpha: 0.5)),
-        const SizedBox(height: AppSpacing.m),
-        Text(
-          title,
-          style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              color: AppColors.textSecondary,
-              fontSize: 16),
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        Text(
-          subtitle,
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: AppColors.textHint, fontSize: 13),
-        ),
-      ],
+class _QuestionCard extends ConsumerStatefulWidget {
+  final Question q;
+  const _QuestionCard({required this.q});
+
+  @override
+  ConsumerState<_QuestionCard> createState() => _QuestionCardState();
+}
+
+class _QuestionCardState extends ConsumerState<_QuestionCard> {
+  bool _open = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final a = context.aura;
+    final q = widget.q;
+    const good = Color(0xFF2F6B55);
+    final answerIdx = 'abcd'.indexOf(q.correctAnswer.toLowerCase());
+
+    return GlassCard(
+      onTap: () => setState(() => _open = !_open),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Expanded(child: MetaLine([q.examCode, q.year > 0 ? '${q.year}' : null, q.subject])),
+            IconButton(
+              tooltip: 'Remove bookmark',
+              visualDensity: VisualDensity.compact,
+              icon: Icon(CupertinoIcons.bookmark_fill, size: 19, color: a.accent),
+              onPressed: () => ref.read(bookmarkedQuestionsProvider.notifier).toggleBookmark(q.id),
+            ),
+          ]),
+          const SizedBox(height: 6),
+          Text(q.questionText,
+              maxLines: _open ? null : 3,
+              overflow: _open ? null : TextOverflow.ellipsis,
+              style: AuraType.sans(15, a.ink, height: 1.5)),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
+            child: !_open
+                ? const SizedBox(width: double.infinity)
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 12),
+                      for (int i = 0; i < q.options.length; i++)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Icon(i == answerIdx ? CupertinoIcons.checkmark_circle_fill : CupertinoIcons.circle,
+                                size: 17, color: i == answerIdx ? good : a.inkFaint),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(q.options[i],
+                                  style: AuraType.sans(14, i == answerIdx ? a.ink : a.inkMuted,
+                                      weight: i == answerIdx ? FontWeight.w600 : FontWeight.w400, height: 1.45)),
+                            ),
+                          ]),
+                        ),
+                      if (answerIdx < 0)
+                        Text('Answer key not verified for this question.',
+                            style: AuraType.sans(13, a.review)),
+                      if (q.solution.trim().isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Divider(color: a.hairline),
+                        const SizedBox(height: 8),
+                        Text(q.solution, style: AuraType.sans(14, a.inkMuted, height: 1.55)),
+                      ],
+                    ],
+                  ),
+          ),
+          const SizedBox(height: 8),
+          Text(_open ? 'Tap to hide' : 'Tap to see answer', style: AuraType.sans(12, a.inkFaint)),
+        ],
+      ),
     );
   }
 }

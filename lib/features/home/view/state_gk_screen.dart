@@ -1,296 +1,227 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme/aura.dart';
+import '../../../core/widgets/aura/aura_widgets.dart';
+import '../../../data/national_gk_data.dart';
 import '../../../data/state_gk_data.dart';
+import '../../learn/data/learn_deck.dart';
+import '../../learn/view/study_widgets.dart';
 
-class StateGkScreen extends StatefulWidget {
+/// GK home: swipe feed first, then the map, topics, and chapters to read.
+class StateGkScreen extends StatelessWidget {
   const StateGkScreen({super.key});
 
-  @override
-  State<StateGkScreen> createState() => _StateGkScreenState();
-}
-
-class _StateGkScreenState extends State<StateGkScreen> {
-  String _searchQuery = '';
-  String _selectedCategory = 'All';
-
-  final List<String> _categories = [
-    'All',
-    'Overview',
-    'Science',
-    'History',
-    'Administration',
-    'Governance',
-    'Polity',
-    'Geography',
-    'Environment',
-    'Culture',
-    'Demographics',
-    'Facts & Literature',
+  static const _topics = [
+    (LearnTopic.arunachal, CupertinoIcons.location),
+    (LearnTopic.polity, CupertinoIcons.building_2_fill),
+    (LearnTopic.history, CupertinoIcons.time),
+    (LearnTopic.geography, CupertinoIcons.globe),
+    (LearnTopic.economy, CupertinoIcons.money_dollar_circle),
+    (LearnTopic.environment, CupertinoIcons.tree),
+    (LearnTopic.science, CupertinoIcons.lab_flask),
   ];
 
   @override
   Widget build(BuildContext context) {
-    final filtered = StateGkData.chapters.where((ch) {
-      final matchesCategory = _selectedCategory == 'All' ||
-          ch.category.toLowerCase() == _selectedCategory.toLowerCase();
-      final q = _searchQuery.toLowerCase().trim();
-      final matchesSearch = q.isEmpty ||
-          ch.title.toLowerCase().contains(q) ||
-          ch.subtitle.toLowerCase().contains(q) ||
-          ch.highlights.any((h) => h.toLowerCase().contains(q)) ||
-          ch.keyFacts.any((k) =>
-              k.values.any((val) => val.toLowerCase().contains(q)));
-      return matchesCategory && matchesSearch;
-    }).toList();
+    final a = context.aura;
+    final arunachal = StateGkData.chapters.where((c) => c.category != 'Science').toList();
+    final general = [
+      ...NationalGkData.chapters,
+      ...StateGkData.chapters.where((c) => c.category == 'Science'),
+    ];
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        leading: IconButton(
-          tooltip: 'Back',
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () => context.pop(),
+    return StudyPage(
+      title: 'General knowledge',
+      children: [
+        const LearnHero(
+          title: 'GK in 60-second cards',
+          subtitle: 'Swipe through facts and quick quizzes. Missed ones come back until they stick.',
+          route: '/learn',
         ),
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('State GK Compendium',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
-            Text('Arunachal Pradesh Complete Handbook',
-                style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-          ],
-        ),
-      ),
-      body: SafeArea(
-        top: false,
-        bottom: true,
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 800),
-            child: Column(
-              children: [
-                // Search & Filter Header
-                Container(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            color: AppColors.surface,
-            child: Column(
-              children: [
-                TextField(
-                  onChanged: (val) => setState(() => _searchQuery = val),
-                  decoration: InputDecoration(
-                    hintText: 'Search districts, rivers, GI tags, CMs...',
-                    prefixIcon: const Icon(Icons.search_rounded,
-                        color: AppColors.primary),
-                    filled: true,
-                    fillColor: AppColors.background,
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 10),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                SizedBox(
-                  height: 36,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _categories.length,
-                    itemBuilder: (context, index) {
-                      final cat = _categories[index];
-                      final isSelected = cat == _selectedCategory;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: ChoiceChip(
-                          label: Text(cat),
-                          selected: isSelected,
-                          selectedColor: AppColors.primary,
-                          labelStyle: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: isSelected ? Colors.white : AppColors.textSecondary,
-                          ),
-                          backgroundColor: AppColors.background,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18),
-                            side: BorderSide(
-                              color: isSelected
-                                  ? AppColors.primary
-                                  : AppColors.divider,
-                            ),
-                          ),
-                          onSelected: (selected) {
-                            if (selected) {
-                              setState(() => _selectedCategory = cat);
-                            }
-                          },
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Content Chapters List
-          Expanded(
-            child: filtered.isEmpty
-                ? const Center(
-                    child: Text('No matching GK topics found.',
-                        style: TextStyle(color: AppColors.textSecondary)),
-                  )
-                : ListView.builder(
-                    padding: EdgeInsets.fromLTRB(
-                      AppSpacing.m,
-                      AppSpacing.m,
-                      AppSpacing.m,
-                      MediaQuery.of(context).padding.bottom + 48,
-                    ),
-                    itemCount: filtered.length,
-                    itemBuilder: (context, index) {
-                      final chapter = filtered[index];
-                      return _buildChapterCard(chapter);
-                    },
-                  ),
-          ),
-        ],
-      ),
-    ),
-    ),
-    ),
+        const SizedBox(height: 14),
+        _MapCard(onTap: () => context.push('/gk-map')),
+        const SizedBox(height: 28),
+        const SectionHeader('Practise by topic'),
+        const SizedBox(height: 12),
+        LayoutBuilder(builder: (context, c) {
+          final cols = c.maxWidth > 560 ? 4 : 2;
+          return GridView.count(
+            crossAxisCount: cols,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: 1.25,
+            children: [for (final (t, i) in _topics) TopicTile(topic: t, icon: i)],
+          );
+        }),
+        const SizedBox(height: 14),
+        const SavedCardsRow(),
+        const SizedBox(height: 28),
+        const SectionHeader('Arunachal Pradesh'),
+        const SizedBox(height: 4),
+        Text('Read the full chapters', style: AuraType.sans(13, a.inkFaint)),
+        const SizedBox(height: 12),
+        _ChapterList(chapters: arunachal),
+        const SizedBox(height: 28),
+        const SectionHeader('General studies'),
+        const SizedBox(height: 12),
+        _ChapterList(chapters: general),
+      ],
     );
   }
+}
 
-  Widget _buildChapterCard(StateGkChapter chapter) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: AppSpacing.m),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 2,
-      child: ExpansionTile(
-        initiallyExpanded: false,
-        tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: chapter.category == 'Science'
-                ? const Color(0xFF00695C).withValues(alpha: 0.12)
-                : AppColors.primaryLight,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(
-            chapter.category == 'Science'
-                ? Icons.science_rounded
-                : Icons.menu_book_rounded,
-            color: chapter.category == 'Science'
-                ? const Color(0xFF00695C)
-                : AppColors.primary,
-            size: 22,
-          ),
-        ),
-        title: Text(
-          chapter.title,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 4),
-          child: Text(
-            chapter.subtitle,
-            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-          ),
-        ),
+class _MapCard extends StatelessWidget {
+  final VoidCallback onTap;
+  const _MapCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final a = context.aura;
+    return GlassCard(
+      onTap: onTap,
+      child: Row(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: a.bgTint,
+              borderRadius: BorderRadius.circular(AuraSpace.radiusS),
+            ),
+            child: Icon(CupertinoIcons.map, color: a.accent),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Divider(height: 1),
-                const SizedBox(height: 12),
-                const Text(
-                  'EXAM HIGHLIGHTS & SYNOPSIS',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
-                    letterSpacing: 1.1,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ...chapter.highlights.map((point) => Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('• ',
-                              style: TextStyle(
-                                  color: AppColors.primary,
-                                  fontWeight: FontWeight.bold)),
-                          Expanded(
-                            child: Text(
-                              point,
-                              style: const TextStyle(
-                                  fontSize: 13.5, height: 1.45),
-                            ),
-                          ),
-                        ],
-                      ),
-                    )),
-                if (chapter.keyFacts.isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  const Text(
-                    'QUICK REFERENCE TABLE',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.accent,
-                      letterSpacing: 1.1,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.background,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: AppColors.divider),
-                    ),
-                    child: Column(
-                      children: chapter.keyFacts.map((row) {
-                        final keys = row.keys.toList();
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                row[keys[0]] ?? '',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 12),
-                              ),
-                              Flexible(
-                                child: Text(
-                                  row[keys[1]] ?? '',
-                                  textAlign: TextAlign.end,
-                                  style: const TextStyle(
-                                      fontSize: 12, color: AppColors.primaryDark),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ],
+                Text('Arunachal on the map', style: AuraType.sans(16, a.ink, weight: FontWeight.w600)),
+                const SizedBox(height: 2),
+                Text('64 places with photos · play "Find it"',
+                    style: AuraType.sans(13, a.inkMuted)),
               ],
             ),
           ),
+          Icon(CupertinoIcons.chevron_right, size: 16, color: a.inkFaint),
         ],
       ),
     );
   }
+}
+
+class _ChapterList extends StatelessWidget {
+  final List<StateGkChapter> chapters;
+  const _ChapterList({required this.chapters});
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassList(
+      indent: 18,
+      children: [
+        for (final c in chapters)
+          InkWell(
+            onTap: () => Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => ChapterScreen(chapter: c),
+            )),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+              child: Row(children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(c.title.replaceFirst(RegExp(r'^\d+\.\s*'), ''),
+                          style: AuraType.sans(15, context.aura.ink, weight: FontWeight.w500)),
+                      const SizedBox(height: 2),
+                      Text(c.subtitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AuraType.sans(12.5, context.aura.inkFaint)),
+                    ],
+                  ),
+                ),
+                Icon(CupertinoIcons.chevron_right, size: 16, color: context.aura.inkFaint),
+              ]),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// One chapter as a clean reading page.
+class ChapterScreen extends StatelessWidget {
+  final StateGkChapter chapter;
+  const ChapterScreen({super.key, required this.chapter});
+
+  @override
+  Widget build(BuildContext context) {
+    final a = context.aura;
+    final keys = chapter.keyFacts.isEmpty ? <String>[] : chapter.keyFacts.first.keys.toList();
+    return StudyPage(
+      title: chapter.category,
+      children: [
+        Text(chapter.title.replaceFirst(RegExp(r'^\d+\.\s*'), ''),
+            style: AuraType.serif(27, a.ink, height: 1.2)),
+        const SizedBox(height: 6),
+        Text(chapter.subtitle, style: AuraType.sans(14, a.inkMuted)),
+        const SizedBox(height: 22),
+        for (final h in chapter.highlights)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 14),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 8, right: 12),
+                child: Container(
+                    width: 5, height: 5,
+                    decoration: BoxDecoration(color: a.accent, shape: BoxShape.circle)),
+              ),
+              Expanded(child: Text(h, style: AuraType.sans(15.5, a.ink, height: 1.6))),
+            ]),
+          ),
+        if (keys.length >= 2) ...[
+          const SizedBox(height: 14),
+          SectionHeader('Key facts'),
+          const SizedBox(height: 10),
+          GlassCard(
+            padding: EdgeInsets.zero,
+            child: Column(children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+                child: Row(children: [
+                  Expanded(child: Eyebrow(keys[0])),
+                  const SizedBox(width: 12),
+                  Expanded(child: Eyebrow(keys[1])),
+                ]),
+              ),
+              for (final row in chapter.keyFacts) ...[
+                Divider(color: a.hairline),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Expanded(child: Text(row[keys[0]] ?? '', style: AuraType.sans(14, a.ink, weight: FontWeight.w500, height: 1.4))),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text(row[keys[1]] ?? '', style: AuraType.sans(14, a.inkMuted, height: 1.4))),
+                  ]),
+                ),
+              ],
+            ]),
+          ),
+        ],
+        const SizedBox(height: 22),
+        FilledButton.icon(
+          onPressed: () => context.push('/learn?topic=${_topic(chapter).name}'),
+          icon: const Icon(CupertinoIcons.play_fill, size: 16),
+          label: const Text('Practise as cards'),
+        ),
+      ],
+    );
+  }
+
+  LearnTopic _topic(StateGkChapter c) =>
+      learnDeck.entries.firstWhere((e) => e.value.any((card) => card.id.startsWith('${c.id}.')),
+          orElse: () => MapEntry(LearnTopic.arunachal, const [])).key;
 }

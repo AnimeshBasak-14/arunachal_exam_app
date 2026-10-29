@@ -35,7 +35,7 @@ if (flutterVersionName == null) {
 }
 
 android {
-    namespace "com.example.arunachal_exam_app"
+    namespace "com.zap.dawnlit"
     compileSdk flutter.compileSdkVersion
     ndkVersion "28.2.13676358"
 
@@ -54,7 +54,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "com.example.arunachal_exam_app"
+        applicationId "com.zap.dawnlit"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion flutter.minSdkVersion
@@ -62,6 +62,9 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
+        // Google Maps key, kept out of git in android/local.properties:
+        //   MAPS_API_KEY=AIza...
+        manifestPlaceholders += [MAPS_API_KEY: localProperties.getProperty('MAPS_API_KEY', '')]
     }
 
     signingConfigs {

@@ -129,6 +129,10 @@ class AppTheme {
           borderRadius: BorderRadius.circular(AuraSpace.radiusS),
           borderSide: BorderSide(color: a.accent, width: 1.4),
         ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AuraSpace.radiusS),
+          borderSide: BorderSide(color: a.hairline.withValues(alpha: 0.5)),
+        ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AuraSpace.radiusS),
           borderSide: BorderSide(color: a.danger),

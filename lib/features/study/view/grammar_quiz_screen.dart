@@ -1,14 +1,18 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math;
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_spacing.dart';
 import '../../../core/services/service_providers.dart';
-import '../../../core/widgets/leave_test_dialog.dart';
-import '../../../data/grammar_data.dart';
-import '../../shell/view/app_shell.dart';
+import '../../../core/theme/aura.dart';
+import '../../../core/widgets/aura/aura_widgets.dart';
+import '../../learn/data/learn_deck.dart';
 
+/// Timed English test: 15 random grammar and vocabulary questions, 30
+/// seconds each. Results are saved to test history.
 class GrammarQuizScreen extends ConsumerStatefulWidget {
   const GrammarQuizScreen({super.key});
 
@@ -17,510 +21,289 @@ class GrammarQuizScreen extends ConsumerStatefulWidget {
 }
 
 class _GrammarQuizScreenState extends ConsumerState<GrammarQuizScreen> {
-  late List<GrammarQuizQuestion> _questions;
-  int _currentIndex = 0;
-  final Map<int, String> _userAnswers = {}; // questionIndex -> 'a'/'b'/'c'/'d'
-  bool _isAnswerRevealed = false;
-  bool _isFinished = false;
-  int _score = 0;
+  static const _count = 15;
+  static const _perQuestion = 30;
+  static const _good = Color(0xFF2F6B55);
+
+  late List<LearnCard> _qs;
+  final _picked = <int, int>{}; // question index -> option (-1 = timed out)
+  int _i = 0;
+  int _left = _perQuestion;
+  Timer? _timer;
+  final _started = DateTime.now();
+  bool _done = false;
 
   @override
   void initState() {
     super.initState();
-    _questions = List<GrammarQuizQuestion>.from(GrammarData.quizQuestions)..shuffle();
+    _start();
   }
 
-  String _extractOptionChar(String option, int fallbackIndex) {
-    final trimmed = option.trim();
-    final match = RegExp(r'^[\(\[]?([a-dA-D])[\)\]\.\s]').firstMatch(trimmed);
-    if (match != null) return match.group(1)!.toLowerCase();
-    return String.fromCharCode(97 + fallbackIndex);
+  void _start() {
+    final pool = [
+      ...learnDeck[LearnTopic.grammar]!,
+      ...learnDeck[LearnTopic.vocab]!,
+    ].where((c) => c.kind == CardKind.quiz).toList()
+      ..shuffle(math.Random());
+    _qs = pool.take(_count).toList();
+    _picked.clear();
+    _i = 0;
+    _done = false;
+    _tick();
   }
 
-  void _onOptionSelected(String optionChar) {
-    if (_isAnswerRevealed) return;
-    setState(() {
-      _userAnswers[_currentIndex] = optionChar;
-      _isAnswerRevealed = true;
-      if (optionChar == _questions[_currentIndex].correctAnswer.toLowerCase()) {
-        _score++;
+  void _tick() {
+    _timer?.cancel();
+    _left = _perQuestion;
+    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) return;
+      if (_left <= 1) {
+        t.cancel();
+        _answer(-1);
+      } else {
+        setState(() => _left--);
       }
     });
   }
 
-  void _nextQuestion() {
-    if (_currentIndex < _questions.length - 1) {
-      setState(() {
-        _currentIndex++;
-        _isAnswerRevealed = _userAnswers.containsKey(_currentIndex);
-      });
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _answer(int option) {
+    if (_picked.containsKey(_i)) return;
+    _timer?.cancel();
+    final right = option == _qs[_i].answer;
+    right ? HapticFeedback.mediumImpact() : HapticFeedback.heavyImpact();
+    setState(() => _picked[_i] = option);
+  }
+
+  void _next() {
+    if (_i + 1 >= _qs.length) {
+      _finish();
     } else {
-      _finishQuiz();
+      setState(() => _i++);
+      _tick();
     }
   }
 
-  Future<void> _finishQuiz() async {
-    setState(() {
-      _isFinished = true;
-    });
+  int get _score => [
+        for (int i = 0; i < _qs.length; i++)
+          if (_picked[i] == _qs[i].answer) 1
+      ].length;
 
-    // Save to storage quiz history
-    try {
-      final storage = ref.read(storageServiceProvider);
-      final historyList = List<String>.from(storage.getQuizHistory());
-      final maxScore = _questions.length;
-      final pct = maxScore > 0 ? (_score / maxScore) * 100 : 0.0;
-      final trophyChange = (_score * 2);
-
-      final resultRecord = {
-        'testTitle': 'English Grammar Practice Quiz',
-        'examCode': 'APSSB-ENG',
-        'score': _score,
-        'maxScore': maxScore,
-        'percentage': pct,
-        'ratingChange': trophyChange,
-        'speedBonus': 5,
-        'correct': _score,
-        'wrong': maxScore - _score,
-        'timeTaken': 120,
-        'date': DateTime.now().toIso8601String(),
-        'completedAt': DateTime.now().toIso8601String(),
-      };
-
-      historyList.insert(0, jsonEncode(resultRecord));
-      await storage.saveQuizHistory(historyList);
-    } catch (e) {
-      debugPrint('Error saving grammar quiz result: $e');
-    }
-  }
-
-  void _restartQuiz() {
-    setState(() {
-      _questions.shuffle();
-      _currentIndex = 0;
-      _userAnswers.clear();
-      _isAnswerRevealed = false;
-      _isFinished = false;
-      _score = 0;
-    });
+  Future<void> _finish() async {
+    setState(() => _done = true);
+    final now = DateTime.now();
+    String two(int v) => v.toString().padLeft(2, '0');
+    final date =
+        '${now.year}-${two(now.month)}-${two(now.day)} ${two(now.hour)}:${two(now.minute)}';
+    final answered = _picked.values.where((v) => v >= 0).length;
+    final record = {
+      'examCode': 'ENGLISH',
+      'testTitle': 'Timed English test',
+      'mode': 'exam',
+      'score': _score,
+      'maxScore': _qs.length,
+      'ratingChange': 0,
+      'speedBonus': 0,
+      'correct': _score,
+      'wrong': answered - _score,
+      'left': _qs.length - answered,
+      'ungraded': 0,
+      'timeTaken': now.difference(_started).inSeconds,
+      'date': date,
+      'completedAt': date,
+    };
+    final storage = ref.read(storageServiceProvider);
+    await storage
+        .saveQuizHistory([jsonEncode(record), ...storage.getQuizHistory()]);
   }
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: _isFinished || _userAnswers.isEmpty,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-        final navigator = Navigator.of(context);
-        if (await confirmLeaveTest(context, title: 'Leave this quiz?')) {
-          navigator.pop();
-        }
-      },
+    final a = context.aura;
+    return AuraBackground(
       child: Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text(
-          'Grammar Practice Quiz',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-        ),
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: AppColors.textPrimary,
-        actions: [
-          if (!_isFinished)
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.only(right: AppSpacing.m),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryLight,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '${_currentIndex + 1}/${_questions.length}',
-                    style: const TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            leading: IconButton(
+              tooltip: 'Close',
+              icon: const Icon(CupertinoIcons.xmark),
+              onPressed: () => context.pop(),
+            ),
+            title:
+                Text(_done ? 'Result' : 'Question ${_i + 1} of ${_qs.length}'),
+            actions: [
+              if (!_done)
+                Padding(
+                  padding: const EdgeInsets.only(right: 18),
+                  child: Center(
+                    child: Text('0:${_left.toString().padLeft(2, '0')}',
+                        style: AuraType.digits(
+                            16, _left <= 5 ? a.danger : a.inkMuted,
+                            weight: FontWeight.w600)),
                   ),
                 ),
-              ),
-            ),
-        ],
-      ),
-      body: _isFinished ? _buildResultView() : _buildQuizView(),
-      ),
+            ],
+          ),
+          body: SafeArea(
+              top: false,
+              child: _done ? _result(context) : _question(context))),
     );
   }
 
-  Widget _buildQuizView() {
-    final question = _questions[_currentIndex];
-    final selectedChar = _userAnswers[_currentIndex];
-    final progress = (_currentIndex + 1) / _questions.length;
-
-    return Column(
+  Widget _question(BuildContext context) {
+    final a = context.aura;
+    final q = _qs[_i];
+    final picked = _picked[_i];
+    return ListView(
+      padding:
+          const EdgeInsets.fromLTRB(AuraSpace.gutter, 4, AuraSpace.gutter, 32),
       children: [
-        // Progress bar
-        LinearProgressIndicator(
-          value: progress,
-          backgroundColor: Colors.grey.shade200,
-          valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
-          minHeight: 4,
+        ClipRRect(
+          borderRadius: BorderRadius.circular(99),
+          child: LinearProgressIndicator(
+              value: (_i + (picked != null ? 1 : 0)) / _qs.length,
+              minHeight: 4),
         ),
-
-        Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSpacing.m),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Category pill
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    question.category,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.m),
-
-                // Question Text
-                Text(
-                  question.questionText,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.l),
-
-                // Options
-                ...List.generate(question.options.length, (index) {
-                  final optionText = question.options[index];
-                  final optionChar = _extractOptionChar(optionText, index);
-                  final isSelected = selectedChar == optionChar;
-                  final isCorrect = question.correctAnswer.toLowerCase() == optionChar;
-
-                  Color borderColor = Colors.grey.shade200;
-                  Color bgColor = Colors.white;
-                  Color textColor = AppColors.textPrimary;
-                  IconData? statusIcon;
-
-                  if (_isAnswerRevealed) {
-                    if (isCorrect) {
-                      borderColor = AppColors.success;
-                      bgColor = AppColors.success.withValues(alpha: 0.08);
-                      textColor = AppColors.success;
-                      statusIcon = Icons.check_circle_rounded;
-                    } else if (isSelected && !isCorrect) {
-                      borderColor = AppColors.error;
-                      bgColor = AppColors.error.withValues(alpha: 0.08);
-                      textColor = AppColors.error;
-                      statusIcon = Icons.cancel_rounded;
-                    }
-                  } else if (isSelected) {
-                    borderColor = AppColors.primary;
-                    bgColor = AppColors.primaryLight;
-                  }
-
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: AppSpacing.s),
-                    decoration: BoxDecoration(
-                      color: bgColor,
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusM),
-                      border: Border.all(color: borderColor, width: isSelected || (_isAnswerRevealed && isCorrect) ? 1.5 : 1),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.02),
-                          blurRadius: 4,
-                          offset: const Offset(0, 1),
-                        ),
-                      ],
-                    ),
-                    child: InkWell(
-                      onTap: () => _onOptionSelected(optionChar),
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusM),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 28,
-                              height: 28,
-                              decoration: BoxDecoration(
-                                color: isSelected || (_isAnswerRevealed && isCorrect)
-                                    ? borderColor.withValues(alpha: 0.2)
-                                    : Colors.grey.shade100,
-                                shape: BoxShape.circle,
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                optionChar.toUpperCase(),
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                  color: textColor,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                optionText,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                                  color: textColor,
-                                ),
-                              ),
-                            ),
-                            if (statusIcon != null)
-                              Icon(statusIcon, color: borderColor, size: 20),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-
-                // Explanation Box (if revealed)
-                if (_isAnswerRevealed) ...[
-                  const SizedBox(height: AppSpacing.m),
-                  Container(
-                    padding: const EdgeInsets.all(AppSpacing.m),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusM),
-                      border: Border.all(color: Colors.blue.shade100),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.blue.withValues(alpha: 0.05),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.lightbulb_rounded, color: Colors.amber, size: 18),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Explanation (Correct: ${question.correctAnswer.toUpperCase()})',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          question.explanation,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: AppColors.textSecondary,
-                            height: 1.4,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ],
+        const SizedBox(height: 24),
+        Eyebrow(q.eyebrow),
+        const SizedBox(height: 10),
+        Text(q.prompt,
+            style: AuraType.serif(q.prompt.length > 90 ? 20 : 24, a.ink,
+                height: 1.3)),
+        const SizedBox(height: 22),
+        for (int o = 0; o < q.options.length; o++)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: _Option(
+              text: q.options[o],
+              color: picked == null
+                  ? null
+                  : o == q.answer
+                      ? _good
+                      : o == picked
+                          ? a.danger
+                          : a.hairline,
+              onTap: picked == null ? () => _answer(o) : null,
             ),
           ),
-        ),
-
-        // Bottom Navigation Bar
-        Container(
-          padding: const EdgeInsets.all(AppSpacing.m),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 8,
-                offset: const Offset(0, -2),
-              ),
-            ],
+        if (picked != null) ...[
+          const SizedBox(height: 6),
+          Text(
+            picked == q.answer
+                ? 'Correct'
+                : (picked < 0 ? 'Time\'s up' : 'Not quite'),
+            style: AuraType.sans(14, picked == q.answer ? _good : a.danger,
+                weight: FontWeight.w600),
           ),
-          child: Row(
-            children: [
-              if (_currentIndex > 0)
-                OutlinedButton(
-                  onPressed: () {
-                    setState(() {
-                      _currentIndex--;
-                      _isAnswerRevealed = _userAnswers.containsKey(_currentIndex);
-                    });
-                  },
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusM)),
-                  ),
-                  child: const Text('Previous'),
-                ),
-              if (_currentIndex > 0) const SizedBox(width: AppSpacing.m),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: _isAnswerRevealed ? _nextQuestion : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusM)),
-                  ),
-                  child: Text(
-                    _currentIndex == _questions.length - 1 ? 'Finish & See Score' : 'Next Question',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildResultView() {
-    final total = _questions.length;
-    final pct = total > 0 ? (_score / total) * 100 : 0.0;
-    final isPassed = pct >= 50.0;
-
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Score Trophy Avatar
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: (isPassed ? AppColors.accent : AppColors.primary).withValues(alpha: 0.12),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                isPassed ? Icons.emoji_events_rounded : Icons.psychology_rounded,
-                size: 72,
-                color: isPassed ? AppColors.accent : AppColors.primary,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.l),
-
-            Text(
-              isPassed ? 'Outstanding Work!' : 'Keep Practicing!',
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-            ),
+          if (q.explain != null) ...[
             const SizedBox(height: 6),
-            Text(
-              isPassed
-                  ? 'You demonstrated strong command over English grammar rules.'
-                  : 'Review the rules in Grammar Hub and try once more.',
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: AppSpacing.xl),
-
-            // Score Card
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.l),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(AppSpacing.radiusL),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildResultKpi('Score', '$_score / $total', AppColors.primary),
-                      _buildResultKpi('Accuracy', '${pct.toStringAsFixed(0)}%', isPassed ? AppColors.success : Colors.orange),
-                      _buildResultKpi('Trophies', '+${_score * 2 + 5}', AppColors.accent),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xl),
-
-            // Action Buttons
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _restartQuiz,
-                icon: const Icon(Icons.refresh_rounded, color: Colors.white),
-                label: const Text('Retake Quiz', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusM)),
-                ),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.s),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () => context.pop(),
-                icon: const Icon(Icons.menu_book_rounded),
-                label: const Text('Review Grammar Hub Rules'),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusM)),
-                ),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.s),
-            TextButton(
-              onPressed: () {
-                ref.read(currentTabProvider.notifier).state = 0;
-                context.go('/home');
-              },
-              child: const Text('Back to Home'),
-            ),
+            Text(q.explain!,
+                style: AuraType.sans(14.5, a.inkMuted, height: 1.5)),
           ],
-        ),
-      ),
+          const SizedBox(height: 20),
+          FilledButton(
+              onPressed: _next,
+              child:
+                  Text(_i + 1 >= _qs.length ? 'See result' : 'Next question')),
+        ],
+      ],
     );
   }
 
-  Widget _buildResultKpi(String label, String value, Color color) {
-    return Column(
+  Widget _result(BuildContext context) {
+    final a = context.aura;
+    final pct = (_score / _qs.length * 100).round();
+    return ListView(
+      padding:
+          const EdgeInsets.fromLTRB(AuraSpace.gutter, 8, AuraSpace.gutter, 32),
       children: [
+        Text('$_score / ${_qs.length}', style: AuraType.serif(48, a.ink)),
         Text(
-          value,
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(fontSize: 12, color: AppColors.textHint, fontWeight: FontWeight.w600),
-        ),
+            pct >= 80
+                ? 'Excellent work.'
+                : pct >= 50
+                    ? 'Good. Review the misses below.'
+                    : 'Keep practising, this improves fast.',
+            style: AuraType.sans(15, a.inkMuted)),
+        const SizedBox(height: 22),
+        Row(children: [
+          Expanded(
+              child: OutlinedButton(
+                  onPressed: () => context.pop(), child: const Text('Done'))),
+          const SizedBox(width: 12),
+          Expanded(
+            child: FilledButton(
+                onPressed: () => setState(_start),
+                child: const Text('New test')),
+          ),
+        ]),
+        const SizedBox(height: 28),
+        const SectionHeader('Review'),
+        const SizedBox(height: 10),
+        for (int i = 0; i < _qs.length; i++) ...[
+          GlassCard(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                Icon(
+                    _picked[i] == _qs[i].answer
+                        ? CupertinoIcons.checkmark_circle_fill
+                        : CupertinoIcons.xmark_circle_fill,
+                    size: 18,
+                    color: _picked[i] == _qs[i].answer ? _good : a.danger),
+                const SizedBox(width: 8),
+                Expanded(
+                    child: Text(_qs[i].prompt,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        style: AuraType.sans(14.5, a.ink,
+                            weight: FontWeight.w500))),
+              ]),
+              const SizedBox(height: 6),
+              Text('Answer: ${_qs[i].options[_qs[i].answer]}',
+                  style: AuraType.sans(13.5, a.inkMuted, height: 1.45)),
+            ]),
+          ),
+          const SizedBox(height: 10),
+        ],
       ],
+    );
+  }
+}
+
+class _Option extends StatelessWidget {
+  final String text;
+  final Color? color;
+  final VoidCallback? onTap;
+  const _Option({required this.text, this.color, this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final a = context.aura;
+    final c = color;
+    return Material(
+      color: c == null
+          ? a.surface
+          : c.withValues(alpha: c == a.hairline ? 0 : 0.09),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AuraSpace.radiusS),
+        side: BorderSide(
+            color: c ?? a.hairline,
+            width: c == null || c == a.hairline ? 0.8 : 1.6),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AuraSpace.radiusS),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Text(text, style: AuraType.sans(15, a.ink, height: 1.4)),
+        ),
+      ),
     );
   }
 }

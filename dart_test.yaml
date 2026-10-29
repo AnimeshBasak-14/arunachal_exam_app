@@ -1,0 +1,5 @@
+tags:
+  network:
+    skip: "Hits live feeds. Run with: flutter test --tags network --run-skipped"
+  screenshots:
+    skip: "Renders PNGs for review. Run with: flutter test --tags screenshots --run-skipped --update-goldens"

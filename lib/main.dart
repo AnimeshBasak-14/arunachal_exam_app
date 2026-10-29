@@ -18,28 +18,20 @@ import 'features/auth/view/login_screen.dart';
 import 'features/auth/view/register_screen.dart';
 import 'features/auth/view/forgot_password_screen.dart';
 import 'features/auth/viewmodel/auth_viewmodel.dart';
-import 'features/home/view/appsc_categories.dart';
-import 'features/home/view/apssb_categories.dart';
-import 'features/home/view/exam_detail_screen.dart';
 import 'features/profile/view/edit_profile_screen.dart';
-import 'features/home/view/my_courses_screen.dart';
-import 'features/profile/view/bio_screen.dart';
-import 'features/profile/view/change_email_screen.dart';
-import 'features/profile/view/change_phone_screen.dart';
 import 'features/profile/view/change_password_screen.dart';
-import 'features/home/view/scoreboard_screen.dart';
-import 'features/home/view/trophy_history_screen.dart';
 import 'features/profile/view/quiz_history_screen.dart';
 import 'features/home/view/notifications_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'core/services/streak_service.dart';
 import 'core/services/notification_service.dart';
 import 'features/chatbot/view/chatbot_screen.dart';
-import 'features/home/view/streak_calendar_screen.dart';
-import 'features/home/view/news_details_screen.dart';
-import 'features/profile/view/public_profile_screen.dart';
 import 'features/home/view/state_gk_screen.dart';
 import 'features/home/view/current_affairs_gk_screen.dart';
+import 'features/gk/view/gk_map_screen.dart';
+import 'core/widgets/aura/wordmark.dart';
+import 'features/learn/data/learn_deck.dart';
+import 'features/learn/view/learn_feed_screen.dart';
 import 'features/study/view/grammar_hub_screen.dart';
 import 'features/study/view/grammar_quiz_screen.dart';
 import 'features/admin/view/question_review_screen.dart';
@@ -48,7 +40,6 @@ import 'features/admin/view/admin_gate.dart';
 import 'features/syllabus/view/syllabus_screen.dart';
 import 'features/home/view/bookmarks_screen.dart';
 import 'core/services/question_repository.dart';
-import 'core/services/current_affairs_service.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_performance/firebase_performance.dart';
 import 'core/services/remote_config_service.dart';
@@ -97,7 +88,7 @@ void main() async {
       await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
       // Handshake log so Firebase Console immediately verifies the SDK installation
       await FirebaseCrashlytics.instance
-          .log("Donyi Prep started");
+          .log('${Wordmark.appName} started');
     } catch (_) {}
 
     FlutterError.onError = (errorDetails) {
@@ -119,15 +110,8 @@ void main() async {
     debugPrint("Performance monitoring initialization skipped: $e");
   }
 
-  // ─── REMOTE CONFIG & CLOUD MESSAGING ───────────────────────────────────
-  try {
-    if (Firebase.apps.isNotEmpty) {
-      await RemoteConfigService.instance.initialize();
-      await FcmService.instance.initialize();
-    }
-  } catch (e) {
-    debugPrint("DevOps services initialization skipped or error: $e");
-  }
+  // Remote Config and messaging (which can show the notification
+  // permission prompt) start after the first frame so launch isn't blocked.
 
   // Initialize notifications (skip on web where native notifications plugin is unsupported)
   if (!kIsWeb) {
@@ -148,6 +132,16 @@ void main() async {
       child: const MyApp(),
     ),
   );
+
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    if (Firebase.apps.isEmpty) return;
+    try {
+      await RemoteConfigService.instance.initialize();
+      await FcmService.instance.initialize();
+    } catch (e) {
+      debugPrint('Remote Config / messaging setup skipped: $e');
+    }
+  });
 }
 
 final isLoggedInProvider = Provider<bool>((ref) {
@@ -179,11 +173,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           isGoingToRegister ||
           isGoingToForgotPassword;
 
-      // Allow direct access to news articles and admin screens via web URL / deep-link.
+      // Allow direct access to the admin screens via web URL.
       // Admin screens are wrapped in AdminGate (Supabase admin sign-in), and RLS
       // rejects writes from anyone who is not in public.admin_users.
-      final isPublicRoute = state.matchedLocation.startsWith('/news-details') ||
-          state.matchedLocation.startsWith('/admin');
+      final isPublicRoute = state.matchedLocation.startsWith('/admin');
 
       // 1. If logged in, go to /home from any auth, onboarding, or root route
       if (isLoggedIn) {
@@ -211,6 +204,8 @@ final routerProvider = Provider<GoRouter>((ref) {
             state.matchedLocation == '/pyq-hub' ||
             state.matchedLocation == '/mock-hub' ||
             state.matchedLocation == '/grammar-hub' ||
+            state.matchedLocation == '/learn' ||
+            state.matchedLocation == '/gk-map' ||
             state.matchedLocation == '/bookmarks') {
           return null;
         }
@@ -255,7 +250,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/register',
         builder: (context, state) {
           final extra = state.extra;
-          return _legacy(extra is Map<String, dynamic>
+          return (extra is Map<String, dynamic>
               ? RegisterScreen(
                   initialEmail: extra['email'] as String?,
                   initialName: extra['name'] as String?,
@@ -265,7 +260,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/forgot-password',
-        builder: (context, state) => _legacy(const ForgotPasswordScreen()),
+        builder: (context, state) => ForgotPasswordScreen(initialEmail: state.extra as String?),
       ),
       GoRoute(
         path: '/home',
@@ -286,68 +281,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const AccountScreen(),
       ),
       GoRoute(
-        path: '/appsc',
-        builder: (context, state) => _legacy(const AppscCategoriesScreen()),
-      ),
-      GoRoute(
-        path: '/apssb',
-        builder: (context, state) => _legacy(const ApssbCategoriesScreen()),
-      ),
-      GoRoute(
-        path: '/exam-detail/:id',
-        builder: (context, state) =>
-            _legacy(ExamDetailScreen(examId: state.pathParameters['id'] ?? '')),
-      ),
-      GoRoute(
         path: '/edit-profile',
-        builder: (context, state) => _legacy(const EditProfileScreen()),
-      ),
-      GoRoute(
-        path: '/my-courses',
-        builder: (context, state) => _legacy(const MyCoursesScreen()),
-      ),
-      GoRoute(
-        path: '/bio',
-        builder: (context, state) => _legacy(const BioScreen()),
-      ),
-      GoRoute(
-        path: '/change-email',
-        builder: (context, state) => _legacy(const ChangeEmailScreen()),
-      ),
-      GoRoute(
-        path: '/change-phone',
-        builder: (context, state) => _legacy(const ChangePhoneScreen()),
+        builder: (context, state) => const EditProfileScreen(),
       ),
       GoRoute(
         path: '/change-password',
-        builder: (context, state) => _legacy(const ChangePasswordScreen()),
+        builder: (context, state) => const ChangePasswordScreen(),
       ),
       // Study a whole paper (older links): same engine, study mode.
-      GoRoute(
-        path: '/pyqs/:examCode/:year',
-        builder: (context, state) => ExamScreen(
-          examCode: state.pathParameters['examCode'] ?? '',
-          testType: 'full',
-          paperType: 'PYQ',
-          year: int.tryParse(state.pathParameters['year'] ?? ''),
-          isStudyMode: true,
-        ),
-      ),
-      GoRoute(
-        path: '/pyq-paper',
-        builder: (context, state) {
-          final q = state.uri.queryParameters;
-          return ExamScreen(
-            examCode: q['code'] ?? q['examCode'] ?? 'ALL',
-            testType: 'full',
-            paperType: 'PYQ',
-            year: int.tryParse(q['year'] ?? ''),
-            testId: q['testId'] ?? q['id'] ?? q['test_id'],
-            title: q['title'],
-            isStudyMode: true,
-          );
-        },
-      ),
       GoRoute(
         path: '/mock-test/:examCode/:type',
         builder: (context, state) {
@@ -381,62 +322,48 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
-        path: '/scoreboard',
-        builder: (context, state) => _legacy(const ScoreboardScreen()),
-      ),
-      GoRoute(
-        path: '/trophy-history',
-        builder: (context, state) => _legacy(const TrophyHistoryScreen()),
-      ),
-      GoRoute(
         path: '/quiz-history',
-        builder: (context, state) => _legacy(const QuizHistoryScreen()),
+        builder: (context, state) => const QuizHistoryScreen(),
       ),
       GoRoute(
         path: '/notifications',
-        builder: (context, state) => _legacy(const NotificationsScreen()),
+        builder: (context, state) => const NotificationsScreen(),
       ),
       GoRoute(
         path: '/chatbot',
         builder: (context, state) =>
-            _legacy(ChatbotScreen(initialContext: state.extra as String?)),
-      ),
-      GoRoute(
-        path: '/streak-calendar',
-        builder: (context, state) => _legacy(const StreakCalendarScreen()),
-      ),
-      GoRoute(
-        path: '/news-details',
-        builder: (context, state) {
-          final extraArticle = state.extra as Map<String, dynamic>?;
-          final Map<String, dynamic> article =
-              (extraArticle != null && extraArticle.isNotEmpty)
-                  ? extraArticle
-                  : CurrentAffairsService.getArticleMapById(
-                      state.uri.queryParameters['id']);
-          return _legacy(NewsDetailsScreen(article: article));
-        },
-      ),
-      GoRoute(
-        path: '/public-profile',
-        builder: (context, state) => _legacy(PublicProfileScreen(
-            user: state.extra as Map<String, dynamic>? ?? {})),
+            ChatbotScreen(initialContext: state.extra as String?),
       ),
       GoRoute(
         path: '/state-gk',
-        builder: (context, state) => _legacy(const StateGkScreen()),
+        builder: (context, state) => const StateGkScreen(),
+      ),
+      GoRoute(
+        path: '/learn',
+        builder: (context, state) {
+          final q = state.uri.queryParameters;
+          final topic = LearnTopic.values.asNameMap()[q['topic']];
+          return LearnFeedScreen(
+            topics: topic == null ? const {} : {topic},
+            savedOnly: q['saved'] == '1',
+          );
+        },
+      ),
+      GoRoute(
+        path: '/gk-map',
+        builder: (context, state) => const GkMapScreen(),
       ),
       GoRoute(
         path: '/current-affairs-gk',
-        builder: (context, state) => _legacy(const CurrentAffairsGkScreen()),
+        builder: (context, state) => const CurrentAffairsGkScreen(),
       ),
       GoRoute(
         path: '/grammar-hub',
-        builder: (context, state) => _legacy(const GrammarHubScreen()),
+        builder: (context, state) => const GrammarHubScreen(),
       ),
       GoRoute(
         path: '/grammar-quiz',
-        builder: (context, state) => _legacy(const GrammarQuizScreen()),
+        builder: (context, state) => const GrammarQuizScreen(),
       ),
       GoRoute(
         path: '/admin/question-review',
@@ -453,12 +380,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final tabStr = state.uri.queryParameters['tab'];
           final initialTab = (int.tryParse(tabStr ?? '0') ?? 0).clamp(0, 3);
-          return _legacy(SyllabusScreen(initialTabIndex: initialTab));
+          return SyllabusScreen(initialTabIndex: initialTab);
         },
       ),
       GoRoute(
         path: '/bookmarks',
-        builder: (context, state) => _legacy(const BookmarksScreen()),
+        builder: (context, state) => const BookmarksScreen(),
       ),
     ],
   );
@@ -477,7 +404,7 @@ class MyApp extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
-      title: 'Donyi Prep',
+      title: Wordmark.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,

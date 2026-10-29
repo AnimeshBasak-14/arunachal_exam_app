@@ -1,418 +1,211 @@
+import 'package:arunachal_exam_app/core/services/auth_gateway.dart';
+import 'package:arunachal_exam_app/core/services/firebase_service.dart';
+import 'package:arunachal_exam_app/core/services/storage_service.dart';
+import 'package:arunachal_exam_app/features/auth/viewmodel/auth_viewmodel.dart';
+import 'package:arunachal_exam_app/models/user_model.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:arunachal_exam_app/features/auth/viewmodel/auth_viewmodel.dart';
-import 'package:arunachal_exam_app/core/services/storage_service.dart';
-import 'package:arunachal_exam_app/core/services/firebase_service.dart';
-import 'package:arunachal_exam_app/core/utils/validators.dart';
-import 'package:arunachal_exam_app/models/user_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class MockStorageService extends Mock implements StorageService {}
-class MockFirebaseService extends Mock implements FirebaseService {}
-class FakeUserModel extends Fake implements UserModel {}
+class MockFirebase extends Mock implements FirebaseService {}
+
+class MockSecure extends Mock implements FlutterSecureStorage {}
+
+class FakeUser extends Fake implements UserModel {}
+
+/// In-memory stand-in for Firebase Auth.
+class FakeGateway implements AuthGateway {
+  final accounts = <String, String>{}; // email -> password
+  String? current;
+  AuthIdentity? googleAccount;
+  bool deleted = false;
+
+  @override
+  Future<String?> restoredEmail() async => current;
+
+  @override
+  bool get hasPassword => current != null && accounts.containsKey(current);
+
+  @override
+  Future<AuthIdentity> signInWithEmail(String email, String password) async {
+    if (accounts[email] != password) {
+      throw const AuthFailure('Email or password is incorrect.', 'invalid-credential');
+    }
+    current = email;
+    return AuthIdentity(email);
+  }
+
+  @override
+  Future<AuthIdentity> createAccount(String email, String password, String name) async {
+    if (accounts.containsKey(email)) throw const AuthFailure('exists', 'email-already-in-use');
+    accounts[email] = password;
+    current = email;
+    return AuthIdentity(email, displayName: name);
+  }
+
+  @override
+  Future<AuthIdentity?> signInWithGoogle() async {
+    current = googleAccount?.email;
+    return googleAccount;
+  }
+
+  @override
+  Future<void> sendPasswordReset(String email) async {}
+
+  @override
+  Future<void> changePassword(String c, String n) async {
+    if (accounts[current] != c) throw const AuthFailure('wrong', 'invalid-credential');
+    accounts[current!] = n;
+  }
+
+  @override
+  Future<void> deleteAccount({String? password}) async {
+    if (password != null && accounts[current] != password) {
+      throw const AuthFailure('wrong', 'invalid-credential');
+    }
+    deleted = true;
+    current = null;
+  }
+
+  @override
+  Future<void> signOut() async => current = null;
+}
 
 void main() {
-  late MockStorageService mockStorage;
-  late MockFirebaseService mockFirebase;
-  late AuthViewModel authViewModel;
+  late StorageService storage;
+  late MockFirebase firebase;
+  late MockSecure secure;
+  late FakeGateway gateway;
+  final secureData = <String, String>{};
 
-  setUpAll(() {
-    registerFallbackValue(FakeUserModel());
-  });
+  setUpAll(() => registerFallbackValue(FakeUser()));
+
+  Future<AuthViewModel> make([Map<String, Object> prefs = const {}]) async {
+    SharedPreferences.setMockInitialValues(prefs);
+    storage = StorageService(await SharedPreferences.getInstance(), secure);
+    return AuthViewModel(storage, firebase, gateway);
+  }
 
   setUp(() {
-    mockStorage = MockStorageService();
-    mockFirebase = MockFirebaseService();
-
-    // Default StorageService stubs for AuthViewModel initial state
-    when(() => mockStorage.isLoggedIn).thenReturn(false);
-    when(() => mockStorage.userEmail).thenReturn('student@arunachal.in');
-    when(() => mockStorage.userName).thenReturn('Student Name');
-    when(() => mockStorage.userPhone).thenReturn('');
-    when(() => mockStorage.userProfilePic).thenReturn('avatar_green');
-    when(() => mockStorage.userDob).thenReturn('2000-01-01');
-    when(() => mockStorage.userRating).thenReturn(0);
-    when(() => mockStorage.userCity).thenReturn('Itanagar');
-    when(() => mockFirebase.fetchUserProfile(any())).thenAnswer((_) async => null);
-
-    authViewModel = AuthViewModel(mockStorage, mockFirebase);
+    secureData.clear();
+    firebase = MockFirebase();
+    secure = MockSecure();
+    gateway = FakeGateway();
+    when(() => secure.read(key: any(named: 'key')))
+        .thenAnswer((i) async => secureData[i.namedArguments[#key] as String]);
+    when(() => secure.write(key: any(named: 'key'), value: any(named: 'value'))).thenAnswer(
+        (i) async => secureData[i.namedArguments[#key] as String] = i.namedArguments[#value] as String);
+    when(() => secure.delete(key: any(named: 'key')))
+        .thenAnswer((i) async => secureData.remove(i.namedArguments[#key] as String));
+    when(() => firebase.fetchUserProfile(any())).thenAnswer((_) async => null);
+    when(() => firebase.syncUserProfile(any())).thenAnswer((_) async {});
+    when(() => firebase.logLogin(any())).thenAnswer((_) async {});
+    when(() => firebase.logSignUp(any())).thenAnswer((_) async {});
+    when(() => firebase.deleteUserData(any())).thenAnswer((_) async {});
   });
 
-  group('AuthViewModel - Initial State & Clear Error', () {
-    test('initial state when not logged in', () {
-      expect(authViewModel.state.isLoggedIn, false);
-      expect(authViewModel.state.user, isNull);
-      expect(authViewModel.state.isLoading, false);
-      expect(authViewModel.state.errorMessage, isNull);
-    });
-
-    test('initial state when logged in loads user from storage', () {
-      final savedUser = UserModel(
-        name: 'Logged User',
-        email: 'logged@gmail.com',
-        phone: '',
-      );
-      when(() => mockStorage.isLoggedIn).thenReturn(true);
-      when(() => mockStorage.userEmail).thenReturn('logged@gmail.com');
-      when(() => mockStorage.getAccountData('logged@gmail.com')).thenReturn(savedUser);
-
-      final loggedInViewModel = AuthViewModel(mockStorage, mockFirebase);
-
-      expect(loggedInViewModel.state.isLoggedIn, true);
-      expect(loggedInViewModel.state.user?.name, 'Logged User');
-      expect(loggedInViewModel.state.user?.email, 'logged@gmail.com');
-    });
-
-    test('clearError removes error message from state', () async {
-      when(() => mockStorage.getRegisteredPassword('invalid')).thenAnswer((_) async => null);
-
-      // Trigger an error first
-      await authViewModel.login('invalid', 'pass');
-      expect(authViewModel.state.errorMessage, isNotNull);
-
-      authViewModel.clearError();
-      expect(authViewModel.state.errorMessage, isNull);
-    });
+  test('starts signed out', () async {
+    final vm = await make();
+    expect(vm.state.isLoggedIn, isFalse);
+    expect(vm.state.user, isNull);
   });
 
-  group('AuthViewModel.login - Validation & Failure Cases', () {
-    test('login fails when input is neither a valid email nor a phone', () async {
-      final result = await authViewModel.login('not-an-email', 'password123');
-
-      expect(result, false);
-      expect(authViewModel.state.isLoggedIn, false);
-      expect(authViewModel.state.isLoading, false);
-      expect(authViewModel.state.errorMessage, Validators.invalidIdMessage);
-    });
-
-    test('non-Gmail email addresses pass validation', () async {
-      when(() => mockStorage.getRegisteredPassword('user@yahoo.com'))
-          .thenAnswer((_) async => null);
-
-      final result = await authViewModel.login('user@yahoo.com', 'password123');
-
-      expect(result, false);
-      expect(authViewModel.state.errorMessage,
-          'Account does not exist. Please register first.');
-    });
-
-    test('login fails when phone number is not 10 digits', () async {
-      final result = await authViewModel.login('12345', 'password123');
-
-      expect(result, false);
-      expect(authViewModel.state.isLoggedIn, false);
-      expect(authViewModel.state.isLoading, false);
-      expect(authViewModel.state.errorMessage, Validators.invalidIdMessage);
-    });
-
-    test('login fails when account does not exist in registered storage', () async {
-      when(() => mockStorage.getRegisteredPassword('user@gmail.com')).thenAnswer((_) async => null);
-
-      final result = await authViewModel.login(' user@gmail.com ', 'password123');
-
-      expect(result, false);
-      expect(authViewModel.state.isLoggedIn, false);
-      expect(authViewModel.state.isLoading, false);
-      expect(
-        authViewModel.state.errorMessage,
-        'Account does not exist. Please register first.',
-      );
-      verify(() => mockStorage.getRegisteredPassword('user@gmail.com')).called(1);
-    });
-
-    test('login fails when password is incorrect', () async {
-      when(() => mockStorage.getRegisteredPassword('user@gmail.com')).thenAnswer((_) async => 'correct_pass');
-
-      final result = await authViewModel.login('user@gmail.com', 'wrong_pass');
-
-      expect(result, false);
-      expect(authViewModel.state.isLoggedIn, false);
-      expect(authViewModel.state.isLoading, false);
-      expect(
-        authViewModel.state.errorMessage,
-        'Incorrect password. Please try again.',
-      );
-      verify(() => mockStorage.getRegisteredPassword('user@gmail.com')).called(1);
-    });
+  test('register creates a Firebase account and a profile', () async {
+    final vm = await make();
+    final ok = await vm.register(
+        name: 'Tashi Bam', email: 'Tashi@Mail.com ', password: 'secret123', confirmPassword: 'secret123');
+    expect(ok, isTrue);
+    expect(gateway.accounts['tashi@mail.com'], 'secret123');
+    expect(vm.state.user?.name, 'Tashi Bam');
+    expect(vm.state.user?.phone, '');
+    verify(() => firebase.syncUserProfile(any())).called(1);
   });
 
-  group('AuthViewModel.login - Success Cases', () {
-    test('successful login with existing account data', () async {
-      const email = 'user@gmail.com';
-      const password = 'correct_password';
-      final existingUser = UserModel(
-        name: 'Existing User',
-        email: email,
-        phone: '',
-        profilePic: 'avatar_gold',
-        dob: '1995-05-15',
-        rating: 1350,
-        city: 'Itanagar',
-      );
-
-      when(() => mockStorage.getRegisteredPassword(email)).thenAnswer((_) async => password);
-      when(() => mockStorage.getAccountData(email)).thenReturn(existingUser);
-      when(() => mockStorage.saveUser(
-            name: any(named: 'name'),
-            email: any(named: 'email'),
-            phone: any(named: 'phone'),
-            profilePic: any(named: 'profilePic'),
-            dob: any(named: 'dob'),
-            rating: any(named: 'rating'),
-            city: any(named: 'city'),
-          )).thenAnswer((_) async {});
-      when(() => mockStorage.setLoggedIn(true)).thenAnswer((_) async {});
-      when(() => mockFirebase.logLogin('email_or_phone')).thenAnswer((_) async {});
-      when(() => mockFirebase.syncUserProfile(any())).thenAnswer((_) async {});
-
-      final result = await authViewModel.login(email, password);
-
-      expect(result, true);
-      expect(authViewModel.state.isLoggedIn, true);
-      expect(authViewModel.state.user?.name, 'Existing User');
-      expect(authViewModel.state.user?.email, email);
-
-      verify(() => mockStorage.saveUser(
-            name: existingUser.name,
-            email: existingUser.email,
-            phone: existingUser.phone,
-            profilePic: existingUser.profilePic,
-            dob: existingUser.dob,
-            rating: existingUser.rating,
-            city: existingUser.city,
-          )).called(1);
-      verify(() => mockStorage.setLoggedIn(true)).called(1);
-      verify(() => mockFirebase.logLogin('email_or_phone')).called(1);
-      verify(() => mockFirebase.syncUserProfile(existingUser)).called(1);
-    });
-
-    test('successful login with 10-digit phone number using registered fallback data', () async {
-      const phone = '9876543210';
-      const password = 'correct_password';
-
-      when(() => mockStorage.getRegisteredPassword(phone)).thenAnswer((_) async => password);
-      when(() => mockStorage.getAccountData(phone)).thenReturn(null);
-      when(() => mockStorage.getRegisteredName(phone)).thenReturn('Phone User');
-      when(() => mockStorage.getRegisteredDob(phone)).thenReturn('1999-12-31');
-      when(() => mockStorage.getRegisteredRating(phone)).thenReturn(1400);
-      when(() => mockStorage.getRegisteredCity(phone)).thenReturn('Pasighat');
-
-      when(() => mockStorage.saveUser(
-            name: any(named: 'name'),
-            email: any(named: 'email'),
-            phone: any(named: 'phone'),
-            profilePic: any(named: 'profilePic'),
-            dob: any(named: 'dob'),
-            rating: any(named: 'rating'),
-            city: any(named: 'city'),
-          )).thenAnswer((_) async {});
-      when(() => mockStorage.setLoggedIn(true)).thenAnswer((_) async {});
-      when(() => mockFirebase.logLogin('email_or_phone')).thenAnswer((_) async {});
-      when(() => mockFirebase.syncUserProfile(any())).thenAnswer((_) async {});
-
-      final result = await authViewModel.login(phone, password);
-
-      expect(result, true);
-      expect(authViewModel.state.isLoggedIn, true);
-      final loggedInUser = authViewModel.state.user;
-      expect(loggedInUser, isNotNull);
-      expect(loggedInUser!.name, 'Phone User');
-      expect(loggedInUser.email, '');
-      expect(loggedInUser.phone, phone);
-      expect(loggedInUser.dob, '1999-12-31');
-      expect(loggedInUser.rating, 1400);
-      expect(loggedInUser.city, 'Pasighat');
-
-      verify(() => mockStorage.saveUser(
-            name: 'Phone User',
-            email: '',
-            phone: phone,
-            profilePic: 'avatar_green',
-            dob: '1999-12-31',
-            rating: 1400,
-            city: 'Pasighat',
-          )).called(1);
-      verify(() => mockStorage.setLoggedIn(true)).called(1);
-    });
-
-    test('successful login with gmail using registered fallback defaults when registered info is null', () async {
-      const email = 'newstudent@gmail.com';
-      const password = 'password123';
-
-      when(() => mockStorage.getRegisteredPassword(email)).thenAnswer((_) async => password);
-      when(() => mockStorage.getAccountData(email)).thenReturn(null);
-      when(() => mockStorage.getRegisteredName(email)).thenReturn(null);
-      when(() => mockStorage.getRegisteredDob(email)).thenReturn(null);
-      when(() => mockStorage.getRegisteredRating(email)).thenReturn(0);
-      when(() => mockStorage.getRegisteredCity(email)).thenReturn('Itanagar');
-
-      when(() => mockStorage.saveUser(
-            name: any(named: 'name'),
-            email: any(named: 'email'),
-            phone: any(named: 'phone'),
-            profilePic: any(named: 'profilePic'),
-            dob: any(named: 'dob'),
-            rating: any(named: 'rating'),
-            city: any(named: 'city'),
-          )).thenAnswer((_) async {});
-      when(() => mockStorage.setLoggedIn(true)).thenAnswer((_) async {});
-      when(() => mockFirebase.logLogin('email_or_phone')).thenAnswer((_) async {});
-      when(() => mockFirebase.syncUserProfile(any())).thenAnswer((_) async {});
-
-      final result = await authViewModel.login(email, password);
-
-      expect(result, true);
-      expect(authViewModel.state.isLoggedIn, true);
-      final loggedInUser = authViewModel.state.user;
-      expect(loggedInUser, isNotNull);
-      expect(loggedInUser!.name, 'Student Name');
-      expect(loggedInUser.email, email);
-      expect(loggedInUser.phone, '');
-      expect(loggedInUser.dob, '2000-01-01');
-    });
-
-    test('successful login even when Firebase logging/sync throws an exception', () async {
-      const email = 'user@gmail.com';
-      const password = 'password123';
-
-      when(() => mockStorage.getRegisteredPassword(email)).thenAnswer((_) async => password);
-      when(() => mockStorage.getAccountData(email)).thenReturn(null);
-      when(() => mockStorage.getRegisteredName(email)).thenReturn('User');
-      when(() => mockStorage.getRegisteredDob(email)).thenReturn('2000-01-01');
-      when(() => mockStorage.getRegisteredRating(email)).thenReturn(0);
-      when(() => mockStorage.getRegisteredCity(email)).thenReturn('Itanagar');
-
-      when(() => mockStorage.saveUser(
-            name: any(named: 'name'),
-            email: any(named: 'email'),
-            phone: any(named: 'phone'),
-            profilePic: any(named: 'profilePic'),
-            dob: any(named: 'dob'),
-            rating: any(named: 'rating'),
-            city: any(named: 'city'),
-          )).thenAnswer((_) async {});
-      when(() => mockStorage.setLoggedIn(true)).thenAnswer((_) async {});
-      when(() => mockFirebase.logLogin(any())).thenThrow(Exception('Firebase connection failed'));
-
-      final result = await authViewModel.login(email, password);
-
-      expect(result, true);
-      expect(authViewModel.state.isLoggedIn, true);
-      expect(authViewModel.state.user?.email, email);
-    });
+  test('register rejects short or mismatched passwords before calling Firebase', () async {
+    final vm = await make();
+    expect(await vm.register(name: 'A', email: 'a@b.com', password: 'short', confirmPassword: 'short'), isFalse);
+    expect(
+        await vm.register(name: 'A', email: 'a@b.com', password: 'longenough', confirmPassword: 'different'),
+        isFalse);
+    expect(gateway.accounts, isEmpty);
   });
 
-  group('AuthViewModel - Google Sign-In Security Verification', () {
-    test('unregistered Google account returns notRegistered and does NOT log in', () async {
-      const email = 'newstudent@gmail.com';
+  test('login rejects a wrong password and does not sign in', () async {
+    gateway.accounts['a@b.com'] = 'right-password';
+    final vm = await make();
+    expect(await vm.login('a@b.com', 'wrong-password'), isFalse);
+    expect(vm.state.isLoggedIn, isFalse);
+    expect(vm.state.errorMessage, 'Email or password is incorrect.');
+  });
 
-      // Ensure no existing account locally or in Firestore
-      when(() => mockFirebase.fetchUserProfile(email)).thenAnswer((_) async => null);
-      when(() => mockStorage.getAccountData(email)).thenReturn(null);
-      when(() => mockStorage.getRegisteredPassword(email)).thenAnswer((_) async => null);
+  test('login restores the Firestore profile', () async {
+    gateway.accounts['a@b.com'] = 'pass1234';
+    when(() => firebase.fetchUserProfile('a@b.com')).thenAnswer(
+        (_) async => UserModel(name: 'Remote Name', email: 'a@b.com', phone: '9000000000', rating: 40));
+    final vm = await make();
+    expect(await vm.login('a@b.com', 'pass1234'), isTrue);
+    expect(vm.state.user?.name, 'Remote Name');
+    expect(vm.state.user?.rating, 40);
+  });
 
-      final result = await authViewModel.loginWithGoogleAccount(
-        email: email,
-        displayName: 'New Student',
-        photoUrl: 'https://example.com/avatar.jpg',
-      );
+  test('a phone number is not accepted as a login id', () async {
+    final vm = await make();
+    expect(await vm.login('9876543210', 'whatever'), isFalse);
+    expect(vm.state.isLoggedIn, isFalse);
+  });
 
-      expect(result.status, GoogleAuthStatus.notRegistered);
-      expect(result.email, email);
-      expect(result.displayName, 'New Student');
-      expect(authViewModel.state.isLoggedIn, false);
-      expect(authViewModel.state.user, isNull);
+  test('pre-Firebase local accounts move to Firebase on first login', () async {
+    secureData['reg_pwd_old@b.com'] = 'oldpass1';
+    final vm = await make({'reg_name_old@b.com': 'Old User'});
+    expect(await vm.login('old@b.com', 'oldpass1'), isTrue);
+    expect(gateway.accounts['old@b.com'], 'oldpass1');
+    expect(secureData.containsKey('reg_pwd_old@b.com'), isFalse);
+  });
 
-      // Verify no login or account creation occurred
-      verifyNever(() => mockStorage.setLoggedIn(true));
-      verifyNever(() => mockStorage.saveUser(
-            name: any(named: 'name'),
-            email: any(named: 'email'),
-            phone: any(named: 'phone'),
-            profilePic: any(named: 'profilePic'),
-            dob: any(named: 'dob'),
-            rating: any(named: 'rating'),
-            city: any(named: 'city'),
-          ));
-    });
+  test('a wrong password never migrates a local account', () async {
+    secureData['reg_pwd_old@b.com'] = 'oldpass1';
+    final vm = await make();
+    expect(await vm.login('old@b.com', 'guess123'), isFalse);
+    expect(gateway.accounts, isEmpty);
+  });
 
-    test('registered Google account in Firestore returns authenticated and logs in', () async {
-      const email = 'registered@gmail.com';
-      final remoteUser = UserModel(
-        name: 'Registered Student',
-        email: email,
-        phone: '9876543210',
-        profilePic: 'avatar_purple',
-        dob: '1998-05-15',
-        rating: 450,
-        city: 'Naharlagun',
-      );
+  test('Google sign-in creates a profile for a new account', () async {
+    gateway.googleAccount = const AuthIdentity('new.user@gmail.com', displayName: 'New User');
+    final vm = await make();
+    expect(await vm.signInWithGoogle(), isTrue);
+    expect(vm.state.user?.email, 'new.user@gmail.com');
+    expect(vm.state.user?.name, 'New User');
+  });
 
-      when(() => mockFirebase.fetchUserProfile(email)).thenAnswer((_) async => remoteUser);
-      when(() => mockStorage.getAccountData(email)).thenReturn(null);
-      when(() => mockStorage.getRegisteredPassword(email)).thenAnswer((_) async => null);
-      when(() => mockStorage.saveUser(
-            name: any(named: 'name'),
-            email: any(named: 'email'),
-            phone: any(named: 'phone'),
-            profilePic: any(named: 'profilePic'),
-            dob: any(named: 'dob'),
-            rating: any(named: 'rating'),
-            city: any(named: 'city'),
-          )).thenAnswer((_) async {});
-      when(() => mockStorage.setLoggedIn(true)).thenAnswer((_) async {});
-      when(() => mockFirebase.logLogin('google')).thenAnswer((_) async {});
-      when(() => mockFirebase.syncUserProfile(any())).thenAnswer((_) async {});
+  test('cancelling Google sign-in is not an error', () async {
+    final vm = await make();
+    expect(await vm.signInWithGoogle(), isFalse);
+    expect(vm.state.errorMessage, isNull);
+  });
 
-      final result = await authViewModel.loginWithGoogleAccount(
-        email: email,
-        displayName: 'Registered Student',
-      );
+  test('a saved session without a Firebase user is signed out', () async {
+    final vm = await make({'is_logged_in': true, 'user_email': 'ghost@b.com', 'user_name': 'Ghost'});
+    expect(vm.state.isLoggedIn, isTrue);
+    await pumpEventQueue();
+    expect(vm.state.isLoggedIn, isFalse);
+  });
 
-      expect(result.status, GoogleAuthStatus.authenticated);
-      expect(authViewModel.state.isLoggedIn, true);
-      expect(authViewModel.state.user?.name, 'Registered Student');
-      expect(authViewModel.state.user?.rating, 450);
-      expect(authViewModel.state.user?.city, 'Naharlagun');
-      verify(() => mockStorage.setLoggedIn(true)).called(1);
-    });
+  test('a saved session backed by Firebase stays signed in', () async {
+    gateway.current = 'real@b.com';
+    final vm = await make({'is_logged_in': true, 'user_email': 'real@b.com', 'user_name': 'Real'});
+    await pumpEventQueue();
+    expect(vm.state.isLoggedIn, isTrue);
+  });
 
-    test('registered Google account in local storage returns authenticated and preserves data', () async {
-      const email = 'localuser@gmail.com';
-      final localUser = UserModel(
-        name: 'Local User',
-        email: email,
-        phone: '9123456780',
-        profilePic: 'avatar_blue',
-        dob: '1995-10-20',
-        rating: 320,
-        city: 'Pasighat',
-      );
-
-      when(() => mockFirebase.fetchUserProfile(email)).thenAnswer((_) async => null);
-      when(() => mockStorage.getAccountData(email)).thenReturn(localUser);
-      when(() => mockStorage.getRegisteredPassword(email)).thenAnswer((_) async => null);
-      when(() => mockStorage.saveUser(
-            name: any(named: 'name'),
-            email: any(named: 'email'),
-            phone: any(named: 'phone'),
-            profilePic: any(named: 'profilePic'),
-            dob: any(named: 'dob'),
-            rating: any(named: 'rating'),
-            city: any(named: 'city'),
-          )).thenAnswer((_) async {});
-      when(() => mockStorage.setLoggedIn(true)).thenAnswer((_) async {});
-      when(() => mockFirebase.logLogin('google')).thenAnswer((_) async {});
-      when(() => mockFirebase.syncUserProfile(any())).thenAnswer((_) async {});
-
-      final result = await authViewModel.loginWithGoogleAccount(
-        email: email,
-      );
-
-      expect(result.status, GoogleAuthStatus.authenticated);
-      expect(authViewModel.state.isLoggedIn, true);
-      expect(authViewModel.state.user?.name, 'Local User');
-      expect(authViewModel.state.user?.rating, 320);
-      verify(() => mockStorage.setLoggedIn(true)).called(1);
-    });
+  test('delete account needs the right password, then removes data and sign-in', () async {
+    gateway.accounts['a@b.com'] = 'pass1234';
+    final vm = await make();
+    await vm.login('a@b.com', 'pass1234');
+    expect(await vm.deleteAccount(password: 'nope'), isFalse);
+    expect(vm.state.isLoggedIn, isTrue);
+    expect(await vm.deleteAccount(password: 'pass1234'), isTrue);
+    expect(gateway.deleted, isTrue);
+    expect(vm.state.isLoggedIn, isFalse);
   });
 }

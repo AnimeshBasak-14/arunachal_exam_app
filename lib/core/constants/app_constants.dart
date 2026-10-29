@@ -2,7 +2,7 @@ class AppConstants {
   AppConstants._();
 
   // App info
-  static const String appName = 'Arunachal Exam Prep';
+  static const String appName = 'Dawnlit';
   static const String appVersion = '1.4.0';
 
   // Streak keys (SharedPreferences)

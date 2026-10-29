@@ -157,7 +157,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                     onAction: () => context.push('/quiz-history')),
                 const SizedBox(height: 6),
                 for (final t in attempts.take(5)) ...[
-                  _AttemptRow(attempt: t),
+                  AttemptRow(attempt: t),
                   const SizedBox(height: 10),
                 ],
               ],
@@ -247,9 +247,9 @@ class _SubjectBar extends StatelessWidget {
   }
 }
 
-class _AttemptRow extends StatelessWidget {
+class AttemptRow extends StatelessWidget {
   final Attempt attempt;
-  const _AttemptRow({required this.attempt});
+  const AttemptRow({super.key, required this.attempt});
 
   @override
   Widget build(BuildContext context) {

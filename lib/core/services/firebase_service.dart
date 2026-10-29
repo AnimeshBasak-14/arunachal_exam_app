@@ -160,6 +160,19 @@ class FirebaseService {
     }
   }
 
+  /// Deletes the profile and its test history (account deletion).
+  Future<void> deleteUserData(String email) async {
+    if (_firestore == null) return;
+    final ref = _firestore.collection('users').doc(email.trim().toLowerCase());
+    final history = await ref.collection('quiz_history').get();
+    final batch = _firestore.batch();
+    for (final d in history.docs) {
+      batch.delete(d.reference);
+    }
+    batch.delete(ref);
+    await batch.commit();
+  }
+
   Future<void> saveQuizResultToFirestore(
       String userEmail, Map<String, dynamic> resultData) async {
     try {

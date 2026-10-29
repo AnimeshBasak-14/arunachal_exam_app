@@ -1178,7 +1178,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
           // ─── Status Summary Banner ───────────────────────────────────────
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: const Color(0xFFF8FAFC),
+            color: const Color(0xFFF0F4F8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -1346,7 +1346,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
               : isFlagged
                   ? AppColors.error.withValues(alpha: 0.5)
                   : isUnreviewed
-                      ? const Color(0xFFCBD5E1)
+                      ? const Color(0xFFA1ACAC)
                       : AppColors.divider,
           width: isApproved || isFlagged ? 1.5 : 1,
         ),
@@ -1384,7 +1384,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF1F5F9),
+                          color: const Color(0xFFF0F4F8),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -1411,11 +1411,11 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFEDE9FE),
+                            color: const Color(0xFFD2DDD4),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: const Text('📐 LaTeX',
-                              style: TextStyle(fontSize: 9, color: Color(0xFF6D28D9), fontWeight: FontWeight.bold)),
+                              style: TextStyle(fontSize: 9, color: Color(0xFF233E42), fontWeight: FontWeight.bold)),
                         ),
                       ] else if (q.contentFormat == 'image_only') ...[
                         const SizedBox(width: 4),
@@ -1474,9 +1474,9 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF8FAFC),
+                  color: const Color(0xFFF0F4F8),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  border: Border.all(color: const Color(0xFFDCE3E4)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1576,7 +1576,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF8FAFC),
+                  color: const Color(0xFFF0F4F8),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: AppColors.divider),
                 ),
@@ -1625,18 +1625,18 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFEF3C7),
+                  color: const Color(0xFFEFE6D2),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFFF59E0B)),
+                  border: Border.all(color: const Color(0xFF8A6A2E)),
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.warning_amber_rounded, size: 15, color: Color(0xFFD97706)),
+                    Icon(Icons.warning_amber_rounded, size: 15, color: Color(0xFF8A6A2E)),
                     SizedBox(width: 6),
                     Expanded(
                       child: Text(
                         '⚠️ Potential missing image: Question text references a figure or chart, but image_url is empty.',
-                        style: TextStyle(fontSize: 11, color: Color(0xFF92400E), fontWeight: FontWeight.w600),
+                        style: TextStyle(fontSize: 11, color: Color(0xFF6E5424), fontWeight: FontWeight.w600),
                       ),
                     ),
                   ],
@@ -1685,7 +1685,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                           : (isMerged || isBleed)
                               ? AppColors.error
                               : isDummy
-                                  ? const Color(0xFFF59E0B)
+                                  ? const Color(0xFF8A6A2E)
                                   : const Color(0xFFE5E7EB),
                       width: isCorrect || isMerged || isBleed ? 1.3 : 1,
                     ),
@@ -1699,7 +1699,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: isCorrect ? AppColors.success : const Color(0xFFE2E8F0),
+                          color: isCorrect ? AppColors.success : const Color(0xFFDCE3E4),
                         ),
                         child: Text(
                           optChar.toUpperCase(),
@@ -1734,7 +1734,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                               const Padding(
                                 padding: EdgeInsets.only(top: 2),
                                 child: Text('⚠️ Dummy Placeholder (e.g. Option A)',
-                                    style: TextStyle(fontSize: 9.5, color: Color(0xFFD97706), fontWeight: FontWeight.bold)),
+                                    style: TextStyle(fontSize: 9.5, color: Color(0xFF8A6A2E), fontWeight: FontWeight.bold)),
                               ),
                             if (isMerged)
                               const Padding(
@@ -1816,13 +1816,13 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
               decoration: BoxDecoration(
                 color: (q.solution.isNotEmpty &&
                         q.solution != 'Verified with official key.')
-                    ? const Color(0xFFF8FAFC)
+                    ? const Color(0xFFF0F4F8)
                     : const Color(0xFFFFFBEB),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: (q.solution.isNotEmpty &&
                           q.solution != 'Verified with official key.')
-                      ? const Color(0xFFE2E8F0)
+                      ? const Color(0xFFDCE3E4)
                       : const Color(0xFFFDE68A),
                 ),
               ),
@@ -1840,7 +1840,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                         color: (q.solution.isNotEmpty &&
                                 q.solution != 'Verified with official key.')
                             ? AppColors.primary
-                            : const Color(0xFFD97706),
+                            : const Color(0xFF8A6A2E),
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -1851,7 +1851,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                           color: (q.solution.isNotEmpty &&
                                   q.solution != 'Verified with official key.')
                               ? AppColors.primary
-                              : const Color(0xFFD97706),
+                              : const Color(0xFF8A6A2E),
                         ),
                       ),
                     ],
@@ -1867,7 +1867,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                       color: (q.solution.isNotEmpty &&
                               q.solution != 'Verified with official key.')
                           ? AppColors.textPrimary
-                          : const Color(0xFFB45309),
+                          : const Color(0xFF8A6A2E),
                       fontStyle: (q.solution.isNotEmpty &&
                               q.solution != 'Verified with official key.')
                           ? FontStyle.normal
@@ -1905,7 +1905,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                 ElevatedButton.icon(
                   onPressed: () => _markCorrect(q),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isApproved ? AppColors.success : const Color(0xFFDCFCE7),
+                    backgroundColor: isApproved ? AppColors.success : const Color(0xFFD2DDD4),
                     foregroundColor: isApproved ? Colors.white : AppColors.success,
                     elevation: 0,
                     side: const BorderSide(color: AppColors.success),
@@ -1923,7 +1923,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   decoration: BoxDecoration(
-                    color: isFlagged ? const Color(0xFFFEE2E2) : Colors.white,
+                    color: isFlagged ? const Color(0xFFF3DEDA) : Colors.white,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: AppColors.error),
                   ),
@@ -1989,19 +1989,19 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
 
     switch (status.toLowerCase()) {
       case 'flagged':
-        bg = const Color(0xFFFEE2E2);
+        bg = const Color(0xFFF3DEDA);
         fg = AppColors.error;
         icon = Icons.flag_rounded;
         break;
       case 'approved':
-        bg = const Color(0xFFDCFCE7);
+        bg = const Color(0xFFD2DDD4);
         fg = AppColors.success;
         icon = Icons.check_circle_rounded;
         break;
       case 'unreviewed':
       default:
-        bg = const Color(0xFFF1F5F9);
-        fg = const Color(0xFF64748B);
+        bg = const Color(0xFFF0F4F8);
+        fg = const Color(0xFF5E6161);
         icon = Icons.radio_button_unchecked_rounded;
         label = 'UNREVIEWED';
         break;
@@ -2042,7 +2042,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.info_outline_rounded, color: Color(0xFFD97706), size: 18),
+          const Icon(Icons.info_outline_rounded, color: Color(0xFF8A6A2E), size: 18),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -2053,20 +2053,20 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
-                    color: Color(0xFF92400E),
+                    color: Color(0xFF6E5424),
                   ),
                 ),
                 const SizedBox(height: 2),
                 const Text(
                   'Questions are loading in compatibility mode. To enable persistent DB flagging and status filters, run "migrations/003_admin_flagger.sql" in your Supabase SQL Editor.',
-                  style: TextStyle(fontSize: 11, color: Color(0xFFB45309), height: 1.3),
+                  style: TextStyle(fontSize: 11, color: Color(0xFF8A6A2E), height: 1.3),
                 ),
               ],
             ),
           ),
           IconButton(
             tooltip: 'Close',
-            icon: const Icon(Icons.close_rounded, size: 16, color: Color(0xFF92400E)),
+            icon: const Icon(Icons.close_rounded, size: 16, color: Color(0xFF6E5424)),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
             onPressed: () => setState(() => _dbNeedsMigration = false),

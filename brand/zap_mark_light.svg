@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <title>ZAP mark for dark backgrounds</title>
+  <circle cx="47" cy="12" r="4.6" fill="#D2DDD4"/>
+  <path d="M11 27 H19 L30 14 L41 27 H53 L11 53 H53" stroke="#F0F4F8" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

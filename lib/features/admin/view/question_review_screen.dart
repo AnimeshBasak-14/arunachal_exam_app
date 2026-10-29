@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import '../../../core/services/admin_session.dart';
 import '../../../core/constants/app_secrets.dart';
+import '../../../core/services/ai_service.dart';
 import '../../../core/services/question_repository.dart';
 import '../../../core/config/supabase_config.dart';
 import '../../../core/theme/app_colors.dart';
@@ -385,8 +386,8 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
 
       const apiKey = AppSecrets.geminiApiKey;
       final res = await http.post(
-        Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey'),
-        headers: {'Content-Type': 'application/json'},
+        Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/${AiService.model}:generateContent'),
+        headers: {'Content-Type': 'application/json', 'x-goog-api-key': apiKey},
         body: jsonEncode({
           'contents': [
             {
@@ -395,7 +396,7 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
           ],
           'generationConfig': {'responseMimeType': 'application/json'}
         }),
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 30));
 
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
@@ -595,9 +596,9 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFF1F5F9),
+                                  color: const Color(0xFFF0F4F8),
                                   borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: const Color(0xFFCBD5E1)),
+                                  border: Border.all(color: const Color(0xFFA1ACAC)),
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -683,9 +684,9 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
                                                   height: 14,
                                                   child: CircularProgressIndicator(strokeWidth: 2),
                                                 )
-                                              : const Icon(Icons.auto_awesome_rounded, size: 16, color: Color(0xFF7C3AED)),
+                                              : const Icon(Icons.auto_awesome_rounded, size: 16, color: Color(0xFF3F6B70)),
                                           label: const Text('Repair with Vision AI',
-                                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF7C3AED))),
+                                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF3F6B70))),
                                         ),
                                       ],
                                     ),
@@ -696,7 +697,7 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
                                       style: const TextStyle(fontSize: 14, height: 1.4),
                                       decoration: InputDecoration(
                                         filled: true,
-                                        fillColor: const Color(0xFFF8FAFC),
+                                        fillColor: const Color(0xFFF0F4F8),
                                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                                       ),
                                     ),
@@ -785,7 +786,7 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
                                       maxLines: 3,
                                       decoration: InputDecoration(
                                         filled: true,
-                                        fillColor: const Color(0xFFF8FAFC),
+                                        fillColor: const Color(0xFFF0F4F8),
                                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                                       ),
                                     ),
@@ -906,7 +907,7 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
           height: 32,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: isCorrect ? AppColors.success : const Color(0xFFF1F5F9),
+            color: isCorrect ? AppColors.success : const Color(0xFFF0F4F8),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: isCorrect ? AppColors.success : AppColors.divider),
           ),
@@ -970,12 +971,12 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
       decoration: BoxDecoration(
         color: selectedValue != 'All' && selectedValue != 'all'
             ? AppColors.primary.withValues(alpha: 0.1)
-            : const Color(0xFFF1F5F9),
+            : const Color(0xFFF0F4F8),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: selectedValue != 'All' && selectedValue != 'all'
               ? AppColors.primary
-              : const Color(0xFFE2E8F0),
+              : const Color(0xFFDCE3E4),
         ),
       ),
       child: DropdownButtonHideUnderline(

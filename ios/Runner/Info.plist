@@ -2,10 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>GMSApiKey</key>
+	<string>$(MAPS_API_KEY)</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Donyi Prep</string>
+	<string>Dawnlit</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -13,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>arunachal_exam_app</string>
+	<string>Dawnlit</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -46,10 +48,10 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Arunachal Exam App needs camera access to take your candidate profile photo.</string>
+	<string>Dawnlit uses the camera only when you choose to take a profile photo.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Arunachal Exam App needs photo library access to choose your candidate profile photo.</string>
+	<string>Dawnlit opens your photos only when you choose a profile photo.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Arunachal Exam App needs microphone access when recording profile verification media.</string>
+	<string>Dawnlit uses the microphone only when you ask the AI tutor a question by voice.</string>
 </dict>
 </plist>

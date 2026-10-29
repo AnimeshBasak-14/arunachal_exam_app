@@ -1,4 +1,6 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import '../../auth/view/auth_widgets.dart';
 import '../../../core/services/admin_session.dart';
 
 /// Shows an admin sign-in form until [AdminSession] holds a valid admin token,
@@ -46,55 +48,36 @@ class _AdminGateState extends State<AdminGate> {
   @override
   Widget build(BuildContext context) {
     if (AdminSession.isSignedIn) return widget.child;
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Admin Sign-in')),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 380),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: AutofillGroup(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  TextField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    autofillHints: const [AutofillHints.email],
-                    decoration: const InputDecoration(labelText: 'Admin email'),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _passwordController,
-                    obscureText: true,
-                    autofillHints: const [AutofillHints.password],
-                    decoration: const InputDecoration(labelText: 'Password'),
-                    onSubmitted: (_) => _loading ? null : _submit(),
-                  ),
-                  if (_error != null) ...[
-                    const SizedBox(height: 12),
-                    Text(_error!,
-                        style: TextStyle(
-                            color: Theme.of(context).colorScheme.error)),
-                  ],
-                  const SizedBox(height: 20),
-                  FilledButton(
-                    onPressed: _loading ? null : _submit,
-                    child: _loading
-                        ? const SizedBox(
-                            height: 18,
-                            width: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2))
-                        : const Text('Sign in'),
-                  ),
-                ],
+    return FormPage(
+      title: 'Admin sign-in',
+      subtitle: 'For question editors only. Uses your Supabase admin account.',
+      children: [
+        AutofillGroup(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextField(
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                autofillHints: const [AutofillHints.email],
+                decoration: const InputDecoration(
+                  labelText: 'Admin email',
+                  prefixIcon: Icon(CupertinoIcons.at, size: 19),
+                ),
               ),
-            ),
+              const SizedBox(height: 14),
+              PasswordField(
+                controller: _passwordController,
+                action: TextInputAction.done,
+                onSubmitted: (_) => _loading ? null : _submit(),
+              ),
+              const SizedBox(height: 22),
+              FormError(_error),
+              BusyButton(label: 'Sign in', busy: _loading, onPressed: _submit),
+            ],
           ),
         ),
-      ),
+      ],
     );
   }
 }

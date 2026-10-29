@@ -1,11 +1,11 @@
-# Gemini prompt: Donyi Prep release build (APK + AAB)
+# Gemini prompt: Dawnlit release build (APK + AAB)
 
 Copy everything below the line into Gemini (Gemini CLI, Antigravity or Android
 Studio Gemini) with the workspace opened at `arunachal_exam_app/`.
 
 ---
 
-You are building the release version of a Flutter app called **Donyi Prep**
+You are building the release version of a Flutter app called **Dawnlit**
 (the Flutter project in `arunachal_exam_app/`, package id
 `com.example.arunachal_exam_app`). It is an exam-preparation app for Arunachal
 Pradesh state exams. The UI has just been redesigned on the git branch
@@ -54,7 +54,7 @@ If `git status` shows the redesign as uncommitted changes, commit them on
 
 ```
 git add -A
-git commit -m "feat: Donyi Prep redesign: calm editorial UI, 4-tab shell, new exam engine"
+git commit -m "feat: Dawnlit redesign: calm editorial UI, 4-tab shell, new exam engine"
 ```
 
 Before committing, run `git status` again and make sure none of the secret files
@@ -143,7 +143,7 @@ If Gradle or R8 runs out of memory: close other heavy apps and retry once.
    ```
    <android-sdk>/build-tools/<latest>/aapt2 dump badging build/app/outputs/flutter-apk/app-release.apk
    ```
-   Expect `application-label:'Donyi Prep'`, `versionName='2.0.0'`,
+   Expect `application-label:'Dawnlit'`, `versionName='2.0.0'`,
    `versionCode='200'`, `package: name='com.example.arunachal_exam_app'`.
 4. Record each file's size.
 
@@ -187,9 +187,9 @@ marked with an asterisk.
 
 1. Copy (do not move) the files to the folder **above** the project
    (`../`, i.e. `Arunachal Exam App/`), renamed:
-   - `DonyiPrep-2.0.0-universal.apk`
-   - `DonyiPrep-2.0.0-arm64-v8a.apk`
-   - `DonyiPrep-2.0.0.aab`
+   - `Dawnlit-2.0.0-universal.apk`
+   - `Dawnlit-2.0.0-arm64-v8a.apk`
+   - `Dawnlit-2.0.0.aab`
 2. Do not delete the older APKs that are already there.
 
 ## Final report (reply in this format)
@@ -201,9 +201,9 @@ Fonts bundled: yes/no (list any file you could not get)
 Version: 2.0.0+200
 Signing: upload key, SHA-256 <fingerprint>   (or: STOPPED, reason)
 Outputs:
-  DonyiPrep-2.0.0-universal.apk   <size>
-  DonyiPrep-2.0.0-arm64-v8a.apk   <size>
-  DonyiPrep-2.0.0.aab             <size>
+  Dawnlit-2.0.0-universal.apk   <size>
+  Dawnlit-2.0.0-arm64-v8a.apk   <size>
+  Dawnlit-2.0.0.aab             <size>
 Smoke test: <n>/13 passed
   Failures: <item number> - <what happened> - <screenshot file>
 Changes I made beyond the steps: <none, or each file + why>

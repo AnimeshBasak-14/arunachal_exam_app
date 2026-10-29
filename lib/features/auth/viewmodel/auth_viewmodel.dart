@@ -1,14 +1,10 @@
-import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:firebase_core/firebase_core.dart' hide FirebaseService;
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import '../../../core/services/auth_gateway.dart';
+import '../../../core/services/firebase_service.dart';
 import '../../../core/services/service_providers.dart';
 import '../../../core/services/storage_service.dart';
-import '../../../core/services/firebase_service.dart';
 import '../../../core/utils/validators.dart';
 import '../../../models/user_model.dart';
 
@@ -40,68 +36,55 @@ class AuthState {
   }
 }
 
-enum GoogleAuthStatus {
-  authenticated,
-  notRegistered,
-  cancelled,
-  error,
-}
-
-class GoogleAuthResult {
-  final GoogleAuthStatus status;
-  final String? email;
-  final String? displayName;
-  final String? photoUrl;
-  final String? errorMessage;
-
-  const GoogleAuthResult({
-    required this.status,
-    this.email,
-    this.displayName,
-    this.photoUrl,
-    this.errorMessage,
-  });
-}
-
+/// Accounts live in Firebase Authentication; the profile (name, city,
+/// rating) lives in Firestore under `users/{email}` and is cached locally so
+/// the app opens offline.
 class AuthViewModel extends StateNotifier<AuthState> {
   final StorageService _storage;
   final FirebaseService _firebase;
+  final AuthGateway _auth;
 
-  AuthViewModel(this._storage, this._firebase)
+  AuthViewModel(this._storage, this._firebase, this._auth)
       : super(AuthState(
           isLoggedIn: _storage.isLoggedIn,
-          user: _storage.isLoggedIn
-              ? (_storage.getAccountData(_storage.userEmail) ??
-                  UserModel(
-                    name: _storage.userName,
-                    email: _storage.userEmail,
-                    phone: _storage.userPhone,
-                    profilePic: _storage.userProfilePic,
-                    dob: _storage.userDob,
-                    rating: _storage.userRating,
-                    city: _storage.userCity,
-                  ))
-              : null,
+          user: _storage.isLoggedIn ? _cachedUser(_storage) : null,
         )) {
-    if (_storage.isLoggedIn && _storage.userEmail.isNotEmpty) {
-      refreshUserFromRemote();
-    }
+    if (_storage.isLoggedIn) _verifySession();
   }
+
+  static UserModel _cachedUser(StorageService s) =>
+      s.getAccountData(s.userEmail) ??
+      UserModel(
+        name: s.userName,
+        email: s.userEmail,
+        phone: s.userPhone,
+        profilePic: s.userProfilePic,
+        dob: s.userDob,
+        rating: s.userRating,
+        city: s.userCity,
+      );
+
+  /// Sessions saved by versions before Firebase Authentication have no
+  /// Firebase user behind them; those are signed out once.
+  Future<void> _verifySession() async {
+    final email = await _auth.restoredEmail();
+    if (email == null || email != _storage.userEmail.toLowerCase()) {
+      await logout();
+      return;
+    }
+    await refreshUserFromRemote();
+  }
+
+  /// Password change and password re-authentication only apply to email
+  /// accounts, not Google ones.
+  bool get hasPassword => _auth.hasPassword;
 
   static String _resolveBestProfilePic(String? remotePic, String? localPic,
       [String fallback = 'avatar_green']) {
     final cleanRemote = (remotePic ?? '').trim();
     final cleanLocal = (localPic ?? '').trim();
-
-    // 1. Prefer custom uploaded picture from remote
-    if (cleanRemote.isNotEmpty && !cleanRemote.startsWith('avatar_')) {
-      return cleanRemote;
-    }
-    // 2. Prefer custom uploaded picture from local
-    if (cleanLocal.isNotEmpty && !cleanLocal.startsWith('avatar_')) {
-      return cleanLocal;
-    }
-    // 3. Use preset avatar from remote or local
+    if (cleanRemote.isNotEmpty && !cleanRemote.startsWith('avatar_')) return cleanRemote;
+    if (cleanLocal.isNotEmpty && !cleanLocal.startsWith('avatar_')) return cleanLocal;
     if (cleanRemote.isNotEmpty) return cleanRemote;
     if (cleanLocal.isNotEmpty) return cleanLocal;
     return fallback;
@@ -112,29 +95,17 @@ class AuthViewModel extends StateNotifier<AuthState> {
       final email = _storage.userEmail;
       if (email.isEmpty) return;
       final remote = await _firebase.fetchUserProfile(email);
-      if (remote != null) {
-        final current = state.user;
-        final bestRating = max(current?.rating ?? 0, remote.rating);
-        final effectivePic = _resolveBestProfilePic(remote.profilePic, current?.profilePic);
-
-        final updated = (current ?? remote).copyWith(
-          name: remote.name.isNotEmpty ? remote.name : current?.name,
-          rating: bestRating,
-          profilePic: effectivePic,
-          city: remote.city.isNotEmpty ? remote.city : current?.city,
-        );
-
-        await _storage.saveUser(
-          name: updated.name,
-          email: updated.email,
-          phone: updated.phone,
-          profilePic: updated.profilePic,
-          dob: updated.dob,
-          rating: updated.rating,
-          city: updated.city,
-        );
-        state = state.copyWith(user: updated);
-      }
+      if (remote == null) return;
+      final current = state.user;
+      final updated = (current ?? remote).copyWith(
+        name: remote.name.isNotEmpty ? remote.name : current?.name,
+        rating: max(current?.rating ?? 0, remote.rating),
+        profilePic: _resolveBestProfilePic(remote.profilePic, current?.profilePic),
+        city: remote.city.isNotEmpty ? remote.city : current?.city,
+        phone: remote.phone.isNotEmpty ? remote.phone : current?.phone,
+      );
+      await _save(updated);
+      state = state.copyWith(user: updated);
     } catch (e) {
       debugPrint('[AuthViewModel] refreshUserFromRemote error: $e');
     }
@@ -144,573 +115,247 @@ class AuthViewModel extends StateNotifier<AuthState> {
     state = state.copyWith(errorMessage: null);
   }
 
-  Future<bool> login(
-    String emailOrPhone,
-    String password,
-  ) async {
+  void _fail(String message) {
+    state = state.copyWith(isLoading: false, errorMessage: message);
+  }
+
+  Future<bool> login(String email, String password) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
-
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    final cleanInput = emailOrPhone.trim().toLowerCase();
-    final isEmail = Validators.isEmail(cleanInput);
-    final isPhone = RegExp(r'^\d{10}$').hasMatch(cleanInput);
-
-    if (!isEmail && !isPhone) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage:
-            Validators.invalidIdMessage,
-      );
+    final clean = email.trim().toLowerCase();
+    if (!Validators.isEmail(clean)) {
+      _fail('Enter the email address you registered with.');
       return false;
     }
-
-    final registeredPassword = await _storage.getRegisteredPassword(cleanInput);
-    if (registeredPassword == null) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: 'Account does not exist. Please register first.',
-      );
-      return false;
-    }
-
-    if (registeredPassword != password) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: 'Incorrect password. Please try again.',
-      );
-      return false;
-    }
-
-    // Load per-account reserved model if present
-    final existingAccount = _storage.getAccountData(cleanInput);
-    UserModel user = existingAccount ??
-        UserModel(
-          name: _storage.getRegisteredName(cleanInput) ?? 'Student Name',
-          email: isEmail ? cleanInput : '',
-          phone: isPhone ? cleanInput : '',
-          profilePic: _storage.userProfilePic,
-          dob: _storage.getRegisteredDob(cleanInput) ?? '2000-01-01',
-          rating: _storage.getRegisteredRating(cleanInput),
-          city: _storage.getRegisteredCity(cleanInput),
-        );
-
-    // Sync cloud rating & profilePic from Firestore if available
     try {
-      final remoteUser = await _firebase.fetchUserProfile(cleanInput);
-      if (remoteUser != null) {
-        final bestRating = max(user.rating, remoteUser.rating);
-        final effectivePic = _resolveBestProfilePic(remoteUser.profilePic, user.profilePic);
-        user = user.copyWith(
-          name: remoteUser.name.isNotEmpty ? remoteUser.name : user.name,
-          rating: bestRating,
-          profilePic: effectivePic,
-          city: remoteUser.city.isNotEmpty ? remoteUser.city : user.city,
-        );
+      final id = await _auth.signInWithEmail(clean, password);
+      await _completeSignIn(id, method: 'email');
+      return true;
+    } on AuthFailure catch (e) {
+      // Accounts created before Firebase Authentication only exist on this
+      // device. If the old password matches, move the account to Firebase.
+      final legacy = await _storage.getRegisteredPassword(clean);
+      if (legacy != null && legacy == password && password.length >= 6) {
+        try {
+          final name = _storage.getRegisteredName(clean) ?? '';
+          final id = await _auth.createAccount(clean, password, name);
+          await _storage.forgetLegacyPassword(clean);
+          await _completeSignIn(id, method: 'email_migrated');
+          return true;
+        } on AuthFailure catch (m) {
+          _fail(m.message);
+          return false;
+        }
       }
-    } catch (_) {}
+      _fail(e.message);
+      return false;
+    }
+  }
 
-    await _storage.saveUser(
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      profilePic: user.profilePic,
-      dob: user.dob,
-      rating: user.rating,
-      city: user.city,
-    );
-    await _storage.setLoggedIn(true);
-
-    // Sync with Firestore & Analytics
+  Future<bool> register({
+    required String name,
+    required String email,
+    required String password,
+    required String confirmPassword,
+    String city = '',
+  }) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    final clean = email.trim().toLowerCase();
+    if (name.trim().isEmpty) {
+      _fail('Please enter your name.');
+      return false;
+    }
+    if (!Validators.isEmail(clean)) {
+      _fail('Please enter a valid email address.');
+      return false;
+    }
+    if (password.length < 8) {
+      _fail('Password must be at least 8 characters.');
+      return false;
+    }
+    if (password != confirmPassword) {
+      _fail('Passwords do not match.');
+      return false;
+    }
     try {
-      await _firebase.logLogin('email_or_phone');
+      final id = await _auth.createAccount(clean, password, name.trim());
+      await _completeSignIn(id, method: 'email', name: name.trim(), city: city, isNew: true);
+      return true;
+    } on AuthFailure catch (e) {
+      _fail(e.message);
+      return false;
+    }
+  }
+
+  /// Returns false when cancelled or failed; failures set [AuthState.errorMessage].
+  Future<bool> signInWithGoogle() async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      final id = await _auth.signInWithGoogle();
+      if (id == null) {
+        state = state.copyWith(isLoading: false);
+        return false;
+      }
+      await _completeSignIn(id, method: 'google');
+      return true;
+    } on AuthFailure catch (e) {
+      _fail(e.message);
+      return false;
+    }
+  }
+
+  /// Loads (or creates) the Firestore profile for a signed-in identity.
+  Future<void> _completeSignIn(AuthIdentity id,
+      {required String method, String? name, String city = '', bool isNew = false}) async {
+    UserModel? remote;
+    try {
+      remote = await _firebase.fetchUserProfile(id.email);
+    } catch (_) {}
+    final local = _storage.getAccountData(id.email);
+    final fallbackName = (name?.isNotEmpty ?? false)
+        ? name!
+        : (id.displayName?.trim().isNotEmpty ?? false)
+            ? id.displayName!.trim()
+            : _nameFromEmail(id.email);
+
+    final user = UserModel(
+      name: (remote?.name.isNotEmpty ?? false) ? remote!.name : (local?.name.isNotEmpty ?? false) ? local!.name : fallbackName,
+      email: id.email,
+      phone: remote?.phone ?? local?.phone ?? '',
+      profilePic: _resolveBestProfilePic(remote?.profilePic, local?.profilePic ?? id.photoUrl),
+      dob: remote?.dob ?? local?.dob ?? '2000-01-01',
+      rating: max(remote?.rating ?? 0, local?.rating ?? 0),
+      city: (remote?.city.isNotEmpty ?? false) ? remote!.city : (local?.city ?? city),
+    );
+
+    await _save(user);
+    await _storage.setLoggedIn(true);
+    try {
+      isNew || remote == null ? await _firebase.logSignUp(method) : await _firebase.logLogin(method);
       await _firebase.syncUserProfile(user);
     } catch (_) {}
-
     state = AuthState(isLoggedIn: true, user: user);
+  }
+
+  static String _nameFromEmail(String email) => email
+      .split('@')
+      .first
+      .split(RegExp(r'[._]'))
+      .where((s) => s.isNotEmpty)
+      .map((s) => '${s[0].toUpperCase()}${s.substring(1)}')
+      .join(' ');
+
+  Future<void> _save(UserModel u) => _storage.saveUser(
+        name: u.name,
+        email: u.email,
+        phone: u.phone,
+        profilePic: u.profilePic ?? 'avatar_green',
+        dob: u.dob,
+        rating: u.rating,
+        city: u.city,
+      );
+
+  Future<bool> sendPasswordReset(String email) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    final clean = email.trim().toLowerCase();
+    if (!Validators.isEmail(clean)) {
+      _fail('Please enter a valid email address.');
+      return false;
+    }
+    try {
+      await _auth.sendPasswordReset(clean);
+      state = state.copyWith(isLoading: false);
+      return true;
+    } on AuthFailure catch (e) {
+      // Don't reveal whether an email is registered.
+      if (e.code == 'user-not-found') {
+        state = state.copyWith(isLoading: false);
+        return true;
+      }
+      _fail(e.message);
+      return false;
+    }
+  }
+
+  Future<bool> changePassword(String current, String next, String confirm) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    if (next.length < 8) {
+      _fail('New password must be at least 8 characters.');
+      return false;
+    }
+    if (next != confirm) {
+      _fail('New passwords do not match.');
+      return false;
+    }
+    try {
+      await _auth.changePassword(current, next);
+      state = state.copyWith(isLoading: false);
+      return true;
+    } on AuthFailure catch (e) {
+      _fail(e.code == 'invalid-credential' || e.code == 'wrong-password'
+          ? 'Current password is incorrect.'
+          : e.message);
+      return false;
+    }
+  }
+
+  /// Deletes the profile, test history and the sign-in account.
+  Future<bool> deleteAccount({String? password}) async {
+    final email = state.user?.email ?? _storage.userEmail;
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      await _firebase.deleteUserData(email);
+      await _auth.deleteAccount(password: password);
+    } on AuthFailure catch (e) {
+      _fail(e.code == 'invalid-credential' || e.code == 'wrong-password'
+          ? 'Password is incorrect.'
+          : e.message);
+      return false;
+    } catch (e) {
+      _fail('Could not delete your data. Check your connection and try again.');
+      return false;
+    }
+    await _storage.clearUser();
+    state = AuthState(isLoggedIn: false, user: null);
     return true;
   }
 
   Future<void> updateRating(int delta) async {
     if (state.user == null) return;
-    final newRating = max(0, state.user!.rating + delta);
-    final updated = state.user!.copyWith(rating: newRating);
-    await _storage.saveUser(
-      name: updated.name,
-      email: updated.email,
-      phone: updated.phone,
-      profilePic: updated.profilePic,
-      dob: updated.dob,
-      rating: newRating,
-      city: updated.city,
-    );
+    final updated = state.user!.copyWith(rating: max(0, state.user!.rating + delta));
+    await _save(updated);
     try {
       await _firebase.syncUserProfile(updated);
     } catch (_) {}
     state = state.copyWith(user: updated);
   }
 
-  Future<bool> register({
-    required String name,
-    required String emailOrPhone,
-    required String dob,
-    required String password,
-    required String confirmPassword,
-    required String otpEntered,
-    required String otpSent,
-    String city = 'Itanagar',
-  }) async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
-
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    final cleanInput = emailOrPhone.trim().toLowerCase();
-    final isEmail = Validators.isEmail(cleanInput);
-    final isPhone = RegExp(r'^\d{10}$').hasMatch(cleanInput);
-
-    if (name.trim().isEmpty) {
-      state = state.copyWith(
-          isLoading: false, errorMessage: 'Please enter your name');
-      return false;
-    }
-
-    if (!isEmail && !isPhone) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage:
-            Validators.invalidIdMessage,
-      );
-      return false;
-    }
-
-    // Check if account already exists
-    final existingPwd = await _storage.getRegisteredPassword(cleanInput);
-    if (existingPwd != null) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage:
-            'An account already exists for this email/phone. Please log in.',
-      );
-      return false;
-    }
-
-    if (otpEntered.isEmpty || otpEntered != otpSent) {
-      state = state.copyWith(
-          isLoading: false,
-          errorMessage: 'Wrong OTP entered. Please check and try again.');
-      return false;
-    }
-
-    if (password != confirmPassword) {
-      state = state.copyWith(
-          isLoading: false, errorMessage: 'Passwords do not match');
-      return false;
-    }
-
-    if (password.length < 6) {
-      state = state.copyWith(
-          isLoading: false,
-          errorMessage: 'Password must be at least 6 characters');
-      return false;
-    }
-
-    final user = UserModel(
-      name: name,
-      email: isEmail ? cleanInput : '',
-      phone: isPhone ? cleanInput : '',
-      profilePic: 'avatar_green',
-      dob: dob,
-      rating: 0,
-      city: city,
-    );
-
-    // Persist credentials in local storage database
-    await _storage.registerUserAccount(
-      emailOrPhone: cleanInput,
-      password: password,
-      name: name,
-      dob: dob,
-      rating: 0,
-      city: city,
-    );
-
-    // Save active logged-in user profile & account dictionary
-    await _storage.saveUser(
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      profilePic: user.profilePic,
-      dob: user.dob,
-      rating: user.rating,
-      city: user.city,
-    );
-    await _storage.setLoggedIn(true);
-
-    // Sync with Firestore & Analytics
-    try {
-      await _firebase.logSignUp('manual_register');
-      await _firebase.syncUserProfile(user);
-    } catch (_) {}
-
-    state = AuthState(isLoggedIn: true, user: user);
-    return true;
-  }
-
-  Future<bool> loginSocial(String provider, {String? email}) async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
-    await Future.delayed(const Duration(milliseconds: 400));
-
-    final selectedEmail = (email ?? '').trim().toLowerCase();
-
-    // Check if user previously existed with this email
-    final savedAccount = selectedEmail.isNotEmpty ? _storage.getAccountData(selectedEmail) : null;
-
-    final UserModel user;
-    if (savedAccount != null) {
-      // Restore previously saved profile, rating, and city!
-      user = savedAccount;
-    } else {
-      final parts = selectedEmail.isNotEmpty ? selectedEmail.split('@')[0].split('.') : ['Social', 'User'];
-      final capName = parts.map((w) {
-        if (w.isEmpty) return '';
-        return w[0].toUpperCase() + w.substring(1);
-      }).join(' ');
-
-      user = UserModel(
-        name: capName.isNotEmpty ? capName : 'Social User',
-        email: selectedEmail,
-        phone: '',
-        profilePic: 'avatar_gold',
-        dob: '2000-01-01',
-        rating: 0,
-        city: 'Itanagar',
-      );
-
-      // Generate a cryptographically secure random password for social login accounts
-      final securePassword = _generateSecureRandomPassword();
-
-      // Register account credentials if new
-      if (selectedEmail.isNotEmpty) {
-        await _storage.registerUserAccount(
-          emailOrPhone: user.email,
-          password: securePassword,
-          name: user.name,
-          dob: user.dob,
-          rating: 0,
-          city: 'Itanagar',
-        );
-      }
-    }
-
-    await _storage.saveUser(
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      profilePic: user.profilePic,
-      dob: user.dob,
-      rating: user.rating,
-      city: user.city,
-    );
-    await _storage.setLoggedIn(true);
-
-    // Sync with Firestore & Analytics
-    try {
-      await _firebase.logLogin(provider);
-      await _firebase.syncUserProfile(user);
-    } catch (_) {}
-
-    state = AuthState(isLoggedIn: true, user: user);
-    return true;
-  }
-
-  Future<GoogleAuthResult> loginWithGoogleAccount({
-    required String email,
-    String? displayName,
-    String? photoUrl,
-  }) async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
-    try {
-      final cleanEmail = email.trim().toLowerCase();
-      if (cleanEmail.isEmpty) {
-        state = state.copyWith(isLoading: false);
-        return const GoogleAuthResult(
-          status: GoogleAuthStatus.error,
-          errorMessage: 'Email is empty',
-        );
-      }
-
-      // 1. Check if account is registered in Firestore cloud or locally
-      final remoteUser = await _firebase.fetchUserProfile(cleanEmail);
-      final savedAccount = _storage.getAccountData(cleanEmail);
-      final registeredPwd = await _storage.getRegisteredPassword(cleanEmail);
-
-      final bool isRegistered = (remoteUser != null) ||
-          (savedAccount != null) ||
-          (registeredPwd != null && registeredPwd.isNotEmpty);
-
-      final rawName = (displayName != null && displayName.trim().isNotEmpty)
-          ? displayName.trim()
-          : (remoteUser != null && remoteUser.name.isNotEmpty)
-              ? remoteUser.name
-              : cleanEmail
-                  .split('@')[0]
-                  .split('.')
-                  .map((s) => s.isNotEmpty
-                      ? '${s[0].toUpperCase()}${s.substring(1)}'
-                      : '')
-                  .join(' ');
-      final name = rawName.isNotEmpty ? rawName : 'Google Student';
-
-      // SECURITY CHECK: If user is not registered, do NOT auto-create account or log in!
-      // Return notRegistered so UI redirects candidate to complete registration with OTP and password.
-      if (!isRegistered) {
-        state = state.copyWith(isLoading: false);
-        return GoogleAuthResult(
-          status: GoogleAuthStatus.notRegistered,
-          email: cleanEmail,
-          displayName: name,
-          photoUrl: photoUrl,
-        );
-      }
-
-      // Account IS registered: log the user in and preserve rating and profile info
-      final String effectivePic = _resolveBestProfilePic(
-        remoteUser?.profilePic,
-        (photoUrl != null && photoUrl.isNotEmpty)
-            ? photoUrl
-            : savedAccount?.profilePic,
-        'avatar_gold',
-      );
-
-      final int effectiveRating = max(
-        remoteUser?.rating ?? 0,
-        savedAccount?.rating ?? 0,
-      );
-
-      final UserModel user = UserModel(
-        name: (savedAccount?.name.isNotEmpty == true) ? savedAccount!.name : name,
-        email: cleanEmail,
-        phone: remoteUser?.phone ?? savedAccount?.phone ?? '',
-        profilePic: effectivePic,
-        dob: remoteUser?.dob ?? savedAccount?.dob ?? '2000-01-01',
-        rating: effectiveRating,
-        city: remoteUser?.city ?? savedAccount?.city ?? 'Itanagar',
-      );
-
-      await _storage.saveUser(
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        profilePic: user.profilePic,
-        dob: user.dob,
-        rating: user.rating,
-        city: user.city,
-      );
-      await _storage.setLoggedIn(true);
-
-      try {
-        await _firebase.logLogin('google');
-        await _firebase.syncUserProfile(user);
-      } catch (_) {}
-
-      state = AuthState(isLoggedIn: true, user: user);
-      return GoogleAuthResult(
-        status: GoogleAuthStatus.authenticated,
-        email: cleanEmail,
-        displayName: user.name,
-        photoUrl: user.profilePic,
-      );
-    } catch (e) {
-      debugPrint('[GoogleAccountLogin] Error: $e');
-      final err = 'Failed to sign in: $e';
-      state = state.copyWith(
-          isLoading: false, errorMessage: err);
-      return GoogleAuthResult(
-        status: GoogleAuthStatus.error,
-        errorMessage: err,
-      );
-    }
-  }
-
-  Future<GoogleAuthResult> loginWithGoogleNative() async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
-    try {
-      if (kIsWeb) {
-        final googleProvider = GoogleAuthProvider();
-        googleProvider.addScope('email');
-        googleProvider.addScope('profile');
-        googleProvider.setCustomParameters({'prompt': 'select_account'});
-
-        final userCredential =
-            await FirebaseAuth.instance.signInWithPopup(googleProvider);
-        final user = userCredential.user;
-        if (user == null || user.email == null || user.email!.isEmpty) {
-          state = state.copyWith(isLoading: false);
-          return const GoogleAuthResult(status: GoogleAuthStatus.cancelled);
-        }
-
-        return await loginWithGoogleAccount(
-          email: user.email!,
-          displayName: user.displayName,
-          photoUrl: user.photoURL,
-        );
-      } else {
-        // 1. Try modern Google Play Services bottom sheet (GoogleSignIn plugin).
-        // With SHA-1 registered in Firebase Console, this displays the modern
-        // Google Consent & Terms bottom sheet and account picker.
-        try {
-          final googleSignIn = GoogleSignIn(
-            scopes: ['email', 'profile'],
-          );
-          final account = await googleSignIn.signIn();
-          if (account != null) {
-            return await loginWithGoogleAccount(
-              email: account.email,
-              displayName: account.displayName,
-              photoUrl: account.photoUrl,
-            );
-          } else {
-            // User cancelled/dismissed the account picker
-            state = state.copyWith(isLoading: false);
-            return const GoogleAuthResult(status: GoogleAuthStatus.cancelled);
-          }
-        } catch (e) {
-          debugPrint(
-              '[GoogleSignIn] Standard sign-in failed: $e, trying native account picker fallback');
-        }
-
-        // 2. Fallback: Android system AccountManager chooser if GoogleSignIn failed
-        try {
-          const channel =
-              MethodChannel('com.example.arunachal_exam_app/google_auth');
-          final selectedEmail =
-              await channel.invokeMethod<String>('pickGoogleAccount');
-          if (selectedEmail != null && selectedEmail.trim().isNotEmpty) {
-            return await loginWithGoogleAccount(
-              email: selectedEmail.trim(),
-            );
-          }
-        } catch (e) {
-          debugPrint('[GoogleAccountPicker] Fallback error: $e');
-        }
-
-        state = state.copyWith(isLoading: false);
-        return const GoogleAuthResult(status: GoogleAuthStatus.cancelled);
-      }
-    } on FirebaseAuthException catch (e) {
-      debugPrint(
-          '[GoogleSignIn Web] FirebaseAuthException: ${e.code} - ${e.message}');
-      String? message;
-      if (e.code == 'popup-closed-by-user' || e.code == 'cancelled') {
-        state = state.copyWith(isLoading: false);
-        return const GoogleAuthResult(status: GoogleAuthStatus.cancelled);
-      } else if (e.code == 'popup-blocked') {
-        message =
-            'Popup was blocked by your browser. Please allow popups for this site.';
-      } else if (e.code == 'configuration-not-found') {
-        message =
-            'Google Sign-In is not enabled yet in Firebase Console. Enable "Google" under Firebase Console > Authentication > Sign-in method (100% Free).';
-      } else if (e.code == 'unauthorized-domain') {
-        message =
-            'Domain not authorized. Please add animeshbasak-14.github.io in Firebase Console > Authentication > Settings > Authorized domains.';
-      } else {
-        message = (e.message != null && e.message!.isNotEmpty && e.message != 'Error')
-            ? e.message!
-            : 'Google Sign-In is initializing. Please try again or sign in with your email.';
-      }
-      state = state.copyWith(isLoading: false, errorMessage: message);
-      return GoogleAuthResult(
-        status: GoogleAuthStatus.error,
-        errorMessage: message,
-      );
-    } catch (e) {
-      debugPrint('[GoogleSignIn] Native sign-in error or cancelled: $e');
-      final errStr = e.toString().toLowerCase();
-      if (errStr.contains('cancel') ||
-          errStr.contains('popup_closed') ||
-          errStr.contains('canceled')) {
-        state = state.copyWith(isLoading: false);
-        return const GoogleAuthResult(status: GoogleAuthStatus.cancelled);
-      }
-      const message =
-          'Google sign-in could not be completed. Please try again.';
-      state = state.copyWith(isLoading: false, errorMessage: message);
-      return const GoogleAuthResult(
-        status: GoogleAuthStatus.error,
-        errorMessage: message,
-      );
-    }
-  }
-
+  /// Updates name, phone, city, photo and date of birth. The email is the
+  /// sign-in identity and can't be changed here.
   Future<void> updateProfile({
     required String name,
-    required String email,
-    required String phone,
+    String? phone,
     String? profilePic,
     String? dob,
-    int? rating,
     String? city,
   }) async {
     if (state.user == null) return;
     state = state.copyWith(isLoading: true);
-    await Future.delayed(const Duration(milliseconds: 200));
-
-    final selectedPic = profilePic ?? state.user!.profilePic;
-    final selectedDob = dob ?? state.user!.dob;
-    final selectedRating = rating ?? state.user!.rating;
-    final selectedCity = city ?? state.user!.city;
-
-    // Update registered paths
-    await _storage.updateRegisteredAccount(
-        state.user!.email, email, name, selectedDob, selectedRating);
-    if (state.user!.phone.isNotEmpty) {
-      await _storage.updateRegisteredAccount(
-          state.user!.phone, phone, name, selectedDob, selectedRating);
-    }
-
-    await _storage.saveUser(
-      name: name,
-      email: email,
-      phone: phone,
-      profilePic: selectedPic,
-      dob: selectedDob,
-      rating: selectedRating,
-      city: selectedCity,
-    );
-
     final updated = state.user!.copyWith(
-      name: name,
-      email: email,
-      phone: phone,
-      profilePic: selectedPic,
-      dob: selectedDob,
-      rating: selectedRating,
-      city: selectedCity,
+      name: name.trim(),
+      phone: phone?.trim(),
+      profilePic: profilePic,
+      dob: dob,
+      city: city?.trim(),
     );
-
-    // Sync profile updates to Firestore
+    await _save(updated);
     try {
       await _firebase.syncUserProfile(updated);
     } catch (_) {}
-
     state = state.copyWith(isLoading: false, user: updated);
   }
 
-  static String _generateSecureRandomPassword([int length = 32]) {
-    final random = Random.secure();
-    final values = List<int>.generate(length, (i) => random.nextInt(256));
-    return base64Url.encode(values);
-  }
-
   Future<void> logout() async {
-    try {
-      if (Firebase.apps.isNotEmpty) {
-        await FirebaseAuth.instance.signOut();
-      }
-      if (!kIsWeb) {
-        await GoogleSignIn().signOut();
-      }
-    } catch (_) {}
+    await _auth.signOut();
     await _storage.clearUser();
     state = AuthState(isLoggedIn: false, user: null);
   }
@@ -718,7 +363,9 @@ class AuthViewModel extends StateNotifier<AuthState> {
 
 final authViewModelProvider =
     StateNotifierProvider<AuthViewModel, AuthState>((ref) {
-  final storage = ref.watch(storageServiceProvider);
-  final firebase = ref.watch(firebaseServiceProvider);
-  return AuthViewModel(storage, firebase);
+  return AuthViewModel(
+    ref.watch(storageServiceProvider),
+    ref.watch(firebaseServiceProvider),
+    ref.watch(authGatewayProvider),
+  );
 });

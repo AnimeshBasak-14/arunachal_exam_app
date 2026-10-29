@@ -38,14 +38,14 @@ class StorageService {
   }
 
   String get userEmail =>
-      _prefs.getString(_keyUserEmail) ?? 'student@arunachal.in';
-  String get userName => _prefs.getString(_keyUserName) ?? 'Student Name';
-  String get userPhone => _prefs.getString(_keyUserPhone) ?? '9876543210';
+      _prefs.getString(_keyUserEmail) ?? '';
+  String get userName => _prefs.getString(_keyUserName) ?? '';
+  String get userPhone => _prefs.getString(_keyUserPhone) ?? '';
   String get userProfilePic =>
       _prefs.getString(_keyUserProfilePic) ?? 'avatar_green';
   String get userDob => _prefs.getString(_keyUserDob) ?? '2000-01-01';
   int get userRating => _prefs.getInt(_keyUserRating) ?? 0;
-  String get userCity => _prefs.getString(_keyUserCity) ?? 'Itanagar';
+  String get userCity => _prefs.getString(_keyUserCity) ?? '';
 
   String _cleanKey(String? key) => (key ?? userEmail).trim().toLowerCase();
 
@@ -209,6 +209,16 @@ class StorageService {
     }
 
     return null;
+  }
+
+  /// Removes a pre-Firebase local password once the account has moved to
+  /// Firebase Authentication.
+  Future<void> forgetLegacyPassword(String emailOrPhone) async {
+    final key = emailOrPhone.trim().toLowerCase();
+    try {
+      await _secureStorage.delete(key: 'reg_pwd_$key');
+    } catch (_) {}
+    await _prefs.remove('reg_pwd_$key');
   }
 
   String? getRegisteredName(String emailOrPhone) {

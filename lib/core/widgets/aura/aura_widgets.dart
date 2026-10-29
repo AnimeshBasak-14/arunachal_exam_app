@@ -334,3 +334,23 @@ class GlassListRow extends StatelessWidget {
     );
   }
 }
+
+/// Background for pinned sliver app bars: clear over the page gradient at
+/// rest, frosted once content scrolls underneath.
+class AuraBarTint extends StatelessWidget {
+  const AuraBarTint({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final a = context.aura;
+    final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
+    final under = settings?.isScrolledUnder ?? false;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      decoration: BoxDecoration(
+        color: under ? a.bg.withValues(alpha: 0.94) : Colors.transparent,
+        border: Border(bottom: BorderSide(color: under ? a.hairline : Colors.transparent)),
+      ),
+    );
+  }
+}

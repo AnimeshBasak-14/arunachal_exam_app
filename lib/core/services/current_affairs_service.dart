@@ -1,387 +1,416 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../constants/app_secrets.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:xml/xml.dart';
+import 'service_providers.dart';
+
+enum NewsKind { article, video }
+
+/// Where a story is about. Statewide outlets are always [arunachal]; the
+/// Northeast-wide feeds are sorted by whether the story mentions the state.
+enum NewsRegion { arunachal, northeast }
 
 class CurrentAffairsItem {
   final String id;
   final String title;
   final String summary;
   final String source;
-  final String dateStr;
+  final DateTime? published;
   final String link;
-  final String? pdfUrl;
-  final String? officialUrl;
-  final bool aiEnhanced;
-  final String category;
+  final String? imageUrl;
+  final NewsKind kind;
+  final NewsRegion region;
 
-  CurrentAffairsItem({
+  /// True when the story is about recruitment, exams or results.
+  final bool examRelated;
+
+  const CurrentAffairsItem({
     required this.id,
     required this.title,
     required this.summary,
     required this.source,
-    required this.dateStr,
+    required this.published,
     required this.link,
-    this.pdfUrl,
-    this.officialUrl,
-    this.aiEnhanced = false,
-    this.category = 'Current Affairs',
+    this.imageUrl,
+    this.kind = NewsKind.article,
+    this.region = NewsRegion.arunachal,
+    this.examRelated = false,
   });
+
+  String get dateStr => relativeDate(published);
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'summary': summary,
+        'source': source,
+        'published': published?.toIso8601String(),
+        'link': link,
+        'imageUrl': imageUrl,
+        'kind': kind.name,
+        'region': region.name,
+        'exam': examRelated,
+      };
+
+  factory CurrentAffairsItem.fromJson(Map<String, dynamic> j) =>
+      CurrentAffairsItem(
+        id: j['id'] as String,
+        title: j['title'] as String,
+        summary: j['summary'] as String? ?? '',
+        source: j['source'] as String,
+        published: DateTime.tryParse(j['published'] as String? ?? ''),
+        link: j['link'] as String? ?? '',
+        imageUrl: j['imageUrl'] as String?,
+        kind: NewsKind.values.asNameMap()[j['kind']] ?? NewsKind.article,
+        region: NewsRegion.values.asNameMap()[j['region']] ?? NewsRegion.arunachal,
+        examRelated: j['exam'] as bool? ?? false,
+      );
+
+  /// Shape expected by NewsDetailsScreen.
+  Map<String, dynamic> toArticleMap() => {
+        'id': id,
+        'title': title,
+        'description': summary,
+        'summary': summary,
+        'source': source,
+        'date': dateStr,
+        'link': link,
+        'pdfUrl': link,
+        'imageUrl': imageUrl,
+      };
+}
+
+String relativeDate(DateTime? d) {
+  if (d == null) return 'Recent';
+  final diff = DateTime.now().difference(d);
+  if (diff.inMinutes < 60) return '${diff.inMinutes.clamp(1, 59)} min ago';
+  if (diff.inHours < 24) return '${diff.inHours} h ago';
+  if (diff.inDays == 1) return 'Yesterday';
+  if (diff.inDays < 7) return '${diff.inDays} days ago';
+  const m = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return '${d.day} ${m[d.month - 1]} ${d.year}';
+}
+
+enum _FeedType { rss, googleNews, youtube }
+
+class NewsSource {
+  final String name;
+  final _FeedType _type;
+  final String _target; // feed URL, site domain, or YouTube channel id
+  final bool statewide;
+
+  const NewsSource._(this.name, this._type, this._target, {this.statewide = true});
+
+  /// The outlet's own RSS/Atom feed.
+  const NewsSource.rss(String name, String url, {bool statewide = true})
+      : this._(name, _FeedType.rss, url, statewide: statewide);
+
+  /// For sites without a working feed (or that block apps): Google News'
+  /// public per-site search feed.
+  const NewsSource.site(String name, String domain, {bool statewide = true})
+      : this._(name, _FeedType.googleNews, domain, statewide: statewide);
+
+  /// Outlets that publish mainly as YouTube channels.
+  const NewsSource.youtube(String name, String channelId)
+      : this._(name, _FeedType.youtube, channelId);
+
+  Uri get uri => switch (_type) {
+        _FeedType.rss => Uri.parse(_target),
+        _FeedType.googleNews => Uri.https('news.google.com', '/rss/search', {
+            'q': 'site:$_target when:14d',
+            'hl': 'en-IN',
+            'gl': 'IN',
+            'ceid': 'IN:en',
+          }),
+        _FeedType.youtube => Uri.https(
+            'www.youtube.com', '/feeds/videos.xml', {'channel_id': _target}),
+      };
+
+  bool get isGoogleNews => _type == _FeedType.googleNews;
 }
 
 class CurrentAffairsService {
-  static const String _model = 'gemini-3.6-flash';
+  final SharedPreferences? _prefs;
+  CurrentAffairsService([this._prefs]);
 
-  static String get _apiKey => AppSecrets.geminiApiKey;
-
-  static List<CurrentAffairsItem>? _cache;
-  static DateTime? _cacheTime;
-  static const _cacheDuration = Duration(minutes: 30);
-
-  static final List<CurrentAffairsItem> _defaultItems = [
-    CurrentAffairsItem(
-      id: 'apssb_1',
-      title: 'APSSB CGL 2025: Revised Examination Schedule and Syllabus Circular Released',
-      summary:
-          'The Arunachal Pradesh Staff Selection Board (APSSB) has officially notified all registered candidates regarding the revised examination calendar and admit card release dates for the Combined Graduate Level (CGL) 2025 Examination.\n\n'
-          'Key Highlights for Aspirants:\n'
-          '• Post categories include Upper Division Clerk (UDC), Junior Assistant, and Inspector level cadres across various state departments.\n'
-          '• Examination pattern consists of Phase I Written Test covering General English (50 marks), Elementary Mathematics (50 marks), and General Knowledge & Arunachal GK (50 marks), followed by Phase II Skill/Typing Test where applicable.\n'
-          '• Admit cards can be downloaded directly using registration credentials at apssb.nic.in.\n'
-          '• Strict biometric verification will be enforced at all designated examination centers in Itanagar, Naharlagun, Pasighat, and Bomdila.',
-      source: 'APSSB Official Portal',
-      dateStr: 'Today',
-      link: 'https://apssb.nic.in',
-      pdfUrl: 'https://apssb.nic.in/Index/rules_syllabus',
-      officialUrl: 'https://apssb.nic.in/Index/circulars',
-      category: 'Recruitment & Exams',
-    ),
-    CurrentAffairsItem(
-      id: 'gov_2',
-      title: 'Arunachal Cabinet Approves Operationalization of 27th and 28th Districts: Keyi Panyor & Bichom',
-      summary:
-          'In a historic administrative milestone, the Government of Arunachal Pradesh under Chief Minister Pema Khandu has fully operationalized Keyi Panyor (headquartered at Yachuli) and Bichom (headquartered at Napangphung).\n\n'
-          'Administrative and Exam Significance:\n'
-          '• Keyi Panyor was carved out of Lower Subansiri on 1st March 2024 to enhance administrative reach for the Nyishi community in the region.\n'
-          '• Bichom district was formally created on 7th March 2024 by bifurcating West Kameng and East Kameng, fulfilling a long-standing aspiration of the Sajolang (Miji), Bugun, Aka, and Monpa ethnic communities.\n'
-          '• This expansion brings the total district count in Arunachal Pradesh to 28 districts.\n'
-          '• State infrastructure development grants and local administrative offices (DC, SP, and Zilla Parishad) are now functioning at the new headquarters.',
-      source: 'State Government Portal',
-      dateStr: 'Yesterday',
-      link: 'https://arunachalpradesh.gov.in',
-      pdfUrl: 'https://arunachalpradesh.gov.in/gazette/',
-      officialUrl: 'https://arunachalpradesh.gov.in',
-      category: 'Governance & State GK',
-    ),
-    CurrentAffairsItem(
-      id: 'appsc_3',
-      title: 'APPSC Announces Combined Competitive Examination (CCE) Reforms & Vacancy Matrix',
-      summary:
-          'The Arunachal Pradesh Public Service Commission (APPSC) has notified comprehensive procedural reforms for forthcoming competitive examinations, including strict adherence to the Union Public Service Commission (UPSC) benchmark.\n\n'
-          'Key Structural Reforms:\n'
-          '• Multi-tier security and digitized question paper handling protocols introduced across all examination stages.\n'
-          '• Syllabus aligned with contemporary North East India affairs, state geography, tribal customary laws, and national developmental policies.\n'
-          '• Age relaxation norms and 80:20 reservation quota guidelines for APST candidates strictly maintained.\n'
-          '• Detailed instructions and syllabus breakdown available on appsc.gov.in.',
-      source: 'APPSC Official Portal',
-      dateStr: '2 days ago',
-      link: 'https://appsc.gov.in',
-      pdfUrl: 'https://appsc.gov.in/Index/rules_syllabus',
-      officialUrl: 'https://appsc.gov.in/Index/circulars',
-      category: 'Recruitment & Exams',
-    ),
-    CurrentAffairsItem(
-      id: 'newsfy_4',
-      title: 'NewsFY Report: Border Infrastructure Boost with 1,500 km Frontier Highway Across Arunachal',
-      summary:
-          'According to latest regional reports, construction work on the ambitious 1,500-kilometer Frontier Highway (NH-913) has gathered rapid momentum, connecting remote border districts from Bomdila through Nafra, Huri, Mechuka, Tuting, Kibithu to Vijaynagar.\n\n'
-          'Strategic & Economic Impact:\n'
-          '• The highway will link all major river valleys (Kameng, Subansiri, Siang, Dibang, and Lohit) along the international border with Tibet/China.\n'
-          '• Reduces inter-valley travel time from several days to just hours, boosting agricultural trade and regional security.\n'
-          '• Expected to generate direct employment for local youth and foster rural tourism along pristine border circuits.',
-      source: 'NewsFY (News For You)',
-      dateStr: '3 days ago',
-      link: 'https://arunachaltimes.in',
-      pdfUrl: 'https://arunachaltimes.in',
-      officialUrl: 'https://arunachaltimes.in',
-      category: 'Infrastructure & Economy',
-    ),
-    CurrentAffairsItem(
-      id: 'at_5',
-      title: 'Tawang & Namdapha Ecological Conservation Drive Wins National Biodiversity Recognition',
-      summary:
-          'The Department of Environment and Forests, Arunachal Pradesh, in collaboration with local community eco-clubs, has received national recognition for pioneering community-led preservation in Namdapha Tiger Reserve and high-altitude wetlands in Tawang.\n\n'
-          'Exam Points to Remember:\n'
-          '• Namdapha is the only national park in the world that harbors all four feline species: Tiger, Leopard, Snow Leopard, and Clouded Leopard.\n'
-          '• The Hoolock Gibbon (Arunachal\'s State Animal) and the Great Hornbill (State Bird) have shown stable population recovery.\n'
-          '• 20 indigenous GI tags have been officially registered from Arunachal Pradesh, with Yak Churpi, Khamti Rice, and Tangsa textiles leading state exports.',
-      source: 'Arunachal Times',
-      dateStr: 'This week',
-      link: 'https://arunachaltimes.in',
-      pdfUrl: 'https://arunachaltimes.in',
-      officialUrl: 'https://arunachaltimes.in',
-      category: 'Environment & Wildlife',
-    ),
-    CurrentAffairsItem(
-      id: 'dipr_6',
-      title: 'DIPR Arunachal: State Launches Comprehensive Digitization of Tribal Customary Laws and Folk Heritage',
-      summary:
-          'The Directorate of Information and Public Relations (DIPR) and the Department of Indigenous Affairs have inaugurated a state-wide project to document the traditional customary justice systems (such as the Kebang of the Adis).\n\n'
-          'Cultural & Heritage Highlights:\n'
-          '• Arunachal Pradesh is home to 26 major tribes and over 100 sub-tribes, each preserving rich oral histories and democratic village councils.\n'
-          '• The Kebang system, praised as a unique indigenous democratic institution, is being preserved in digital archives alongside audio-visual folk recordings.\n'
-          '• Focus on major agricultural festivals: Solung, Mopin, Losar, Boori Boot, Dree, and Nyokum-Yullo.',
-      source: 'DIPR Arunachal',
-      dateStr: 'This week',
-      link: 'https://arunachalipr.gov.in',
-      pdfUrl: 'https://arunachalipr.gov.in',
-      officialUrl: 'https://arunachalipr.gov.in',
-      category: 'Art & Culture',
-    ),
+  /// Checked 29 Oct 2026. The Arunachal Times and Northeast Today sites
+  /// return 404/403 to apps on their own feeds, so they go through Google
+  /// News. Hopuk Media, A.P Daily Updates and Arunachal News Live publish on
+  /// YouTube.
+  static const sources = [
+    NewsSource.site('The Arunachal Times', 'arunachaltimes.in'),
+    NewsSource.rss('Arunachal Observer', 'https://arunachalobserver.org/feed/'),
+    NewsSource.rss('Arunachal24', 'https://arunachal24.in/feed/'),
+    NewsSource.rss('India Today NE',
+        'https://www.indiatodayne.in/rss/arunachal-pradesh',
+        statewide: false),
+    NewsSource.site('Northeast Today', 'northeasttoday.in', statewide: false),
+    NewsSource.youtube('Arunachal News Live', 'UC4UXiSBNHe-IW9_CHUD-xJA'),
+    NewsSource.youtube('Hopuk Media', 'UC8lYpEv6Fo0tuAqIztSWD1w'),
+    NewsSource.youtube('A.P Daily Updates', 'UC3CcOxrJxbp1X5KcoBvkxxg'),
   ];
 
-  final List<CurrentAffairsItem> _fallbackItems = _defaultItems;
+  static const _cacheKey = 'current_affairs_cache_v2';
+  static const _freshFor = Duration(minutes: 20);
+  static const _perSource = 15;
+  static const _headers = {
+    'User-Agent':
+        'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Mobile Safari/537.36',
+    'Accept': 'application/rss+xml, application/atom+xml, application/xml, text/xml, */*',
+  };
 
-  static CurrentAffairsItem? getArticleById(String? id) {
-    if (id == null || id.isEmpty) return null;
-    final list = _cache ?? _defaultItems;
-    for (final item in list) {
-      if (item.id.toLowerCase() == id.toLowerCase()) return item;
+  static List<CurrentAffairsItem> _memory = const [];
+  static DateTime? _memoryTime;
+
+  /// Latest stories from every source, newest first. If every source fails
+  /// (offline), the last successful result is returned with [FeedResult.offline].
+  Future<FeedResult> fetch({bool force = false}) async {
+    if (!force &&
+        _memory.isNotEmpty &&
+        _memoryTime != null &&
+        DateTime.now().difference(_memoryTime!) < _freshFor) {
+      return FeedResult(_memory, failed: const []);
     }
-    for (final item in _defaultItems) {
-      if (item.id.toLowerCase() == id.toLowerCase()) return item;
+
+    final results = await Future.wait(sources.map(_fetchSource));
+    final failed = <String>[];
+    final all = <CurrentAffairsItem>[];
+    for (int i = 0; i < sources.length; i++) {
+      final r = results[i];
+      if (r == null) {
+        failed.add(sources[i].name);
+      } else {
+        all.addAll(r);
+      }
+    }
+
+    if (all.isEmpty) {
+      final cached = _readCache();
+      return FeedResult(cached, failed: failed, offline: true);
+    }
+
+    final items = _dedupe(all)
+      ..sort((a, b) => (b.published ?? DateTime(2000))
+          .compareTo(a.published ?? DateTime(2000)));
+    _memory = items;
+    _memoryTime = DateTime.now();
+    _writeCache(items);
+    return FeedResult(items, failed: failed);
+  }
+
+  Future<List<CurrentAffairsItem>?> _fetchSource(NewsSource s) async {
+    try {
+      final res = await http
+          .get(s.uri, headers: _headers)
+          .timeout(const Duration(seconds: 12));
+      if (res.statusCode != 200) return null;
+      final body = utf8.decode(res.bodyBytes, allowMalformed: true);
+      return parseFeed(body, s).take(_perSource).toList();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Parses RSS 2.0 or Atom (YouTube). Public for tests.
+  static List<CurrentAffairsItem> parseFeed(String xml, NewsSource s) {
+    final XmlDocument doc;
+    try {
+      doc = XmlDocument.parse(xml);
+    } catch (_) {
+      return const [];
+    }
+    final out = <CurrentAffairsItem>[];
+    var nodes = doc.findAllElements('item').toList();
+    final isAtom = nodes.isEmpty;
+    if (isAtom) nodes = doc.findAllElements('entry').toList();
+
+    for (final n in nodes) {
+      String text(String tag) => _child(n, tag)?.innerText.trim() ?? '';
+
+      var title = cleanText(text('title'));
+      if (title.isEmpty) continue;
+
+      var link = text('link');
+      if (link.isEmpty) {
+        link = _child(n, 'link')?.getAttribute('href') ?? '';
+      }
+      link = link.trim();
+
+      final rawBody = [
+        text('encoded'), // content:encoded
+        text('description'),
+        text('summary'),
+        _child(n, 'group')?.let((g) => _child(g, 'description'))?.innerText ?? '',
+      ].firstWhere((t) => t.trim().isNotEmpty, orElse: () => '');
+
+      var summary = cleanText(rawBody);
+
+      if (s.isGoogleNews) {
+        // Google News titles end in " - Outlet" and descriptions repeat the
+        // headline as a link, so the summary carries nothing new.
+        final dash = title.lastIndexOf(' - ');
+        if (dash > 0) title = title.substring(0, dash).trim();
+        summary = '';
+      }
+      if (summary.startsWith(title)) summary = summary.substring(title.length).trim();
+
+      final published = parseFeedDate(
+          text('pubDate').isNotEmpty ? text('pubDate') : (text('published').isNotEmpty ? text('published') : text('updated')));
+
+      final haystack = '$title $summary'.toLowerCase();
+      final region = s.statewide || _mentionsArunachal(haystack)
+          ? NewsRegion.arunachal
+          : NewsRegion.northeast;
+
+      out.add(CurrentAffairsItem(
+        id: '${s.name}|${link.isNotEmpty ? link : title}'.hashCode.toRadixString(36),
+        title: title,
+        summary: summary,
+        source: s.name,
+        published: published,
+        link: link,
+        imageUrl: _image(n, rawBody),
+        kind: isAtom ? NewsKind.video : NewsKind.article,
+        region: region,
+        examRelated: _examWords.hasMatch(haystack),
+      ));
+    }
+    return out;
+  }
+
+  static XmlElement? _child(XmlElement e, String localName) {
+    for (final c in e.childElements) {
+      if (c.name.local == localName) return c;
     }
     return null;
   }
 
-  static Map<String, dynamic> getArticleMapById(String? id) {
-    final item = getArticleById(id) ?? _defaultItems.first;
-    return {
-      'id': item.id,
-      'title': item.title,
-      'source': item.source,
-      'date': item.dateStr,
-      'description': item.summary,
-      'link': item.link,
-      'pdfUrl': item.pdfUrl ?? item.link,
-      'keyPoints': [
-        'Key syllabus topic for APSSB (CGL, CHSL, CSLE) and APPSC exams.',
-        'High yield topic for General Knowledge and State GK sections.',
-      ],
-    };
-  }
-
-  final List<Map<String, String>> _rssSources = [
-    {'url': 'https://arunachaltimes.in/feed/', 'name': 'Arunachal Times', 'cat': 'State News'},
-    {'url': 'https://www.arunachalfront.com/feed/', 'name': 'Arunachal Front', 'cat': 'State News'},
-  ];
-
-  Future<List<CurrentAffairsItem>> fetchCurrentAffairs() async {
-    if (_cache != null &&
-        _cacheTime != null &&
-        DateTime.now().difference(_cacheTime!) < _cacheDuration) {
-      return _cache!;
-    }
-
-    final rawItems = <CurrentAffairsItem>[];
-    for (final source in _rssSources) {
-      try {
-        final response = await http
-            .get(Uri.parse(source['url']!))
-            .timeout(const Duration(seconds: 8));
-        if (response.statusCode == 200) {
-          final parsed = _parseRss(response.body, source['name']!, source['cat']!);
-          rawItems.addAll(parsed);
-          if (rawItems.length >= 10) break;
-        }
-      } catch (_) {}
-    }
-
-    if (rawItems.isEmpty) {
-      _cache = _fallbackItems;
-      _cacheTime = DateTime.now();
-      return _fallbackItems;
-    }
-
-    // Combine live items with official recruitment & government items
-    final combined = <CurrentAffairsItem>[
-      _fallbackItems[0], // APSSB CGL
-      _fallbackItems[1], // 28 Districts
-      ...rawItems.take(4),
-      _fallbackItems[2], // APPSC reforms
-      _fallbackItems[3], // Frontier Highway
-      _fallbackItems[4], // Biodiversity
-      _fallbackItems[5], // DIPR Heritage
-    ];
-
-    final enhanced = await _enhanceWithAI(combined);
-    _cache = enhanced;
-    _cacheTime = DateTime.now();
-    return enhanced;
-  }
-
-  List<CurrentAffairsItem> _parseRss(
-      String xmlString, String sourceName, String category) {
-    final items = <CurrentAffairsItem>[];
-    final itemRegex = RegExp(r'<item>(.*?)</item>', dotAll: true);
-    final titleRegex = RegExp(
-        r'<title><!\[CDATA\[(.*?)\]\]></title>|<title>(.*?)</title>',
-        dotAll: true);
-    final contentRegex = RegExp(
-        r'<content:encoded><!\[CDATA\[(.*?)\]\]></content:encoded>|<content:encoded>(.*?)</content:encoded>',
-        dotAll: true);
-    final descRegex = RegExp(
-        r'<description><!\[CDATA\[(.*?)\]\]></description>|<description>(.*?)</description>',
-        dotAll: true);
-    final dateRegex = RegExp(r'<pubDate>(.*?)</pubDate>', dotAll: true);
-    final linkRegex = RegExp(r'<link>(.*?)</link>', dotAll: true);
-
-    int idCounter = 1;
-    for (final match in itemRegex.allMatches(xmlString)) {
-      final itemStr = match.group(1) ?? '';
-      final titleMatch = titleRegex.firstMatch(itemStr);
-      final title =
-          (titleMatch?.group(1) ?? titleMatch?.group(2) ?? 'No Title').trim();
-
-      // Prefer full content:encoded, fallback to description
-      final contentMatch = contentRegex.firstMatch(itemStr);
-      final descMatch = descRegex.firstMatch(itemStr);
-      final bodyRaw = contentMatch?.group(1) ??
-          contentMatch?.group(2) ??
-          descMatch?.group(1) ??
-          descMatch?.group(2) ??
-          '';
-
-      final bodyClean = bodyRaw
-          .replaceAll(RegExp(r'<style[^>]*>.*?</style>', dotAll: true), '')
-          .replaceAll(RegExp(r'<script[^>]*>.*?</script>', dotAll: true), '')
-          .replaceAll(RegExp(r'<[^>]*>'), ' ')
-          .replaceAll('&nbsp;', ' ')
-          .replaceAll('&amp;', '&')
-          .replaceAll('&lt;', '<')
-          .replaceAll('&gt;', '>')
-          .replaceAll('&quot;', '"')
-          .replaceAll('&#8217;', "'")
-          .replaceAll('&#8216;', "'")
-          .replaceAll('&#8220;', '"')
-          .replaceAll('&#8221;', '"')
-          .replaceAll(RegExp(r'\s+'), ' ')
-          .trim();
-
-      final dateMatch = dateRegex.firstMatch(itemStr);
-      final dateStr = dateMatch?.group(1) ?? 'Recent';
-      final linkMatch = linkRegex.firstMatch(itemStr);
-      final link = linkMatch?.group(1)?.trim() ?? '';
-
-      if (title.isNotEmpty && title != 'No Title') {
-        items.add(CurrentAffairsItem(
-          id: '${sourceName}_$idCounter',
-          title: title,
-          summary: bodyClean.length > 50
-              ? bodyClean
-              : 'Read the full report from $sourceName.',
-          source: sourceName,
-          dateStr: _formatDate(dateStr),
-          link: link,
-          category: category,
-        ));
-        idCounter++;
-        if (items.length >= 8) break;
+  static String? _image(XmlElement n, String rawBody) {
+    for (final c in n.descendantElements) {
+      final local = c.name.local;
+      if (local == 'thumbnail' || (local == 'content' && c.name.prefix == 'media')) {
+        final u = c.getAttribute('url');
+        if (u != null && u.startsWith('http')) return u;
+      }
+      if (local == 'enclosure' && (c.getAttribute('type') ?? '').startsWith('image')) {
+        return c.getAttribute('url');
       }
     }
-    return items;
+    final m = RegExp(r'''<img[^>]+src=["']([^"']+)["']''').firstMatch(rawBody);
+    final u = m?.group(1);
+    return (u != null && u.startsWith('http')) ? u : null;
   }
 
-  String _formatDate(String raw) {
+  static final _examWords = RegExp(
+      r'\b(appsc|apssb|upsc|ssc|recruitment|vacanc|exam|examination|admit card|result|notification|syllabus|interview|selection|cce|cgl|chsl|merit list)');
+
+  static final _arunachalWords = RegExp(
+      r'arunachal|itanagar|naharlagun|tawang|pasighat|ziro|bomdila|tezu|roing|namsai|changlang|khonsa|aalo|daporijo|yingkiong|seppa|pema khandu|siang|subansiri|dibang|lohit|kameng');
+
+  static bool _mentionsArunachal(String s) => _arunachalWords.hasMatch(s);
+
+  static List<CurrentAffairsItem> _dedupe(List<CurrentAffairsItem> items) {
+    final seen = <String>{};
+    final out = <CurrentAffairsItem>[];
+    for (final i in items) {
+      final key = i.title.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+      final short = key.length > 60 ? key.substring(0, 60) : key;
+      if (seen.add(short)) out.add(i);
+    }
+    return out;
+  }
+
+  List<CurrentAffairsItem> _readCache() {
     try {
-      final dt = DateTime.parse(raw);
-      return '${dt.day}/${dt.month}/${dt.year}';
+      final raw = _prefs?.getString(_cacheKey);
+      if (raw == null) return const [];
+      final list = (jsonDecode(raw) as List)
+          .map((e) => CurrentAffairsItem.fromJson(e as Map<String, dynamic>))
+          .toList();
+      _memory = list;
+      return list;
     } catch (_) {
-      return raw.split(' ').take(4).join(' ');
+      return const [];
     }
   }
 
-  Future<List<CurrentAffairsItem>> _enhanceWithAI(
-      List<CurrentAffairsItem> items) async {
-    final result = <CurrentAffairsItem>[];
-
-    for (int i = 0; i < items.length; i++) {
-      final item = items[i];
-      // Only process top items with AI if raw text is unstructured or too terse
-      if (i < 4 && !item.summary.contains('Key Highlights')) {
-        try {
-          final prompt =
-              'You are a senior news analyst and curriculum expert for APSSB and APPSC examinations in Arunachal Pradesh.\n'
-              'Rewrite the following article into a detailed, comprehensive, high-value study article (around 150-250 words).\n'
-              'Include:\n'
-              '- Clear background context and what occurred.\n'
-              '- Concrete facts, statistics, relevant ministries/departments, and district impact.\n'
-              '- A dedicated bullet-point section: "Exam Relevance & Key Points".\n'
-              'Do not summarize briefly; provide an in-depth, rich, factual article.\n\n'
-              'Headline: ${item.title}\n'
-              'Content: ${item.summary}';
-
-          final body = jsonEncode({
-            'contents': [
-              {
-                'role': 'user',
-                'parts': [
-                  {'text': prompt}
-                ]
-              }
-            ],
-            'generationConfig': {'maxOutputTokens': 1000}
-          });
-
-          final endpoint =
-              'https://generativelanguage.googleapis.com/v1beta/models/$_model:generateContent?key=$_apiKey';
-
-          final response = await http
-              .post(
-                Uri.parse(endpoint),
-                headers: {'Content-Type': 'application/json'},
-                body: body,
-              )
-              .timeout(const Duration(seconds: 12));
-
-          if (response.statusCode == 200) {
-            final data = jsonDecode(response.body);
-            final parts = (data['candidates'][0]['content']['parts'] as List);
-            final rewritten = parts
-                .where((p) =>
-                    p.containsKey('text') && (p['text'] as String).isNotEmpty)
-                .map((p) => p['text'] as String)
-                .join('')
-                .trim();
-
-            if (rewritten.isNotEmpty) {
-              result.add(CurrentAffairsItem(
-                id: item.id,
-                title: item.title,
-                summary: rewritten,
-                source: item.source,
-                dateStr: item.dateStr,
-                link: item.link,
-                aiEnhanced: true,
-                category: item.category,
-              ));
-              continue;
-            }
-          }
-        } catch (_) {}
-      }
-
-      result.add(item);
-    }
-
-    return result;
+  void _writeCache(List<CurrentAffairsItem> items) {
+    try {
+      _prefs?.setString(
+          _cacheKey, jsonEncode(items.take(120).map((e) => e.toJson()).toList()));
+    } catch (_) {}
   }
 }
 
-final currentAffairsServiceProvider =
-    Provider<CurrentAffairsService>((ref) => CurrentAffairsService());
+class FeedResult {
+  final List<CurrentAffairsItem> items;
+  final List<String> failed;
+  final bool offline;
+  const FeedResult(this.items, {required this.failed, this.offline = false});
+}
 
-final currentAffairsProvider =
-    FutureProvider<List<CurrentAffairsItem>>((ref) async {
-  return ref.watch(currentAffairsServiceProvider).fetchCurrentAffairs();
+/// RFC 822 ("Wed, 28 Oct 2026 12:14:29 +0000", also "+05:30" and "GMT")
+/// and ISO 8601 dates, converted to local time.
+DateTime? parseFeedDate(String raw) {
+  final s = raw.trim();
+  if (s.isEmpty) return null;
+  final iso = DateTime.tryParse(s);
+  if (iso != null) return iso.toLocal();
+
+  final m = RegExp(
+          r'(\d{1,2})\s+([A-Za-z]{3})[a-z]*\s+(\d{4})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([+-]\d{2}:?\d{2}|[A-Z]{1,4})?')
+      .firstMatch(s);
+  if (m == null) return null;
+  const months = {'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6, 'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12};
+  final month = months[m.group(2)!.toLowerCase()];
+  if (month == null) return null;
+  var dt = DateTime.utc(int.parse(m.group(3)!), month, int.parse(m.group(1)!),
+      int.parse(m.group(4)!), int.parse(m.group(5)!), int.parse(m.group(6) ?? '0'));
+
+  final zone = m.group(7) ?? 'GMT';
+  final off = RegExp(r'([+-])(\d{2}):?(\d{2})').firstMatch(zone);
+  if (off != null) {
+    final mins = int.parse(off.group(2)!) * 60 + int.parse(off.group(3)!);
+    dt = dt.subtract(Duration(minutes: off.group(1) == '+' ? mins : -mins));
+  } else if (zone == 'IST') {
+    dt = dt.subtract(const Duration(hours: 5, minutes: 30));
+  }
+  return dt.toLocal();
+}
+
+/// Strips tags, decodes HTML entities and collapses whitespace.
+String cleanText(String html) {
+  var s = html
+      .replaceAll(RegExp(r'<(script|style)[^>]*>.*?</\1>', dotAll: true), ' ')
+      .replaceAll(RegExp(r'<br\s*/?>|</p>', caseSensitive: false), '\n')
+      .replaceAll(RegExp(r'<[^>]*>'), ' ');
+  s = s.replaceAllMapped(RegExp(r'&#(x?)([0-9a-fA-F]+);'), (m) {
+    final code = int.tryParse(m.group(2)!, radix: m.group(1)!.isEmpty ? 10 : 16);
+    return code == null ? '' : String.fromCharCode(code);
+  });
+  const named = {'&nbsp;': ' ', '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&apos;': "'", '&hellip;': '…', '&rsquo;': '’', '&lsquo;': '‘', '&ldquo;': '“', '&rdquo;': '”', '&ndash;': '–', '&mdash;': '—'};
+  named.forEach((k, v) => s = s.replaceAll(k, v));
+  s = s
+      .replaceAll(RegExp(r'The post .{0,200} appeared first on .*$', dotAll: true), '')
+      .replaceAll(RegExp(r'[ \t]+'), ' ')
+      .replaceAll(RegExp(r'\s*\n\s*'), '\n')
+      .trim();
+  return s;
+}
+
+extension on XmlElement {
+  T? let<T>(T? Function(XmlElement) f) => f(this);
+}
+
+final currentAffairsServiceProvider = Provider<CurrentAffairsService>((ref) {
+  SharedPreferences? prefs;
+  try {
+    prefs = ref.watch(sharedPreferencesProvider);
+  } catch (_) {}
+  return CurrentAffairsService(prefs);
+});
+
+final currentAffairsProvider = FutureProvider<FeedResult>((ref) {
+  return ref.watch(currentAffairsServiceProvider).fetch();
 });

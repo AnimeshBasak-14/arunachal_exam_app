@@ -62,3 +62,10 @@ analyze_output.txt
 
 # Web prototype duplicates
 web_portal.html
+
+# Screenshot renders for visual review (flutter test --tags screenshots)
+test/screenshots/goldens/
+test/screenshots/failures/
+
+# Google Maps key for iOS (MAPS_API_KEY = AIza...)
+ios/Flutter/Secrets.xcconfig

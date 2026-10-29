@@ -3,6 +3,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'notification_inbox.dart';
 
 final fcmServiceProvider = Provider<FcmService>((ref) {
   return FcmService.instance;
@@ -12,10 +13,23 @@ final fcmServiceProvider = Provider<FcmService>((ref) {
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   try {
     await Firebase.initializeApp();
-    debugPrint('[FCM Background] Message received: ${message.messageId}');
+    await _saveToInbox(message);
   } catch (e) {
     debugPrint('[FCM Background] Error: $e');
   }
+}
+
+Future<void> _saveToInbox(RemoteMessage m) async {
+  final n = m.notification;
+  final title = n?.title ?? m.data['title'] as String?;
+  if (title == null || title.isEmpty) return;
+  await saveInboxMessage(InboxMessage(
+    m.messageId ?? '${m.sentTime?.millisecondsSinceEpoch ?? DateTime.now().millisecondsSinceEpoch}',
+    title,
+    n?.body ?? m.data['body'] as String? ?? '',
+    m.sentTime ?? DateTime.now(),
+    link: m.data['link'] as String?,
+  ));
 }
 
 class FcmService {
@@ -57,9 +71,8 @@ class FcmService {
       // 3. Set up local notification channel for Android foreground notifications
       const AndroidNotificationChannel channel = AndroidNotificationChannel(
         'arunachal_exam_announcements',
-        'Exam Alerts & Study Updates',
-        description:
-            'Notifications for daily mock tests, PYQ updates, and APSSB/APPSC alerts.',
+        'Exam alerts',
+        description: 'Exam notices, new papers and study reminders from Dawnlit.',
         importance: Importance.high,
       );
 
@@ -69,9 +82,12 @@ class FcmService {
           ?.createNotificationChannel(channel);
 
       // 4. Handle foreground notifications
+      FirebaseMessaging.onMessageOpenedApp.listen(_saveToInbox);
+      final initial = await _messaging!.getInitialMessage();
+      if (initial != null) await _saveToInbox(initial);
+
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        debugPrint(
-            '[FCM Foreground] Message received: ${message.notification?.title}');
+        _saveToInbox(message);
         final notification = message.notification;
         final android = message.notification?.android;
 
@@ -96,14 +112,10 @@ class FcmService {
 
       // 5. Fetch FCM registration token
       final token = await _messaging!.getToken();
-      if (token != null) {
-        debugPrint('[FCM] Device Token: $token');
-      }
+      if (kDebugMode && token != null) debugPrint('[FCM] Device token: $token');
 
-      // 6. Listen for token refresh
-      _messaging!.onTokenRefresh.listen((newToken) {
-        debugPrint('[FCM] Token refreshed: $newToken');
-      });
+      // Every install receives broadcast messages sent to this topic.
+      await _messaging!.subscribeToTopic('all');
     } catch (e) {
       debugPrint('[FCM] Initialization error: $e');
     }

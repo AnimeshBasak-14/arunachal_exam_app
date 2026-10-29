@@ -8,6 +8,7 @@ import '../../../core/widgets/aura/aura_widgets.dart';
 import '../../../core/widgets/aura/exam_goal_sheet.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../../home/view/notifications_screen.dart' show hasUnreadNotifProvider;
+import '../../learn/view/study_widgets.dart';
 import '../../mocks/view/live_mock_card.dart';
 import '../../papers/data/paper.dart';
 import '../../papers/view/paper_widgets.dart';
@@ -275,6 +276,12 @@ class _StudyShelf extends StatelessWidget {
       children: [
         const SectionHeader('Study shelf'),
         const SizedBox(height: 12),
+        const LearnHero(
+          title: 'Learn in 60-second cards',
+          subtitle: 'Arunachal GK, polity, history, grammar and vocabulary. Swipe, answer, repeat.',
+          route: '/learn',
+        ),
+        const SizedBox(height: 14),
         GlassList(children: [
           GlassListRow(
             icon: CupertinoIcons.doc_text,
@@ -284,14 +291,20 @@ class _StudyShelf extends StatelessWidget {
           ),
           GlassListRow(
             icon: CupertinoIcons.map,
-            title: 'Arunachal GK',
-            subtitle: 'Districts, history, rivers, culture',
+            title: 'General knowledge',
+            subtitle: 'Arunachal, polity, history, geography, science',
             onTap: () => context.push('/state-gk'),
           ),
           GlassListRow(
             icon: CupertinoIcons.textformat,
-            title: 'English grammar',
+            title: 'English grammar & vocabulary',
             onTap: () => context.push('/grammar-hub'),
+          ),
+          GlassListRow(
+            icon: CupertinoIcons.location,
+            title: 'Arunachal on the map',
+            subtitle: 'Tap places · play Find it',
+            onTap: () => context.push('/gk-map'),
           ),
           GlassListRow(
             icon: CupertinoIcons.news,

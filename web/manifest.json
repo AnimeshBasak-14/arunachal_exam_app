@@ -1,11 +1,11 @@
 {
-    "name": "Arunachal Exam Prep",
-    "short_name": "Arunachal Exam",
+    "name": "Dawnlit",
+    "short_name": "Dawnlit",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#F8FAFC",
     "theme_color": "#2E8B57",
-    "description": "Comprehensive preparation portal for APSSB, APPSC and Arunachal Pradesh state competitive examinations.",
+    "description": "Dawnlit by ZAP: study app for Arunachal Pradesh state exams.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
