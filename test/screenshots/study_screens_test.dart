@@ -122,6 +122,14 @@ void main() {
   }
 
   testWidgets('dashboard', (t) => shoot(t, 'dashboard', const AppShell()));
+  testWidgets('dashboard dark', (t) => shoot(t, 'dashboard_dark', const AppShell(), dark: true));
+  testWidgets('library', (t) => shoot(t, 'library', const AppShell(initialTab: 1)));
+  testWidgets('library dark', (t) => shoot(t, 'library_dark', const AppShell(initialTab: 1), dark: true));
+  testWidgets('mocks', (t) => shoot(t, 'mocks', const AppShell(initialTab: 2)));
+  testWidgets('performance', (t) => shoot(t, 'performance', const AppShell(initialTab: 3)));
+  testWidgets('gk hub dark', (t) => shoot(t, 'gk_hub_dark', const StateGkScreen(), dark: true));
+  testWidgets('chatbot dark', (t) => shoot(t, 'chatbot_dark', const ChatbotScreen(), dark: true));
+  testWidgets('login dark', (t) => shoot(t, 'login_dark', const LoginScreen(), dark: true, signedIn: false));
   testWidgets('welcome', (t) => shoot(t, 'welcome', const WelcomeScreen(), signedIn: false));
   testWidgets('login', (t) => shoot(t, 'login', const LoginScreen(), signedIn: false));
   testWidgets('register', (t) => shoot(t, 'register', const RegisterScreen(), signedIn: false));

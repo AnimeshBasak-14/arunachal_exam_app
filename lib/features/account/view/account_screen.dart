@@ -7,11 +7,12 @@ import '../../../core/theme/aura.dart';
 import '../../../core/theme/theme_mode_provider.dart';
 import '../../../core/widgets/aura/aura_widgets.dart';
 import '../../../core/widgets/aura/exam_goal_sheet.dart';
-import '../../../core/utils/links.dart';
 import '../../../core/widgets/aura/user_avatar.dart';
 import '../../../core/widgets/aura/wordmark.dart';
 import '../../auth/view/auth_widgets.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
+import '../../plan/data/study_plan_provider.dart';
+import '../../plan/view/study_plan_sheet.dart';
 
 class AccountScreen extends ConsumerWidget {
   const AccountScreen({super.key});
@@ -39,6 +40,7 @@ class AccountScreen extends ConsumerWidget {
       ),
     );
     if (ok == true) {
+      await ref.read(studyPlanProvider.notifier).cancelReminders();
       await ref.read(authViewModelProvider.notifier).logout();
       if (context.mounted) context.go('/welcome');
     }
@@ -97,6 +99,8 @@ class AccountScreen extends ConsumerWidget {
         await vm.deleteAccount(password: vm.hasPassword ? password.text : null);
     if (!context.mounted) return;
     if (done) {
+      await ref.read(studyPlanProvider.notifier).cancelReminders();
+      if (!context.mounted) return;
       context.go('/welcome');
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Your account has been deleted.')));
@@ -112,9 +116,14 @@ class AccountScreen extends ConsumerWidget {
     final a = context.aura;
     final user = ref.watch(authViewModelProvider).user;
     final goal = ref.watch(examGoalProvider);
+    final plan = ref.watch(studyPlanProvider);
     final mode = ref.watch(themeModeProvider);
     final name = (user?.name ?? '').trim();
     const modes = [ThemeMode.system, ThemeMode.light, ThemeMode.dark];
+
+    final planSubtitle = plan.examDate != null
+        ? '${plan.deadlineLabel() ?? 'Exam date set'} · ${plan.dailyGoal} cards/day'
+        : '${plan.dailyGoal} cards/day · ${plan.remindersEnabled ? plan.reminderTimeString : 'Reminders off'}';
 
     return AuraBackground(
       child: Scaffold(
@@ -128,7 +137,7 @@ class AccountScreen extends ConsumerWidget {
         ),
         body: ListView(
           padding: const EdgeInsets.fromLTRB(
-              AuraSpace.gutter, 0, AuraSpace.gutter, 40),
+              AuraSpace.gutter, 24, AuraSpace.gutter, 40),
           children: [
             Row(
               children: [
@@ -159,6 +168,12 @@ class AccountScreen extends ConsumerWidget {
                 title: 'Exam goal',
                 subtitle: goal.name,
                 onTap: () => showExamGoalSheet(context),
+              ),
+              GlassListRow(
+                icon: CupertinoIcons.calendar_today,
+                title: 'Study plan',
+                subtitle: planSubtitle,
+                onTap: () => showStudyPlanSheet(context),
               ),
               GlassListRow(
                 icon: CupertinoIcons.clock,
@@ -224,29 +239,10 @@ class AccountScreen extends ConsumerWidget {
             const SizedBox(height: 26),
             const Eyebrow('About'),
             const SizedBox(height: 10),
-            GlassList(children: [
-              GlassListRow(
-                icon: CupertinoIcons.globe,
-                title: 'Official APPSC website',
-                subtitle: 'appsc.gov.in',
-                trailing: Icon(CupertinoIcons.arrow_up_right,
-                    size: 16, color: a.inkFaint),
-                onTap: () => openLink(context, 'https://appsc.gov.in'),
-              ),
-              GlassListRow(
-                icon: CupertinoIcons.globe,
-                title: 'Official APSSB website',
-                subtitle: 'apssb.nic.in',
-                trailing: Icon(CupertinoIcons.arrow_up_right,
-                    size: 16, color: a.inkFaint),
-                onTap: () => openLink(context, 'https://apssb.nic.in'),
-              ),
-            ]),
-            const SizedBox(height: 14),
             Text(
               '${Wordmark.appName} is an independent study app by ZAP. It is not affiliated with, '
               'endorsed by, or acting for APPSC, APSSB or the Government of Arunachal Pradesh. '
-              'Always confirm notifications, dates and syllabus on the official websites above.',
+              'Always confirm notifications, dates and syllabus with the official recruiting board.',
               style: AuraType.sans(12.5, a.inkFaint, height: 1.55),
             ),
             const SizedBox(height: 26),

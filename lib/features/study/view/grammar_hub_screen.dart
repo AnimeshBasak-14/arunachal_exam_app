@@ -20,14 +20,20 @@ class GrammarHubScreen extends StatelessWidget {
       children: [
         const LearnHero(
           title: 'Grammar in 60-second cards',
-          subtitle: 'One rule, one right-or-wrong sentence, then the next. Built from APSSB and APPSC error-spotting questions.',
+          subtitle:
+              'One rule, one right-or-wrong sentence, then the next. Built from APSSB and APPSC error-spotting questions.',
           route: '/learn?topic=grammar',
         ),
         const SizedBox(height: 14),
         Row(children: const [
-          Expanded(child: TopicTile(topic: LearnTopic.grammar, icon: CupertinoIcons.textformat)),
+          Expanded(
+              child: TopicTile(
+                  topic: LearnTopic.grammar, icon: CupertinoIcons.textformat)),
           SizedBox(width: 12),
-          Expanded(child: TopicTile(topic: LearnTopic.vocab, icon: CupertinoIcons.textformat_abc)),
+          Expanded(
+              child: TopicTile(
+                  topic: LearnTopic.vocab,
+                  icon: CupertinoIcons.textformat_abc)),
         ]),
         const SizedBox(height: 14),
         GlassList(children: [
@@ -40,8 +46,10 @@ class GrammarHubScreen extends StatelessWidget {
           GlassListRow(
             icon: CupertinoIcons.book,
             title: 'Vocabulary lists',
-            subtitle: '${VocabData.idioms.length} idioms · ${VocabData.oneWord.length} one-word substitutions · ${VocabData.spellings.length} spellings',
-            onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const _VocabScreen())),
+            subtitle:
+                '${VocabData.idioms.length} idioms · ${VocabData.oneWord.length} one-word substitutions · ${VocabData.spellings.length} spellings',
+            onTap: () => Navigator.of(context)
+                .push(MaterialPageRoute(builder: (_) => const _VocabScreen())),
           ),
         ]),
         const SizedBox(height: 14),
@@ -54,18 +62,22 @@ class GrammarHubScreen extends StatelessWidget {
             GlassList(
               indent: 18,
               children: [
-                for (final t in GrammarData.topics.where((t) => t.level == level))
+                for (final t
+                    in GrammarData.topics.where((t) => t.level == level))
                   InkWell(
-                    onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => _TopicScreen(topic: t))),
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => _TopicScreen(topic: t))),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 18, vertical: 14),
                       child: Row(children: [
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(t.title, style: AuraType.sans(15, a.ink, weight: FontWeight.w500)),
+                              Text(t.title,
+                                  style: AuraType.sans(15, a.ink,
+                                      weight: FontWeight.w500)),
                               const SizedBox(height: 2),
                               Text('${t.rules.length} rules · ${t.subtitle}',
                                   maxLines: 1,
@@ -74,7 +86,8 @@ class GrammarHubScreen extends StatelessWidget {
                             ],
                           ),
                         ),
-                        Icon(CupertinoIcons.chevron_right, size: 16, color: a.inkFaint),
+                        Icon(CupertinoIcons.chevron_right,
+                            size: 16, color: a.inkFaint),
                       ]),
                     ),
                   ),
@@ -93,7 +106,7 @@ class _TopicScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final a = context.aura;
-    const good = Color(0xFF2F6B55);
+    final good = a.success;
     return StudyPage(
       title: topic.level,
       children: [
@@ -106,16 +119,21 @@ class _TopicScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(r.ruleTitle, style: AuraType.sans(16, a.ink, weight: FontWeight.w600)),
+                Text(r.ruleTitle,
+                    style: AuraType.sans(16, a.ink, weight: FontWeight.w600)),
                 const SizedBox(height: 8),
-                Text(r.explanation, style: AuraType.sans(14.5, a.inkMuted, height: 1.55)),
+                Text(r.explanation,
+                    style: AuraType.sans(14.5, a.inkMuted, height: 1.55)),
                 const SizedBox(height: 12),
-                _line(context, CupertinoIcons.checkmark, good, r.exampleCorrect),
+                _line(
+                    context, CupertinoIcons.checkmark, good, r.exampleCorrect),
                 const SizedBox(height: 6),
-                _line(context, CupertinoIcons.xmark, a.danger, r.exampleIncorrect),
+                _line(context, CupertinoIcons.xmark, a.danger,
+                    r.exampleIncorrect),
                 if (r.tip != null) ...[
                   const SizedBox(height: 12),
-                  _line(context, CupertinoIcons.lightbulb, a.review, r.tip!, muted: true),
+                  _line(context, CupertinoIcons.lightbulb, a.review, r.tip!,
+                      muted: true),
                 ],
               ],
             ),
@@ -132,12 +150,18 @@ class _TopicScreen extends StatelessWidget {
     );
   }
 
-  Widget _line(BuildContext context, IconData icon, Color c, String text, {bool muted = false}) {
+  Widget _line(BuildContext context, IconData icon, Color c, String text,
+      {bool muted = false}) {
     final a = context.aura;
     return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Padding(padding: const EdgeInsets.only(top: 2), child: Icon(icon, size: 15, color: c)),
+      Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Icon(icon, size: 15, color: c)),
       const SizedBox(width: 8),
-      Expanded(child: Text(text, style: AuraType.sans(14.5, muted ? a.inkMuted : a.ink, height: 1.45))),
+      Expanded(
+          child: Text(text,
+              style: AuraType.sans(14.5, muted ? a.inkMuted : a.ink,
+                  height: 1.45))),
     ]);
   }
 }
@@ -157,11 +181,14 @@ class _VocabScreen extends StatelessWidget {
             GlassList(indent: 18, children: [
               for (final (term, meaning) in items)
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(term, style: AuraType.sans(15, a.ink, weight: FontWeight.w600)),
+                      Text(term,
+                          style: AuraType.sans(15, a.ink,
+                              weight: FontWeight.w600)),
                       const SizedBox(height: 2),
                       Text(meaning, style: AuraType.sans(14, a.inkMuted)),
                     ],
@@ -180,7 +207,10 @@ class _VocabScreen extends StatelessWidget {
         ),
         list('Idioms & phrases', VocabData.idioms),
         list('One-word substitution', VocabData.oneWord),
-        list('Spellings', [for (final s in VocabData.spellings) (s.first, 'Not: ${s.skip(1).join(', ')}')]),
+        list('Spellings', [
+          for (final s in VocabData.spellings)
+            (s.first, 'Not: ${s.skip(1).join(', ')}')
+        ]),
       ],
     );
   }

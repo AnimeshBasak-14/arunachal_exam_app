@@ -57,26 +57,31 @@ Blackish Green `#5E6161` (secondary text), Atlantic Waves `#233E42` (the one
 accent), Vantablack `#010101` (text; dark background). Muted ochre, brick and
 green are kept only for review, wrong and correct states.
 
-**What "the Dawnlit look" means:**
+**What "the Dawnlit look" means** (from the owner's reference image: white page,
+black frame, soft pastel highlights):
 
-- One accent colour. Everything else is ink on a soft background.
+- **White page, black frame.** The page is white. The "frame" is black: the header
+  band (rounded lower corners, light text) at the top of every page and the
+  floating black pill tab bar. The tokens are `chrome` / `onChrome` in `aura.dart`.
+  Atlantic Waves is for buttons and links, Blackish Green for secondary text,
+  Child of Light for card fills, Aruba Aqua (`tint`) for soft highlight cards.
+- **Dark mode is plain black.** Neutral greys, near-white text, no tinted or
+  gradient backgrounds. Nothing in dark mode may use a teal/green tint.
+- One accent colour. Everything else is ink on white.
 - Titles in Playfair Display (`AuraType.serif`); everything else in Inter
   (`AuraType.sans`). Numbers that change use `AuraType.digits`.
 - Small uppercase `Eyebrow` labels above titles and sections.
-- Content sits in `GlassCard` / `GlassList` with a hairline border and a very
-  soft shadow. No heavy shadows, no bright gradients, no coloured card fills.
-- 20 px side gutter (`AuraSpace.gutter`), radius 20 for cards and 14 for
-  controls, generous vertical space (24–34 px between sections).
+- Cards are soft Child-of-Light fills with a hairline and a very soft shadow.
+- 20 px side gutter, radius 20 for cards and 14 for controls, generous vertical
+  space (24-34 px between sections).
 - Cupertino icons, thin and quiet. No emoji in the interface.
-- Motion is short and soft: 200–260 ms, `Curves.easeOutCubic`. Haptic ticks on
-  meaningful taps only.
-- Copy is plain, short and calm: sentence case, no exclamation marks, no hype.
-  Errors say what happened and what to do next.
+- Motion is short and soft: 200-260 ms, `Curves.easeOutCubic`.
+- Copy is plain, short and calm: sentence case, no exclamation marks.
 
 **Page patterns:**
 
-- **Scrolling page:** `StudyPage` (pinned bar with `AuraBarTint`: clear at rest,
-  frosted when content scrolls under).
+- **Scrolling page:** `StudyPage` (pinned black themed app bar).
+- **Tab pages:** `ChromeHeader` (black band) then content.
 - **Form page:** `FormPage` + `PasswordField` + `FormError` + `BusyButton`.
 - **Tab pages:** the 4-tab shell in `lib/features/shell/view/app_shell.dart`.
 - **Full screen:** the Learn feed and the GK map. Overlays use `_RoundButton`-style
@@ -94,13 +99,7 @@ green are kept only for review, wrong and correct states.
 
 ## Part A: known issues (fix these first)
 
-**A1. The "correct / success" green is hardcoded.**
-`Color(0xFF2F6B55)` is repeated in `learn_feed_screen.dart`,
-`grammar_quiz_screen.dart`, `grammar_hub_screen.dart`, `bookmarks_screen.dart`,
-`gk_map_screen.dart` and others. Add `success` (and a dark-mode value with at
-least 4.5:1 contrast on `#010101`) to `Aura` in `aura.dart`, include it in
-`lerp`, and replace every copy. Likewise, add an `onDanger` token and replace
-`Colors.white` on danger buttons (`account_screen.dart`, `auth_widgets.dart`).
+**A1. (Done)** `success`, `chrome`, `tint` tokens exist in `aura.dart`; keep using them.
 
 **A2. The admin editors are still old-style.**
 `lib/features/admin/view/question_flagger_screen.dart` (about 2,000 lines) and

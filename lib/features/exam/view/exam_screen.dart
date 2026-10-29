@@ -13,6 +13,7 @@ import '../../../core/services/firebase_service.dart';
 import '../../../core/services/question_repository.dart';
 import '../../../core/services/remote_config_service.dart';
 import '../../../core/services/service_providers.dart';
+import '../../../core/services/streak_service.dart';
 import '../../../core/theme/aura.dart';
 import '../../../core/utils/rank_utils.dart';
 import '../../../core/widgets/ai_explain_sheet.dart';
@@ -397,6 +398,8 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
     final storage = ref.read(storageServiceProvider);
     final user = ref.read(authViewModelProvider).user;
     final firebase = ref.read(firebaseServiceProvider);
+    // A finished paper counts as studying today.
+    StreakService(ref.read(sharedPreferencesProvider)).checkAndUpdateStreak();
 
     final history = List<String>.from(storage.getQuizHistory())
       ..insert(0, jsonEncode(record));

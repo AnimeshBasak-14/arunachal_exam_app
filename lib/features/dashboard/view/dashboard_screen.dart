@@ -6,19 +6,48 @@ import '../../../core/data/exam_goals.dart';
 import '../../../core/theme/aura.dart';
 import '../../../core/widgets/aura/aura_widgets.dart';
 import '../../../core/widgets/aura/exam_goal_sheet.dart';
+import '../../../core/services/service_providers.dart';
+import '../../../core/services/streak_service.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
+import '../../exam/data/attempt.dart';
+import '../../learn/data/learn_deck.dart';
+import '../../learn/data/learn_progress.dart';
+import '../../learn/data/topic_mapping.dart';
 import '../../home/view/notifications_screen.dart' show hasUnreadNotifProvider;
 import '../../learn/view/study_widgets.dart';
 import '../../mocks/view/live_mock_card.dart';
 import '../../papers/data/paper.dart';
 import '../../papers/view/paper_widgets.dart';
+import '../../plan/data/study_plan_provider.dart';
+import '../../plan/view/study_plan_sheet.dart';
 import '../../shell/view/app_shell.dart';
 
-class DashboardScreen extends ConsumerWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  bool _setupPrompted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _setupPrompted) return;
+      final plan = ref.read(studyPlanProvider);
+      final user = ref.read(authViewModelProvider).user;
+      if (user != null && !plan.completed) {
+        _setupPrompted = true;
+        showStudyPlanSheet(context, isFirstRun: true);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return RefreshIndicator(
       onRefresh: () async {
         ref.invalidate(papersProvider(PaperKind.pyq));
@@ -29,15 +58,13 @@ class DashboardScreen extends ConsumerWidget {
         physics: const BouncingScrollPhysics(
             parent: AlwaysScrollableScrollPhysics()),
         slivers: [
-          const SliverSafeArea(
-            bottom: false,
-            sliver: SliverPadding(
-              padding: EdgeInsets.fromLTRB(
-                  AuraSpace.gutter, 18, AuraSpace.gutter, 0),
-              sliver: SliverToBoxAdapter(child: _Header()),
-            ),
+          const SliverToBoxAdapter(child: _Header()),
+          const SliverToBoxAdapter(child: SizedBox(height: 22)),
+          const SliverPadding(
+            padding: EdgeInsets.symmetric(horizontal: AuraSpace.gutter),
+            sliver: SliverToBoxAdapter(child: _TodayCard()),
           ),
-          const SliverToBoxAdapter(child: SizedBox(height: 34)),
+          const SliverToBoxAdapter(child: SizedBox(height: 30)),
           const SliverToBoxAdapter(child: _PyqHub()),
           const SliverToBoxAdapter(child: SizedBox(height: 34)),
           const SliverPadding(
@@ -76,73 +103,211 @@ class _Header extends ConsumerWidget {
     final goal = ref.watch(examGoalProvider);
     final hasUnread = ref.watch(hasUnreadNotifProvider);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Eyebrow(
-                firstName.isEmpty ? _greeting() : '${_greeting()}, $firstName',
+    return Padding(
+      padding: EdgeInsets.fromLTRB(AuraSpace.gutter,
+          MediaQuery.paddingOf(context).top + 18, AuraSpace.gutter, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Eyebrow(firstName.isEmpty
+                    ? _greeting()
+                    : '${_greeting()}, $firstName'),
               ),
-            ),
-            IconButton(
-              tooltip: 'Exam alerts',
-              onPressed: () => context.push('/notifications'),
-              icon: Badge(
-                isLabelVisible: hasUnread,
-                smallSize: 7,
-                backgroundColor: a.accent,
-                child: Icon(CupertinoIcons.bell, size: 22, color: a.ink),
+              IconButton(
+                tooltip: 'Exam alerts',
+                onPressed: () => context.push('/notifications'),
+                icon: Badge(
+                  isLabelVisible: hasUnread,
+                  smallSize: 7,
+                  backgroundColor: a.accent,
+                  child: Icon(CupertinoIcons.bell, size: 22, color: a.ink),
+                ),
               ),
-            ),
-            const SizedBox(width: 2),
-            Semantics(
-              button: true,
-              label: 'Account',
-              child: InkWell(
-                customBorder: const CircleBorder(),
-                onTap: () => context.push('/account'),
-                child: Container(
-                  width: 36,
-                  height: 36,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: a.accentSoft,
-                    border: Border.all(color: a.hairline),
-                  ),
-                  child: Text(
-                    firstName.isEmpty ? '·' : firstName[0].toUpperCase(),
-                    style: AuraType.serif(16, a.accent, weight: FontWeight.w600),
+              const SizedBox(width: 2),
+              Semantics(
+                button: true,
+                label: 'Account',
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: () => context.push('/account'),
+                  child: Container(
+                    width: 38,
+                    height: 38,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: a.accentSoft,
+                      border: Border.all(color: a.hairline),
+                    ),
+                    child: Text(
+                      firstName.isEmpty ? '·' : firstName[0].toUpperCase(),
+                      style:
+                          AuraType.serif(16, a.accent, weight: FontWeight.w600),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Text('Preparing for', style: AuraType.sans(13, a.inkFaint)),
-        const SizedBox(height: 4),
-        InkWell(
-          borderRadius: BorderRadius.circular(8),
-          onTap: () => showExamGoalSheet(context),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Flexible(
-                child: Text(goal.name,
-                    style: AuraType.serif(29, a.ink, height: 1.18)),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 6, bottom: 6),
-                child: Icon(CupertinoIcons.chevron_down,
-                    size: 15, color: a.inkFaint),
-              ),
             ],
           ),
-        ),
-      ],
+          const SizedBox(height: 10),
+          Text('Preparing for', style: AuraType.sans(13, a.inkFaint)),
+          const SizedBox(height: 4),
+          InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () => showExamGoalSheet(context),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Flexible(
+                  child: Text(goal.name,
+                      style: AuraType.serif(29, a.ink, height: 1.18)),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 6, bottom: 6),
+                  child: Icon(CupertinoIcons.chevron_down,
+                      size: 15, color: a.inkFaint),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// One calm card that answers "what should I do now?": today's progress,
+/// the streak, real exam countdown, weak topic action, and a single button.
+class _TodayCard extends ConsumerWidget {
+  const _TodayCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final a = context.aura;
+    final plan = ref.watch(studyPlanProvider);
+    final goal = ref.watch(dailyCardGoalProvider);
+    final p = ref.watch(learnProgressProvider);
+    final streaks = StreakService(ref.watch(sharedPreferencesProvider));
+    final streak = streaks.getCurrentStreak();
+    final best = streaks.getLongestStreak();
+    final now = DateTime.now();
+    final today =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final studiedToday = streaks.getLastActiveDate() == today;
+    final left = (goal - p.today).clamp(0, goal);
+    final done = p.today >= goal;
+
+    final attempts = loadAttempts(ref.watch(storageServiceProvider));
+    final weakTopics = findWeakTopics(attempts, max: 1);
+    final weakTopic = weakTopics.isNotEmpty ? weakTopics.first : null;
+    final daysUntil = plan.daysUntilExam();
+
+    final String headline;
+    final String line;
+    final String cta;
+    final VoidCallback onCta;
+
+    if (daysUntil != null && daysUntil < 0) {
+      headline = 'Exam date passed';
+      line = 'Set your next exam date to restart your countdown.';
+      cta = 'Set exam date';
+      onCta = () => showStudyPlanSheet(context);
+    } else {
+      if (daysUntil != null) {
+        headline = plan.deadlineLabel()!;
+      } else if (done) {
+        headline = 'Goal reached';
+      } else if (studiedToday) {
+        headline = '$left cards to your goal';
+      } else if (streak > 0) {
+        headline = '$streak-day streak';
+      } else {
+        headline = 'Start your streak';
+      }
+
+      if (weakTopic != null) {
+        line =
+            '${weakTopic.topic.label} is your weakest area (${weakTopic.accuracyPercent}%).';
+        cta = 'Practise ${weakTopic.topic.label}';
+        onCta = () =>
+            context.push('/learn?topic=${weakTopic.topic.name}&limit=10');
+      } else if (done) {
+        line = 'Your $streak-day streak is safe. Come back tomorrow.';
+        cta = 'Keep learning';
+        onCta = () => context.push('/learn');
+      } else if (studiedToday) {
+        line = 'Streak is safe today. Finish the goal to build on it.';
+        cta = 'Continue';
+        onCta = () => context.push('/learn');
+      } else if (streak > 0) {
+        line =
+            'Study today to keep it. $left cards, about ${(left / 6).ceil()} minutes.';
+        cta = 'Keep my streak';
+        onCta = () => context.push('/learn');
+      } else {
+        line = '$goal cards, about 5 minutes. Small, daily, and it adds up.';
+        cta = 'Start today';
+        onCta = () => context.push('/learn');
+      }
+    }
+
+    return GlassCard(
+      elevated: true,
+      padding: const EdgeInsets.all(20),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Eyebrow('Today'),
+                const SizedBox(height: 6),
+                Text(headline, style: AuraType.serif(23, a.ink, height: 1.2)),
+                const SizedBox(height: 6),
+                Text(line,
+                    style: AuraType.sans(13.5, a.inkMuted, height: 1.45)),
+                if (best > 1) ...[
+                  const SizedBox(height: 6),
+                  Text('Personal best: $best days',
+                      style: AuraType.sans(12, a.inkFaint)),
+                ],
+                const SizedBox(height: 16),
+                FilledButton(
+                  style: FilledButton.styleFrom(minimumSize: const Size(0, 46)),
+                  onPressed: onCta,
+                  child: Text(cta),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          SizedBox(
+            width: 72,
+            height: 72,
+            child: Stack(alignment: Alignment.center, children: [
+              SizedBox.expand(
+                child: CircularProgressIndicator(
+                  value: (p.today / goal).clamp(0, 1).toDouble(),
+                  strokeWidth: 6,
+                  strokeCap: StrokeCap.round,
+                  backgroundColor: a.hairline,
+                  color: a.accent,
+                ),
+              ),
+              Column(mainAxisSize: MainAxisSize.min, children: [
+                Text('${p.today}',
+                    style: AuraType.digits(20, a.ink, weight: FontWeight.w600)),
+                Text('of $goal',
+                    style: AuraType.sans(10.5, a.inkFaint)),
+              ]),
+            ]),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -197,9 +362,11 @@ class _PyqHubState extends ConsumerState<_PyqHub> {
               padding: const EdgeInsets.symmetric(horizontal: AuraSpace.gutter),
               itemCount: 3,
               separatorBuilder: (_, __) => const SizedBox(width: 12),
-              itemBuilder: (_, __) => const SkeletonBox(width: 232, height: double.infinity, radius: 20),
+              itemBuilder: (_, __) => const SkeletonBox(
+                  width: 232, height: double.infinity, radius: 20),
             ),
-            error: (_, __) => _quiet(context, 'Papers could not be loaded. Pull down to retry.'),
+            error: (_, __) => _quiet(
+                context, 'Papers could not be loaded. Pull down to retry.'),
             data: (result) {
               final papers = result.byDepartment(dept);
               if (papers.isEmpty) {
@@ -210,8 +377,10 @@ class _PyqHubState extends ConsumerState<_PyqHub> {
               return ListView.separated(
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: AuraSpace.gutter),
-                itemCount: shown.length + (papers.length > shown.length ? 1 : 0),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: AuraSpace.gutter),
+                itemCount:
+                    shown.length + (papers.length > shown.length ? 1 : 0),
                 separatorBuilder: (_, __) => const SizedBox(width: 12),
                 itemBuilder: (_, i) {
                   if (i == shown.length) {
@@ -241,9 +410,11 @@ class _PyqHubState extends ConsumerState<_PyqHub> {
             },
           ),
         ),
-        if (async.value?.isOffline == true && (async.value?.papers.isNotEmpty ?? false))
+        if (async.value?.isOffline == true &&
+            (async.value?.papers.isNotEmpty ?? false))
           Padding(
-            padding: const EdgeInsets.fromLTRB(AuraSpace.gutter, 10, AuraSpace.gutter, 0),
+            padding: const EdgeInsets.fromLTRB(
+                AuraSpace.gutter, 10, AuraSpace.gutter, 0),
             child: Text('Offline · showing saved papers',
                 style: AuraType.sans(12, a.inkFaint)),
           ),
@@ -278,7 +449,8 @@ class _StudyShelf extends StatelessWidget {
         const SizedBox(height: 12),
         const LearnHero(
           title: 'Learn in 60-second cards',
-          subtitle: 'Arunachal GK, polity, history, grammar and vocabulary. Swipe, answer, repeat.',
+          subtitle:
+              'Arunachal GK, polity, history, grammar and vocabulary. Swipe, answer, repeat.',
           route: '/learn',
         ),
         const SizedBox(height: 14),

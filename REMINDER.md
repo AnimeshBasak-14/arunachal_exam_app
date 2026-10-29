@@ -31,3 +31,13 @@ Steps:
   that file and `android/key.properties` backed up somewhere safe; enroll in Play App
   Signing on first upload so a lost upload key can be reset.
 - Build command: `flutter build apk --release --dart-define-from-file=dart_defines.env`
+
+## 3. Firebase Email/Password Provider (Action Required in Console)
+- Email/Password sign-in is currently OFF in the live Firebase project (`arunachal-exam-app`).
+- Action needed in Firebase Console: **Authentication → Sign-in method → Add new provider → Email/Password → Enable**.
+- Until enabled, email registration/sign-in will fail; only Google sign-in works.
+- Four SHA fingerprints are already added to Dawnlit in Firebase, and `google-services.json` has been updated with Google sign-in clients.
+
+## 4. UI/UX Style Direction
+- Updated `docs/ui_ux_upgrade_prompt.md` and design notes to reflect the white-and-black modern, high-contrast editorial theme.
+

@@ -1,25 +1,73 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../theme/aura.dart';
 
-/// Soft page backdrop: ivory (or green-black) with a faint tint in one corner
-/// so translucent panels read as frosted glass.
+/// Page background: white in light mode, plain black in dark mode.
 class AuraBackground extends StatelessWidget {
   final Widget child;
   const AuraBackground({super.key, required this.child});
 
   @override
+  Widget build(BuildContext context) =>
+      ColoredBox(color: context.aura.bg, child: child);
+}
+
+/// Plain page header for tab pages: serif title and a quiet subtitle on the
+/// page background.
+class ChromeHeader extends StatelessWidget {
+  final String title;
+  final String? subtitle;
+  final String? eyebrow;
+  final List<Widget> actions;
+  final Widget? child;
+  const ChromeHeader({
+    super.key,
+    required this.title,
+    this.subtitle,
+    this.eyebrow,
+    this.actions = const [],
+    this.child,
+  });
+
+  @override
   Widget build(BuildContext context) {
     final a = context.aura;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: a.bg,
-        gradient: RadialGradient(
-          center: const Alignment(-1.1, -1.2),
-          radius: 1.5,
-          colors: [a.bgTint, a.bg],
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: Theme.of(context).brightness == Brightness.dark
+          ? SystemUiOverlayStyle.light
+          : SystemUiOverlayStyle.dark,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(AuraSpace.gutter,
+            MediaQuery.paddingOf(context).top + 24, AuraSpace.gutter - 6, 0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (eyebrow != null) ...[
+                        Eyebrow(eyebrow!),
+                        const SizedBox(height: 6),
+                      ],
+                      Text(title, style: AuraType.serif(30, a.ink)),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 6),
+                        Text(subtitle!, style: AuraType.sans(14, a.inkMuted)),
+                      ],
+                    ],
+                  ),
+                ),
+                ...actions,
+              ],
+            ),
+            if (child != null) ...[const SizedBox(height: 18), child!],
+          ],
         ),
       ),
-      child: child,
     );
   }
 }
@@ -330,26 +378,6 @@ class GlassListRow extends StatelessWidget {
                 Icon(Icons.chevron_right_rounded, size: 20, color: a.inkFaint),
           ],
         ),
-      ),
-    );
-  }
-}
-
-/// Background for pinned sliver app bars: clear over the page gradient at
-/// rest, frosted once content scrolls underneath.
-class AuraBarTint extends StatelessWidget {
-  const AuraBarTint({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final a = context.aura;
-    final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
-    final under = settings?.isScrolledUnder ?? false;
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      decoration: BoxDecoration(
-        color: under ? a.bg.withValues(alpha: 0.94) : Colors.transparent,
-        border: Border(bottom: BorderSide(color: under ? a.hairline : Colors.transparent)),
       ),
     );
   }

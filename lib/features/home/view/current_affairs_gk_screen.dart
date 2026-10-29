@@ -62,8 +62,6 @@ class _CurrentAffairsGkScreenState
             slivers: [
               SliverAppBar(
                 pinned: true,
-                backgroundColor: Colors.transparent,
-                flexibleSpace: const AuraBarTint(),
                 leading: IconButton(
                   tooltip: 'Back',
                   icon: const Icon(CupertinoIcons.back),
@@ -74,8 +72,10 @@ class _CurrentAffairsGkScreenState
                         autofocus: true,
                         onChanged: (v) => setState(() => _query = v),
                         style: AuraType.sans(15, a.ink),
-                        decoration: const InputDecoration(
+                        cursorColor: a.accent,
+                        decoration: InputDecoration(
                           hintText: 'Search stories',
+                          hintStyle: AuraType.sans(15, a.inkFaint),
                           filled: false,
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,

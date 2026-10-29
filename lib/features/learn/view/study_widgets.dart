@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/aura.dart';
 import '../../../core/widgets/aura/aura_widgets.dart';
+import '../../plan/data/study_plan_provider.dart';
 import '../data/learn_deck.dart';
 import '../data/learn_progress.dart';
 
@@ -18,9 +19,10 @@ class LearnHero extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final a = context.aura;
     final p = ref.watch(learnProgressProvider);
-    final pct = (p.today / dailyCardGoal).clamp(0.0, 1.0);
+    final goal = ref.watch(dailyCardGoalProvider);
+    final pct = (p.today / goal).clamp(0.0, 1.0);
     return Material(
-      color: a.accent,
+      color: a.tint,
       borderRadius: BorderRadius.circular(AuraSpace.radius),
       child: InkWell(
         borderRadius: BorderRadius.circular(AuraSpace.radius),
@@ -31,29 +33,29 @@ class LearnHero extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(children: [
-                Expanded(child: Eyebrow('Today · ${p.today}/$dailyCardGoal cards', color: a.onAccent.withValues(alpha: 0.75))),
-                Text('${p.xp} XP', style: AuraType.digits(13, a.onAccent.withValues(alpha: 0.85))),
+                Expanded(child: Eyebrow('Today · ${p.today}/$goal cards', color: a.onTint.withValues(alpha: 0.75))),
+                Text('${p.xp} XP', style: AuraType.digits(13, a.onTint.withValues(alpha: 0.85))),
               ]),
               const SizedBox(height: 10),
-              Text(title, style: AuraType.serif(25, a.onAccent, height: 1.2)),
+              Text(title, style: AuraType.serif(25, a.onTint, height: 1.2)),
               const SizedBox(height: 6),
-              Text(subtitle, style: AuraType.sans(14, a.onAccent.withValues(alpha: 0.8), height: 1.45)),
+              Text(subtitle, style: AuraType.sans(14, a.onTint.withValues(alpha: 0.8), height: 1.45)),
               const SizedBox(height: 16),
               ClipRRect(
                 borderRadius: BorderRadius.circular(99),
                 child: LinearProgressIndicator(
                   value: pct,
                   minHeight: 5,
-                  backgroundColor: a.onAccent.withValues(alpha: 0.18),
-                  color: a.onAccent,
+                  backgroundColor: a.onTint.withValues(alpha: 0.18),
+                  color: a.accent,
                 ),
               ),
               const SizedBox(height: 16),
               Row(children: [
-                Icon(CupertinoIcons.play_fill, size: 15, color: a.onAccent),
+                Icon(CupertinoIcons.play_fill, size: 15, color: a.onTint),
                 const SizedBox(width: 8),
                 Text(p.today == 0 ? 'Start swiping' : 'Keep going',
-                    style: AuraType.sans(14.5, a.onAccent, weight: FontWeight.w600)),
+                    style: AuraType.sans(14.5, a.onTint, weight: FontWeight.w600)),
               ]),
             ],
           ),
@@ -134,8 +136,6 @@ class StudyPage extends StatelessWidget {
           slivers: [
             SliverAppBar(
               pinned: true,
-              backgroundColor: Colors.transparent,
-              flexibleSpace: const AuraBarTint(),
               leading: IconButton(
                 tooltip: 'Back',
                 icon: const Icon(CupertinoIcons.back),

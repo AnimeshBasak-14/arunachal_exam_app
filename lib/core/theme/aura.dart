@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// App design tokens, built on the ZAP palette:
+/// App design tokens, built on the ZAP palette.
 ///
-///   Child of Light  #F0F4F8   page background (light)
-///   Aruba Aqua      #D2DDD4   tint, selected states, accent in dark mode
-///   Portsmouth Bay  #A1ACAC   hairlines and borders (too light for text)
-///   Blackish Green  #5E6161   secondary text
-///   Atlantic Waves  #233E42   the single accent: buttons, links, progress
-///   Vantablack      #010101   headings and body text, dark-mode background
+/// Light: white page, black "frame" (header band and tab bar), Atlantic Waves
+/// for buttons and links, Aruba Aqua for soft highlight cards, Child of Light
+/// for card fills, Blackish Green for secondary text.
 ///
-/// Two derived steps keep small text readable: [inkFaint] sits between Bay
-/// and Blackish Green so it clears 4.5:1, and the dark sheet colour mixes
-/// Atlantic Waves into Vantablack. Answer states (correct / review / wrong)
-/// keep muted functional hues because a monochrome palette alone can't
-/// tell them apart.
+/// Dark: plain black with neutral grey surfaces and near-white text. No tinted
+/// backgrounds, so nothing competes with the content.
+///
+/// Portsmouth Bay (#A1ACAC) is too light for text on white, so it is only used
+/// for borders and for muted text on the black frame. Answer states
+/// (correct / review / wrong) keep muted functional hues because a
+/// monochrome palette alone can't tell them apart.
 @immutable
 class Aura extends ThemeExtension<Aura> {
   final Color bg;
@@ -31,6 +30,11 @@ class Aura extends ThemeExtension<Aura> {
   final Color review;
   final Color danger;
   final Color info;
+  final Color success;
+  final Color chrome; // the black frame: header band, tab bar
+  final Color onChrome;
+  final Color tint; // soft highlight card
+  final Color onTint;
   final List<BoxShadow> shadow;
   final List<BoxShadow> elevatedShadow;
 
@@ -49,16 +53,21 @@ class Aura extends ThemeExtension<Aura> {
     required this.review,
     required this.danger,
     required this.info,
+    required this.success,
+    required this.chrome,
+    required this.onChrome,
+    required this.tint,
+    required this.onTint,
     required this.shadow,
     required this.elevatedShadow,
   });
 
   static const light = Aura(
-    bg: Color(0xFFF0F4F8),
-    bgTint: Color(0xFFD2DDD4),
-    surface: Color(0xCCFFFFFF),
+    bg: Color(0xFFFFFFFF),
+    bgTint: Color(0xFFF0F4F8),
+    surface: Color(0xFFF0F4F8),
     surfaceSolid: Color(0xFFFFFFFF),
-    hairline: Color(0x73A1ACAC),
+    hairline: Color(0x4DA1ACAC),
     ink: Color(0xFF010101),
     inkMuted: Color(0xFF5E6161),
     inkFaint: Color(0xFF687070),
@@ -68,35 +77,42 @@ class Aura extends ThemeExtension<Aura> {
     review: Color(0xFF8A6A2E),
     danger: Color(0xFFA5483C),
     info: Color(0xFF3F6B70),
+    success: Color(0xFF2F6B55),
+    chrome: Color(0xFF010101),
+    onChrome: Color(0xFFF0F4F8),
+    tint: Color(0xFFD2DDD4),
+    onTint: Color(0xFF010101),
     shadow: [
-      BoxShadow(color: Color(0x0F233E42), blurRadius: 24, offset: Offset(0, 8)),
+      BoxShadow(color: Color(0x0A233E42), blurRadius: 20, offset: Offset(0, 6)),
     ],
     elevatedShadow: [
-      BoxShadow(color: Color(0x1A233E42), blurRadius: 40, offset: Offset(0, 16)),
+      BoxShadow(color: Color(0x14233E42), blurRadius: 32, offset: Offset(0, 12)),
     ],
   );
 
+  /// Plain black. Greys are neutral on purpose.
   static const dark = Aura(
-    bg: Color(0xFF010101),
-    bgTint: Color(0xFF14272A),
-    surface: Color(0x0DF0F4F8),
-    surfaceSolid: Color(0xFF0E1A1C),
-    hairline: Color(0x2EA1ACAC),
-    ink: Color(0xFFF0F4F8),
-    inkMuted: Color(0xFFA1ACAC),
-    inkFaint: Color(0xFF8A9494),
-    accent: Color(0xFFD2DDD4),
-    accentSoft: Color(0x1FD2DDD4),
+    bg: Color(0xFF000000),
+    bgTint: Color(0xFF0B0B0B),
+    surface: Color(0xFF111111),
+    surfaceSolid: Color(0xFF161616),
+    hairline: Color(0x1FFFFFFF),
+    ink: Color(0xFFF2F2F2),
+    inkMuted: Color(0xFFA6A6A6),
+    inkFaint: Color(0xFF858585),
+    accent: Color(0xFFF0F4F8),
+    accentSoft: Color(0x14FFFFFF),
     onAccent: Color(0xFF010101),
     review: Color(0xFFD4B072),
-    danger: Color(0xFFE0897D),
-    info: Color(0xFFA9C4C8),
-    shadow: [
-      BoxShadow(color: Color(0x66000000), blurRadius: 24, offset: Offset(0, 8)),
-    ],
-    elevatedShadow: [
-      BoxShadow(color: Color(0x99000000), blurRadius: 40, offset: Offset(0, 16)),
-    ],
+    danger: Color(0xFFE88B80),
+    info: Color(0xFFA1ACAC),
+    success: Color(0xFF7BC9A0),
+    chrome: Color(0xFF141414),
+    onChrome: Color(0xFFF2F2F2),
+    tint: Color(0xFF1A1A1A),
+    onTint: Color(0xFFF2F2F2),
+    shadow: [],
+    elevatedShadow: [],
   );
 
   @override
@@ -121,6 +137,11 @@ class Aura extends ThemeExtension<Aura> {
       review: l(review, other.review),
       danger: l(danger, other.danger),
       info: l(info, other.info),
+      success: l(success, other.success),
+      chrome: l(chrome, other.chrome),
+      onChrome: l(onChrome, other.onChrome),
+      tint: l(tint, other.tint),
+      onTint: l(onTint, other.onTint),
       shadow: t < 0.5 ? shadow : other.shadow,
       elevatedShadow: t < 0.5 ? elevatedShadow : other.elevatedShadow,
     );

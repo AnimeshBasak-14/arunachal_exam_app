@@ -35,8 +35,6 @@ class _SyllabusScreenState extends State<SyllabusScreen> {
           slivers: [
             SliverAppBar(
               pinned: true,
-              backgroundColor: Colors.transparent,
-              flexibleSpace: const AuraBarTint(),
               leading: IconButton(
                 tooltip: 'Back',
                 icon: const Icon(CupertinoIcons.back),

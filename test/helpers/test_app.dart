@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -7,6 +8,21 @@ import 'package:arunachal_exam_app/core/services/firebase_service.dart';
 import 'package:arunachal_exam_app/core/services/service_providers.dart';
 
 class MockFirebaseService extends Mock implements FirebaseService {}
+
+/// Creates a test [ProviderContainer] and disposes it at tear down.
+ProviderContainer createContainer({
+  ProviderContainer? parent,
+  List<Override> overrides = const [],
+  List<ProviderObserver>? observers,
+}) {
+  final container = ProviderContainer(
+    parent: parent,
+    overrides: overrides,
+    observers: observers,
+  );
+  addTearDown(container.dispose);
+  return container;
+}
 
 /// Cached paper lists, as the app saves them after a successful fetch.
 const cachedPyqs = '''[

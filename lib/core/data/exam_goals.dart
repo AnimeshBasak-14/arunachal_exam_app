@@ -26,7 +26,9 @@ enum Department {
     return Department.other;
   }
 
-  static const primary = [Department.appsc, Department.apssb, Department.police];
+  /// Boards shown as filters and goals. Police papers still classify as
+  /// [police] but have no tab or goal for now.
+  static const primary = [Department.appsc, Department.apssb];
 }
 
 class ExamGoal {
@@ -43,8 +45,6 @@ const examGoals = <ExamGoal>[
   ExamGoal('apssb-cgl', Department.apssb, 'APSSB Combined Graduate Level'),
   ExamGoal('apssb-chsl', Department.apssb, 'APSSB Combined Higher Secondary Level'),
   ExamGoal('apssb-csle', Department.apssb, 'APSSB Combined Secondary Level'),
-  ExamGoal('police-constable', Department.police, 'Arunachal Police Constable'),
-  ExamGoal('police-si', Department.police, 'Arunachal Police Sub-Inspector'),
 ];
 
 final examGoalProvider =

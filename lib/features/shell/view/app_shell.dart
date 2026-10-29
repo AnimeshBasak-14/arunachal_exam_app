@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -72,6 +71,8 @@ class _AppShellState extends ConsumerState<AppShell> {
   }
 }
 
+/// Floating black pill, like the toolbar in the design reference. The
+/// selected tab becomes a lighter pill with its label.
 class _AuraTabBar extends StatelessWidget {
   final int index;
   final ValueChanged<int> onTap;
@@ -87,35 +88,35 @@ class _AuraTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final a = context.aura;
-    return ClipRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+    return SafeArea(
+      top: false,
+      minimum: const EdgeInsets.only(bottom: 10),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Container(
+          height: 66,
+          padding: const EdgeInsets.all(7),
           decoration: BoxDecoration(
-            color: a.bg.withValues(alpha: 0.82),
-            border: Border(top: BorderSide(color: a.hairline, width: 0.8)),
+            color: a.chrome,
+            borderRadius: BorderRadius.circular(33),
+            border: Border.all(color: a.onChrome.withValues(alpha: 0.08)),
+            boxShadow: const [
+              BoxShadow(color: Color(0x33000000), blurRadius: 24, offset: Offset(0, 8)),
+            ],
           ),
-          child: SafeArea(
-            top: false,
-            child: SizedBox(
-              height: 64,
-              child: Row(
-                children: [
-                  for (int i = 0; i < _items.length; i++)
-                    Expanded(
-                      child: InkResponse(
-                        onTap: () => onTap(i),
-                        radius: 36,
-                        child: _TabItem(
-                          icon: _items[i].$1,
-                          label: _items[i].$2,
-                          selected: i == index,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
+          child: Row(
+            children: [
+              for (int i = 0; i < _items.length; i++)
+                Expanded(
+                  flex: i == index ? 7 : 3,
+                  child: _TabItem(
+                    icon: _items[i].$1,
+                    label: _items[i].$2,
+                    selected: i == index,
+                    onTap: () => onTap(i),
+                  ),
+                ),
+            ],
           ),
         ),
       ),
@@ -127,37 +128,54 @@ class _TabItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final bool selected;
-  const _TabItem({required this.icon, required this.label, required this.selected});
+  final VoidCallback onTap;
+  const _TabItem({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final a = context.aura;
-    final color = selected ? a.accent : a.inkFaint;
+    final color = selected ? a.onChrome : a.onChrome.withValues(alpha: 0.55);
     return Semantics(
       selected: selected,
       button: true,
       label: label,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          AnimatedScale(
-            scale: selected ? 1.08 : 1,
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOutCubic,
-            child: Icon(icon, size: 22, color: color),
+      excludeSemantics: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: selected ? a.onChrome.withValues(alpha: 0.14) : Colors.transparent,
+            borderRadius: BorderRadius.circular(26),
           ),
-          const SizedBox(height: 4),
-          MediaQuery.withClampedTextScaling(
+          child: MediaQuery.withClampedTextScaling(
             maxScaleFactor: 1.1,
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AuraType.sans(10.5, color,
-                  weight: selected ? FontWeight.w600 : FontWeight.w500),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 22, color: color),
+                if (selected) ...[
+                  const SizedBox(width: 7),
+                  Flexible(
+                    child: Text(label,
+                        maxLines: 1,
+                        overflow: TextOverflow.fade,
+                        softWrap: false,
+                        style: AuraType.sans(13, color, weight: FontWeight.w600)),
+                  ),
+                ],
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

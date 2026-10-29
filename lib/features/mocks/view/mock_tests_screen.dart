@@ -37,7 +37,14 @@ class _MockTestsScreenState extends ConsumerState<MockTestsScreen> {
         physics: const BouncingScrollPhysics(
             parent: AlwaysScrollableScrollPhysics()),
         slivers: [
+          const SliverToBoxAdapter(
+            child: ChromeHeader(
+              title: 'Mock Tests',
+              subtitle: 'Exam-condition practice, timed and scored.',
+            ),
+          ),
           SliverSafeArea(
+            top: false,
             bottom: false,
             sliver: SliverPadding(
               padding: const EdgeInsets.fromLTRB(
@@ -46,11 +53,6 @@ class _MockTestsScreenState extends ConsumerState<MockTestsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Mock Tests', style: AuraType.serif(30, a.ink)),
-                    const SizedBox(height: 6),
-                    Text('Exam-condition practice, timed and scored.',
-                        style: AuraType.sans(14, a.inkMuted)),
-                    const SizedBox(height: 24),
                     const LiveMockCard(),
                     const SizedBox(height: 14),
                     GlassCard(
@@ -97,15 +99,19 @@ class _MockTestsScreenState extends ConsumerState<MockTestsScreen> {
               sliver: SliverList.separated(
                 itemCount: 3,
                 separatorBuilder: (_, __) => const SizedBox(height: 10),
-                itemBuilder: (_, __) => const SkeletonBox(height: 92, radius: 20),
+                itemBuilder: (_, __) =>
+                    const SkeletonBox(height: 92, radius: 20),
               ),
             ),
             error: (_, __) => _empty(),
             data: (result) {
               final mocks = result.byDepartment(_dept);
-              if (mocks.isEmpty) return _empty(hasAny: result.papers.isNotEmpty);
+              if (mocks.isEmpty) {
+                return _empty(hasAny: result.papers.isNotEmpty);
+              }
               return SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: AuraSpace.gutter),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: AuraSpace.gutter),
                 sliver: SliverList.separated(
                   itemCount: mocks.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 10),
@@ -123,7 +129,8 @@ class _MockTestsScreenState extends ConsumerState<MockTestsScreen> {
   Widget _empty({bool hasAny = false}) => SliverToBoxAdapter(
         child: AuraEmpty(
           icon: CupertinoIcons.doc_text_search,
-          title: hasAny ? 'No mocks for this board yet' : 'No mock tests to show',
+          title:
+              hasAny ? 'No mocks for this board yet' : 'No mock tests to show',
           message: hasAny
               ? 'Try another board, or build a practice set above.'
               : 'Check your connection and try again.',
@@ -176,7 +183,8 @@ class _PracticeSheetState extends State<_PracticeSheet> {
     setState(() => _loading = false);
     if (pool.isEmpty) {
       messenger.showSnackBar(const SnackBar(
-          content: Text('No questions found for this subject yet. Try another.')));
+          content:
+              Text('No questions found for this subject yet. Try another.')));
       return;
     }
     final picked = (List.of(pool)..shuffle()).take(_count).toList();
@@ -185,7 +193,10 @@ class _PracticeSheetState extends State<_PracticeSheet> {
       'paperType': 'BOTH',
       'title': '$_subject practice',
       if (_subjects[_subject]!.isNotEmpty) 'subject': _subjects[_subject]!,
-      if (_study) 'study': 'true' else 'duration': '${math.max(10, picked.length)}',
+      if (_study)
+        'study': 'true'
+      else
+        'duration': '${math.max(10, picked.length)}',
     };
     router.push(
       Uri(path: '/mock-test/PRACTICE/${picked.length}', queryParameters: params)
@@ -206,7 +217,8 @@ class _PracticeSheetState extends State<_PracticeSheet> {
             onSelected: (_) => onTap(),
             labelStyle: AuraType.sans(13.5, selected ? a.accent : a.inkMuted,
                 weight: FontWeight.w500),
-            side: BorderSide(color: selected ? a.accent.withValues(alpha: 0.5) : a.hairline),
+            side: BorderSide(
+                color: selected ? a.accent.withValues(alpha: 0.5) : a.hairline),
           ),
         );
 
@@ -239,17 +251,20 @@ class _PracticeSheetState extends State<_PracticeSheet> {
           const SizedBox(height: 10),
           Wrap(children: [
             chip('Timed exam', !_study, () => setState(() => _study = false)),
-            chip('Study with answers', _study, () => setState(() => _study = true)),
+            chip('Study with answers', _study,
+                () => setState(() => _study = true)),
           ]),
           const SizedBox(height: 22),
           FilledButton(
             onPressed: _loading ? null : _start,
-            style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(54)),
+            style:
+                FilledButton.styleFrom(minimumSize: const Size.fromHeight(54)),
             child: _loading
                 ? SizedBox(
                     width: 20,
                     height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: a.onAccent),
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: a.onAccent),
                   )
                 : const Text('Start practice'),
           ),

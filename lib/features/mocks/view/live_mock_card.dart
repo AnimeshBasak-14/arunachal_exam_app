@@ -46,7 +46,8 @@ class _LiveMockCardState extends ConsumerState<LiveMockCard> {
       await prefs.remove(m.enrolKey);
       await NotificationService.cancel(_reminderId);
       if (mounted) setState(() {});
-      messenger.showSnackBar(const SnackBar(content: Text('Enrolment cancelled')));
+      messenger
+          .showSnackBar(const SnackBar(content: Text('Enrolment cancelled')));
       return;
     }
     await prefs.setBool(m.enrolKey, true);
@@ -129,7 +130,8 @@ class _LiveMockCardState extends ConsumerState<LiveMockCard> {
           else if (enrolled)
             OutlinedButton.icon(
               onPressed: () => _toggleEnrol(m, true),
-              icon: Icon(CupertinoIcons.checkmark_alt, size: 18, color: a.accent),
+              icon:
+                  Icon(CupertinoIcons.checkmark_alt, size: 18, color: a.accent),
               label: const Text("You're enrolled"),
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size.fromHeight(54),
@@ -169,7 +171,9 @@ class _Countdown extends StatelessWidget {
           if (i > 0)
             Padding(
               padding: const EdgeInsets.only(bottom: 18),
-              child: Text(':', style: AuraType.digits(22, a.inkFaint, weight: FontWeight.w300)),
+              child: Text(':',
+                  style:
+                      AuraType.digits(22, a.inkFaint, weight: FontWeight.w300)),
             ),
           Expanded(
             child: Column(

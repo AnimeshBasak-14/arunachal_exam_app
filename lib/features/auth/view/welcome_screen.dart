@@ -32,7 +32,7 @@ class WelcomeScreen extends ConsumerWidget {
                           style: AuraType.serif(36, a.ink, height: 1.15)),
                       const SizedBox(height: 16),
                       Text(
-                        'Previous year papers and exam-condition mock tests for APPSC, APSSB and Arunachal Police recruitment.',
+                        'Previous year papers and exam-condition mock tests for APPSC and APSSB recruitment exams.',
                         style: AuraType.sans(15.5, a.inkMuted, height: 1.55),
                       ),
                       const SizedBox(height: 40),

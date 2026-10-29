@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/services/service_providers.dart';
+import '../../../core/services/streak_service.dart';
 import '../../../core/theme/aura.dart';
 import '../../../core/widgets/aura/aura_widgets.dart';
 import '../../learn/data/learn_deck.dart';
@@ -23,7 +24,6 @@ class GrammarQuizScreen extends ConsumerStatefulWidget {
 class _GrammarQuizScreenState extends ConsumerState<GrammarQuizScreen> {
   static const _count = 15;
   static const _perQuestion = 30;
-  static const _good = Color(0xFF2F6B55);
 
   late List<LearnCard> _qs;
   final _picked = <int, int>{}; // question index -> option (-1 = timed out)
@@ -118,6 +118,7 @@ class _GrammarQuizScreenState extends ConsumerState<GrammarQuizScreen> {
       'completedAt': date,
     };
     final storage = ref.read(storageServiceProvider);
+    StreakService(ref.read(sharedPreferencesProvider)).checkAndUpdateStreak();
     await storage
         .saveQuizHistory([jsonEncode(record), ...storage.getQuizHistory()]);
   }
@@ -184,7 +185,7 @@ class _GrammarQuizScreenState extends ConsumerState<GrammarQuizScreen> {
               color: picked == null
                   ? null
                   : o == q.answer
-                      ? _good
+                      ? a.success
                       : o == picked
                           ? a.danger
                           : a.hairline,
@@ -197,7 +198,7 @@ class _GrammarQuizScreenState extends ConsumerState<GrammarQuizScreen> {
             picked == q.answer
                 ? 'Correct'
                 : (picked < 0 ? 'Time\'s up' : 'Not quite'),
-            style: AuraType.sans(14, picked == q.answer ? _good : a.danger,
+            style: AuraType.sans(14, picked == q.answer ? a.success : a.danger,
                 weight: FontWeight.w600),
           ),
           if (q.explain != null) ...[
@@ -255,7 +256,7 @@ class _GrammarQuizScreenState extends ConsumerState<GrammarQuizScreen> {
                         ? CupertinoIcons.checkmark_circle_fill
                         : CupertinoIcons.xmark_circle_fill,
                     size: 18,
-                    color: _picked[i] == _qs[i].answer ? _good : a.danger),
+                    color: _picked[i] == _qs[i].answer ? a.success : a.danger),
                 const SizedBox(width: 8),
                 Expanded(
                     child: Text(_qs[i].prompt,

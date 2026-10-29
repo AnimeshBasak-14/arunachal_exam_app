@@ -33,9 +33,9 @@ final _outlineProvider = FutureProvider<List<List<LatLng>>>((ref) async {
 String _mapStyle(Aura a, bool dark) {
   String hex(Color c) =>
       '#${(c.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
-  final land = dark ? '#0b1415' : '#f0f4f8';
-  final water = dark ? '#16292c' : '#d2dde0';
-  final road = dark ? '#1c2e31' : '#ffffff';
+  final land = dark ? '#0a0a0a' : '#f4f6f8';
+  final water = dark ? '#1a1a1a' : '#d9e2e6';
+  final road = dark ? '#1f1f1f' : '#ffffff';
   Map<String, Object> rule(String? feature, String? element,
           List<Map<String, Object>> stylers) =>
       {
@@ -72,7 +72,7 @@ String _mapStyle(Aura a, bool dark) {
       {'visibility': 'off'}
     ]),
     rule('landscape.natural.terrain', 'geometry', [
-      {'color': dark ? '#0e1a1c' : '#e6ece9'}
+      {'color': dark ? '#111111' : '#e9eeec'}
     ]),
     rule('administrative.country', 'geometry.stroke', [
       {'color': hex(a.inkFaint)},
@@ -361,7 +361,7 @@ Color _kindColor(BuildContext context, PlaceKind k) {
     PlaceKind.capital => a.danger,
     PlaceKind.district => a.accent,
     PlaceKind.heritage => a.review,
-    PlaceKind.nature => const Color(0xFF2F6B55),
+    PlaceKind.nature => a.success,
     PlaceKind.border => a.inkMuted,
     PlaceKind.water => a.info,
   };
@@ -466,7 +466,7 @@ class _GameCard extends StatelessWidget {
                         ? (correct ? 'Correct' : 'Not quite')
                         : 'Find it on the map',
                     color: answered
-                        ? (correct ? const Color(0xFF2F6B55) : a.danger)
+                        ? (correct ? a.success : a.danger)
                         : a.inkFaint)),
             Text('$score / $rounds', style: AuraType.digits(14, a.ink)),
           ]),

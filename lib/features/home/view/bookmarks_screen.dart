@@ -85,7 +85,7 @@ class _QuestionCardState extends ConsumerState<_QuestionCard> {
   Widget build(BuildContext context) {
     final a = context.aura;
     final q = widget.q;
-    const good = Color(0xFF2F6B55);
+    final good = a.success;
     final answerIdx = 'abcd'.indexOf(q.correctAnswer.toLowerCase());
 
     return GlassCard(

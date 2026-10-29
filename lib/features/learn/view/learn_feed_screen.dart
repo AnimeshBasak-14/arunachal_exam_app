@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/aura.dart';
 import '../../../core/widgets/aura/aura_widgets.dart';
+import '../../plan/data/study_plan_provider.dart';
 import '../data/learn_deck.dart';
 import '../data/learn_progress.dart';
 
@@ -16,8 +17,16 @@ class LearnFeedScreen extends ConsumerStatefulWidget {
   /// Topics to start with; empty means everything ("For you").
   final Set<LearnTopic> topics;
   final bool savedOnly;
-  const LearnFeedScreen(
-      {super.key, this.topics = const {}, this.savedOnly = false});
+  final int? limit;
+  final bool preferUnknown;
+
+  const LearnFeedScreen({
+    super.key,
+    this.topics = const {},
+    this.savedOnly = false,
+    this.limit,
+    this.preferUnknown = true,
+  });
 
   @override
   ConsumerState<LearnFeedScreen> createState() => _LearnFeedScreenState();
@@ -45,13 +54,16 @@ class _LearnFeedScreenState extends ConsumerState<LearnFeedScreen> {
     if (widget.savedOnly) {
       final saved = ref.read(learnProgressProvider).saved;
       feed = feed.where((c) => saved.contains(c.id)).toList();
-    } else {
+    } else if (widget.preferUnknown) {
       // Cards already answered right go to the back of the feed.
       final known = ref.read(learnProgressProvider).known;
       feed = [
         ...feed.where((c) => !known.contains(c.id)),
         ...feed.where((c) => known.contains(c.id))
       ];
+    }
+    if (widget.limit != null && widget.limit! > 0) {
+      feed = feed.take(widget.limit!).toList();
     }
     _feed = feed;
     _done.clear();
@@ -74,8 +86,8 @@ class _LearnFeedScreenState extends ConsumerState<LearnFeedScreen> {
     final n = ref.read(learnProgressProvider.notifier);
     if (correct != null) {
       n.answered(card.id, correct: correct);
-      if (!correct) {
-        // Bring it back four cards later.
+      if (!correct && widget.limit == null) {
+        // Bring it back four cards later in endless mode.
         setState(() => _feed.insert(math.min(index + 5, _feed.length), card));
       }
     }
@@ -86,6 +98,19 @@ class _LearnFeedScreenState extends ConsumerState<LearnFeedScreen> {
       HapticFeedback.heavyImpact();
     } else if (correct == true && combo >= 3 && combo % 3 == 0) {
       _flash('$combo in a row');
+    }
+
+    // When the last card in a limited session is completed, transition to finish state.
+    if (widget.limit != null && index == _feed.length - 1) {
+      Future.delayed(const Duration(milliseconds: 700), () {
+        if (mounted && _pager.hasClients) {
+          _pager.animateToPage(
+            _feed.length,
+            duration: const Duration(milliseconds: 350),
+            curve: Curves.easeInOut,
+          );
+        }
+      });
     }
   }
 
@@ -127,88 +152,127 @@ class _LearnFeedScreenState extends ConsumerState<LearnFeedScreen> {
               PageView.builder(
                 controller: _pager,
                 scrollDirection: Axis.vertical,
-                itemCount: _feed.length,
+                itemCount: _feed.length +
+                    ((widget.limit != null && _feed.isNotEmpty) ? 1 : 0),
                 onPageChanged: (i) {
                   HapticFeedback.selectionClick();
                   // Swiping past a fact card counts it as read.
-                  if (i > _page && _feed[_page].kind == CardKind.fact) {
+                  if (i > _page &&
+                      _page < _feed.length &&
+                      _feed[_page].kind == CardKind.fact) {
                     _complete(_page);
                   }
                   setState(() => _page = i);
                 },
-                itemBuilder: (_, i) => _CardPage(
-                  key: ValueKey('$i-${_feed[i].id}'),
-                  card: _feed[i],
-                  saved: progress.saved.contains(_feed[i].id),
-                  onSave: () => ref
-                      .read(learnProgressProvider.notifier)
-                      .toggleSave(_feed[i].id),
-                  onAnswered: (correct) =>
-                      _complete(i, xp: correct ? 10 : 1, correct: correct),
-                  onFlipped: (knew) =>
-                      _complete(i, xp: knew ? 5 : 2, correct: knew),
-                ),
+                itemBuilder: (_, i) {
+                  if (i == _feed.length && widget.limit != null) {
+                    return _SessionCompletePage(
+                      limit: widget.limit!,
+                      done: _feed.length,
+                      topicLabel:
+                          _topics.isNotEmpty ? _topics.first.label : null,
+                      onBack: () => context.pop(),
+                    );
+                  }
+                  return _CardPage(
+                    key: ValueKey('$i-${_feed[i].id}'),
+                    card: _feed[i],
+                    saved: progress.saved.contains(_feed[i].id),
+                    onSave: () => ref
+                        .read(learnProgressProvider.notifier)
+                        .toggleSave(_feed[i].id),
+                    onAnswered: (correct) =>
+                        _complete(i, xp: correct ? 10 : 1, correct: correct),
+                    onFlipped: (knew) =>
+                        _complete(i, xp: knew ? 5 : 2, correct: knew),
+                  );
+                },
               ),
 
             // Header: back, goal ring, XP, topic chips.
             Positioned(
-              top: top + 4,
-              left: 8,
-              right: 12,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(children: [
-                    IconButton(
-                      tooltip: 'Back',
-                      icon: const Icon(CupertinoIcons.back),
-                      onPressed: () => context.pop(),
-                    ),
-                    Expanded(
-                      child: Text(widget.savedOnly ? 'Saved cards' : 'Learn',
-                          style: AuraType.serif(20, a.ink)),
-                    ),
-                    if (progress.combo >= 2) ...[
-                      Icon(CupertinoIcons.flame_fill,
-                          size: 16, color: a.review),
-                      const SizedBox(width: 3),
-                      Text('${progress.combo}',
-                          style: AuraType.digits(14, a.review,
-                              weight: FontWeight.w600)),
-                      const SizedBox(width: 14),
-                    ],
-                    Text('${progress.xp} XP',
-                        style: AuraType.digits(13.5, a.inkMuted)),
-                    const SizedBox(width: 12),
-                    _GoalRing(done: progress.today, goal: dailyCardGoal),
-                  ]),
-                  if (!widget.savedOnly)
-                    MediaQuery.withClampedTextScaling(
-                      maxScaleFactor: 1.15,
-                      child: SizedBox(
-                        height: 40,
-                        child: ListView(
-                          scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.only(left: 8),
-                          children: [
-                            _TopicChip('For you', _topics.isEmpty,
-                                () => _selectTopic(null)),
-                            for (final t in LearnTopic.values)
-                              _TopicChip(
-                                  t.label,
-                                  _topics.length == 1 && _topics.contains(t),
-                                  () => _selectTopic(t)),
-                          ],
+              top: 0,
+              left: 0,
+              right: 0,
+              child: AnnotatedRegion<SystemUiOverlayStyle>(
+                value: SystemUiOverlayStyle.light,
+                child: Container(
+                  padding: EdgeInsets.fromLTRB(8, top + 4, 12, 14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(children: [
+                        IconButton(
+                          tooltip: 'Back',
+                          icon: Icon(CupertinoIcons.back, color: a.ink),
+                          onPressed: () => context.pop(),
                         ),
-                      ),
-                    ),
-                ],
+                        Expanded(
+                          child: widget.limit != null
+                              ? Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                        _topics.isNotEmpty
+                                            ? _topics.first.label
+                                            : 'Learn',
+                                        style: AuraType.serif(19, a.ink)),
+                                    Text(
+                                        '$_page of ${widget.limit} done',
+                                        style: AuraType.sans(12.5, a.inkMuted)),
+                                  ],
+                                )
+                              : Text(
+                                  widget.savedOnly ? 'Saved cards' : 'Learn',
+                                  style: AuraType.serif(20, a.ink)),
+                        ),
+                        if (progress.combo >= 2) ...[
+                          Icon(CupertinoIcons.flame_fill,
+                              size: 16, color: a.review),
+                          const SizedBox(width: 3),
+                          Text('${progress.combo}',
+                              style: AuraType.digits(14, a.review,
+                                  weight: FontWeight.w600)),
+                          const SizedBox(width: 14),
+                        ],
+                        Text('${progress.xp} XP',
+                            style: AuraType.digits(13.5, a.inkMuted)),
+                        const SizedBox(width: 12),
+                        _GoalRing(
+                            done: progress.today,
+                            goal: ref.watch(dailyCardGoalProvider)),
+                      ]),
+                      if (!widget.savedOnly && widget.limit == null)
+                        MediaQuery.withClampedTextScaling(
+                          maxScaleFactor: 1.15,
+                          child: SizedBox(
+                            height: 40,
+                            child: ListView(
+                              scrollDirection: Axis.horizontal,
+                              padding: const EdgeInsets.only(left: 8),
+                              children: [
+                                _TopicChip('For you', _topics.isEmpty,
+                                    () => _selectTopic(null)),
+                                for (final t in LearnTopic.values)
+                                  _TopicChip(
+                                      t.label,
+                                      _topics.length == 1 &&
+                                          _topics.contains(t),
+                                      () => _selectTopic(t)),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
               ),
             ),
 
             if (_toast != null)
               Positioned(
-                top: top + 96,
+                top: top + 120,
                 left: 0,
                 right: 0,
                 child: Center(
@@ -251,7 +315,7 @@ class _GoalRing extends StatelessWidget {
             color: a.accent,
           ),
           complete
-              ? Icon(CupertinoIcons.checkmark, size: 13, color: a.accent)
+              ? Icon(CupertinoIcons.checkmark, size: 13, color: a.ink)
               : Text('$done',
                   style: AuraType.digits(10, a.ink, weight: FontWeight.w600)),
         ]),
@@ -354,7 +418,7 @@ class _CardPageState extends State<_CardPage>
         children: [
           Padding(
             padding:
-                EdgeInsets.fromLTRB(24, pad.top + 100, 72, pad.bottom + 40),
+                EdgeInsets.fromLTRB(24, pad.top + 124, 72, pad.bottom + 40),
             child: Center(
               child: SingleChildScrollView(
                 child: Column(
@@ -497,7 +561,7 @@ class _CardPageState extends State<_CardPage>
 
   Widget _quiz(BuildContext context, LearnCard c) {
     final a = context.aura;
-    const good = Color(0xFF2F6B55);
+    final good = a.success;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -642,7 +706,7 @@ class _Option extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final a = context.aura;
-    const good = Color(0xFF2F6B55);
+    final good = a.success;
     final (border, fill, ink, icon) = switch (state) {
       _OptState.idle => (a.hairline, a.surface, a.ink, null),
       _OptState.right => (
@@ -698,7 +762,7 @@ class _Example extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final a = context.aura;
-    final c = good ? const Color(0xFF2F6B55) : a.danger;
+    final c = good ? a.success : a.danger;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
@@ -744,6 +808,65 @@ class _RailButton extends StatelessWidget {
           Text(label,
               style: AuraType.sans(11, a.inkMuted, weight: FontWeight.w500)),
         ]),
+      ),
+    );
+  }
+}
+
+/// Calm completion screen displayed when a limited practice session ends.
+class _SessionCompletePage extends StatelessWidget {
+  final int limit;
+  final int done;
+  final String? topicLabel;
+  final VoidCallback onBack;
+
+  const _SessionCompletePage({
+    required this.limit,
+    required this.done,
+    this.topicLabel,
+    required this.onBack,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final a = context.aura;
+    return SafeArea(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AuraSpace.gutter),
+          child: GlassCard(
+            elevated: true,
+            padding: const EdgeInsets.all(28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(CupertinoIcons.checkmark_seal_fill,
+                    size: 52, color: a.accent),
+                const SizedBox(height: 18),
+                Text('Session complete', style: AuraType.serif(24, a.ink)),
+                const SizedBox(height: 6),
+                Text(
+                  '$done of $limit done',
+                  style: AuraType.sans(15, a.inkMuted, weight: FontWeight.w500),
+                ),
+                if (topicLabel != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'Topic · $topicLabel',
+                    style: AuraType.sans(13, a.inkFaint),
+                  ),
+                ],
+                const SizedBox(height: 24),
+                FilledButton(
+                  style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(48)),
+                  onPressed: onBack,
+                  child: const Text('Back to dashboard'),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

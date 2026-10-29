@@ -1,23 +1,29 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/services/question_repository.dart';
+import '../../../core/services/service_providers.dart';
 import '../../../core/theme/aura.dart';
 import '../../../core/utils/math_utils.dart';
 import '../../../core/widgets/aura/aura_widgets.dart';
+import '../../learn/data/learn_deck.dart';
 import '../data/attempt.dart';
+import '../data/result_comparison.dart';
 import 'question_view.dart';
 
-class ResultScreen extends StatefulWidget {
+class ResultScreen extends ConsumerStatefulWidget {
   final Attempt attempt;
-  const ResultScreen({super.key, required this.attempt});
+  final List<Attempt>? history;
+  const ResultScreen({super.key, required this.attempt, this.history});
 
   @override
-  State<ResultScreen> createState() => _ResultScreenState();
+  ConsumerState<ResultScreen> createState() => _ResultScreenState();
 }
 
-class _ResultScreenState extends State<ResultScreen> {
+class _ResultScreenState extends ConsumerState<ResultScreen> {
   int _filter = 0; // 0 all · 1 incorrect · 2 skipped
+  final _scrollController = ScrollController();
 
   String _fmt(double v) =>
       v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toStringAsFixed(1);
@@ -44,10 +50,19 @@ class _ResultScreenState extends State<ResultScreen> {
   }
 
   @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final a = context.aura;
     final t = widget.attempt;
     final qs = t.questions;
+    final history = widget.history ?? loadAttempts(ref.watch(storageServiceProvider));
+    final comparison = compare(t, history);
+
     final filtered = [
       for (int i = 0; i < qs.length; i++)
         if (_filter == 0 ||
@@ -56,11 +71,23 @@ class _ResultScreenState extends State<ResultScreen> {
           i,
     ];
 
+    Color deltaColor;
+    if (comparison.isFirstAttempt || comparison.previous == null) {
+      deltaColor = a.inkMuted;
+    } else if (comparison.deltaPoints! > 0) {
+      deltaColor = a.success;
+    } else if (comparison.deltaPoints! < 0) {
+      deltaColor = a.review;
+    } else {
+      deltaColor = a.inkMuted;
+    }
+
     return Scaffold(
       body: AuraBackground(
         child: SafeArea(
           bottom: false,
           child: CustomScrollView(
+            controller: _scrollController,
             physics: const BouncingScrollPhysics(),
             slivers: [
               SliverToBoxAdapter(
@@ -86,7 +113,9 @@ class _ResultScreenState extends State<ResultScreen> {
                       Eyebrow(t.mode == 'study' ? 'Study session' : 'Result'),
                       const SizedBox(height: 8),
                       Text(t.title, style: AuraType.serif(26, a.ink, height: 1.2)),
-                      const SizedBox(height: 26),
+                      const SizedBox(height: 22),
+
+                      // Main anchor block
                       GlassCard(
                         elevated: true,
                         padding: const EdgeInsets.all(22),
@@ -99,22 +128,58 @@ class _ResultScreenState extends State<ResultScreen> {
                                 Flexible(
                                   child: FittedBox(
                                     fit: BoxFit.scaleDown,
-                                    child: Text(_fmt(t.score),
-                                        style: AuraType.digits(52, a.ink, weight: FontWeight.w300)),
+                                    child: Text(
+                                      t.maxScore > 0 ? '${(t.scoreRatio * 100).round()}%' : _fmt(t.score),
+                                      style: AuraType.digits(52, a.ink, weight: FontWeight.w300),
+                                    ),
                                   ),
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 10, left: 6),
-                                  child: Text('/ ${_fmt(t.maxScore)}',
-                                      style: AuraType.digits(18, a.inkFaint, weight: FontWeight.w400)),
-                                ),
+                                if (t.maxScore > 0) ...[
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 10, left: 10),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                                      textBaseline: TextBaseline.alphabetic,
+                                      children: [
+                                        Text(
+                                          _fmt(t.score),
+                                          style: AuraType.digits(18, a.inkMuted, weight: FontWeight.w500),
+                                        ),
+                                        Text(
+                                          '/ ${_fmt(t.maxScore)}',
+                                          style: AuraType.digits(15, a.inkFaint, weight: FontWeight.w400),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                                if (comparison.isPersonalBest) ...[
+                                  const Spacer(),
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 12),
+                                    child: Tag('New personal best', color: a.accent),
+                                  ),
+                                ],
                               ],
                             ),
+                            const SizedBox(height: 4),
                             Text(
-                              t.maxScore > 0 ? 'marks scored' : 'No questions in this set had a verified key',
-                              style: AuraType.sans(13, a.inkMuted),
+                              comparison.deltaHeadline,
+                              style: AuraType.sans(14, deltaColor, weight: FontWeight.w500),
                             ),
-                            const SizedBox(height: 20),
+                            if (comparison.deltaSubline != null) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                comparison.deltaSubline!,
+                                style: AuraType.sans(12.5, a.inkMuted),
+                              ),
+                            ],
+                            if (comparison.recentAttempts.length >= 2) ...[
+                              const SizedBox(height: 18),
+                              _SparklineRow(attempts: comparison.recentAttempts),
+                            ],
+                            const SizedBox(height: 18),
                             _ProportionBar(
                               correct: t.correct,
                               wrong: t.wrong,
@@ -152,8 +217,31 @@ class _ResultScreenState extends State<ResultScreen> {
                           style: AuraType.sans(12.5, a.inkFaint),
                         ),
                       ],
+                      const SizedBox(height: 18),
+
+                      // Primary action button: Practise weak topic or review mistakes
+                      if (comparison.weakTopic != null)
+                        FilledButton(
+                          style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(52)),
+                          onPressed: () => context.push('/learn?topic=${comparison.weakTopic!.topic.name}&limit=10'),
+                          child: Text('Practise your weak topics (${comparison.weakTopic!.topic.label})'),
+                        )
+                      else if (qs.isNotEmpty)
+                        FilledButton(
+                          style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(52)),
+                          onPressed: () {
+                            setState(() => _filter = 1);
+                            _scrollController.animateTo(
+                              380,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeOut,
+                            );
+                          },
+                          child: const Text('Review mistakes'),
+                        ),
+
                       if (qs.isNotEmpty) ...[
-                        const SizedBox(height: 34),
+                        const SizedBox(height: 30),
                         const SectionHeader('Review answers'),
                         SegmentedTabs(
                           labels: const ['All', 'Incorrect', 'Skipped'],
@@ -195,15 +283,84 @@ class _ResultScreenState extends State<ResultScreen> {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(
-                      AuraSpace.gutter, 28, AuraSpace.gutter, 24 + MediaQuery.paddingOf(context).bottom),
-                  child: FilledButton(
+                      AuraSpace.gutter, 24, AuraSpace.gutter, 24 + MediaQuery.paddingOf(context).bottom),
+                  child: OutlinedButton(
                     onPressed: () => context.go('/home'),
-                    style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(54)),
+                    style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
                     child: const Text('Back to dashboard'),
                   ),
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Mini bar sparkline showing up to the last 5 attempts in chronological order.
+class _SparklineRow extends StatelessWidget {
+  final List<Attempt> attempts;
+  const _SparklineRow({required this.attempts});
+
+  @override
+  Widget build(BuildContext context) {
+    final a = context.aura;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Last ${attempts.length} attempts',
+          style: AuraType.sans(11.5, a.inkFaint),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 38,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              for (int i = 0; i < attempts.length; i++) ...[
+                if (i > 0) const SizedBox(width: 8),
+                _MiniBar(
+                  ratio: attempts[i].scoreRatio,
+                  isCurrent: i == attempts.length - 1,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MiniBar extends StatelessWidget {
+  final double ratio;
+  final bool isCurrent;
+  const _MiniBar({required this.ratio, required this.isCurrent});
+
+  @override
+  Widget build(BuildContext context) {
+    final a = context.aura;
+    final clamped = ratio.clamp(0.08, 1.0);
+    return Tooltip(
+      message: '${(ratio * 100).round()}%',
+      child: Container(
+        width: 28,
+        height: 38,
+        alignment: Alignment.bottomCenter,
+        decoration: BoxDecoration(
+          color: a.hairline.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: FractionallySizedBox(
+          heightFactor: clamped,
+          child: Container(
+            decoration: BoxDecoration(
+              color: isCurrent ? a.accent : a.inkMuted.withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(5),
+            ),
           ),
         ),
       ),

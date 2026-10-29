@@ -34,9 +34,10 @@ void main() {
         expect(find.text('Empty Ghost Paper'), findsNothing);
         expect(tester.takeException(), isNull);
 
-        await tester.tap(find.text('Police').first);
+        expect(find.text('Police'), findsNothing);
+        await tester.tap(find.text('APPSC').first);
         await settle(tester, 4);
-        expect(find.text('Arunachal Police Constable Written Test'), findsOneWidget);
+        expect(find.text('APPSC Combined Competitive Exam Prelims Paper I'), findsOneWidget);
 
         await tester.drag(find.byType(CustomScrollView).first, const Offset(0, -500));
         await settle(tester, 4);

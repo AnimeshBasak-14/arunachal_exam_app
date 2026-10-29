@@ -2,8 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/services/service_providers.dart';
 import '../../../core/services/streak_service.dart';
+import '../../plan/data/study_plan_provider.dart';
 
-const dailyCardGoal = 30;
+/// Default daily card goal if no custom plan is set.
+const dailyCardGoal = 20;
 
 class LearnProgress {
   final int xp;
@@ -63,7 +65,8 @@ class LearnProgressNotifier extends Notifier<LearnProgress> {
       ..setInt('${_k}xp', state.xp)
       ..setInt('${_k}today', state.today)
       ..setString('${_k}day', _todayKey);
-    final hitGoal = before < dailyCardGoal && state.today >= dailyCardGoal;
+    final goal = ref.read(dailyCardGoalProvider);
+    final hitGoal = before < goal && state.today >= goal;
     if (hitGoal) StreakService(_p).checkAndUpdateStreak();
     return hitGoal;
   }

@@ -32,14 +32,18 @@ class LiveMock {
     final duration = rc.liveMockDurationMinutes > 0
         ? rc.liveMockDurationMinutes
         : _defaultDuration;
-    final title =
-        rc.liveMockTitle.isNotEmpty ? rc.liveMockTitle : 'State-wide Sunday Mock';
+    final title = rc.liveMockTitle.isNotEmpty
+        ? rc.liveMockTitle
+        : 'State-wide Sunday Mock';
     final testId = rc.liveMockTestId.isNotEmpty ? rc.liveMockTestId : null;
 
     if (configured != null &&
         configured.add(Duration(minutes: duration)).isAfter(nowUtc)) {
       return LiveMock(
-          title: title, start: configured, durationMinutes: duration, testId: testId);
+          title: title,
+          start: configured,
+          durationMinutes: duration,
+          testId: testId);
     }
     return LiveMock(
       title: title,
@@ -63,8 +67,18 @@ class LiveMock {
   String get scheduleLabel {
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
     final t = start.add(_ist);
     final h = t.hour % 12 == 0 ? 12 : t.hour % 12;

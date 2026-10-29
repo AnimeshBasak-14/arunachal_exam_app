@@ -57,24 +57,24 @@ class _PyqLibraryScreenState extends ConsumerState<PyqLibraryScreen> {
             parent: AlwaysScrollableScrollPhysics()),
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         slivers: [
+          SliverToBoxAdapter(
+            child: ChromeHeader(
+              title: 'PYQ Library',
+              subtitle: async.hasValue
+                  ? '${async.value!.papers.length} papers from APPSC & APSSB'
+                  : 'Previous year papers',
+            ),
+          ),
           SliverSafeArea(
+            top: false,
             bottom: false,
             sliver: SliverPadding(
               padding: const EdgeInsets.fromLTRB(
-                  AuraSpace.gutter, 24, AuraSpace.gutter, 0),
+                  AuraSpace.gutter, 22, AuraSpace.gutter, 0),
               sliver: SliverToBoxAdapter(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('PYQ Library', style: AuraType.serif(30, a.ink)),
-                    const SizedBox(height: 6),
-                    Text(
-                      async.hasValue
-                          ? '${async.value!.papers.length} papers from APPSC, APSSB & Police'
-                          : 'Official previous year papers',
-                      style: AuraType.sans(14, a.inkMuted),
-                    ),
-                    const SizedBox(height: 20),
                     TextField(
                       controller: _search,
                       onChanged: (v) => setState(() => _query = v),
@@ -86,7 +86,9 @@ class _PyqLibraryScreenState extends ConsumerState<PyqLibraryScreen> {
                             ? null
                             : IconButton(
                                 tooltip: 'Clear search',
-                                icon: const Icon(CupertinoIcons.clear_circled_solid, size: 18),
+                                icon: const Icon(
+                                    CupertinoIcons.clear_circled_solid,
+                                    size: 18),
                                 onPressed: () {
                                   _search.clear();
                                   setState(() => _query = '');
@@ -110,11 +112,13 @@ class _PyqLibraryScreenState extends ConsumerState<PyqLibraryScreen> {
           ...async.when(
             loading: () => [
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(AuraSpace.gutter, 16, AuraSpace.gutter, 0),
+                padding: const EdgeInsets.fromLTRB(
+                    AuraSpace.gutter, 16, AuraSpace.gutter, 0),
                 sliver: SliverList.separated(
                   itemCount: 5,
                   separatorBuilder: (_, __) => const SizedBox(height: 12),
-                  itemBuilder: (_, __) => const SkeletonBox(height: 96, radius: 20),
+                  itemBuilder: (_, __) =>
+                      const SkeletonBox(height: 96, radius: 20),
                 ),
               ),
             ],
@@ -128,12 +132,14 @@ class _PyqLibraryScreenState extends ConsumerState<PyqLibraryScreen> {
                     child: AuraEmpty(
                       icon: CupertinoIcons.search,
                       title: 'No matching papers',
-                      message: 'Try another year or exam name, or clear the filter.',
+                      message:
+                          'Try another year or exam name, or clear the filter.',
                       actionLabel: 'Clear filters',
                       onAction: () {
                         _search.clear();
                         setState(() => _query = '');
-                        ref.read(libraryDepartmentProvider.notifier).state = null;
+                        ref.read(libraryDepartmentProvider.notifier).state =
+                            null;
                       },
                     ),
                   ),
@@ -148,7 +154,8 @@ class _PyqLibraryScreenState extends ConsumerState<PyqLibraryScreen> {
               return [
                 if (result.isOffline)
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(AuraSpace.gutter, 14, AuraSpace.gutter, 0),
+                    padding: const EdgeInsets.fromLTRB(
+                        AuraSpace.gutter, 14, AuraSpace.gutter, 0),
                     sliver: SliverToBoxAdapter(
                       child: Text('Offline · showing saved list',
                           style: AuraType.sans(12.5, a.review)),
@@ -156,7 +163,8 @@ class _PyqLibraryScreenState extends ConsumerState<PyqLibraryScreen> {
                   ),
                 for (final y in years) ...[
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(AuraSpace.gutter, 26, AuraSpace.gutter, 12),
+                    padding: const EdgeInsets.fromLTRB(
+                        AuraSpace.gutter, 26, AuraSpace.gutter, 12),
                     sliver: SliverToBoxAdapter(
                       child: Row(
                         children: [
@@ -172,7 +180,8 @@ class _PyqLibraryScreenState extends ConsumerState<PyqLibraryScreen> {
                     ),
                   ),
                   SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: AuraSpace.gutter),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AuraSpace.gutter),
                     sliver: SliverList.separated(
                       itemCount: byYear[y]!.length,
                       separatorBuilder: (_, __) => const SizedBox(height: 10),

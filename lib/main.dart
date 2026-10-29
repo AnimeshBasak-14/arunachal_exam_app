@@ -23,7 +23,6 @@ import 'features/profile/view/change_password_screen.dart';
 import 'features/profile/view/quiz_history_screen.dart';
 import 'features/home/view/notifications_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'core/services/streak_service.dart';
 import 'core/services/notification_service.dart';
 import 'features/chatbot/view/chatbot_screen.dart';
 import 'features/home/view/state_gk_screen.dart';
@@ -119,10 +118,6 @@ void main() async {
   }
 
   final prefs = await SharedPreferences.getInstance();
-
-  // Update streak
-  final streakService = StreakService(prefs);
-  await streakService.checkAndUpdateStreak();
 
   runApp(
     ProviderScope(
@@ -343,9 +338,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final q = state.uri.queryParameters;
           final topic = LearnTopic.values.asNameMap()[q['topic']];
+          final limit = int.tryParse(q['limit'] ?? '');
           return LearnFeedScreen(
             topics: topic == null ? const {} : {topic},
             savedOnly: q['saved'] == '1',
+            limit: limit,
           );
         },
       ),
