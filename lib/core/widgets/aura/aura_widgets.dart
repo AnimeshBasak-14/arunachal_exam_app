@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../theme/aura.dart';
@@ -10,6 +11,61 @@ class AuraBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       ColoredBox(color: context.aura.bg, child: child);
+}
+
+/// Solid strip behind the status bar so scrolled content never shows
+/// through the clock and icons. Wrap a page body with it.
+class StatusBarScrim extends StatelessWidget {
+  final Widget child;
+  const StatusBarScrim({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final top = MediaQuery.paddingOf(context).top;
+    return Stack(children: [
+      child,
+      Positioned(
+        top: 0,
+        left: 0,
+        right: 0,
+        height: top,
+        child: IgnorePointer(child: ColoredBox(color: context.aura.bg)),
+      ),
+    ]);
+  }
+}
+
+/// Back-button header for scrolling pages. It slides away as you scroll
+/// down to read and snaps back as soon as you scroll up. Solid background,
+/// so text never runs underneath it.
+class AuraSliverBar extends StatelessWidget {
+  final Widget title;
+  final List<Widget> actions;
+  final VoidCallback? onBack;
+  const AuraSliverBar({
+    super.key,
+    required this.title,
+    this.actions = const [],
+    this.onBack,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final a = context.aura;
+    return SliverAppBar(
+      floating: true,
+      snap: true,
+      backgroundColor: a.bg,
+      surfaceTintColor: Colors.transparent,
+      leading: IconButton(
+        tooltip: 'Back',
+        icon: const Icon(CupertinoIcons.back),
+        onPressed: onBack ?? () => Navigator.of(context).maybePop(),
+      ),
+      title: title,
+      actions: [...actions, const SizedBox(width: 6)],
+    );
+  }
 }
 
 /// Plain page header for tab pages: serif title and a quiet subtitle on the

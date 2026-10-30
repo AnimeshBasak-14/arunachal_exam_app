@@ -58,6 +58,8 @@ dependencies:
   firebase_messaging: ^16.6.0
   firebase_performance: ^0.11.5
   google_maps_flutter: ^2.19.0
+  cached_network_image: ^4.0.6
+  flutter_cache_manager: ^3.4.6
 dev_dependencies:
   flutter_test:
     sdk: flutter

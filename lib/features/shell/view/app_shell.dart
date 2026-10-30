@@ -53,14 +53,16 @@ class _AppShellState extends ConsumerState<AppShell> {
     return Scaffold(
       extendBody: true,
       body: AuraBackground(
-        child: IndexedStack(
-          index: tab,
-          children: const [
-            DashboardScreen(),
-            PyqLibraryScreen(),
-            MockTestsScreen(),
-            AnalyticsScreen(),
-          ],
+        child: StatusBarScrim(
+          child: IndexedStack(
+            index: tab,
+            children: const [
+              DashboardScreen(),
+              PyqLibraryScreen(),
+              MockTestsScreen(),
+              AnalyticsScreen(),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: _AuraTabBar(

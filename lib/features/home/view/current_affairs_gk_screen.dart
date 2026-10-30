@@ -62,77 +62,74 @@ class _CurrentAffairsGkScreenState
 
     return Scaffold(
       body: AuraBackground(
-        child: RefreshIndicator(
-          onRefresh: _refresh,
-          child: CustomScrollView(
-            physics: const BouncingScrollPhysics(
-                parent: AlwaysScrollableScrollPhysics()),
-            slivers: [
-              SliverAppBar(
-                pinned: true,
-                leading: IconButton(
-                  tooltip: 'Back',
-                  icon: const Icon(CupertinoIcons.back),
-                  onPressed: () => context.pop(),
+        child: StatusBarScrim(
+          child: RefreshIndicator(
+            onRefresh: _refresh,
+            child: CustomScrollView(
+              physics: const BouncingScrollPhysics(
+                  parent: AlwaysScrollableScrollPhysics()),
+              slivers: [
+                AuraSliverBar(
+                  onBack: () => context.pop(),
+                  title: _searching
+                      ? TextField(
+                          autofocus: true,
+                          onChanged: (v) => setState(() => _query = v),
+                          style: AuraType.sans(15, a.ink),
+                          cursorColor: a.accent,
+                          decoration: InputDecoration(
+                            hintText: 'Search stories',
+                            hintStyle: AuraType.sans(15, a.inkFaint),
+                            filled: false,
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        )
+                      : const Text('Current affairs'),
+                  actions: [
+                    if (!_searching) const HiddenCoin('news'),
+                    IconButton(
+                      tooltip: _searching ? 'Close search' : 'Search',
+                      icon: Icon(_searching
+                          ? CupertinoIcons.xmark
+                          : CupertinoIcons.search),
+                      onPressed: () => setState(() {
+                        _searching = !_searching;
+                        if (!_searching) _query = '';
+                      }),
+                    ),
+                  ],
                 ),
-                title: _searching
-                    ? TextField(
-                        autofocus: true,
-                        onChanged: (v) => setState(() => _query = v),
-                        style: AuraType.sans(15, a.ink),
-                        cursorColor: a.accent,
-                        decoration: InputDecoration(
-                          hintText: 'Search stories',
-                          hintStyle: AuraType.sans(15, a.inkFaint),
-                          filled: false,
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                      )
-                    : const Text('Current affairs'),
-                actions: [
-                  if (!_searching) const HiddenCoin('news'),
-                  IconButton(
-                    tooltip: _searching ? 'Close search' : 'Search',
-                    icon: Icon(_searching
-                        ? CupertinoIcons.xmark
-                        : CupertinoIcons.search),
-                    onPressed: () => setState(() {
-                      _searching = !_searching;
-                      if (!_searching) _query = '';
-                    }),
-                  ),
-                ],
-              ),
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(
-                    AuraSpace.gutter - 2, 4, AuraSpace.gutter, 6),
-                sliver: SliverToBoxAdapter(
-                  child: SegmentedTabs(
-                    labels: [for (final f in _Filter.values) f.label],
-                    selected: _filter.index,
-                    onChanged: (i) =>
-                        setState(() => _filter = _Filter.values[i]),
-                  ),
-                ),
-              ),
-              ...async.when(
-                loading: () => [
-                  SliverPadding(
-                    padding: const EdgeInsets.all(AuraSpace.gutter),
-                    sliver: SliverList.separated(
-                      itemCount: 6,
-                      separatorBuilder: (_, __) => const SizedBox(height: 14),
-                      itemBuilder: (_, __) => const SkeletonBox(height: 92),
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(
+                      AuraSpace.gutter - 2, 4, AuraSpace.gutter, 6),
+                  sliver: SliverToBoxAdapter(
+                    child: SegmentedTabs(
+                      labels: [for (final f in _Filter.values) f.label],
+                      selected: _filter.index,
+                      onChanged: (i) =>
+                          setState(() => _filter = _Filter.values[i]),
                     ),
                   ),
-                ],
-                error: (_, __) => [_empty(context, offline: true)],
-                data: (r) => _stories(context, r),
-              ),
-            ],
+                ),
+                ...async.when(
+                  loading: () => [
+                    SliverPadding(
+                      padding: const EdgeInsets.all(AuraSpace.gutter),
+                      sliver: SliverList.separated(
+                        itemCount: 6,
+                        separatorBuilder: (_, __) => const SizedBox(height: 14),
+                        itemBuilder: (_, __) => const SkeletonBox(height: 92),
+                      ),
+                    ),
+                  ],
+                  error: (_, __) => [_empty(context, offline: true)],
+                  data: (r) => _stories(context, r),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -10,6 +10,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../core/services/wiki_service.dart';
+import '../../../core/widgets/net_photo.dart';
+import '../../../data/chapter_photos.dart';
+import 'chapter_gallery.dart';
 import '../../../core/theme/aura.dart';
 import '../../../core/utils/links.dart';
 import '../../../core/widgets/aura/aura_widgets.dart';
@@ -506,6 +509,7 @@ class _PlaceSheet extends ConsumerWidget {
     final wiki = ref.watch(wikiSummaryProvider(place.wiki));
     final w = wiki.value;
     final maxH = MediaQuery.sizeOf(context).height * 0.58;
+    final photo = placePhotos[place.wiki];
 
     return Container(
       constraints: BoxConstraints(maxHeight: maxH),
@@ -522,12 +526,23 @@ class _PlaceSheet extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (w?.imageUrl != null)
-              AspectRatio(
-                aspectRatio: 16 / 9,
-                child: Image.network(w!.imageUrl!,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => ColoredBox(color: a.bgTint)),
+            if (photo != null)
+              Semantics(
+                button: true,
+                label: 'Enlarge picture: ${photo.caption}',
+                excludeSemantics: true,
+                child: GestureDetector(
+                  onTap: () => openPhotoViewer(context, [photo], 0),
+                  child: AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: LayoutBuilder(builder: (context, c) {
+                      final px =
+                          (c.maxWidth * MediaQuery.devicePixelRatioOf(context))
+                              .ceil();
+                      return NetPhoto(photo.url(px), decodeWidth: px);
+                    }),
+                  ),
+                ),
               ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 8, 0),
@@ -583,6 +598,11 @@ class _PlaceSheet extends ConsumerWidget {
                 ],
               ),
             ),
+            if (photo != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
+                child: PhotoCredit(photo),
+              ),
             if (wiki.isLoading)
               const Padding(
                 padding: EdgeInsets.fromLTRB(20, 8, 20, 20),

@@ -6,6 +6,7 @@ import '../../../core/widgets/aura/aura_widgets.dart';
 import '../../../data/national_gk_data.dart';
 import '../../../data/state_gk_data.dart';
 import '../../../data/chapter_photos.dart';
+import '../../../data/photo_match.dart';
 import '../../gk/view/chapter_gallery.dart';
 import '../../learn/data/learn_deck.dart';
 import '../../learn/view/study_widgets.dart';
@@ -163,7 +164,8 @@ class _ChapterList extends StatelessWidget {
   }
 }
 
-/// One chapter as a clean reading page.
+/// One chapter as a clean reading page, with its photos placed beside the
+/// paragraphs they illustrate.
 class ChapterScreen extends StatelessWidget {
   final StateGkChapter chapter;
   const ChapterScreen({super.key, required this.chapter});
@@ -174,19 +176,22 @@ class ChapterScreen extends StatelessWidget {
     final keys = chapter.keyFacts.isEmpty
         ? <String>[]
         : chapter.keyFacts.first.keys.toList();
+    final photos = chapterPhotos[chapter.id] ?? const <ChapterPhoto>[];
+    final placed = placeInArticle(chapter.highlights, photos);
     return StudyPage(
       title: chapter.category,
       track: 'gk',
+      actions: [
+        _PractiseButton(
+            onTap: () => context.push('/learn?topic=${_topic(chapter).name}')),
+      ],
       children: [
         Text(chapter.title.replaceFirst(RegExp(r'^\d+\.\s*'), ''),
             style: AuraType.serif(27, a.ink, height: 1.2)),
         const SizedBox(height: 6),
         Text(chapter.subtitle, style: AuraType.sans(14, a.inkMuted)),
         const SizedBox(height: 22),
-        ChapterGallery(chapterId: chapter.id),
-        if (chapterPhotos[chapter.id]?.isNotEmpty ?? false)
-          const SizedBox(height: 26),
-        for (final h in chapter.highlights)
+        for (var i = 0; i < chapter.highlights.length; i++) ...[
           Padding(
             padding: const EdgeInsets.only(bottom: 14),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -199,10 +204,13 @@ class ChapterScreen extends StatelessWidget {
                         BoxDecoration(color: a.accent, shape: BoxShape.circle)),
               ),
               Expanded(
-                  child:
-                      Text(h, style: AuraType.sans(15.5, a.ink, height: 1.6))),
+                  child: Text(chapter.highlights[i],
+                      style: AuraType.sans(15.5, a.ink, height: 1.6))),
             ]),
           ),
+          if (placed[i] != null) ArticlePhotos(photos: placed[i]!, all: photos),
+        ],
+        if (placed[-1] != null) ArticlePhotos(photos: placed[-1]!, all: photos),
         if (keys.length >= 2) ...[
           const SizedBox(height: 14),
           SectionHeader('Key facts'),
@@ -241,12 +249,13 @@ class ChapterScreen extends StatelessWidget {
             ]),
           ),
         ],
-        const SizedBox(height: 22),
-        FilledButton.icon(
-          onPressed: () => context.push('/learn?topic=${_topic(chapter).name}'),
-          icon: const Icon(CupertinoIcons.play_fill, size: 16),
-          label: const Text('Practise as cards'),
-        ),
+        if (photos.isNotEmpty) ...[
+          const SizedBox(height: 22),
+          Text(
+            'Photos from Wikimedia Commons. Tap one to see it full screen; the credit is under each.',
+            style: AuraType.sans(12, a.inkFaint, height: 1.45),
+          ),
+        ],
       ],
     );
   }
@@ -255,4 +264,41 @@ class ChapterScreen extends StatelessWidget {
       .firstWhere((e) => e.value.any((card) => card.id.startsWith('${c.id}.')),
           orElse: () => MapEntry(LearnTopic.arunachal, const []))
       .key;
+}
+
+/// Small "Practise" pill in the chapter header.
+class _PractiseButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _PractiseButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final a = context.aura;
+    return Semantics(
+      button: true,
+      label: 'Practise this chapter as cards',
+      excludeSemantics: true,
+      child: Tooltip(
+        message: 'Practise as cards',
+        child: Material(
+          color: a.accent,
+          shape: const StadiumBorder(),
+          child: InkWell(
+            customBorder: const StadiumBorder(),
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(10, 7, 13, 7),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                Icon(CupertinoIcons.play_fill, size: 13, color: a.onAccent),
+                const SizedBox(width: 5),
+                Text('Practise',
+                    style:
+                        AuraType.sans(13, a.onAccent, weight: FontWeight.w600)),
+              ]),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

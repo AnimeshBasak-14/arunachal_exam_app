@@ -178,7 +178,8 @@ void main() {
       double text = 1.3,
       bool signedIn = true,
       Size size = const Size(412, 860),
-      Map<String, Object> extra = const {}}) async {
+      Map<String, Object> extra = const {},
+      Future<void> Function(WidgetTester)? then}) async {
     phoneViewport(tester, size: size);
     final prefs = await testPrefs({
       if (signedIn) ...{
@@ -206,6 +207,10 @@ void main() {
     await settle(tester, 20);
     await tester.runAsync(() => GoogleFonts.pendingFonts());
     await settle(tester, 6);
+    if (then != null) {
+      await then(tester);
+      await settle(tester, 12);
+    }
     await expectLater(
         find.byType(MaterialApp), matchesGoldenFile('goldens/$name.png'));
   }
@@ -343,8 +348,41 @@ void main() {
       (t) => shoot(
           t, 'learn_dark', const LearnFeedScreen(topics: {LearnTopic.polity}),
           dark: true));
+  final ticks = {
+    'exam_goal_id': 'apssb-cgl',
+    'syllabus_done_v1': [
+      for (final t in [
+        'Indian History',
+        'Indian Polity',
+        'Geography',
+        'Culture'
+      ])
+        'Combined Graduate Level (CGL)|Stage 1: Written Examination (OMR)|General Awareness|$t'
+    ],
+  };
+  Future<void> openGa(WidgetTester t) => t.tap(find.text('General Awareness'));
   testWidgets('syllabus',
-      (t) => shoot(t, 'syllabus', const SyllabusScreen(initialTabIndex: 2)));
+      (t) => shoot(t, 'syllabus', const SyllabusScreen(), extra: ticks));
+  testWidgets(
+      'syllabus open',
+      (t) => shoot(t, 'syllabus_open', const SyllabusScreen(),
+          extra: ticks, then: openGa, size: const Size(412, 1500)));
+  testWidgets(
+      'syllabus dark',
+      (t) => shoot(t, 'syllabus_dark', const SyllabusScreen(),
+          dark: true, extra: ticks, then: openGa, size: const Size(412, 1500)));
+  testWidgets(
+      'syllabus search',
+      (t) => shoot(t, 'syllabus_search', const SyllabusScreen(),
+          extra: ticks, then: (t) => t.tap(find.byTooltip('Other exams'))));
+  testWidgets(
+      'chapter long',
+      (t) => shoot(
+          t,
+          'chapter_long',
+          ChapterScreen(
+              chapter: StateGkData.chapters.firstWhere((c) => c.id == 'ch9')),
+          size: const Size(412, 3200)));
   testWidgets('current affairs',
       (t) => shoot(t, 'current_affairs', const CurrentAffairsGkScreen()));
 }

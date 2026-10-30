@@ -147,40 +147,44 @@ class StudyPage extends StatelessWidget {
 
   /// Optional: this page can hold a hidden coin on some days.
   final String? coinSpot;
+
+  /// Extra buttons in the header, before the coin.
+  final List<Widget> actions;
   const StudyPage({
     super.key,
     required this.title,
     required this.children,
     this.track,
     this.coinSpot,
+    this.actions = const [],
   });
 
   @override
   Widget build(BuildContext context) {
     final page = Scaffold(
       body: AuraBackground(
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            SliverAppBar(
-              pinned: true,
-              leading: IconButton(
-                tooltip: 'Back',
-                icon: const Icon(CupertinoIcons.back),
-                onPressed: () => context.pop(),
+        child: StatusBarScrim(
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              AuraSliverBar(
+                title: Text(title),
+                onBack: () => context.pop(),
+                actions: [
+                  ...actions,
+                  if (coinSpot != null) HiddenCoin(coinSpot!),
+                ],
               ),
-              title: Text(title),
-              actions: [
-                if (coinSpot != null) HiddenCoin(coinSpot!),
-                const SizedBox(width: 6)
-              ],
-            ),
-            SliverPadding(
-              padding: EdgeInsets.fromLTRB(AuraSpace.gutter, 8,
-                  AuraSpace.gutter, 40 + MediaQuery.paddingOf(context).bottom),
-              sliver: SliverList.list(children: children),
-            ),
-          ],
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(
+                    AuraSpace.gutter,
+                    8,
+                    AuraSpace.gutter,
+                    40 + MediaQuery.paddingOf(context).bottom),
+                sliver: SliverList.list(children: children),
+              ),
+            ],
+          ),
         ),
       ),
     );

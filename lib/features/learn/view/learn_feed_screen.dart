@@ -7,6 +7,10 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/aura.dart';
 import '../../../core/widgets/aura/aura_widgets.dart';
 import '../../plan/data/study_plan_provider.dart';
+import '../../../core/widgets/net_photo.dart';
+import '../../../data/chapter_photos.dart';
+import '../../gk/view/chapter_gallery.dart';
+import '../data/card_photos.dart';
 import '../data/learn_deck.dart';
 import '../data/learn_progress.dart';
 import '../../streak/data/time_tracker.dart';
@@ -139,6 +143,8 @@ class _LearnFeedScreenState extends ConsumerState<LearnFeedScreen> {
 
   Widget _buildContent(BuildContext context) {
     final a = context.aura;
+    final showPhotos = ref.watch(cardPhotosProvider);
+    final photoTopicSet = ref.watch(cardPhotoTopicsProvider);
     final progress = ref.watch(learnProgressProvider);
     final top = MediaQuery.paddingOf(context).top;
 
@@ -186,6 +192,9 @@ class _LearnFeedScreenState extends ConsumerState<LearnFeedScreen> {
                   return _CardPage(
                     key: ValueKey('$i-${_feed[i].id}'),
                     card: _feed[i],
+                    photo: showPhotos && photoTopicSet.contains(_feed[i].topic)
+                        ? photoForCard(_feed[i])
+                        : null,
                     saved: progress.saved.contains(_feed[i].id),
                     onSave: () => ref
                         .read(learnProgressProvider.notifier)
@@ -371,9 +380,11 @@ class _CardPage extends StatefulWidget {
   final VoidCallback onSave;
   final ValueChanged<bool> onAnswered;
   final ValueChanged<bool> onFlipped;
+  final ChapterPhoto? photo;
   const _CardPage({
     super.key,
     required this.card,
+    this.photo,
     required this.saved,
     required this.onSave,
     required this.onAnswered,
@@ -523,11 +534,59 @@ class _CardPageState extends State<_CardPage>
               ? 20
               : 17.5;
 
+  /// Related photo with its credit. Tap to see it full screen.
+  Widget _photo(BuildContext context, ChapterPhoto p) {
+    final a = context.aura;
+    final h = math.min(220.0, MediaQuery.sizeOf(context).height * 0.26);
+    final small = p.width < 700 && !p.path.toLowerCase().endsWith('.svg');
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Semantics(
+          button: true,
+          label: 'Enlarge picture: ${p.caption}',
+          excludeSemantics: true,
+          child: GestureDetector(
+            onTap: () => openPhotoViewer(context, [p], 0),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AuraSpace.radiusS),
+              child: SizedBox(
+                height: h,
+                width: double.infinity,
+                child: ColoredBox(
+                  color: a.bgTint,
+                  child: LayoutBuilder(builder: (context, box) {
+                    final px =
+                        (box.maxWidth * MediaQuery.devicePixelRatioOf(context))
+                            .ceil();
+                    return NetPhoto(p.url(px),
+                        decodeWidth: px,
+                        fit: small ? BoxFit.contain : BoxFit.cover);
+                  }),
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(p.caption,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AuraType.sans(12.5, a.inkMuted, weight: FontWeight.w500)),
+        PhotoCredit(p),
+      ],
+    );
+  }
+
   Widget _fact(BuildContext context, LearnCard c) {
     final a = context.aura;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (widget.photo != null) ...[
+          _photo(context, widget.photo!),
+          const SizedBox(height: 18),
+        ],
         Text(c.prompt,
             style: AuraType.serif(_promptSize(c.prompt), a.ink, height: 1.3)),
         if (c.body != null) ...[
@@ -613,6 +672,10 @@ class _CardPageState extends State<_CardPage>
                         Text(c.explain!,
                             style:
                                 AuraType.sans(14.5, a.inkMuted, height: 1.5)),
+                      ],
+                      if (widget.photo != null) ...[
+                        const SizedBox(height: 14),
+                        _photo(context, widget.photo!),
                       ],
                     ],
                   ),
