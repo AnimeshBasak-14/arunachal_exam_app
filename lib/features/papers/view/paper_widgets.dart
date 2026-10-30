@@ -162,8 +162,8 @@ class _PaperSheet extends StatelessWidget {
           const SizedBox(height: 26),
           FilledButton(
             onPressed: () => go(false),
-            style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(54)),
+            style:
+                FilledButton.styleFrom(minimumSize: const Size.fromHeight(54)),
             child: const Text('Begin exam mode'),
           ),
           const SizedBox(height: 6),

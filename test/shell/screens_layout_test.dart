@@ -24,20 +24,17 @@ void main() {
     ('dark', () => AppTheme.darkTheme),
   ]) {
     group('$name theme at 360px and 130% text', () {
-      testWidgets('dashboard shows goal, papers for the goal board, live mock', (tester) async {
+      testWidgets('dashboard shows goal, PYQ of the day, coins, live mock', (tester) async {
         phoneViewport(tester);
         await pumpShell(tester, theme: theme);
 
         expect(find.text('APSSB Combined Graduate Level'), findsOneWidget);
-        expect(find.text('Previous Year Papers'), findsOneWidget);
-        expect(find.text('APSSB CGL 2024 Solved Paper'), findsOneWidget);
-        expect(find.text('Empty Ghost Paper'), findsNothing);
-        expect(tester.takeException(), isNull);
-
+        expect(find.text('PYQ OF THE DAY'), findsOneWidget);
+        expect(find.bySemanticsLabel(RegExp('Streak and coins')), findsOneWidget);
+        // The old PYQ shelf and the Police tab are gone from the dashboard.
+        expect(find.text('Previous Year Papers'), findsNothing);
         expect(find.text('Police'), findsNothing);
-        await tester.tap(find.text('APPSC').first);
-        await settle(tester, 4);
-        expect(find.text('APPSC Combined Competitive Exam Prelims Paper I'), findsOneWidget);
+        expect(tester.takeException(), isNull);
 
         await tester.drag(find.byType(CustomScrollView).first, const Offset(0, -500));
         await settle(tester, 4);

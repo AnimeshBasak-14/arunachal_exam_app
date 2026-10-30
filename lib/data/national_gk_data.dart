@@ -24,7 +24,10 @@ class NationalGkData {
         {'Feature': 'Parliamentary system', 'Borrowed from': 'United Kingdom'},
         {'Feature': 'Fundamental Rights', 'Borrowed from': 'United States'},
         {'Feature': 'Directive Principles', 'Borrowed from': 'Ireland'},
-        {'Feature': 'Suspension of rights in Emergency', 'Borrowed from': 'Germany (Weimar)'},
+        {
+          'Feature': 'Suspension of rights in Emergency',
+          'Borrowed from': 'Germany (Weimar)'
+        },
         {'Feature': 'Concurrent List', 'Borrowed from': 'Australia'},
         {'Feature': 'Amendment procedure', 'Borrowed from': 'South Africa'},
         {'Feature': 'Fundamental Duties', 'Borrowed from': 'USSR'},
@@ -47,20 +50,38 @@ class NationalGkData {
       keyFacts: [
         {'Article': 'Article 14', 'Subject': 'Equality before law'},
         {'Article': 'Article 17', 'Subject': 'Abolition of untouchability'},
-        {'Article': 'Article 19', 'Subject': 'Six freedoms (speech, assembly, etc.)'},
-        {'Article': 'Article 21', 'Subject': 'Protection of life and personal liberty'},
-        {'Article': 'Article 32', 'Subject': 'Right to constitutional remedies'},
+        {
+          'Article': 'Article 19',
+          'Subject': 'Six freedoms (speech, assembly, etc.)'
+        },
+        {
+          'Article': 'Article 21',
+          'Subject': 'Protection of life and personal liberty'
+        },
+        {
+          'Article': 'Article 32',
+          'Subject': 'Right to constitutional remedies'
+        },
         {'Article': 'Article 44', 'Subject': 'Uniform Civil Code'},
         {'Article': 'Article 51A', 'Subject': 'Fundamental Duties'},
-        {'Article': 'Article 72', 'Subject': 'Pardoning power of the President'},
+        {
+          'Article': 'Article 72',
+          'Subject': 'Pardoning power of the President'
+        },
         {'Article': 'Article 110', 'Subject': 'Definition of Money Bill'},
-        {'Article': 'Article 112', 'Subject': 'Annual Financial Statement (Budget)'},
+        {
+          'Article': 'Article 112',
+          'Subject': 'Annual Financial Statement (Budget)'
+        },
         {'Article': 'Article 280', 'Subject': 'Finance Commission'},
         {'Article': 'Article 324', 'Subject': 'Election Commission'},
         {'Article': 'Article 352', 'Subject': 'National Emergency'},
         {'Article': 'Article 356', 'Subject': 'President\'s Rule in states'},
         {'Article': 'Article 360', 'Subject': 'Financial Emergency'},
-        {'Article': 'Article 371H', 'Subject': 'Special provision for Arunachal Pradesh'},
+        {
+          'Article': 'Article 371H',
+          'Subject': 'Special provision for Arunachal Pradesh'
+        },
       ],
     ),
     StateGkChapter(
@@ -75,17 +96,39 @@ class NationalGkData {
         'The 106th Amendment (2023), "Nari Shakti Vandan Adhiniyam", reserves one-third of seats in the Lok Sabha and state assemblies for women.',
       ],
       keyFacts: [
-        {'Amendment': '42nd (1976)', 'Change': 'Socialist, Secular, Integrity in Preamble; Fundamental Duties'},
-        {'Amendment': '44th (1978)', 'Change': 'Right to Property removed from Fundamental Rights'},
-        {'Amendment': '52nd (1985)', 'Change': 'Anti-defection law (Tenth Schedule)'},
-        {'Amendment': '55th (1986)', 'Change': 'Statehood for Arunachal Pradesh (Article 371H)'},
-        {'Amendment': '61st (1988)', 'Change': 'Voting age lowered from 21 to 18'},
+        {
+          'Amendment': '42nd (1976)',
+          'Change':
+              'Socialist, Secular, Integrity in Preamble; Fundamental Duties'
+        },
+        {
+          'Amendment': '44th (1978)',
+          'Change': 'Right to Property removed from Fundamental Rights'
+        },
+        {
+          'Amendment': '52nd (1985)',
+          'Change': 'Anti-defection law (Tenth Schedule)'
+        },
+        {
+          'Amendment': '55th (1986)',
+          'Change': 'Statehood for Arunachal Pradesh (Article 371H)'
+        },
+        {
+          'Amendment': '61st (1988)',
+          'Change': 'Voting age lowered from 21 to 18'
+        },
         {'Amendment': '73rd (1992)', 'Change': 'Panchayati Raj'},
         {'Amendment': '74th (1992)', 'Change': 'Urban local bodies'},
-        {'Amendment': '86th (2002)', 'Change': 'Right to Education (Article 21A)'},
+        {
+          'Amendment': '86th (2002)',
+          'Change': 'Right to Education (Article 21A)'
+        },
         {'Amendment': '101st (2016)', 'Change': 'Goods and Services Tax'},
         {'Amendment': '103rd (2019)', 'Change': '10% reservation for EWS'},
-        {'Amendment': '106th (2023)', 'Change': 'One-third seats for women in legislatures'},
+        {
+          'Amendment': '106th (2023)',
+          'Change': 'One-third seats for women in legislatures'
+        },
       ],
     ),
     StateGkChapter(
@@ -130,7 +173,10 @@ class NationalGkData {
       ],
       keyFacts: [
         {'Event': 'Treaty of Yandabo', 'Year': '1826'},
-        {'Event': 'Bengal Eastern Frontier Regulation (Inner Line)', 'Year': '1873'},
+        {
+          'Event': 'Bengal Eastern Frontier Regulation (Inner Line)',
+          'Year': '1873'
+        },
         {'Event': 'Anglo-Abor Expedition', 'Year': '1911–12'},
         {'Event': 'Simla Convention (McMahon Line)', 'Year': '1914'},
         {'Event': 'NEFA formed', 'Year': '1954'},
@@ -156,8 +202,14 @@ class NationalGkData {
       keyFacts: [
         {'Feature': 'Longest river in India', 'Answer': 'Ganga'},
         {'Feature': 'Largest river island', 'Answer': 'Majuli (Assam)'},
-        {'Feature': 'Only floating national park', 'Answer': 'Keibul Lamjao (Manipur)'},
-        {'Feature': 'One-horned rhino stronghold', 'Answer': 'Kaziranga (Assam)'},
+        {
+          'Feature': 'Only floating national park',
+          'Answer': 'Keibul Lamjao (Manipur)'
+        },
+        {
+          'Feature': 'One-horned rhino stronghold',
+          'Answer': 'Kaziranga (Assam)'
+        },
         {'Feature': 'Largest state by area', 'Answer': 'Rajasthan'},
         {'Feature': 'Smallest state by area', 'Answer': 'Goa'},
         {'Feature': 'Highest peak of Arunachal', 'Answer': 'Kangto'},
@@ -181,12 +233,25 @@ class NationalGkData {
       ],
       keyFacts: [
         {'Term': 'Repo rate', 'Meaning': 'RBI lends to commercial banks'},
-        {'Term': 'Reverse repo rate', 'Meaning': 'RBI borrows from commercial banks'},
+        {
+          'Term': 'Reverse repo rate',
+          'Meaning': 'RBI borrows from commercial banks'
+        },
         {'Term': 'CRR', 'Meaning': 'Cash banks must keep with the RBI'},
         {'Term': 'SLR', 'Meaning': 'Liquid assets banks must keep themselves'},
-        {'Term': 'Fiscal deficit', 'Meaning': 'Total expenditure minus receipts excluding borrowings'},
-        {'Term': 'Inflation', 'Meaning': 'Sustained rise in the general price level'},
-        {'Term': 'GDP', 'Meaning': 'Value of final goods and services produced within a country'},
+        {
+          'Term': 'Fiscal deficit',
+          'Meaning': 'Total expenditure minus receipts excluding borrowings'
+        },
+        {
+          'Term': 'Inflation',
+          'Meaning': 'Sustained rise in the general price level'
+        },
+        {
+          'Term': 'GDP',
+          'Meaning':
+              'Value of final goods and services produced within a country'
+        },
       ],
     ),
     StateGkChapter(

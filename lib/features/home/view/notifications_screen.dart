@@ -9,13 +9,15 @@ import '../../../core/utils/links.dart';
 import '../../../core/widgets/aura/aura_widgets.dart';
 import '../../learn/view/study_widgets.dart';
 
-export '../../../core/services/notification_inbox.dart' show hasUnreadNotifProvider;
+export '../../../core/services/notification_inbox.dart'
+    show hasUnreadNotifProvider;
 
 class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
 
   @override
-  ConsumerState<NotificationsScreen> createState() => _NotificationsScreenState();
+  ConsumerState<NotificationsScreen> createState() =>
+      _NotificationsScreenState();
 }
 
 class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
@@ -51,7 +53,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               Dismissible(
                 key: ValueKey(m.id),
                 direction: DismissDirection.endToStart,
-                onDismissed: (_) => ref.read(inboxProvider.notifier).remove(m.id),
+                onDismissed: (_) =>
+                    ref.read(inboxProvider.notifier).remove(m.id),
                 background: Container(
                   alignment: Alignment.centerRight,
                   padding: const EdgeInsets.only(right: 20),
@@ -63,7 +66,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                   body: m.body,
                   meta: relativeDate(m.time),
                   unread: isNew(m.time),
-                  onTap: m.link == null ? null : () => openLink(context, m.link!),
+                  onTap:
+                      m.link == null ? null : () => openLink(context, m.link!),
                 ),
               ),
           ]),
@@ -77,17 +81,21 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           ),
         ]),
         const SizedBox(height: 4),
-        Text('From Arunachal news outlets. Always confirm dates on appsc.gov.in or apssb.nic.in.',
+        Text(
+            'From Arunachal news outlets. Always confirm dates on appsc.gov.in or apssb.nic.in.',
             style: AuraType.sans(12.5, a.inkFaint, height: 1.45)),
         const SizedBox(height: 12),
         if (feed.isLoading && updates.isEmpty)
           for (int i = 0; i < 3; i++)
-            const Padding(padding: EdgeInsets.only(bottom: 10), child: SkeletonBox(height: 72))
+            const Padding(
+                padding: EdgeInsets.only(bottom: 10),
+                child: SkeletonBox(height: 72))
         else if (updates.isEmpty)
           AuraEmpty(
             icon: CupertinoIcons.bell,
             title: 'Nothing new right now',
-            message: 'Exam notices and results reported in Arunachal news will appear here.',
+            message:
+                'Exam notices and results reported in Arunachal news will appear here.',
             actionLabel: 'Refresh',
             onAction: () => ref.invalidate(currentAffairsProvider),
           )
@@ -111,7 +119,12 @@ class _Row extends StatelessWidget {
   final String title, body, meta;
   final bool unread;
   final VoidCallback? onTap;
-  const _Row({required this.title, required this.body, required this.meta, required this.unread, this.onTap});
+  const _Row(
+      {required this.title,
+      required this.body,
+      required this.meta,
+      required this.unread,
+      this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -127,13 +140,17 @@ class _Row extends StatelessWidget {
               width: 7,
               height: 7,
               decoration: BoxDecoration(
-                  color: unread ? a.accent : Colors.transparent, shape: BoxShape.circle),
+                  color: unread ? a.accent : Colors.transparent,
+                  shape: BoxShape.circle),
             ),
           ),
           Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(title,
-                  style: AuraType.sans(15, a.ink, weight: unread ? FontWeight.w600 : FontWeight.w500, height: 1.4)),
+                  style: AuraType.sans(15, a.ink,
+                      weight: unread ? FontWeight.w600 : FontWeight.w500,
+                      height: 1.4)),
               const SizedBox(height: 4),
               Text(body,
                   maxLines: 3,

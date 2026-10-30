@@ -8,6 +8,7 @@ class StudyPlan {
   final int reminderMinute; // 0..59 (default 0)
   final bool remindersEnabled;
   final int dailyGoal; // 10, 20 or 30 cards (default 20)
+  final int dailyQuestions; // 5, 10, 20 or 30 questions answered (default 10)
   final bool completed; // true once completed or explicitly skipped
 
   const StudyPlan({
@@ -16,8 +17,11 @@ class StudyPlan {
     this.reminderMinute = 0,
     this.remindersEnabled = false,
     this.dailyGoal = 20,
+    this.dailyQuestions = 10,
     this.completed = false,
   });
+
+  static const questionTargets = [5, 10, 20, 30];
 
   /// Computes whole calendar days from [fromDate] (defaults to today) to [examDate].
   ///
@@ -61,6 +65,7 @@ class StudyPlan {
     int? reminderMinute,
     bool? remindersEnabled,
     int? dailyGoal,
+    int? dailyQuestions,
     bool? completed,
   }) {
     return StudyPlan(
@@ -69,6 +74,7 @@ class StudyPlan {
       reminderMinute: reminderMinute ?? this.reminderMinute,
       remindersEnabled: remindersEnabled ?? this.remindersEnabled,
       dailyGoal: dailyGoal ?? this.dailyGoal,
+      dailyQuestions: dailyQuestions ?? this.dailyQuestions,
       completed: completed ?? this.completed,
     );
   }
@@ -79,6 +85,7 @@ class StudyPlan {
         'reminderMinute': reminderMinute,
         'remindersEnabled': remindersEnabled,
         'dailyGoal': dailyGoal,
+        'dailyQuestions': dailyQuestions,
         'completed': completed,
       };
 
@@ -95,6 +102,7 @@ class StudyPlan {
       reminderMinute: (j['reminderMinute'] as num?)?.toInt() ?? 0,
       remindersEnabled: j['remindersEnabled'] as bool? ?? false,
       dailyGoal: (j['dailyGoal'] as num?)?.toInt() ?? 20,
+      dailyQuestions: (j['dailyQuestions'] as num?)?.toInt() ?? 10,
       completed: j['completed'] as bool? ?? false,
     );
   }

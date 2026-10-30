@@ -10,6 +10,7 @@ import '../../../core/widgets/aura/aura_widgets.dart';
 import '../../papers/data/paper.dart';
 import '../../papers/view/paper_widgets.dart';
 import 'live_mock_card.dart';
+import '../../streak/view/coin_widgets.dart';
 
 class MockTestsScreen extends ConsumerStatefulWidget {
   const MockTestsScreen({super.key});
@@ -40,6 +41,7 @@ class _MockTestsScreenState extends ConsumerState<MockTestsScreen> {
           const SliverToBoxAdapter(
             child: ChromeHeader(
               title: 'Mock Tests',
+              actions: [HiddenCoin('mocks')],
               subtitle: 'Exam-condition practice, timed and scored.',
             ),
           ),

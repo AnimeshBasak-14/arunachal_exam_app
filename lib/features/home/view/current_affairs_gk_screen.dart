@@ -6,6 +6,8 @@ import '../../../core/services/current_affairs_service.dart';
 import '../../../core/theme/aura.dart';
 import '../../../core/utils/links.dart';
 import '../../../core/widgets/aura/aura_widgets.dart';
+import '../../streak/data/time_tracker.dart';
+import '../../streak/view/coin_widgets.dart';
 
 enum _Filter { all, arunachal, northeast, exams, videos }
 
@@ -48,7 +50,13 @@ class _CurrentAffairsGkScreenState
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => TimeTracked(
+        section: 'read',
+        sub: 'news',
+        child: _buildContent(context),
+      );
+
+  Widget _buildContent(BuildContext context) {
     final a = context.aura;
     final async = ref.watch(currentAffairsProvider);
 
@@ -85,6 +93,7 @@ class _CurrentAffairsGkScreenState
                       )
                     : const Text('Current affairs'),
                 actions: [
+                  if (!_searching) const HiddenCoin('news'),
                   IconButton(
                     tooltip: _searching ? 'Close search' : 'Search',
                     icon: Icon(_searching
@@ -104,7 +113,8 @@ class _CurrentAffairsGkScreenState
                   child: SegmentedTabs(
                     labels: [for (final f in _Filter.values) f.label],
                     selected: _filter.index,
-                    onChanged: (i) => setState(() => _filter = _Filter.values[i]),
+                    onChanged: (i) =>
+                        setState(() => _filter = _Filter.values[i]),
                   ),
                 ),
               ),
@@ -147,12 +157,15 @@ class _CurrentAffairsGkScreenState
             ? '${r.failed.join(', ')} didn\'t respond · pull to retry'
             : null;
 
-    if (items.isEmpty) return [_empty(context, offline: r.offline && r.items.isEmpty)];
+    if (items.isEmpty) {
+      return [_empty(context, offline: r.offline && r.items.isEmpty)];
+    }
 
     return [
       if (note != null)
         SliverPadding(
-          padding: const EdgeInsets.fromLTRB(AuraSpace.gutter, 6, AuraSpace.gutter, 0),
+          padding: const EdgeInsets.fromLTRB(
+              AuraSpace.gutter, 6, AuraSpace.gutter, 0),
           sliver: SliverToBoxAdapter(
             child: Text(note, style: AuraType.sans(12, a.inkFaint)),
           ),
@@ -283,12 +296,12 @@ void _showStory(BuildContext context, CurrentAffairsItem item) {
           ],
           if (item.summary.isNotEmpty) ...[
             const SizedBox(height: 18),
-            Text(item.summary,
-                style: AuraType.sans(15.5, a.ink, height: 1.6)),
+            Text(item.summary, style: AuraType.sans(15.5, a.ink, height: 1.6)),
           ],
           const SizedBox(height: 24),
           FilledButton.icon(
-            onPressed: item.link.isEmpty ? null : () => openLink(context, item.link),
+            onPressed:
+                item.link.isEmpty ? null : () => openLink(context, item.link),
             icon: Icon(item.kind == NewsKind.video
                 ? CupertinoIcons.play_fill
                 : CupertinoIcons.arrow_up_right),

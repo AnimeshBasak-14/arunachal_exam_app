@@ -37,7 +37,8 @@ class OnboardingScreen extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 40),
-              Text('What are you\npreparing for?', style: AuraType.serif(34, a.ink, height: 1.15)),
+              Text('What are you\npreparing for?',
+                  style: AuraType.serif(34, a.ink, height: 1.15)),
               const SizedBox(height: 12),
               Text(
                 'We will show that exam\'s papers first. You can change this any time.',

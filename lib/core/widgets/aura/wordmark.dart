@@ -21,7 +21,8 @@ class Wordmark extends StatelessWidget {
         children: [
           ZapMark(size: size * 1.25, color: a.accent),
           SizedBox(width: size * 0.45),
-          Text(appName, style: AuraType.serif(size, a.ink, weight: FontWeight.w600)),
+          Text(appName,
+              style: AuraType.serif(size, a.ink, weight: FontWeight.w600)),
         ],
       ),
     );

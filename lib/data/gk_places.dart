@@ -53,8 +53,8 @@ const gkPlaces = <GkPlace>[
     'At Rono Hills, Doimukh. Founded 1984 as Arunachal University.',
     'Became a Central University in 2007.',
   ]),
-  GkPlace('Itanagar Wildlife Sanctuary', 'Itanagar Wildlife Sanctuary',
-      27.0685, 93.5814, PlaceKind.nature, 'Papum Pare', [
+  GkPlace('Itanagar Wildlife Sanctuary', 'Itanagar Wildlife Sanctuary', 27.0685,
+      93.5814, PlaceKind.nature, 'Papum Pare', [
     'Sanctuary on the edge of the capital.',
   ]),
 
@@ -72,15 +72,21 @@ const gkPlaces = <GkPlace>[
       'Pakke-Kessang', ['HQ of Pakke-Kessang (created 2018).']),
   GkPlace('Yupia', 'Yupia', 27.1692, 93.7431, PlaceKind.district, 'Papum Pare',
       ['HQ of Papum Pare, the most populous district (Census 2011).']),
-  GkPlace('Ziro', 'Ziro', 27.5950, 93.8385, PlaceKind.district,
-      'Lower Subansiri', [
+  GkPlace(
+      'Ziro', 'Ziro', 27.5950, 93.8385, PlaceKind.district, 'Lower Subansiri', [
     'HQ of Lower Subansiri; home of the Apatani tribe.',
     'Apatani cultural landscape is on UNESCO\'s Tentative List.',
     'Known for paddy-cum-fish farming and the Ziro Festival of Music.',
     'Dree (July) and Myoko are the main Apatani festivals.',
   ]),
-  GkPlace('Yachuli', 'Yachuli', 27.5142, 93.7810, PlaceKind.district,
-      'Keyi Panyor', ['HQ of Keyi Panyor, one of the two newest districts (March 2024).']),
+  GkPlace(
+      'Yachuli',
+      'Yachuli',
+      27.5142,
+      93.7810,
+      PlaceKind.district,
+      'Keyi Panyor',
+      ['HQ of Keyi Panyor, one of the two newest districts (March 2024).']),
   GkPlace('Koloriang', 'Koloriang', 27.9167, 93.3500, PlaceKind.district,
       'Kurung Kumey', ['HQ of Kurung Kumey.']),
   GkPlace('Palin', 'Palin, Arunachal Pradesh', 27.7039, 93.6910,
@@ -99,8 +105,8 @@ const gkPlaces = <GkPlace>[
   ]),
   GkPlace('Tato', 'Tato, Arunachal Pradesh', 28.5315, 94.3753,
       PlaceKind.district, 'Shi-Yomi', ['HQ of Shi-Yomi (created 2018).']),
-  GkPlace('Mechuka', 'Mechuka', 28.6050, 94.1281, PlaceKind.district,
-      'Shi-Yomi', [
+  GkPlace(
+      'Mechuka', 'Mechuka', 28.6050, 94.1281, PlaceKind.district, 'Shi-Yomi', [
     'Valley on the Yargyap Chu (Siyom) river, near the border.',
     'Has an Advanced Landing Ground used by the Indian Air Force.',
   ]),
@@ -114,10 +120,16 @@ const gkPlaces = <GkPlace>[
   ]),
   GkPlace('Yingkiong', 'Yingkiong', 28.6104, 95.0475, PlaceKind.district,
       'Upper Siang', ['HQ of Upper Siang; gateway to Mouling National Park.']),
-  GkPlace('Roing', 'Roing', 28.1428, 95.8428, PlaceKind.district,
-      'Lower Dibang Valley', ['HQ of Lower Dibang Valley; Idu Mishmi homeland.']),
-  GkPlace('Anini', 'Anini', 28.7833, 95.8833, PlaceKind.district,
-      'Dibang Valley', [
+  GkPlace(
+      'Roing',
+      'Roing',
+      28.1428,
+      95.8428,
+      PlaceKind.district,
+      'Lower Dibang Valley',
+      ['HQ of Lower Dibang Valley; Idu Mishmi homeland.']),
+  GkPlace(
+      'Anini', 'Anini', 28.7833, 95.8833, PlaceKind.district, 'Dibang Valley', [
     'HQ of Dibang Valley, the largest district by area.',
     'Dibang Valley is the least populous district in India (8,004, Census 2011).',
   ]),
@@ -125,14 +137,22 @@ const gkPlaces = <GkPlace>[
       ['HQ of Lohit; Mishmi homeland.']),
   GkPlace('Hawai', 'Hawai, Arunachal Pradesh', 27.8858, 96.8008,
       PlaceKind.district, 'Anjaw', ['HQ of Anjaw, the easternmost district.']),
-  GkPlace('Namsai', 'Namsai district', 27.6689, 95.8714, PlaceKind.district,
-      'Namsai', ['HQ of Namsai; Tai Khamti homeland. Sangken is the water festival.']),
+  GkPlace(
+      'Namsai',
+      'Namsai district',
+      27.6689,
+      95.8714,
+      PlaceKind.district,
+      'Namsai',
+      ['HQ of Namsai; Tai Khamti homeland. Sangken is the water festival.']),
   GkPlace('Changlang', 'Changlang', 27.1200, 95.7100, PlaceKind.district,
       'Changlang', ['HQ of Changlang; Tangsa, Tutsa and Singpho communities.']),
   GkPlace('Khonsa', 'Khonsa', 27.0200, 95.5700, PlaceKind.district, 'Tirap',
       ['HQ of Tirap; Nocte homeland. Chalo-Loku is the harvest festival.']),
   GkPlace('Longding', 'Longding district', 26.8585, 95.3357, PlaceKind.district,
-      'Longding', ['Carved out of Tirap in 2012; Wancho homeland, known for wood carving.']),
+      'Longding', [
+    'Carved out of Tirap in 2012; Wancho homeland, known for wood carving.'
+  ]),
 
   // ── History & faith ─────────────────────────────────────────────────────
   GkPlace('Tawang Monastery', 'Tawang Monastery', 27.5864, 91.8575,
@@ -173,11 +193,11 @@ const gkPlaces = <GkPlace>[
   ]),
 
   // ── Parks & wildlife ────────────────────────────────────────────────────
-  GkPlace('Namdapha National Park', 'Namdapha National Park', 27.6498,
-      96.1103, PlaceKind.nature, 'Changlang', [
+  GkPlace('Namdapha National Park', 'Namdapha National Park', 27.6498, 96.1103,
+      PlaceKind.nature, 'Changlang', [
     'National park and tiger reserve since 1983; about 1,985 sq km.',
     'Home to four big cats: tiger, leopard, clouded leopard and snow leopard.',
-    'Also home to the hoolock gibbon, the state animal.',
+    "Home to the hoolock gibbon, India's only ape.",
   ]),
   GkPlace('Mouling National Park', 'Mouling National Park', 28.5833, 94.8667,
       PlaceKind.nature, 'Upper Siang', [
@@ -197,20 +217,39 @@ const gkPlaces = <GkPlace>[
       96.4333, PlaceKind.nature, 'Lohit', [
     'Third tiger reserve of the state, with Namdapha and Pakke.',
   ]),
-  GkPlace('D\'Ering Memorial Wildlife Sanctuary',
-      'D\'Ering Memorial Wildlife Sanctuary', 27.9378, 95.4458,
-      PlaceKind.nature, 'East Siang', [
+  GkPlace(
+      'D\'Ering Memorial Wildlife Sanctuary',
+      'D\'Ering Memorial Wildlife Sanctuary',
+      27.9378,
+      95.4458,
+      PlaceKind.nature,
+      'East Siang', [
     'Grassland and river islands of the Siang near Pasighat.',
     'Named after Daying Ering.',
   ]),
-  GkPlace('Mehao Wildlife Sanctuary', 'Mehao Wildlife Sanctuary', 28.1575,
-      95.9400, PlaceKind.nature, 'Lower Dibang Valley',
+  GkPlace(
+      'Mehao Wildlife Sanctuary',
+      'Mehao Wildlife Sanctuary',
+      28.1575,
+      95.9400,
+      PlaceKind.nature,
+      'Lower Dibang Valley',
       ['Around Mehao lake, near Roing.']),
-  GkPlace('Dibang Wildlife Sanctuary', 'Dibang Wildlife Sanctuary', 29.0470,
-      95.7900, PlaceKind.nature, 'Dibang Valley',
+  GkPlace(
+      'Dibang Wildlife Sanctuary',
+      'Dibang Wildlife Sanctuary',
+      29.0470,
+      95.7900,
+      PlaceKind.nature,
+      'Dibang Valley',
       ['Largest wildlife sanctuary of the state.']),
-  GkPlace('Sessa Orchid Sanctuary', 'Sessa Orchid Sanctuary', 27.2000,
-      92.5000, PlaceKind.nature, 'West Kameng',
+  GkPlace(
+      'Sessa Orchid Sanctuary',
+      'Sessa Orchid Sanctuary',
+      27.2000,
+      92.5000,
+      PlaceKind.nature,
+      'West Kameng',
       ['Orchid sanctuary; Arunachal has 500+ orchid species.']),
   GkPlace('Dihang-Dibang Biosphere Reserve', 'Dihang-Dibang Biosphere Reserve',
       27.9833, 94.5000, PlaceKind.nature, 'Upper Siang · Dibang Valley', [
@@ -241,8 +280,14 @@ const gkPlaces = <GkPlace>[
     'India–Myanmar pass on the Stilwell Road.',
     'The Lake of No Return is nearby; Pangsau Pass Winter Festival at Nampong.',
   ]),
-  GkPlace('Mayodia Pass', 'Mayodia Pass', 28.2336, 95.9100, PlaceKind.border,
-      'Lower Dibang Valley', ['High pass on the Roing–Anini road; gets snowfall.']),
+  GkPlace(
+      'Mayodia Pass',
+      'Mayodia Pass',
+      28.2336,
+      95.9100,
+      PlaceKind.border,
+      'Lower Dibang Valley',
+      ['High pass on the Roing–Anini road; gets snowfall.']),
   GkPlace('Vijaynagar', 'Vijaynagar, Arunachal Pradesh', 27.1919, 96.9997,
       PlaceKind.border, 'Changlang', [
     'Remote valley near the Myanmar border, long reachable mainly by air.',

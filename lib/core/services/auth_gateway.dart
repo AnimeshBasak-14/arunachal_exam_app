@@ -34,7 +34,8 @@ abstract class AuthGateway {
   bool get hasPassword;
 
   Future<AuthIdentity> signInWithEmail(String email, String password);
-  Future<AuthIdentity> createAccount(String email, String password, String name);
+  Future<AuthIdentity> createAccount(
+      String email, String password, String name);
 
   /// Returns null when the user closes the account picker.
   Future<AuthIdentity?> signInWithGoogle();
@@ -68,7 +69,8 @@ class FirebaseAuthGateway implements AuthGateway {
   @override
   bool get hasPassword =>
       _ready &&
-      (_auth.currentUser?.providerData.any((p) => p.providerId == 'password') ?? false);
+      (_auth.currentUser?.providerData.any((p) => p.providerId == 'password') ??
+          false);
 
   AuthIdentity _identity(User u) => AuthIdentity(
         (u.email ?? '').toLowerCase(),
@@ -78,7 +80,9 @@ class FirebaseAuthGateway implements AuthGateway {
 
   Future<T> _guard<T>(Future<T> Function() run) async {
     if (!_ready) {
-      throw const AuthFailure('Can\'t reach the sign-in service. Check your connection and try again.', 'no-firebase');
+      throw const AuthFailure(
+          'Can\'t reach the sign-in service. Check your connection and try again.',
+          'no-firebase');
     }
     try {
       return await run();
@@ -98,16 +102,25 @@ class FirebaseAuthGateway implements AuthGateway {
   static String _message(String code) => switch (code) {
         'invalid-email' => 'That email address doesn\'t look right.',
         'user-disabled' => 'This account has been disabled.',
-        'user-not-found' || 'wrong-password' || 'invalid-credential' || 'INVALID_LOGIN_CREDENTIALS' =>
+        'user-not-found' ||
+        'wrong-password' ||
+        'invalid-credential' ||
+        'INVALID_LOGIN_CREDENTIALS' =>
           'Email or password is incorrect.',
-        'email-already-in-use' => 'An account already exists for this email. Sign in instead.',
-        'weak-password' => 'Choose a stronger password (at least 8 characters).',
-        'too-many-requests' => 'Too many attempts. Wait a few minutes and try again.',
-        'network-request-failed' => 'No internet connection. Check your network and try again.',
-        'requires-recent-login' => 'For your security, sign in again and retry.',
+        'email-already-in-use' =>
+          'An account already exists for this email. Sign in instead.',
+        'weak-password' =>
+          'Choose a stronger password (at least 8 characters).',
+        'too-many-requests' =>
+          'Too many attempts. Wait a few minutes and try again.',
+        'network-request-failed' =>
+          'No internet connection. Check your network and try again.',
+        'requires-recent-login' =>
+          'For your security, sign in again and retry.',
         'account-exists-with-different-credential' =>
           'This email is already registered with a different sign-in method.',
-        'popup-blocked' => 'Your browser blocked the sign-in window. Allow pop-ups and try again.',
+        'popup-blocked' =>
+          'Your browser blocked the sign-in window. Allow pop-ups and try again.',
         'popup-closed-by-user' || 'cancelled-popup-request' => 'cancelled',
         'operation-not-allowed' =>
           'This sign-in method isn\'t switched on yet. Use Continue with Google for now.',
@@ -115,14 +128,19 @@ class FirebaseAuthGateway implements AuthGateway {
       };
 
   @override
-  Future<AuthIdentity> signInWithEmail(String email, String password) => _guard(() async {
-        final c = await _auth.signInWithEmailAndPassword(email: email, password: password);
+  Future<AuthIdentity> signInWithEmail(String email, String password) =>
+      _guard(() async {
+        final c = await _auth.signInWithEmailAndPassword(
+            email: email, password: password);
         return _identity(c.user!);
       });
 
   @override
-  Future<AuthIdentity> createAccount(String email, String password, String name) => _guard(() async {
-        final c = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+  Future<AuthIdentity> createAccount(
+          String email, String password, String name) =>
+      _guard(() async {
+        final c = await _auth.createUserWithEmailAndPassword(
+            email: email, password: password);
         final u = c.user!;
         await u.updateDisplayName(name);
         try {
@@ -142,18 +160,22 @@ class FirebaseAuthGateway implements AuthGateway {
     try {
       return await _guard(() async {
         if (kIsWeb) {
-          final provider = GoogleAuthProvider()..setCustomParameters({'prompt': 'select_account'});
+          final provider = GoogleAuthProvider()
+            ..setCustomParameters({'prompt': 'select_account'});
           final c = await _auth.signInWithPopup(provider);
           return _identity(c.user!);
         }
         await _initGoogle();
         // Android shows the system Credential Manager sheet; iOS the Google sheet.
-        final account = await GoogleSignIn.instance.authenticate(scopeHint: const ['email']);
+        final account = await GoogleSignIn.instance
+            .authenticate(scopeHint: const ['email']);
         final idToken = account.authentication.idToken;
         if (idToken == null) {
-          throw const AuthFailure('Google didn\'t return a sign-in token. Please try again.');
+          throw const AuthFailure(
+              'Google didn\'t return a sign-in token. Please try again.');
         }
-        final c = await _auth.signInWithCredential(GoogleAuthProvider.credential(idToken: idToken));
+        final c = await _auth.signInWithCredential(
+            GoogleAuthProvider.credential(idToken: idToken));
         return _identity(c.user!);
       });
     } on AuthFailure catch (e) {
@@ -169,7 +191,9 @@ class FirebaseAuthGateway implements AuthGateway {
   @override
   Future<void> changePassword(String current, String next) => _guard(() async {
         final u = _auth.currentUser;
-        if (u == null || u.email == null) throw const AuthFailure('Please sign in again.');
+        if (u == null || u.email == null) {
+          throw const AuthFailure('Please sign in again.');
+        }
         await u.reauthenticateWithCredential(
             EmailAuthProvider.credential(email: u.email!, password: current));
         await u.updatePassword(next);
@@ -180,14 +204,15 @@ class FirebaseAuthGateway implements AuthGateway {
         final u = _auth.currentUser;
         if (u == null) throw const AuthFailure('Please sign in again.');
         if (password != null && u.email != null) {
-          await u.reauthenticateWithCredential(
-              EmailAuthProvider.credential(email: u.email!, password: password));
+          await u.reauthenticateWithCredential(EmailAuthProvider.credential(
+              email: u.email!, password: password));
         } else if (!kIsWeb) {
           await _initGoogle();
           final account = await GoogleSignIn.instance.authenticate();
           final token = account.authentication.idToken;
           if (token != null) {
-            await u.reauthenticateWithCredential(GoogleAuthProvider.credential(idToken: token));
+            await u.reauthenticateWithCredential(
+                GoogleAuthProvider.credential(idToken: token));
           }
         } else {
           await u.reauthenticateWithPopup(GoogleAuthProvider());
@@ -204,4 +229,5 @@ class FirebaseAuthGateway implements AuthGateway {
   }
 }
 
-final authGatewayProvider = Provider<AuthGateway>((ref) => FirebaseAuthGateway());
+final authGatewayProvider =
+    Provider<AuthGateway>((ref) => FirebaseAuthGateway());

@@ -37,11 +37,18 @@ class StateGkData {
         'Chief Minister: Shri Pema Khandu.',
       ],
       keyFacts: [
-        {'Symbol': 'State Animal', 'Value': 'Hoolock Gibbon (Hylobatidae hoolock)'},
+        {'Symbol': 'State Animal', 'Value': 'Mithun (Bos frontalis)'},
         {'Symbol': 'State Bird', 'Value': 'Great Hornbill (Buceros bicornis)'},
-        {'Symbol': 'State Tree', 'Value': 'Hollong (Dipterocarpus retusus)'},
-        {'Symbol': 'State Flower', 'Value': 'Foxtail Orchid (Rhynchostylis retusa)'},
-        {'Symbol': 'State Butterfly', 'Value': 'Kaiser-e-Hind (Teinopalpus imperialis)'},
+        {'Symbol': 'State Fish', 'Value': 'Golden Mahseer (Tor putitora)'},
+        {'Symbol': 'State Tree', 'Value': 'Hollong (Dipterocarpus macrocarpus)'},
+        {
+          'Symbol': 'State Flower',
+          'Value': 'Foxtail Orchid (Rhynchostylis retusa)'
+        },
+        {
+          'Symbol': 'State Butterfly',
+          'Value': 'Kaiser-e-Hind (Teinopalpus imperialis)'
+        },
       ],
     ),
     StateGkChapter(
@@ -64,11 +71,17 @@ class StateGkData {
       ],
       keyFacts: [
         {'Event': 'NEFA Formed', 'Year': '1954 (Regulation Act)'},
-        {'Event': 'Arunachal Named', 'Year': '10-11 August 1970 (Agency Council)'},
+        {
+          'Event': 'Arunachal Named',
+          'Year': '10-11 August 1970 (Agency Council)'
+        },
         {'Event': 'UT Status Gained', 'Year': '20 January 1972'},
         {'Event': 'Capital Shifted to Itanagar', 'Year': '1 June 1974'},
         {'Event': 'Provisional Assembly', 'Year': '15 August 1975'},
-        {'Event': 'Full Statehood Day', 'Year': '20 February 1987 (55th Amendment)'},
+        {
+          'Event': 'Full Statehood Day',
+          'Year': '20 February 1987 (55th Amendment)'
+        },
       ],
     ),
     StateGkChapter(
@@ -164,8 +177,14 @@ class StateGkData {
         {'Office': 'First Speaker (UT)', 'Person': 'Nokmey Namati (1975-78)'},
         {'Office': 'First State Speaker', 'Person': 'T.L. Rajkumar (1985-90)'},
         {'Office': 'Current Speaker', 'Person': 'Tesam Pongte (2024-Present)'},
-        {'Office': 'Current Deputy Speaker', 'Person': 'Kardo Nyigyor (2024-Present)'},
-        {'Office': 'Lok Sabha - West', 'Person': 'Kiren Rijiju (Union Minister)'},
+        {
+          'Office': 'Current Deputy Speaker',
+          'Person': 'Kardo Nyigyor (2024-Present)'
+        },
+        {
+          'Office': 'Lok Sabha - West',
+          'Person': 'Kiren Rijiju (Union Minister)'
+        },
         {'Office': 'Lok Sabha - East', 'Person': 'Tapir Gao'},
         {'Office': 'Rajya Sabha Member', 'Person': 'Tai Tagak (2026-2032)'},
       ],
@@ -186,15 +205,37 @@ class StateGkData {
         'Railway Stations: Naharlagun, Gumto, and Bhalukpong.',
       ],
       keyFacts: [
-        {'Feature': 'Kangto Peak', 'Detail': '7,090 m (Highest peak in Arunachal, West Kameng)'},
+        {
+          'Feature': 'Kangto Peak',
+          'Detail': '7,090 m (Highest peak in Arunachal, West Kameng)'
+        },
         {'Feature': 'Gorichen Peak', 'Detail': 'About 6,488 m (Tawang sector)'},
-        {'Feature': 'Bum La Pass', 'Detail': 'India-China border pass in Tawang; Border Personnel Meeting point'},
-        {'Feature': 'Khenzimane (Zemithang)', 'Detail': 'The 14th Dalai Lama entered India here on 31 March 1959'},
-        {'Feature': 'Sela Pass', 'Detail': 'Border between West Kameng & Tawang (Sela Lake)'},
+        {
+          'Feature': 'Bum La Pass',
+          'Detail':
+              'India-China border pass in Tawang; Border Personnel Meeting point'
+        },
+        {
+          'Feature': 'Khenzimane (Zemithang)',
+          'Detail': 'The 14th Dalai Lama entered India here on 31 March 1959'
+        },
+        {
+          'Feature': 'Sela Pass',
+          'Detail': 'Border between West Kameng & Tawang (Sela Lake)'
+        },
         {'Feature': 'Yonggyap Pass', 'Detail': 'Upper Siang border with China'},
-        {'Feature': 'Ganga Lake (Gyakar Sinyi)', 'Detail': 'Natural lake in Papum Pare near Itanagar'},
-        {'Feature': 'Nuranang Waterfall', 'Detail': 'Tawang (also known as Jang Falls)'},
-        {'Feature': 'Dhola-Sadiya Bridge', 'Detail': 'Spans Lohit River connecting Assam & Arunachal'},
+        {
+          'Feature': 'Ganga Lake (Gyakar Sinyi)',
+          'Detail': 'Natural lake in Papum Pare near Itanagar'
+        },
+        {
+          'Feature': 'Nuranang Waterfall',
+          'Detail': 'Tawang (also known as Jang Falls)'
+        },
+        {
+          'Feature': 'Dhola-Sadiya Bridge',
+          'Detail': 'Spans Lohit River connecting Assam & Arunachal'
+        },
       ],
     ),
     StateGkChapter(
@@ -212,19 +253,41 @@ class StateGkData {
         'Orchid Capital of India: Home to over 500 orchid species. Asia\'s 3rd largest Orchidarium is in Tipi (West Kameng). Sessa Orchid Sanctuary established in 1989.',
       ],
       keyFacts: [
-        {'Sanctuary': 'Daying Ering Memorial (Lali)', 'District / Year': 'East Siang (1978)'},
-        {'Sanctuary': 'Itanagar Wildlife Sanctuary', 'District / Year': 'Papum Pare (1978)'},
-        {'Sanctuary': 'Pakke Tiger Reserve', 'District / Year': 'Pakke Kessang (1977)'},
-        {'Sanctuary': 'Eaglenest Sanctuary', 'District / Year': 'West Kameng (1989)'},
-        {'Sanctuary': 'Mehao Wildlife Sanctuary', 'District / Year': 'Lower Dibang Valley (1980)'},
-        {'Sanctuary': 'Tale Valley Sanctuary', 'District / Year': 'Lower Subansiri (1995)'},
-        {'Sanctuary': 'Sessa Orchid Sanctuary', 'District / Year': 'West Kameng (1989)'},
+        {
+          'Sanctuary': 'Daying Ering Memorial (Lali)',
+          'District / Year': 'East Siang (1978)'
+        },
+        {
+          'Sanctuary': 'Itanagar Wildlife Sanctuary',
+          'District / Year': 'Papum Pare (1978)'
+        },
+        {
+          'Sanctuary': 'Pakke Tiger Reserve',
+          'District / Year': 'Pakke Kessang (1977)'
+        },
+        {
+          'Sanctuary': 'Eaglenest Sanctuary',
+          'District / Year': 'West Kameng (1989)'
+        },
+        {
+          'Sanctuary': 'Mehao Wildlife Sanctuary',
+          'District / Year': 'Lower Dibang Valley (1980)'
+        },
+        {
+          'Sanctuary': 'Tale Valley Sanctuary',
+          'District / Year': 'Lower Subansiri (1995)'
+        },
+        {
+          'Sanctuary': 'Sessa Orchid Sanctuary',
+          'District / Year': 'West Kameng (1989)'
+        },
       ],
     ),
     StateGkChapter(
       id: 'ch8',
       title: '8. Complete 20 GI Tags of Arunachal',
-      subtitle: 'Authentic Geographical Indications registered with Government of India',
+      subtitle:
+          'Authentic Geographical Indications registered with Government of India',
       category: 'Economy & Culture',
       highlights: [
         'Arunachal Pradesh has secured 20 prestigious Geographical Indication (GI) tags across agricultural, handicraft, food, and manufactured products.',
@@ -235,31 +298,74 @@ class StateGkData {
       ],
       keyFacts: [
         {'GI Product': '1. Wakro Orange', 'Category': 'Agricultural (2014-15)'},
-        {'GI Product': '2. Idu Mishmi Textiles', 'Category': 'Handicraft (2019-20)'},
-        {'GI Product': '3. Khaw Tai (Khamti Rice)', 'Category': 'Agricultural (2023-24)'},
+        {
+          'GI Product': '2. Idu Mishmi Textiles',
+          'Category': 'Handicraft (2019-20)'
+        },
+        {
+          'GI Product': '3. Khaw Tai (Khamti Rice)',
+          'Category': 'Agricultural (2023-24)'
+        },
         {'GI Product': '4. Yak Churpi', 'Category': 'Food Stuff (2023-24)'},
         {'GI Product': '5. Tangsa Textile', 'Category': 'Handicraft (2023-24)'},
-        {'GI Product': '6. Handmade Carpet', 'Category': 'Handicraft (2023-24)'},
-        {'GI Product': '7. Wancho Wooden Craft', 'Category': 'Handicraft (2023-24)'},
-        {'GI Product': '8. Adi Kekir (Ginger)', 'Category': 'Agricultural (2023-24)'},
-        {'GI Product': '9. Apatani Textile', 'Category': 'Handicraft (2023-24)'},
+        {
+          'GI Product': '6. Handmade Carpet',
+          'Category': 'Handicraft (2023-24)'
+        },
+        {
+          'GI Product': '7. Wancho Wooden Craft',
+          'Category': 'Handicraft (2023-24)'
+        },
+        {
+          'GI Product': '8. Adi Kekir (Ginger)',
+          'Category': 'Agricultural (2023-24)'
+        },
+        {
+          'GI Product': '9. Apatani Textile',
+          'Category': 'Handicraft (2023-24)'
+        },
         {'GI Product': '10. Monpa Textile', 'Category': 'Handicraft (2023-24)'},
-        {'GI Product': '11. Nyishi Textile', 'Category': 'Handicraft (2023-24)'},
-        {'GI Product': '12. Monpa Handmade Paper', 'Category': 'Handicraft (2023-24)'},
+        {
+          'GI Product': '11. Nyishi Textile',
+          'Category': 'Handicraft (2023-24)'
+        },
+        {
+          'GI Product': '12. Monpa Handmade Paper',
+          'Category': 'Handicraft (2023-24)'
+        },
         {'GI Product': '13. Adi Textile', 'Category': 'Handicraft (2023-24)'},
         {'GI Product': '14. Galo Textile', 'Category': 'Handicraft (2023-24)'},
-        {'GI Product': '15. Adi Apong', 'Category': 'Manufactured Goods (2014-15)'},
-        {'GI Product': '16. Arunachal Dao (Sword)', 'Category': 'Manufactured Goods (2019-20)'},
-        {'GI Product': '17. Marua Apo', 'Category': 'Manufactured Goods (2023-24)'},
-        {'GI Product': '18. Khamti Handloom', 'Category': 'Handicraft (2023-24)'},
-        {'GI Product': '19. Singpho Phalap (Tea)', 'Category': 'Agricultural (2023-24)'},
-        {'GI Product': '20. Annyat Millet', 'Category': 'Agricultural (2023-24)'},
+        {
+          'GI Product': '15. Adi Apong',
+          'Category': 'Manufactured Goods (2014-15)'
+        },
+        {
+          'GI Product': '16. Arunachal Dao (Sword)',
+          'Category': 'Manufactured Goods (2019-20)'
+        },
+        {
+          'GI Product': '17. Marua Apo',
+          'Category': 'Manufactured Goods (2023-24)'
+        },
+        {
+          'GI Product': '18. Khamti Handloom',
+          'Category': 'Handicraft (2023-24)'
+        },
+        {
+          'GI Product': '19. Singpho Phalap (Tea)',
+          'Category': 'Agricultural (2023-24)'
+        },
+        {
+          'GI Product': '20. Annyat Millet',
+          'Category': 'Agricultural (2023-24)'
+        },
       ],
     ),
     StateGkChapter(
       id: 'ch9',
       title: '9. Major Festivals & Tribes',
-      subtitle: 'Agricultural and religious festivals across all ethnic communities',
+      subtitle:
+          'Agricultural and religious festivals across all ethnic communities',
       category: 'Culture',
       highlights: [
         'Arunachal Pradesh is inhabited by 26 major tribes and over 100 sub-tribes.',
@@ -280,13 +386,19 @@ class StateGkData {
       ],
       keyFacts: [
         {'Festival': 'Solung', 'Tribe / Date': 'Adi (1st week September)'},
-        {'Festival': 'Mopin', 'Tribe / Date': 'Galo (April - Rice powder smearing)'},
+        {
+          'Festival': 'Mopin',
+          'Tribe / Date': 'Galo (April - Rice powder smearing)'
+        },
         {'Festival': 'Losar', 'Tribe / Date': 'Monpa (Lunar New Year)'},
         {'Festival': 'Dree', 'Tribe / Date': 'Apatani (5th July, Ziro)'},
         {'Festival': 'Boori Boot', 'Tribe / Date': 'Nyishi (February)'},
         {'Festival': 'Nyokum-Yullo', 'Tribe / Date': 'Nyishi (26th February)'},
         {'Festival': 'Reh', 'Tribe / Date': 'Idu Mishmi (1st February)'},
-        {'Festival': 'Sangken', 'Tribe / Date': 'Khamti & Singpho (14-16 April)'},
+        {
+          'Festival': 'Sangken',
+          'Tribe / Date': 'Khamti & Singpho (14-16 April)'
+        },
         {'Festival': 'Oriah', 'Tribe / Date': 'Wancho (March/April)'},
         {'Festival': 'Si-Donyi', 'Tribe / Date': 'Tagin (January)'},
       ],
@@ -294,7 +406,8 @@ class StateGkData {
     StateGkChapter(
       id: 'ch10',
       title: '10. Census 2011 & Demographics',
-      subtitle: 'District-wise population, religion, sex ratio and literacy data',
+      subtitle:
+          'District-wise population, religion, sex ratio and literacy data',
       category: 'Demographics',
       highlights: [
         'Total Population: 13,83,727 (Males: 7,13,912; Females: 6,69,815).',
@@ -307,18 +420,28 @@ class StateGkData {
       ],
       keyFacts: [
         {'Metric': 'Total Population', 'Value': '1,383,727 (14th in India)'},
-        {'Metric': 'Population Density', 'Value': '17 / sq. km (Lowest in India)'},
+        {
+          'Metric': 'Population Density',
+          'Value': '17 / sq. km (Lowest in India)'
+        },
         {'Metric': 'Overall Literacy', 'Value': '65.38%'},
         {'Metric': 'Sex Ratio', 'Value': '938 / 1000'},
         {'Metric': 'Highest Literacy District', 'Value': 'Papum Pare (79.95%)'},
-        {'Metric': 'Highest Density District', 'Value': 'Papum Pare (51 / sq. km)'},
-        {'Metric': 'Lowest Density District', 'Value': 'Dibang Valley (1 / sq. km)'},
+        {
+          'Metric': 'Highest Density District',
+          'Value': 'Papum Pare (51 / sq. km)'
+        },
+        {
+          'Metric': 'Lowest Density District',
+          'Value': 'Dibang Valley (1 / sq. km)'
+        },
       ],
     ),
     StateGkChapter(
       id: 'ch11',
       title: '11. First in Arunachal, Books & Authors',
-      subtitle: 'Notable personalities, literary milestones and historical superlatives',
+      subtitle:
+          'Notable personalities, literary milestones and historical superlatives',
       category: 'Facts & Literature',
       highlights: [
         'First Lady IAS Officer: Indra Mallo Tana.',
@@ -334,12 +457,30 @@ class StateGkData {
         'Largest Monastery: Tawang Monastery (400 years old, largest in India, 2nd largest in the world after Potala Palace).',
       ],
       keyFacts: [
-        {'Author': 'Mamang Dai', 'Notable Work': 'The Black Hills, Arunachal Pradesh: The Hidden Land'},
-        {'Author': 'Lummer Dai', 'Notable Work': 'Paharar Sile Sile, Kanyar, Upar Mahal'},
-        {'Author': 'Bani Danggen', 'Notable Work': 'The Kebang: Indigenous Political Institution of Adis'},
-        {'Author': 'Yeshe Dorjee Thongchi', 'Notable Work': 'Mouna Onth Mukher Hirdoy (Sahitya Akademi)'},
-        {'Author': 'Tony Koyu', 'Notable Work': 'Ale Leki Lok Demay (Galo novel in Tani Script)'},
-        {'Author': 'Joram Begi', 'Notable Work': 'Educational Development in Arunachal Pradesh'},
+        {
+          'Author': 'Mamang Dai',
+          'Notable Work': 'The Black Hills, Arunachal Pradesh: The Hidden Land'
+        },
+        {
+          'Author': 'Lummer Dai',
+          'Notable Work': 'Paharar Sile Sile, Kanyar, Upar Mahal'
+        },
+        {
+          'Author': 'Bani Danggen',
+          'Notable Work': 'The Kebang: Indigenous Political Institution of Adis'
+        },
+        {
+          'Author': 'Yeshe Dorjee Thongchi',
+          'Notable Work': 'Mouna Onth Mukher Hirdoy (Sahitya Akademi)'
+        },
+        {
+          'Author': 'Tony Koyu',
+          'Notable Work': 'Ale Leki Lok Demay (Galo novel in Tani Script)'
+        },
+        {
+          'Author': 'Joram Begi',
+          'Notable Work': 'Educational Development in Arunachal Pradesh'
+        },
       ],
     ),
     StateGkChapter(
@@ -358,17 +499,27 @@ class StateGkData {
         'DNA vs. RNA: DNA has deoxyribose sugar and Thymine (A-T, G-C); RNA has ribose sugar and Uracil replacing Thymine.',
       ],
       keyFacts: [
-        {'Organelle': 'Mitochondria', 'Function': 'Powerhouse / ATP Generation'},
+        {
+          'Organelle': 'Mitochondria',
+          'Function': 'Powerhouse / ATP Generation'
+        },
         {'Organelle': 'Ribosome', 'Function': 'Protein Synthesis'},
-        {'Organelle': 'Lysosome', 'Function': 'Suicidal Bag / Intracellular Digestion'},
+        {
+          'Organelle': 'Lysosome',
+          'Function': 'Suicidal Bag / Intracellular Digestion'
+        },
         {'Organelle': 'Golgi Apparatus', 'Function': 'Packaging & Secretion'},
-        {'Organelle': 'Chloroplast', 'Function': 'Photosynthesis (Plant Cells only)'},
+        {
+          'Organelle': 'Chloroplast',
+          'Function': 'Photosynthesis (Plant Cells only)'
+        },
       ],
     ),
     StateGkChapter(
       id: 'ch13',
       title: '13. General Science: Human Physiology & Health',
-      subtitle: 'Organ systems, digestive enzymes, hormones, vitamins & deficiency diseases',
+      subtitle:
+          'Organ systems, digestive enzymes, hormones, vitamins & deficiency diseases',
       category: 'Science',
       highlights: [
         'Digestive System: Pepsin breaks down proteins in stomach (pH ~1.5); Amylase digests carbohydrates in saliva; Bile (produced in liver, stored in gallbladder) emulsifies fats.',
@@ -378,19 +529,35 @@ class StateGkData {
         'Deficiency Diseases: Iodine deficiency causes Goitre; Vitamin C deficiency causes Scurvy; Iron deficiency causes Anemia.',
       ],
       keyFacts: [
-        {'Vitamin': 'Vitamin A (Retinol)', 'Deficiency Disease': 'Night Blindness / Xerophthalmia'},
+        {
+          'Vitamin': 'Vitamin A (Retinol)',
+          'Deficiency Disease': 'Night Blindness / Xerophthalmia'
+        },
         {'Vitamin': 'Vitamin B1 (Thiamine)', 'Deficiency Disease': 'Beriberi'},
         {'Vitamin': 'Vitamin B3 (Niacin)', 'Deficiency Disease': 'Pellagra'},
-        {'Vitamin': 'Vitamin B12 (Cyanocobalamin)', 'Deficiency Disease': 'Pernicious Anemia'},
-        {'Vitamin': 'Vitamin C (Ascorbic Acid)', 'Deficiency Disease': 'Scurvy / Bleeding Gums'},
-        {'Vitamin': 'Vitamin D (Calciferol)', 'Deficiency Disease': 'Rickets (Children) / Osteomalacia'},
-        {'Vitamin': 'Vitamin K (Phylloquinone)', 'Deficiency Disease': 'Impaired Blood Clotting / Hemorrhage'},
+        {
+          'Vitamin': 'Vitamin B12 (Cyanocobalamin)',
+          'Deficiency Disease': 'Pernicious Anemia'
+        },
+        {
+          'Vitamin': 'Vitamin C (Ascorbic Acid)',
+          'Deficiency Disease': 'Scurvy / Bleeding Gums'
+        },
+        {
+          'Vitamin': 'Vitamin D (Calciferol)',
+          'Deficiency Disease': 'Rickets (Children) / Osteomalacia'
+        },
+        {
+          'Vitamin': 'Vitamin K (Phylloquinone)',
+          'Deficiency Disease': 'Impaired Blood Clotting / Hemorrhage'
+        },
       ],
     ),
     StateGkChapter(
       id: 'ch14',
       title: '14. General Science: Physics & Chemistry Essentials',
-      subtitle: 'Newton\'s laws, SI units, light, sound, common chemical formulas & pH',
+      subtitle:
+          'Newton\'s laws, SI units, light, sound, common chemical formulas & pH',
       category: 'Science',
       highlights: [
         'Newton\'s Laws: 1st Law (Inertia), 2nd Law (F = ma, definition of Force), 3rd Law (Action-Reaction).',

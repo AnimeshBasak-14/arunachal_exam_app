@@ -85,7 +85,8 @@ class Paper {
     return Paper(
       id: data['id']?.toString() ?? '',
       kind: kind,
-      title: _str(data['title']) ?? (examCode.isEmpty ? 'Untitled paper' : examCode),
+      title: _str(data['title']) ??
+          (examCode.isEmpty ? 'Untitled paper' : examCode),
       examCode: examCode,
       department: Department.classify(examCode,
           board: _str(data['board']) ?? _str(data['agency_code'])),

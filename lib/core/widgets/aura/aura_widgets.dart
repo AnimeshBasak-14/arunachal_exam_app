@@ -200,7 +200,8 @@ class SegmentedTabs extends StatelessWidget {
                       style: AuraType.sans(
                         14,
                         i == selected ? a.ink : a.inkFaint,
-                        weight: i == selected ? FontWeight.w600 : FontWeight.w500,
+                        weight:
+                            i == selected ? FontWeight.w600 : FontWeight.w500,
                       ),
                       child: Text(labels[i]),
                     ),
@@ -298,7 +299,8 @@ class SkeletonBox extends StatelessWidget {
   final double? width;
   final double height;
   final double radius;
-  const SkeletonBox({super.key, this.width, required this.height, this.radius = 12});
+  const SkeletonBox(
+      {super.key, this.width, required this.height, this.radius = 12});
 
   @override
   Widget build(BuildContext context) => Container(

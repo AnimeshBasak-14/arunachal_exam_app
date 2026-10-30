@@ -27,7 +27,8 @@ class Question {
   final List<String> modeAvailability; // ['timed', 'study']
   final List<String> options; // ['(a) ...', '(b) ...']
   final List<String?> optionImages;
-  final String correctAnswer; // 'a', 'b', 'c', 'd', or '' when the key is missing
+  final String
+      correctAnswer; // 'a', 'b', 'c', 'd', or '' when the key is missing
   final String officialAnswer;
   final String solution;
   final String? solutionImage;
@@ -44,7 +45,6 @@ class Question {
   final String? topic;
   final String questionType; // 'mcq', 'multiple_select', 'numerical'
   final String? adminNotes;
-
 
   /// False when the source data has no usable answer key. Such questions are
   /// shown to students but never graded.
@@ -214,7 +214,8 @@ class Question {
 
     // Find official answer string
     String official = cleanCorrect.isEmpty ? '' : '($cleanCorrect)';
-    final correctIdx = cleanCorrect.isEmpty ? -1 : cleanCorrect.codeUnitAt(0) - 97;
+    final correctIdx =
+        cleanCorrect.isEmpty ? -1 : cleanCorrect.codeUnitAt(0) - 97;
     if (correctIdx >= 0 && correctIdx < parsedOptions.length) {
       official = parsedOptions[correctIdx];
     }
@@ -235,16 +236,23 @@ class Question {
       subject: (data['subject'] ?? 'General').toString(),
       difficulty: (data['difficulty'] ?? 'Medium').toString(),
       groupId: data['groupId']?.toString() ?? data['group_id']?.toString(),
-      passageId: data['passageId']?.toString() ?? data['passage_id']?.toString(),
+      passageId:
+          data['passageId']?.toString() ?? data['passage_id']?.toString(),
       passageOrDirection: data['passageOrDirection']?.toString() ??
           data['passage_or_direction']?.toString(),
-      passageImage: data['passageImage']?.toString() ?? data['passage_image']?.toString(),
-      directionText: data['directionText']?.toString() ?? data['direction_text']?.toString(),
-      contentFormat: (data['contentFormat'] ?? data['content_format'] ?? 'text').toString(),
+      passageImage:
+          data['passageImage']?.toString() ?? data['passage_image']?.toString(),
+      directionText: data['directionText']?.toString() ??
+          data['direction_text']?.toString(),
+      contentFormat: (data['contentFormat'] ?? data['content_format'] ?? 'text')
+          .toString(),
       topic: data['topic']?.toString(),
-      questionType: (data['questionType'] ?? data['question_type'] ?? 'mcq').toString(),
-      adminNotes: data['adminNotes']?.toString() ?? data['admin_notes']?.toString(),
-      questionText: (data['questionText'] ?? data['question_text'] ?? '').toString(),
+      questionType:
+          (data['questionType'] ?? data['question_type'] ?? 'mcq').toString(),
+      adminNotes:
+          data['adminNotes']?.toString() ?? data['admin_notes']?.toString(),
+      questionText:
+          (data['questionText'] ?? data['question_text'] ?? '').toString(),
       questionImage: data['questionImage']?.toString() ??
           data['question_image_url']?.toString() ??
           data['image_url']?.toString(),
@@ -253,8 +261,11 @@ class Question {
           data['question_image_url']?.toString(),
       hasImage: data['hasImage'] == true ||
           data['has_image'] == true ||
-          (data['image_url'] != null && data['image_url'].toString().trim().isNotEmpty),
-      reviewStatus: (data['reviewStatus'] ?? data['review_status'] ?? 'approved').toString(),
+          (data['image_url'] != null &&
+              data['image_url'].toString().trim().isNotEmpty),
+      reviewStatus:
+          (data['reviewStatus'] ?? data['review_status'] ?? 'approved')
+              .toString(),
       flagReasons: (data['flagReasons'] is List)
           ? (data['flagReasons'] as List).map((e) => e.toString()).toList()
           : (data['flag_reasons'] is List)
@@ -263,7 +274,9 @@ class Question {
       modeAvailability: (data['modeAvailability'] is List)
           ? (data['modeAvailability'] as List).map((e) => e.toString()).toList()
           : (data['mode_availability'] is List)
-              ? (data['mode_availability'] as List).map((e) => e.toString()).toList()
+              ? (data['mode_availability'] as List)
+                  .map((e) => e.toString())
+                  .toList()
               : const ['timed', 'study'],
       options: parsedOptions,
       optionImages: parsedOptionImages,
@@ -272,7 +285,8 @@ class Question {
       solution: (data['solution'] ?? data['explanation'] ?? '').toString(),
       solutionImage: data['solutionImage']?.toString() ??
           data['explanation_image_url']?.toString(),
-      timeLimitMins: int.tryParse(data['timeLimitMins']?.toString() ?? '') ?? 120,
+      timeLimitMins:
+          int.tryParse(data['timeLimitMins']?.toString() ?? '') ?? 120,
       marksPerCorrect: (data['marksPerCorrect'] as num?)?.toDouble() ?? 2.0,
       negativeMarks: (data['negativeMarks'] as num?)?.toDouble() ?? 0.5,
       isScenarioTest: data['isScenarioTest'] == true ||
@@ -281,7 +295,8 @@ class Question {
       initialComments: const [],
       pyqText: '[$rawExamCode $parsedYear]',
       questionNumber: int.tryParse(data['questionNumber']?.toString() ?? '') ??
-          int.tryParse(data['question_number']?.toString() ?? '') ?? 0,
+          int.tryParse(data['question_number']?.toString() ?? '') ??
+          0,
     );
   }
 
@@ -302,7 +317,8 @@ class Question {
     final testTitle = tests?['title']?.toString() ?? '';
     final qNum = (data['order_index'] as int?) ??
         (data['question_number'] as int?) ??
-        int.tryParse(data['question_number']?.toString() ?? '') ?? 0;
+        int.tryParse(data['question_number']?.toString() ?? '') ??
+        0;
 
     // Options parsing from JSONB array
     List<String> parsedOptions = [];
@@ -312,9 +328,12 @@ class Question {
       for (int i = 0; i < list.length; i++) {
         final item = list[i];
         if (item is Map) {
-          final id = (item['key'] ?? item['id'] ?? String.fromCharCode(97 + i)).toString();
+          final id = (item['key'] ?? item['id'] ?? String.fromCharCode(97 + i))
+              .toString();
           final text = (item['text'] ?? item['value'] ?? '').toString().trim();
-          if (text.isNotEmpty && !RegExp(r'^Option\s+[A-D]$', caseSensitive: false).hasMatch(text)) {
+          if (text.isNotEmpty &&
+              !RegExp(r'^Option\s+[A-D]$', caseSensitive: false)
+                  .hasMatch(text)) {
             parsedOptions.add(text.startsWith('(') ? text : '($id) $text');
             if (i < 4 && item['image'] != null) {
               parsedOptionImages[i] = item['image'].toString();
@@ -322,7 +341,8 @@ class Question {
           }
         } else if (item is String && item.trim().isNotEmpty) {
           final text = item.trim();
-          if (!RegExp(r'^Option\s+[A-D]$', caseSensitive: false).hasMatch(text)) {
+          if (!RegExp(r'^Option\s+[A-D]$', caseSensitive: false)
+              .hasMatch(text)) {
             parsedOptions.add(text);
           }
         }
@@ -337,7 +357,8 @@ class Question {
     final cleanCorrect = rawCorrect.isNotEmpty ? rawCorrect[0] : '';
 
     String official = cleanCorrect.isEmpty ? '' : '($cleanCorrect)';
-    final correctIdx = cleanCorrect.isEmpty ? -1 : cleanCorrect.codeUnitAt(0) - 97;
+    final correctIdx =
+        cleanCorrect.isEmpty ? -1 : cleanCorrect.codeUnitAt(0) - 97;
     if (correctIdx >= 0 && correctIdx < parsedOptions.length) {
       official = parsedOptions[correctIdx];
     }
@@ -389,7 +410,9 @@ class Question {
 
     // Synthesize or resolve group ID so multi-question passages link together
     String? effectiveGroupId = passageId ?? data['group_id']?.toString();
-    if (effectiveGroupId == null && passageText != null && passageText.isNotEmpty) {
+    if (effectiveGroupId == null &&
+        passageText != null &&
+        passageText.isNotEmpty) {
       final rangeMatch = RegExp(
         r'(?:Q\.?\s*(?:No\.?|Nos\.?)?\s*)(\d+)\s*(?:to|and|&|-|–|—)\s*(\d+)',
         caseSensitive: false,
@@ -428,8 +451,10 @@ class Question {
       imageUrl: data['image_url']?.toString() ??
           data['question_image_url']?.toString(),
       hasImage: data['has_image'] == true ||
-          (data['image_url'] != null && data['image_url'].toString().trim().isNotEmpty) ||
-          (data['question_image_url'] != null && data['question_image_url'].toString().trim().isNotEmpty),
+          (data['image_url'] != null &&
+              data['image_url'].toString().trim().isNotEmpty) ||
+          (data['question_image_url'] != null &&
+              data['question_image_url'].toString().trim().isNotEmpty),
       reviewStatus: (data['review_status'] ?? 'unreviewed').toString(),
       flagReasons: (data['flagged_issues'] is List)
           ? (data['flagged_issues'] as List).map((e) => e.toString()).toList()
@@ -437,7 +462,9 @@ class Question {
               ? (data['flag_reasons'] as List).map((e) => e.toString()).toList()
               : const [],
       modeAvailability: (data['mode_availability'] is List)
-          ? (data['mode_availability'] as List).map((e) => e.toString()).toList()
+          ? (data['mode_availability'] as List)
+              .map((e) => e.toString())
+              .toList()
           : const ['timed', 'study'],
       options: parsedOptions,
       optionImages: parsedOptionImages,
@@ -447,8 +474,7 @@ class Question {
           (data['explanation'] ?? 'Verified with official key.').toString(),
       solutionImage: data['explanation_image_url']?.toString(),
       timeLimitMins: tests?['duration_minutes'] as int? ?? 120,
-      marksPerCorrect:
-          (tests?['marks_per_correct'] as num?)?.toDouble() ?? 2.0,
+      marksPerCorrect: (tests?['marks_per_correct'] as num?)?.toDouble() ?? 2.0,
       negativeMarks: (tests?['negative_marks'] as num?)?.toDouble() ?? 0.5,
       isScenarioTest: passages != null || groups != null,
       scenarioTags: null,
@@ -485,7 +511,8 @@ class QuestionRepository {
         supaUrl += '&tests.year=eq.$year';
       }
       if (paperType != null && paperType.isNotEmpty) {
-        supaUrl += '&tests.paper_type=eq.${Uri.encodeComponent(paperType.toUpperCase())}';
+        supaUrl +=
+            '&tests.paper_type=eq.${Uri.encodeComponent(paperType.toUpperCase())}';
       }
 
       final response = await http.get(
@@ -502,8 +529,8 @@ class QuestionRepository {
           debugPrint(
               '[QuestionRepository] Loaded ${list.length} live questions from Supabase for $cleanCode');
           return list
-              .map((item) =>
-                  Question.fromSupabase(item as Map<String, dynamic>))
+              .map(
+                  (item) => Question.fromSupabase(item as Map<String, dynamic>))
               .toList();
         }
       }

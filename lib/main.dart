@@ -28,6 +28,8 @@ import 'features/chatbot/view/chatbot_screen.dart';
 import 'features/home/view/state_gk_screen.dart';
 import 'features/home/view/current_affairs_gk_screen.dart';
 import 'features/gk/view/gk_map_screen.dart';
+import 'features/streak/view/daily_question_screen.dart';
+import 'features/streak/view/streak_screen.dart';
 import 'core/widgets/aura/wordmark.dart';
 import 'features/learn/data/learn_deck.dart';
 import 'features/learn/view/learn_feed_screen.dart';
@@ -86,8 +88,7 @@ void main() async {
     try {
       await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
       // Handshake log so Firebase Console immediately verifies the SDK installation
-      await FirebaseCrashlytics.instance
-          .log('${Wordmark.appName} started');
+      await FirebaseCrashlytics.instance.log('${Wordmark.appName} started');
     } catch (_) {}
 
     FlutterError.onError = (errorDetails) {
@@ -152,8 +153,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/',
     observers: [
-      if (analytics != null)
-        FirebaseAnalyticsObserver(analytics: analytics),
+      if (analytics != null) FirebaseAnalyticsObserver(analytics: analytics),
     ],
     redirect: (context, state) {
       final isGoingToOnboarding = state.matchedLocation == '/onboarding';
@@ -255,7 +255,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/forgot-password',
-        builder: (context, state) => ForgotPasswordScreen(initialEmail: state.extra as String?),
+        builder: (context, state) =>
+            ForgotPasswordScreen(initialEmail: state.extra as String?),
       ),
       GoRoute(
         path: '/home',
@@ -268,8 +269,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/mock-hub', redirect: (_, __) => '/home?tab=2'),
       GoRoute(
         path: '/exams-hub',
-        redirect: (_, state) =>
-            state.uri.queryParameters['tab'] == '1' ? '/home?tab=2' : '/home?tab=1',
+        redirect: (_, state) => state.uri.queryParameters['tab'] == '1'
+            ? '/home?tab=2'
+            : '/home?tab=1',
+      ),
+      GoRoute(
+        path: '/streak',
+        builder: (context, state) => const StreakScreen(),
+      ),
+      GoRoute(
+        path: '/daily/:date',
+        builder: (context, state) =>
+            DailyQuestionScreen(date: state.pathParameters['date'] ?? ''),
       ),
       GoRoute(
         path: '/account',

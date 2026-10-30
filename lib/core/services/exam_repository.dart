@@ -53,15 +53,13 @@ class ExamRepository {
       final uri = Uri.parse(
         '${SupabaseConfig.url}/rest/v1/questions?select=*,question_groups(*),tests!inner(*)&test_id=eq.${Uri.encodeComponent(testId)}&order=question_number',
       );
-      final response = await http
-          .get(
-            uri,
-            headers: {
-              ...SupabaseConfig.authHeaders,
-              'Prefer': 'return=representation',
-            },
-          )
-          .timeout(const Duration(seconds: 8));
+      final response = await http.get(
+        uri,
+        headers: {
+          ...SupabaseConfig.authHeaders,
+          'Prefer': 'return=representation',
+        },
+      ).timeout(const Duration(seconds: 8));
 
       if (response.statusCode == 200) {
         final List list = jsonDecode(response.body);
@@ -93,18 +91,17 @@ class ExamRepository {
         url += '&topic=ilike.*${Uri.encodeComponent(topic)}*';
       }
       if (paperType != null && paperType.isNotEmpty && paperType != 'BOTH') {
-        url += '&tests.paper_type=eq.${Uri.encodeComponent(paperType.toUpperCase())}';
+        url +=
+            '&tests.paper_type=eq.${Uri.encodeComponent(paperType.toUpperCase())}';
       }
 
-      final response = await http
-          .get(
-            Uri.parse(url),
-            headers: {
-              ...SupabaseConfig.authHeaders,
-              'Prefer': 'return=representation',
-            },
-          )
-          .timeout(const Duration(seconds: 8));
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          ...SupabaseConfig.authHeaders,
+          'Prefer': 'return=representation',
+        },
+      ).timeout(const Duration(seconds: 8));
 
       if (response.statusCode == 200) {
         final List list = jsonDecode(response.body);
@@ -125,7 +122,8 @@ class ExamRepository {
     String? paperType,
   }) async {
     try {
-      var url = '${SupabaseConfig.url}/rest/v1/questions?select=id,tests!inner(*)&limit=1';
+      var url =
+          '${SupabaseConfig.url}/rest/v1/questions?select=id,tests!inner(*)&limit=1';
       if (subject.isNotEmpty && subject.toLowerCase() != 'all') {
         url += '&subject=ilike.*${Uri.encodeComponent(subject)}*';
       }
@@ -133,7 +131,8 @@ class ExamRepository {
         url += '&topic=ilike.*${Uri.encodeComponent(topic)}*';
       }
       if (paperType != null && paperType.isNotEmpty && paperType != 'BOTH') {
-        url += '&tests.paper_type=eq.${Uri.encodeComponent(paperType.toUpperCase())}';
+        url +=
+            '&tests.paper_type=eq.${Uri.encodeComponent(paperType.toUpperCase())}';
       }
 
       final response = await http.head(

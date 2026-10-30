@@ -23,7 +23,8 @@ class AdminSession {
       DateTime.now().isBefore(_expiresAt!);
 
   /// Value for the `Authorization` header on admin REST calls.
-  static String get bearer => 'Bearer ${isSignedIn ? _accessToken : publishableKey}';
+  static String get bearer =>
+      'Bearer ${isSignedIn ? _accessToken : publishableKey}';
 
   /// Signs in with Supabase Auth and confirms the account is an admin.
   /// Returns null on success, or an error message.

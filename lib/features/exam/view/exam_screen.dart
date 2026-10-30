@@ -21,6 +21,9 @@ import '../../../core/widgets/aura/aura_widgets.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../data/attempt.dart';
 import 'question_view.dart';
+import '../../streak/data/time_tracker.dart';
+import '../../streak/data/coins.dart';
+import '../../streak/data/questions_today.dart';
 
 /// Full-screen exam engine: one question per page, persistent timer, and a
 /// question palette drawer. Study mode drops the timer and reveals the key
@@ -398,8 +401,15 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
     final storage = ref.read(storageServiceProvider);
     final user = ref.read(authViewModelProvider).user;
     final firebase = ref.read(firebaseServiceProvider);
+    // Every answered question counts toward today's question target.
+    ref.read(questionsTodayProvider.notifier).add(
+        ((record['correct'] as int?) ?? 0) + ((record['wrong'] as int?) ?? 0));
     // A finished paper counts as studying today.
     StreakService(ref.read(sharedPreferencesProvider)).checkAndUpdateStreak();
+    ref.read(coinsProvider.notifier).award(
+        'paper:${record['date']}:${widget.testId ?? widget.examCode}',
+        CoinReward.finishedPaper,
+        'Finished a ${widget.paperType == 'PYQ' ? 'paper' : 'mock'}');
 
     final history = List<String>.from(storage.getQuizHistory())
       ..insert(0, jsonEncode(record));
@@ -453,7 +463,13 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => TimeTracked(
+        section: widget.paperType == 'PYQ' ? 'pyq' : 'mock',
+        sub: 'paper',
+        child: _buildContent(context),
+      );
+
+  Widget _buildContent(BuildContext context) {
     final a = context.aura;
     return PopScope(
       canPop: false,

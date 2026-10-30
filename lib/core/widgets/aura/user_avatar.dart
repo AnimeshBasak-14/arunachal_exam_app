@@ -21,12 +21,15 @@ class UserAvatar extends StatelessWidget {
         shape: BoxShape.circle,
         color: a.accentSoft,
         border: Border.all(color: a.hairline),
-        image: image == null ? null : DecorationImage(image: image, fit: BoxFit.cover),
+        image: image == null
+            ? null
+            : DecorationImage(image: image, fit: BoxFit.cover),
       ),
       child: image != null
           ? null
           : Text(name.trim().isEmpty ? '·' : name.trim()[0].toUpperCase(),
-              style: AuraType.serif(size * 0.43, a.accent, weight: FontWeight.w600)),
+              style: AuraType.serif(size * 0.43, a.accent,
+                  weight: FontWeight.w600)),
     );
   }
 }

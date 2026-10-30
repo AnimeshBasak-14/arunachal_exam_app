@@ -11,13 +11,16 @@ class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key, this.initialEmail});
 
   @override
-  ConsumerState<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  ConsumerState<ForgotPasswordScreen> createState() =>
+      _ForgotPasswordScreenState();
 }
 
 class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   late final _email = TextEditingController(
-      text: Validators.isEmail(widget.initialEmail ?? '') ? widget.initialEmail : null);
+      text: Validators.isEmail(widget.initialEmail ?? '')
+          ? widget.initialEmail
+          : null);
   bool _sent = false;
 
   @override
@@ -36,7 +39,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    final ok = await ref.read(authViewModelProvider.notifier).sendPasswordReset(_email.text);
+    final ok = await ref
+        .read(authViewModelProvider.notifier)
+        .sendPasswordReset(_email.text);
     if (ok && mounted) setState(() => _sent = true);
   }
 
@@ -45,17 +50,20 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     final state = ref.watch(authViewModelProvider);
     return FormPage(
       title: 'Reset password',
-      subtitle: 'Enter your account email and we\'ll send you a link to choose a new password.',
+      subtitle:
+          'Enter your account email and we\'ll send you a link to choose a new password.',
       children: [
         if (_sent) ...[
           SentNotice(
             title: 'Check your inbox',
-            message: 'If an account exists for ${_email.text.trim()}, a reset link is on its way. '
+            message:
+                'If an account exists for ${_email.text.trim()}, a reset link is on its way. '
                 'It can take a minute; check spam too.',
           ),
           const SizedBox(height: 22),
           FilledButton(
-            onPressed: () => context.canPop() ? context.pop() : context.go('/login'),
+            onPressed: () =>
+                context.canPop() ? context.pop() : context.go('/login'),
             child: const Text('Back to sign in'),
           ),
         ] else
@@ -74,13 +82,17 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                     labelText: 'Email',
                     prefixIcon: Icon(CupertinoIcons.at, size: 19),
                   ),
-                  validator: (v) => Validators.isEmail((v ?? '').trim().toLowerCase())
-                      ? null
-                      : 'Please enter a valid email address',
+                  validator: (v) =>
+                      Validators.isEmail((v ?? '').trim().toLowerCase())
+                          ? null
+                          : 'Please enter a valid email address',
                 ),
                 const SizedBox(height: 22),
                 FormError(state.errorMessage),
-                BusyButton(label: 'Send reset link', busy: state.isLoading, onPressed: _submit),
+                BusyButton(
+                    label: 'Send reset link',
+                    busy: state.isLoading,
+                    onPressed: _submit),
               ],
             ),
           ),

@@ -50,7 +50,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         );
     if (!ok || !mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('Welcome! We sent a verification link to ${_email.text.trim()}.'),
+      content: Text(
+          'Welcome! We sent a verification link to ${_email.text.trim()}.'),
     ));
     context.go('/home');
   }
@@ -61,7 +62,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final state = ref.watch(authViewModelProvider);
     return FormPage(
       title: 'Create your account',
-      subtitle: 'Your progress, saved cards and test history follow you to any phone.',
+      subtitle:
+          'Your progress, saved cards and test history follow you to any phone.',
       children: [
         const GoogleButton(),
         const OrDivider(),
@@ -80,7 +82,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     labelText: 'Full name',
                     prefixIcon: Icon(CupertinoIcons.person, size: 19),
                   ),
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Please enter your name' : null,
+                  validator: (v) => (v == null || v.trim().isEmpty)
+                      ? 'Please enter your name'
+                      : null,
                 ),
                 const SizedBox(height: 14),
                 TextFormField(
@@ -92,15 +96,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     labelText: 'Email',
                     prefixIcon: Icon(CupertinoIcons.at, size: 19),
                   ),
-                  validator: (v) => Validators.isEmail((v ?? '').trim().toLowerCase())
-                      ? null
-                      : 'Please enter a valid email address',
+                  validator: (v) =>
+                      Validators.isEmail((v ?? '').trim().toLowerCase())
+                          ? null
+                          : 'Please enter a valid email address',
                 ),
                 const SizedBox(height: 14),
                 PasswordField(
                   controller: _password,
                   newPassword: true,
-                  validator: (v) => (v ?? '').length < 8 ? 'At least 8 characters' : null,
+                  validator: (v) =>
+                      (v ?? '').length < 8 ? 'At least 8 characters' : null,
                 ),
                 const SizedBox(height: 14),
                 PasswordField(
@@ -109,11 +115,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   newPassword: true,
                   action: TextInputAction.done,
                   onSubmitted: (_) => _submit(),
-                  validator: (v) => v != _password.text ? 'Passwords do not match' : null,
+                  validator: (v) =>
+                      v != _password.text ? 'Passwords do not match' : null,
                 ),
                 const SizedBox(height: 22),
                 FormError(state.errorMessage),
-                BusyButton(label: 'Create account', busy: state.isLoading, onPressed: _submit),
+                BusyButton(
+                    label: 'Create account',
+                    busy: state.isLoading,
+                    onPressed: _submit),
               ],
             ),
           ),

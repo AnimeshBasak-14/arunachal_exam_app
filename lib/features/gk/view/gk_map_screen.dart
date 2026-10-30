@@ -34,7 +34,9 @@ String _mapStyle(Aura a, bool dark) {
   String hex(Color c) =>
       '#${(c.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
   final land = dark ? '#0a0a0a' : '#f4f6f8';
-  final water = dark ? '#1a1a1a' : '#d9e2e6';
+  // Rivers, lakes and seas are blue so they stand out from the land.
+  final water = dark ? '#1c4468' : '#9fcdf0';
+  final waterLabel = dark ? '#8fbce6' : '#2f6aa3';
   final road = dark ? '#1f1f1f' : '#ffffff';
   Map<String, Object> rule(String? feature, String? element,
           List<Map<String, Object>> stylers) =>
@@ -58,6 +60,9 @@ String _mapStyle(Aura a, bool dark) {
     ]),
     rule('water', 'geometry', [
       {'color': water}
+    ]),
+    rule('water', 'labels.text.fill', [
+      {'color': waterLabel}
     ]),
     rule('road', 'geometry', [
       {'color': road}

@@ -13,6 +13,7 @@ import '../../auth/view/auth_widgets.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
 import '../../plan/data/study_plan_provider.dart';
 import '../../plan/view/study_plan_sheet.dart';
+import '../../streak/view/coin_widgets.dart';
 
 class AccountScreen extends ConsumerWidget {
   const AccountScreen({super.key});
@@ -134,6 +135,7 @@ class AccountScreen extends ConsumerWidget {
             onPressed: () => context.pop(),
             icon: const Icon(CupertinoIcons.back),
           ),
+          actions: const [HiddenCoin('account'), SizedBox(width: 6)],
         ),
         body: ListView(
           padding: const EdgeInsets.fromLTRB(

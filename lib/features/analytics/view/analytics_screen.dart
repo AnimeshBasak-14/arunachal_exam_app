@@ -9,6 +9,7 @@ import '../../exam/data/attempt.dart';
 import '../../learn/data/learn_deck.dart';
 import '../../learn/data/topic_mapping.dart';
 import '../../shell/view/app_shell.dart';
+import '../../streak/view/coin_widgets.dart';
 
 class SubjectStat {
   final String subject;
@@ -85,6 +86,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                 ? 'Your scores and weak subjects'
                 : '${attempts.length} ${attempts.length == 1 ? 'test' : 'tests'} taken',
             actions: [
+              const HiddenCoin('progress'),
               IconButton(
                 tooltip: 'Account & settings',
                 onPressed: () => context.push('/account'),

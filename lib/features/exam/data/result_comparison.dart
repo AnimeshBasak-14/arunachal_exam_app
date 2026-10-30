@@ -9,7 +9,8 @@ class ResultComparison {
   final bool isFirstAttempt;
   final bool isPersonalBest;
   final int? deltaPoints; // e.g. +12, -5, 0 (percentage points)
-  final List<Attempt> recentAttempts; // Up to 5 attempts for this exam & mode, chronological
+  final List<Attempt>
+      recentAttempts; // Up to 5 attempts for this exam & mode, chronological
   final WeakTopicSuggestion? weakTopic;
 
   const ResultComparison({
@@ -27,7 +28,9 @@ class ResultComparison {
     if (isFirstAttempt || previous == null || deltaPoints == null) {
       return 'First attempt. This is your starting point.';
     }
-    final code = current.examCode.trim().isNotEmpty ? current.examCode.trim() : 'similar';
+    final code = current.examCode.trim().isNotEmpty
+        ? current.examCode.trim()
+        : 'similar';
     if (deltaPoints! > 0) {
       return '+$deltaPoints points since your last $code attempt';
     }

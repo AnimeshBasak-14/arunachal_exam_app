@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/aura.dart';
 import '../../../core/widgets/aura/aura_widgets.dart';
+import '../data/study_plan.dart';
 import '../data/study_plan_provider.dart';
 
 /// Shows the 2-step setup sheet on first launch, or allows editing from settings.
@@ -33,6 +34,7 @@ class _StudyPlanSheetState extends ConsumerState<_StudyPlanSheet> {
   int _reminderMinute = 0;
   bool _remindersEnabled = false;
   int _dailyGoal = 20;
+  int _dailyQuestions = 10;
   bool _permissionDenied = false;
 
   @override
@@ -44,12 +46,23 @@ class _StudyPlanSheetState extends ConsumerState<_StudyPlanSheet> {
     _reminderMinute = plan.reminderMinute;
     _remindersEnabled = plan.remindersEnabled;
     _dailyGoal = plan.dailyGoal;
+    _dailyQuestions = plan.dailyQuestions;
   }
 
   String _formatDate(DateTime d) {
     const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
     ];
     return '${d.day} ${months[d.month - 1]} ${d.year}';
   }
@@ -116,12 +129,13 @@ class _StudyPlanSheetState extends ConsumerState<_StudyPlanSheet> {
 
   Future<void> _saveAndClose() async {
     await ref.read(studyPlanProvider.notifier).completeSetup(
-      examDate: _examDate,
-      remindersEnabled: _remindersEnabled,
-      reminderHour: _reminderHour,
-      reminderMinute: _reminderMinute,
-      dailyGoal: _dailyGoal,
-    );
+          examDate: _examDate,
+          remindersEnabled: _remindersEnabled,
+          reminderHour: _reminderHour,
+          reminderMinute: _reminderMinute,
+          dailyGoal: _dailyGoal,
+          dailyQuestions: _dailyQuestions,
+        );
     if (mounted) Navigator.of(context).pop();
   }
 
@@ -141,11 +155,34 @@ class _StudyPlanSheetState extends ConsumerState<_StudyPlanSheet> {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         border: Border(top: BorderSide(color: a.hairline)),
       ),
-      padding: EdgeInsets.fromLTRB(AuraSpace.gutter, 16, AuraSpace.gutter, 16 + bottomInset),
+      padding: EdgeInsets.fromLTRB(
+          AuraSpace.gutter, 16, AuraSpace.gutter, 16 + bottomInset),
       child: AnimatedSize(
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeOutCubic,
-        child: _step == 0 ? _buildStep1(a) : _buildStep2(a),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Scrolls when text is large or the screen is short; the save
+            // button below stays in reach.
+            Flexible(
+              child: SingleChildScrollView(
+                child: _step == 0 ? _buildStep1(a) : _buildStep2(a),
+              ),
+            ),
+            if (_step == 1) ...[
+              const SizedBox(height: 14),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(50)),
+                onPressed: _saveAndClose,
+                child: Text(widget.isFirstRun
+                    ? 'Save & start preparing'
+                    : 'Save changes'),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -173,12 +210,14 @@ class _StudyPlanSheetState extends ConsumerState<_StudyPlanSheet> {
             if (widget.isFirstRun)
               TextButton(
                 onPressed: _skip,
-                child: Text('Skip for now', style: AuraType.sans(13, a.inkMuted)),
+                child:
+                    Text('Skip for now', style: AuraType.sans(13, a.inkMuted)),
               ),
           ],
         ),
         const SizedBox(height: 8),
-        Text('When is your exam?', style: AuraType.serif(26, a.ink, height: 1.2)),
+        Text('When is your exam?',
+            style: AuraType.serif(26, a.ink, height: 1.2)),
         const SizedBox(height: 8),
         Text(
           'Pick your target date so Dawnlit can show days left. You can change this anytime.',
@@ -194,7 +233,9 @@ class _StudyPlanSheetState extends ConsumerState<_StudyPlanSheet> {
               const SizedBox(width: 14),
               Expanded(
                 child: Text(
-                  _examDate == null ? 'Choose your exam date' : _formatDate(_examDate!),
+                  _examDate == null
+                      ? 'Choose your exam date'
+                      : _formatDate(_examDate!),
                   style: AuraType.sans(
                     15,
                     _examDate == null ? a.inkMuted : a.ink,
@@ -215,7 +256,8 @@ class _StudyPlanSheetState extends ConsumerState<_StudyPlanSheet> {
                 _step = 1;
               });
             },
-            child: Text("I don't know yet", style: AuraType.sans(14, a.inkMuted)),
+            child:
+                Text("I don't know yet", style: AuraType.sans(14, a.inkMuted)),
           ),
         ),
         const SizedBox(height: 16),
@@ -267,16 +309,18 @@ class _StudyPlanSheetState extends ConsumerState<_StudyPlanSheet> {
           ],
         ),
         const SizedBox(height: 8),
-        Text('When will you study?', style: AuraType.serif(26, a.ink, height: 1.2)),
+        Text('When will you study?',
+            style: AuraType.serif(26, a.ink, height: 1.2)),
         const SizedBox(height: 6),
         Text(
-          'Choose your daily revision time and card target.',
+          'Choose your daily revision time and your targets.',
           style: AuraType.sans(14, a.inkMuted, height: 1.45),
         ),
         const SizedBox(height: 20),
 
         // Reminder Time Presets
-        Text('Daily reminder time', style: AuraType.sans(13.5, a.ink, weight: FontWeight.w600)),
+        Text('Daily reminder time',
+            style: AuraType.sans(13.5, a.ink, weight: FontWeight.w600)),
         const SizedBox(height: 10),
         Wrap(
           spacing: 8,
@@ -298,7 +342,8 @@ class _StudyPlanSheetState extends ConsumerState<_StudyPlanSheet> {
             ActionChip(
               avatar: Icon(CupertinoIcons.clock, size: 14, color: a.inkMuted),
               label: Text(
-                timePresets.any((p) => p.$1 == _reminderHour && p.$2 == _reminderMinute)
+                timePresets.any(
+                        (p) => p.$1 == _reminderHour && p.$2 == _reminderMinute)
                     ? 'Custom'
                     : _formatTime(_reminderHour, _reminderMinute),
               ),
@@ -309,7 +354,8 @@ class _StudyPlanSheetState extends ConsumerState<_StudyPlanSheet> {
         const SizedBox(height: 20),
 
         // Daily Card Goal
-        Text('Daily card target', style: AuraType.sans(13.5, a.ink, weight: FontWeight.w600)),
+        Text('Daily card target',
+            style: AuraType.sans(13.5, a.ink, weight: FontWeight.w600)),
         const SizedBox(height: 10),
         Row(
           children: [
@@ -321,12 +367,46 @@ class _StudyPlanSheetState extends ConsumerState<_StudyPlanSheet> {
                     child: Text(
                       '$g cards\n~${(g / 5).ceil()} min',
                       textAlign: TextAlign.center,
-                      style: AuraType.sans(12.5, _dailyGoal == g ? a.accent : a.ink),
+                      style: AuraType.sans(
+                          12.5, _dailyGoal == g ? a.accent : a.ink),
                     ),
                   ),
                   selected: _dailyGoal == g,
                   onSelected: (sel) {
                     if (sel) setState(() => _dailyGoal = g);
+                  },
+                ),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 20),
+
+        // Daily Question Target
+        Text('Daily question target',
+            style: AuraType.sans(13.5, a.ink, weight: FontWeight.w600)),
+        const SizedBox(height: 4),
+        Text(
+          'Questions you answer in papers, mocks and quizzes. Shown on your dashboard.',
+          style: AuraType.sans(12.5, a.inkMuted, height: 1.4),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            for (final n in StudyPlan.questionTargets) ...[
+              if (n != StudyPlan.questionTargets.first)
+                const SizedBox(width: 8),
+              Expanded(
+                child: ChoiceChip(
+                  label: Center(
+                    child: Text('$n',
+                        style: AuraType.digits(
+                            15, _dailyQuestions == n ? a.accent : a.ink,
+                            weight: FontWeight.w600)),
+                  ),
+                  selected: _dailyQuestions == n,
+                  onSelected: (sel) {
+                    if (sel) setState(() => _dailyQuestions = n);
                   },
                 ),
               ),
@@ -349,7 +429,9 @@ class _StudyPlanSheetState extends ConsumerState<_StudyPlanSheet> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Daily study reminder', style: AuraType.sans(14, a.ink, weight: FontWeight.w500)),
+                        Text('Daily study reminder',
+                            style: AuraType.sans(14, a.ink,
+                                weight: FontWeight.w500)),
                         const SizedBox(height: 2),
                         Text(
                           'A calm reminder at ${_formatTime(_reminderHour, _reminderMinute)} so you can keep your daily pace.',
@@ -374,12 +456,6 @@ class _StudyPlanSheetState extends ConsumerState<_StudyPlanSheet> {
               ],
             ],
           ),
-        ),
-        const SizedBox(height: 24),
-        FilledButton(
-          style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-          onPressed: _saveAndClose,
-          child: Text(widget.isFirstRun ? 'Save & start preparing' : 'Save changes'),
         ),
       ],
     );

@@ -44,7 +44,8 @@ class AiService {
   static bool get usesProxy => !AppSecrets.hasGeminiKey;
 
   static Future<String> generate(List<AiTurn> turns,
-      {String system = tutorPrompt, Duration timeout = const Duration(seconds: 45)}) async {
+      {String system = tutorPrompt,
+      Duration timeout = const Duration(seconds: 45)}) async {
     final body = {
       'system_instruction': {
         'parts': [
@@ -58,7 +59,10 @@ class AiService {
             'parts': [
               if (t.imageBase64 != null)
                 {
-                  'inline_data': {'mime_type': 'image/jpeg', 'data': t.imageBase64}
+                  'inline_data': {
+                    'mime_type': 'image/jpeg',
+                    'data': t.imageBase64
+                  }
                 },
               {'text': t.text},
             ],
@@ -68,47 +72,67 @@ class AiService {
 
     final http.Response res;
     try {
-      res = usesProxy ? await _viaProxy(body, timeout) : await _direct(body, timeout);
+      res = usesProxy
+          ? await _viaProxy(body, timeout)
+          : await _direct(body, timeout);
     } on TimeoutException {
-      throw const AiException('The tutor took too long to answer. Please try again.');
+      throw const AiException(
+          'The tutor took too long to answer. Please try again.');
     } on AiException {
       rethrow;
     } catch (_) {
-      throw const AiException('Couldn\'t reach the tutor. Check your internet connection.');
+      throw const AiException(
+          'Couldn\'t reach the tutor. Check your internet connection.');
     }
 
     if (res.statusCode == 429) {
-      throw const AiException('The tutor is busy right now. Try again in a minute.');
+      throw const AiException(
+          'The tutor is busy right now. Try again in a minute.');
     }
     if (res.statusCode == 401) {
       throw const AiException('Please sign in again to use the tutor.');
     }
     if (res.statusCode != 200) {
-      throw const AiException('The tutor is unavailable right now. Please try again later.');
+      throw const AiException(
+          'The tutor is unavailable right now. Please try again later.');
     }
     try {
-      final data = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
-      final parts = (data['candidates'] as List).first['content']['parts'] as List;
-      final text = parts.map((p) => (p as Map)['text'] as String? ?? '').join().trim();
+      final data =
+          jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+      final parts =
+          (data['candidates'] as List).first['content']['parts'] as List;
+      final text =
+          parts.map((p) => (p as Map)['text'] as String? ?? '').join().trim();
       if (text.isEmpty) throw const FormatException();
       return text;
     } catch (_) {
-      throw const AiException('The tutor couldn\'t answer that. Try rephrasing.');
+      throw const AiException(
+          'The tutor couldn\'t answer that. Try rephrasing.');
     }
   }
 
-  static Future<http.Response> _direct(Map<String, dynamic> body, Duration timeout) => http
-      .post(
-        Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent'),
-        headers: {'Content-Type': 'application/json', 'x-goog-api-key': AppSecrets.geminiApiKey},
-        body: jsonEncode(body),
-      )
-      .timeout(timeout);
+  static Future<http.Response> _direct(
+          Map<String, dynamic> body, Duration timeout) =>
+      http
+          .post(
+            Uri.parse(
+                'https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent'),
+            headers: {
+              'Content-Type': 'application/json',
+              'x-goog-api-key': AppSecrets.geminiApiKey
+            },
+            body: jsonEncode(body),
+          )
+          .timeout(timeout);
 
-  static Future<http.Response> _viaProxy(Map<String, dynamic> body, Duration timeout) async {
-    final user = Firebase.apps.isEmpty ? null : FirebaseAuth.instance.currentUser;
+  static Future<http.Response> _viaProxy(
+      Map<String, dynamic> body, Duration timeout) async {
+    final user =
+        Firebase.apps.isEmpty ? null : FirebaseAuth.instance.currentUser;
     final token = await user?.getIdToken();
-    if (token == null) throw const AiException('Please sign in to use the tutor.');
+    if (token == null) {
+      throw const AiException('Please sign in to use the tutor.');
+    }
     return http
         .post(
           Uri.parse('${SupabaseConfig.url}/functions/v1/ai-tutor'),

@@ -83,8 +83,12 @@ class AuthViewModel extends StateNotifier<AuthState> {
       [String fallback = 'avatar_green']) {
     final cleanRemote = (remotePic ?? '').trim();
     final cleanLocal = (localPic ?? '').trim();
-    if (cleanRemote.isNotEmpty && !cleanRemote.startsWith('avatar_')) return cleanRemote;
-    if (cleanLocal.isNotEmpty && !cleanLocal.startsWith('avatar_')) return cleanLocal;
+    if (cleanRemote.isNotEmpty && !cleanRemote.startsWith('avatar_')) {
+      return cleanRemote;
+    }
+    if (cleanLocal.isNotEmpty && !cleanLocal.startsWith('avatar_')) {
+      return cleanLocal;
+    }
     if (cleanRemote.isNotEmpty) return cleanRemote;
     if (cleanLocal.isNotEmpty) return cleanLocal;
     return fallback;
@@ -100,7 +104,8 @@ class AuthViewModel extends StateNotifier<AuthState> {
       final updated = (current ?? remote).copyWith(
         name: remote.name.isNotEmpty ? remote.name : current?.name,
         rating: max(current?.rating ?? 0, remote.rating),
-        profilePic: _resolveBestProfilePic(remote.profilePic, current?.profilePic),
+        profilePic:
+            _resolveBestProfilePic(remote.profilePic, current?.profilePic),
         city: remote.city.isNotEmpty ? remote.city : current?.city,
         phone: remote.phone.isNotEmpty ? remote.phone : current?.phone,
       );
@@ -178,7 +183,8 @@ class AuthViewModel extends StateNotifier<AuthState> {
     }
     try {
       final id = await _auth.createAccount(clean, password, name.trim());
-      await _completeSignIn(id, method: 'email', name: name.trim(), city: city, isNew: true);
+      await _completeSignIn(id,
+          method: 'email', name: name.trim(), city: city, isNew: true);
       return true;
     } on AuthFailure catch (e) {
       _fail(e.message);
@@ -205,7 +211,10 @@ class AuthViewModel extends StateNotifier<AuthState> {
 
   /// Loads (or creates) the Firestore profile for a signed-in identity.
   Future<void> _completeSignIn(AuthIdentity id,
-      {required String method, String? name, String city = '', bool isNew = false}) async {
+      {required String method,
+      String? name,
+      String city = '',
+      bool isNew = false}) async {
     UserModel? remote;
     try {
       remote = await _firebase.fetchUserProfile(id.email);
@@ -218,19 +227,28 @@ class AuthViewModel extends StateNotifier<AuthState> {
             : _nameFromEmail(id.email);
 
     final user = UserModel(
-      name: (remote?.name.isNotEmpty ?? false) ? remote!.name : (local?.name.isNotEmpty ?? false) ? local!.name : fallbackName,
+      name: (remote?.name.isNotEmpty ?? false)
+          ? remote!.name
+          : (local?.name.isNotEmpty ?? false)
+              ? local!.name
+              : fallbackName,
       email: id.email,
       phone: remote?.phone ?? local?.phone ?? '',
-      profilePic: _resolveBestProfilePic(remote?.profilePic, local?.profilePic ?? id.photoUrl),
+      profilePic: _resolveBestProfilePic(
+          remote?.profilePic, local?.profilePic ?? id.photoUrl),
       dob: remote?.dob ?? local?.dob ?? '2000-01-01',
       rating: max(remote?.rating ?? 0, local?.rating ?? 0),
-      city: (remote?.city.isNotEmpty ?? false) ? remote!.city : (local?.city ?? city),
+      city: (remote?.city.isNotEmpty ?? false)
+          ? remote!.city
+          : (local?.city ?? city),
     );
 
     await _save(user);
     await _storage.setLoggedIn(true);
     try {
-      isNew || remote == null ? await _firebase.logSignUp(method) : await _firebase.logLogin(method);
+      isNew || remote == null
+          ? await _firebase.logSignUp(method)
+          : await _firebase.logLogin(method);
       await _firebase.syncUserProfile(user);
     } catch (_) {}
     state = AuthState(isLoggedIn: true, user: user);
@@ -276,7 +294,8 @@ class AuthViewModel extends StateNotifier<AuthState> {
     }
   }
 
-  Future<bool> changePassword(String current, String next, String confirm) async {
+  Future<bool> changePassword(
+      String current, String next, String confirm) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     if (next.length < 8) {
       _fail('New password must be at least 8 characters.');
@@ -321,7 +340,8 @@ class AuthViewModel extends StateNotifier<AuthState> {
 
   Future<void> updateRating(int delta) async {
     if (state.user == null) return;
-    final updated = state.user!.copyWith(rating: max(0, state.user!.rating + delta));
+    final updated =
+        state.user!.copyWith(rating: max(0, state.user!.rating + delta));
     await _save(updated);
     try {
       await _firebase.syncUserProfile(updated);

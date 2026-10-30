@@ -33,7 +33,8 @@ class AvatarUtils {
     if (trimmed.startsWith('data:image')) {
       try {
         final commaIdx = trimmed.indexOf(',');
-        final base64Data = commaIdx != -1 ? trimmed.substring(commaIdx + 1) : trimmed;
+        final base64Data =
+            commaIdx != -1 ? trimmed.substring(commaIdx + 1) : trimmed;
         final clean = base64Data.replaceAll(RegExp(r'\s+'), '');
         return MemoryImage(base64Decode(clean));
       } catch (_) {
@@ -47,7 +48,9 @@ class AvatarUtils {
     }
 
     // 3. Raw base64 string without data:image prefix (e.g. /9j/... for JPEG or iVBOR... for PNG)
-    if (trimmed.startsWith('/9j/') || trimmed.startsWith('iVBOR') || trimmed.startsWith('R0lGOD')) {
+    if (trimmed.startsWith('/9j/') ||
+        trimmed.startsWith('iVBOR') ||
+        trimmed.startsWith('R0lGOD')) {
       try {
         final clean = trimmed.replaceAll(RegExp(r'\s+'), '');
         return MemoryImage(base64Decode(clean));
@@ -67,7 +70,9 @@ class AvatarUtils {
           trimmed.startsWith('file:') ||
           RegExp(r'^[a-zA-Z]:[\\/]').hasMatch(trimmed)) {
         try {
-          final filePath = trimmed.startsWith('file://') ? trimmed.replaceFirst('file://', '') : trimmed;
+          final filePath = trimmed.startsWith('file://')
+              ? trimmed.replaceFirst('file://', '')
+              : trimmed;
           final file = io.File(filePath);
           if (file.existsSync()) {
             return FileImage(file);
@@ -79,4 +84,3 @@ class AvatarUtils {
     return null;
   }
 }
-

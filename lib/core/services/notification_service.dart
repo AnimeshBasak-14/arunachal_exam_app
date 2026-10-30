@@ -20,19 +20,21 @@ class NotificationService {
           AndroidInitializationSettings('@mipmap/ic_launcher');
       const initSettings = InitializationSettings(android: androidSettings);
       await _plugin.initialize(settings: initSettings);
-      
-      final androidImplementation = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
-      
+
+      final androidImplementation =
+          _plugin.resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+
       await androidImplementation?.requestNotificationsPermission();
-      
+
       const channel = AndroidNotificationChannel(
         'daily_streak_channel',
         'Daily Study Reminder',
         importance: Importance.high,
       );
-      
+
       await androidImplementation?.createNotificationChannel(channel);
-          
+
       _initialized = true;
 
       // Schedule daily 8 AM notification
@@ -69,7 +71,8 @@ class NotificationService {
     }
   }
 
-  static Future<void> showNotification(int id, String title, String body) async {
+  static Future<void> showNotification(
+      int id, String title, String body) async {
     try {
       const androidDetails = AndroidNotificationDetails(
         'daily_streak_channel',
@@ -80,7 +83,7 @@ class NotificationService {
         icon: '@mipmap/ic_launcher',
       );
       const notifDetails = NotificationDetails(android: androidDetails);
-      
+
       await _plugin.show(
         id: id,
         title: title,

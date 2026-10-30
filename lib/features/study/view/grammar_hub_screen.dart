@@ -17,6 +17,8 @@ class GrammarHubScreen extends StatelessWidget {
     final levels = ['Beginner', 'Intermediate', 'Advanced'];
     return StudyPage(
       title: 'English',
+      track: 'english',
+      coinSpot: 'english',
       children: [
         const LearnHero(
           title: 'Grammar in 60-second cards',
@@ -109,6 +111,7 @@ class _TopicScreen extends StatelessWidget {
     final good = a.success;
     return StudyPage(
       title: topic.level,
+      track: 'english',
       children: [
         Text(topic.title, style: AuraType.serif(27, a.ink, height: 1.2)),
         const SizedBox(height: 6),
@@ -199,6 +202,7 @@ class _VocabScreen extends StatelessWidget {
         );
     return StudyPage(
       title: 'Vocabulary',
+      track: 'english',
       children: [
         FilledButton.icon(
           onPressed: () => context.push('/learn?topic=vocab'),

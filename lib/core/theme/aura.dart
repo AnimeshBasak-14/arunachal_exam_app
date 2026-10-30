@@ -86,7 +86,8 @@ class Aura extends ThemeExtension<Aura> {
       BoxShadow(color: Color(0x0A233E42), blurRadius: 20, offset: Offset(0, 6)),
     ],
     elevatedShadow: [
-      BoxShadow(color: Color(0x14233E42), blurRadius: 32, offset: Offset(0, 12)),
+      BoxShadow(
+          color: Color(0x14233E42), blurRadius: 32, offset: Offset(0, 12)),
     ],
   );
 

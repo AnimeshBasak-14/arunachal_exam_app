@@ -24,7 +24,8 @@ Future<void> _saveToInbox(RemoteMessage m) async {
   final title = n?.title ?? m.data['title'] as String?;
   if (title == null || title.isEmpty) return;
   await saveInboxMessage(InboxMessage(
-    m.messageId ?? '${m.sentTime?.millisecondsSinceEpoch ?? DateTime.now().millisecondsSinceEpoch}',
+    m.messageId ??
+        '${m.sentTime?.millisecondsSinceEpoch ?? DateTime.now().millisecondsSinceEpoch}',
     title,
     n?.body ?? m.data['body'] as String? ?? '',
     m.sentTime ?? DateTime.now(),
@@ -47,7 +48,8 @@ class FcmService {
 
       // On Web, FCM requires VAPID key configuration; if not provided, skip gracefully
       if (kIsWeb) {
-        debugPrint('[FCM] Web push messaging skipped (requires VAPID configuration).');
+        debugPrint(
+            '[FCM] Web push messaging skipped (requires VAPID configuration).');
         return;
       }
 
@@ -72,7 +74,8 @@ class FcmService {
       const AndroidNotificationChannel channel = AndroidNotificationChannel(
         'arunachal_exam_announcements',
         'Exam alerts',
-        description: 'Exam notices, new papers and study reminders from Dawnlit.',
+        description:
+            'Exam notices, new papers and study reminders from Dawnlit.',
         importance: Importance.high,
       );
 

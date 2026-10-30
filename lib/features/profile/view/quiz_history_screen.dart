@@ -28,12 +28,19 @@ class _QuizHistoryScreenState extends ConsumerState<QuizHistoryScreen> {
       if (_filter == 1 && t.mode == 'study') return false;
       if (_filter == 2 && t.mode != 'study') return false;
       final q = _q.trim().toLowerCase();
-      return q.isEmpty || t.title.toLowerCase().contains(q) || t.examCode.toLowerCase().contains(q);
+      return q.isEmpty ||
+          t.title.toLowerCase().contains(q) ||
+          t.examCode.toLowerCase().contains(q);
     }).toList();
 
     final graded = all.where((t) => t.maxScore > 0).toList();
-    final avg = graded.isEmpty ? 0.0 : graded.map((t) => t.scoreRatio).reduce((x, y) => x + y) / graded.length;
-    final best = graded.isEmpty ? 0.0 : graded.map((t) => t.scoreRatio).reduce((x, y) => x > y ? x : y);
+    final avg = graded.isEmpty
+        ? 0.0
+        : graded.map((t) => t.scoreRatio).reduce((x, y) => x + y) /
+            graded.length;
+    final best = graded.isEmpty
+        ? 0.0
+        : graded.map((t) => t.scoreRatio).reduce((x, y) => x > y ? x : y);
 
     return StudyPage(
       title: 'Test history',
@@ -42,7 +49,8 @@ class _QuizHistoryScreenState extends ConsumerState<QuizHistoryScreen> {
           AuraEmpty(
             icon: CupertinoIcons.clock,
             title: 'No tests yet',
-            message: 'Finish a previous-year paper or a mock test and your results will appear here.',
+            message:
+                'Finish a previous-year paper or a mock test and your results will appear here.',
             actionLabel: 'Browse papers',
             onAction: () => context.go('/home?tab=1'),
           )
@@ -71,9 +79,13 @@ class _QuizHistoryScreenState extends ConsumerState<QuizHistoryScreen> {
           if (shown.isEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 20),
-              child: Text('No tests match.', style: AuraType.sans(14, a.inkMuted)),
+              child:
+                  Text('No tests match.', style: AuraType.sans(14, a.inkMuted)),
             ),
-          for (final t in shown) ...[AttemptRow(attempt: t), const SizedBox(height: 10)],
+          for (final t in shown) ...[
+            AttemptRow(attempt: t),
+            const SizedBox(height: 10)
+          ],
         ],
       ],
     );

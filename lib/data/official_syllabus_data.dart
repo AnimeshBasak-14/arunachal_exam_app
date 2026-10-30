@@ -102,34 +102,46 @@ class OfficialSyllabusData {
     ),
     ExecutiveOverviewItem(
       parameter: 'Legal / Mandate',
-      apssb: 'Constituted under APSSB Act 2018 for meritocratic Group C recruitment',
-      appsc: 'State Public Service Commission established under Article 315 of Indian Constitution',
+      apssb:
+          'Constituted under APSSB Act 2018 for meritocratic Group C recruitment',
+      appsc:
+          'State Public Service Commission established under Article 315 of Indian Constitution',
     ),
     ExecutiveOverviewItem(
       parameter: 'Recruitment Jurisdictions',
-      apssb: "Group 'C' (Ministerial, Technical, Uniformed Police/Forest/Fire, Non-Ministerial)",
-      appsc: "Group 'A' & Group 'B' (Gazetted & Non-Gazetted Administrative, Technical, Medical, Academic)",
+      apssb:
+          "Group 'C' (Ministerial, Technical, Uniformed Police/Forest/Fire, Non-Ministerial)",
+      appsc:
+          "Group 'A' & Group 'B' (Gazetted & Non-Gazetted Administrative, Technical, Medical, Academic)",
     ),
     ExecutiveOverviewItem(
       parameter: 'Key Flagship Examinations',
-      apssb: 'CGL, CHSL, CSL (MTS), Uniformed Cadre (Constable/Fireman), Combined Technical',
-      appsc: 'APPSCCE (Civil Services), AESE (AE Civil/EE/ME), JE Common, TGT/PGT, ADO/HDO, GDMO',
+      apssb:
+          'CGL, CHSL, CSL (MTS), Uniformed Cadre (Constable/Fireman), Combined Technical',
+      appsc:
+          'APPSCCE (Civil Services), AESE (AE Civil/EE/ME), JE Common, TGT/PGT, ADO/HDO, GDMO',
     ),
     ExecutiveOverviewItem(
       parameter: 'Negative Marking Policy',
-      apssb: 'Strictly NO Negative Marking in standard Objective Tests (2 marks/correct answer)',
-      appsc: '1/3rd (0.33) Negative Marking in Prelims & Screening Tests; Descriptive evaluation in Mains',
+      apssb:
+          'Strictly NO Negative Marking in standard Objective Tests (2 marks/correct answer)',
+      appsc:
+          '1/3rd (0.33) Negative Marking in Prelims & Screening Tests; Descriptive evaluation in Mains',
       note: 'Crucial distinction for exam strategy',
     ),
     ExecutiveOverviewItem(
       parameter: 'Standard Test Duration',
-      apssb: '2 Hours (120 min) for 100 MCQs / 200 Marks (3 Hours for specialized technical)',
-      appsc: 'Prelims: 2 Hours per paper (100 Qs); Mains: 3 Hours descriptive per subject paper',
+      apssb:
+          '2 Hours (120 min) for 100 MCQs / 200 Marks (3 Hours for specialized technical)',
+      appsc:
+          'Prelims: 2 Hours per paper (100 Qs); Mains: 3 Hours descriptive per subject paper',
     ),
     ExecutiveOverviewItem(
       parameter: 'Minimum Qualifying Cutoff',
-      apssb: '33% aggregate marks across written stages (plus passing requisite skill tests)',
-      appsc: '33% per paper & 40%-45% aggregate in written descriptive exams + Personality Test',
+      apssb:
+          '33% aggregate marks across written stages (plus passing requisite skill tests)',
+      appsc:
+          '33% per paper & 40%-45% aggregate in written descriptive exams + Personality Test',
     ),
     ExecutiveOverviewItem(
       parameter: 'Official Web Portals',
@@ -145,7 +157,8 @@ class OfficialSyllabusData {
     // CGL
     ApssbSyllabusSection(
       examName: 'Combined Graduate Level (CGL)',
-      targetCadres: 'Upper Division Clerk (UDC), Auditor, Inspector, Personal Assistant (Steno Gr-III)',
+      targetCadres:
+          'Upper Division Clerk (UDC), Auditor, Inspector, Personal Assistant (Steno Gr-III)',
       stage: 'Stage 1: Written Examination (OMR)',
       subject: 'General Awareness',
       questions: 25,
@@ -157,7 +170,8 @@ class OfficialSyllabusData {
     ),
     ApssbSyllabusSection(
       examName: 'Combined Graduate Level (CGL)',
-      targetCadres: 'Upper Division Clerk (UDC), Auditor, Inspector, Personal Assistant (Steno Gr-III)',
+      targetCadres:
+          'Upper Division Clerk (UDC), Auditor, Inspector, Personal Assistant (Steno Gr-III)',
       stage: 'Stage 1: Written Examination (OMR)',
       subject: 'General Intelligence & Reasoning Ability',
       questions: 25,
@@ -169,7 +183,8 @@ class OfficialSyllabusData {
     ),
     ApssbSyllabusSection(
       examName: 'Combined Graduate Level (CGL)',
-      targetCadres: 'Upper Division Clerk (UDC), Auditor, Inspector, Personal Assistant (Steno Gr-III)',
+      targetCadres:
+          'Upper Division Clerk (UDC), Auditor, Inspector, Personal Assistant (Steno Gr-III)',
       stage: 'Stage 1: Written Examination (OMR)',
       subject: 'Arithmetical & Numerical Ability',
       questions: 25,
@@ -181,7 +196,8 @@ class OfficialSyllabusData {
     ),
     ApssbSyllabusSection(
       examName: 'Combined Graduate Level (CGL)',
-      targetCadres: 'Upper Division Clerk (UDC), Auditor, Inspector, Personal Assistant (Steno Gr-III)',
+      targetCadres:
+          'Upper Division Clerk (UDC), Auditor, Inspector, Personal Assistant (Steno Gr-III)',
       stage: 'Stage 1: Written Examination (OMR)',
       subject: 'Test of English Language & Comprehension',
       questions: 25,
@@ -197,7 +213,8 @@ class OfficialSyllabusData {
       stage: 'Stage 2: Skill / Proficiency Test',
       subject: 'Basic Computer Application / Stenography Test',
       duration: 'Varies',
-      markingStandard: 'Qualifying Only (Must secure minimum prescribed standard)',
+      markingStandard:
+          'Qualifying Only (Must secure minimum prescribed standard)',
       syllabusBreakdown:
           'For UDC: Basic Computer Application Certificate Test (Word Processing, Spreadsheets, Presentation, Internet Navigation). For Stenographer: Dictation at 80 w.p.m. for 5 minutes, Transcription in 45 minutes on Computer.',
       isSkillTest: true,
@@ -206,7 +223,8 @@ class OfficialSyllabusData {
     // CHSL
     ApssbSyllabusSection(
       examName: 'Combined Higher Secondary Level (CHSL)',
-      targetCadres: 'Lower Division Clerk (LDC), Junior Secretariat Assistant (JSA), Data Entry Operator (DEO), Agri Field Asst (Jr), Fishery Demonstrator, Stockman',
+      targetCadres:
+          'Lower Division Clerk (LDC), Junior Secretariat Assistant (JSA), Data Entry Operator (DEO), Agri Field Asst (Jr), Fishery Demonstrator, Stockman',
       stage: 'Stage 1: Written Examination (OMR)',
       subject: 'General Awareness',
       questions: 25,
@@ -267,7 +285,8 @@ class OfficialSyllabusData {
     // CSL / MTS
     ApssbSyllabusSection(
       examName: 'Combined Secondary Level (CSL / MTS)',
-      targetCadres: 'Multi-Tasking Staff (MTS), Peon, Chowkidar, Daftry, Sweeper, Driver',
+      targetCadres:
+          'Multi-Tasking Staff (MTS), Peon, Chowkidar, Daftry, Sweeper, Driver',
       stage: 'Stage 1: Written Examination (OMR)',
       subject: 'General Awareness',
       questions: 25,
@@ -328,7 +347,8 @@ class OfficialSyllabusData {
     // Uniformed Cadre
     ApssbSyllabusSection(
       examName: 'Uniformed Cadre Examination',
-      targetCadres: 'Constable (Civil Police), Constable (IRBn), Fireman, Forest Guard, STPF Guard',
+      targetCadres:
+          'Constable (Civil Police), Constable (IRBn), Fireman, Forest Guard, STPF Guard',
       stage: 'Stage 1: Physical Efficiency & Measurement Test (PST/PET)',
       subject: 'Physical Fitness Standards',
       duration: 'Field Test',
@@ -389,7 +409,8 @@ class OfficialSyllabusData {
     // Combined Technical
     ApssbSyllabusSection(
       examName: 'Combined Technical / Trade Examination',
-      targetCadres: 'Surveyor, Draughtsman, Electrician, Plumber, Mechanic, Lab Attendant, Junior Technical Staff',
+      targetCadres:
+          'Surveyor, Draughtsman, Electrician, Plumber, Mechanic, Lab Attendant, Junior Technical Staff',
       stage: 'Stage 1: Written (Part A - General)',
       subject: 'General English, GK & Elementary Maths',
       questions: 50,
@@ -431,7 +452,8 @@ class OfficialSyllabusData {
     // APPSCCE Civil Services
     AppscSyllabusSection(
       examName: 'APPSCCE (Civil Services)',
-      targetCadres: 'APCS (Admin / Circle Officer), APPS (DySP), FAO/TO, Asst Director',
+      targetCadres:
+          'APCS (Admin / Circle Officer), APPS (DySP), FAO/TO, Asst Director',
       stage: 'Stage 1: Preliminary Exam (Objective)',
       paperName: 'Paper-I: General Studies',
       marks: 200,
@@ -441,7 +463,8 @@ class OfficialSyllabusData {
           'Current events of national & international importance; History of India and Indian National Movement; Indian and World Geography (Physical, Social, Economic); Indian Polity and Governance (Constitution, Political System, Panchayati Raj, Public Policy, Rights Issues); Economic and Social Development (Poverty, Inclusion, Demographics, Social Sector); Environmental Ecology, Biodiversity, Climate Change; General Science.',
       arunachalComponent:
           'History, Land, People, Culture, Administration, Tribal institutions, Customary laws, Demography, and Economic Development of Arunachal Pradesh and North-East India (30-35% weightage).',
-      weightageImpact: 'Screening only. Marks determine qualification for Mains (roughly 12-15x vacancies).',
+      weightageImpact:
+          'Screening only. Marks determine qualification for Mains (roughly 12-15x vacancies).',
     ),
     AppscSyllabusSection(
       examName: 'APPSCCE (Civil Services)',
@@ -454,7 +477,8 @@ class OfficialSyllabusData {
       primaryCurriculum:
           'Comprehension; Interpersonal skills including communication skills; Logical reasoning and analytical ability; Decision-making and problem-solving; General mental ability; Basic numeracy (numbers and relations, orders of magnitude, Class X level); Data interpretation (charts, graphs, tables, data sufficiency - Class X level).',
       arunachalComponent: 'None (Universal Aptitude standards).',
-      weightageImpact: 'Qualifying paper only. Candidate must secure minimum 33% marks to be evaluated in Paper-I.',
+      weightageImpact:
+          'Qualifying paper only. Candidate must secure minimum 33% marks to be evaluated in Paper-I.',
     ),
     AppscSyllabusSection(
       examName: 'APPSCCE (Civil Services)',
@@ -466,8 +490,10 @@ class OfficialSyllabusData {
       negativeMarking: 'No Negative (Min 33% pass required)',
       primaryCurriculum:
           'Matriculation standard: Comprehension of given passages; Precis writing; Usage and vocabulary; Short essay writing.',
-      arunachalComponent: 'Contextual themes involving state culture / North-East perspectives in comprehension or essays.',
-      weightageImpact: 'Qualifying nature only. Marks NOT counted for final merit ranking, but mandatory to pass.',
+      arunachalComponent:
+          'Contextual themes involving state culture / North-East perspectives in comprehension or essays.',
+      weightageImpact:
+          'Qualifying nature only. Marks NOT counted for final merit ranking, but mandatory to pass.',
     ),
     AppscSyllabusSection(
       examName: 'APPSCCE (Civil Services)',
@@ -479,7 +505,8 @@ class OfficialSyllabusData {
       negativeMarking: 'Subjective Evaluation',
       primaryCurriculum:
           'Candidates write essays on multiple sections/topics (Social, Political, Economic, Philosophical, Science & Tech, Environmental). Tested on concise expression, coherent organization of ideas, and critical argumentation.',
-      arunachalComponent: 'At least one topic or context generally involves regional socio-economic development or cultural preservation in Arunachal Pradesh.',
+      arunachalComponent:
+          'At least one topic or context generally involves regional socio-economic development or cultural preservation in Arunachal Pradesh.',
       weightageImpact: 'Counted for final merit ranking.',
     ),
     AppscSyllabusSection(
@@ -492,7 +519,8 @@ class OfficialSyllabusData {
       negativeMarking: 'Subjective Evaluation',
       primaryCurriculum:
           'Indian Heritage & Culture, World & Indian History, Geography of the World & India, and Society. Modern Indian history, Freedom struggle, Post-independence consolidation; World history since 18th century; Salient aspects of Indian Society, Diversity, Role of women, Urbanization, Globalization.',
-      arunachalComponent: 'Substantial section dedicated to History, Art, Culture, Customary Laws, Tribes, Festivals, and Physical/Resource Geography of Arunachal Pradesh and North-East.',
+      arunachalComponent:
+          'Substantial section dedicated to History, Art, Culture, Customary Laws, Tribes, Festivals, and Physical/Resource Geography of Arunachal Pradesh and North-East.',
       weightageImpact: 'Counted for final merit ranking.',
     ),
     AppscSyllabusSection(
@@ -533,7 +561,8 @@ class OfficialSyllabusData {
       negativeMarking: 'Subjective Evaluation',
       primaryCurriculum:
           'Ethics, Integrity, and Aptitude. Ethics and Human Interface, Determinants & consequences of ethics in human action, Human values, Attitude, Foundational values for civil service (Integrity, Impartiality, Objectivity, Empathy), Emotional Intelligence, Moral thinkers, Probity in governance, Case Studies.',
-      arunachalComponent: 'Case studies reflecting administrative, tribal, communal, infrastructure, and resource challenges in Arunachal Pradesh.',
+      arunachalComponent:
+          'Case studies reflecting administrative, tribal, communal, infrastructure, and resource challenges in Arunachal Pradesh.',
       weightageImpact: 'Counted for final merit ranking.',
     ),
     AppscSyllabusSection(
@@ -546,8 +575,10 @@ class OfficialSyllabusData {
       negativeMarking: 'Subjective Evaluation',
       primaryCurriculum:
           'Candidate chooses ONE optional subject (e.g. Civil Engineering, Political Science, History, Geography, Agriculture, Public Admin, Sociology, etc.). Paper I: Foundational & theoretical principles; Paper II: Advanced specialization & applied dimensions.',
-      arunachalComponent: 'Contextual application as per chosen optional syllabus.',
-      weightageImpact: 'Major determinant of final rank. Total Written = 1,750 Marks.',
+      arunachalComponent:
+          'Contextual application as per chosen optional syllabus.',
+      weightageImpact:
+          'Major determinant of final rank. Total Written = 1,750 Marks.',
     ),
     AppscSyllabusSection(
       examName: 'APPSCCE (Civil Services)',
@@ -559,23 +590,28 @@ class OfficialSyllabusData {
       negativeMarking: 'Comprehensive Board Evaluation',
       primaryCurriculum:
           'Assessment of intellectual caliber, mental alertness, critical powers of assimilation, balance of judgment, clear and logical exposition, integrity, and social leadership traits.',
-      arunachalComponent: 'Extensive grilling on Arunachal Pradesh history, boundary disputes, tribal traditions, state development issues, and current state affairs.',
-      weightageImpact: 'Total Mains Merit: 1750 (Written) + 275 (Interview) = 2,025 Marks.',
+      arunachalComponent:
+          'Extensive grilling on Arunachal Pradesh history, boundary disputes, tribal traditions, state development issues, and current state affairs.',
+      weightageImpact:
+          'Total Mains Merit: 1750 (Written) + 275 (Interview) = 2,025 Marks.',
       isInterview: true,
     ),
 
     // AESE (Assistant Engineer)
     AppscSyllabusSection(
       examName: 'Arunachal Engineering Service (AESE - AE)',
-      targetCadres: 'Assistant Engineer (Civil, Electrical, Mechanical, ECE, CSE/IT, Agri) in PWD, RWD, PHE, WRD, Power, DHPD, IT',
+      targetCadres:
+          'Assistant Engineer (Civil, Electrical, Mechanical, ECE, CSE/IT, Agri) in PWD, RWD, PHE, WRD, Power, DHPD, IT',
       stage: 'Stage 1: Recruitment Exam (Written)',
       paperName: 'Paper-I: General English (Common to All Disciplines)',
       marks: 100,
       duration: '2 Hours (Descriptive/Objective)',
       negativeMarking: 'Pass mark: 33%',
-      primaryCurriculum: 'Comprehension, Essay writing, Letter writing, Precis, Sentence construction, Idioms, Grammatical accuracy.',
+      primaryCurriculum:
+          'Comprehension, Essay writing, Letter writing, Precis, Sentence construction, Idioms, Grammatical accuracy.',
       arunachalComponent: 'General local context in essay/letter topics.',
-      weightageImpact: 'Mandatory component of total written score (500 marks).',
+      weightageImpact:
+          'Mandatory component of total written score (500 marks).',
     ),
     AppscSyllabusSection(
       examName: 'Arunachal Engineering Service (AESE - AE)',
@@ -585,15 +621,18 @@ class OfficialSyllabusData {
       marks: 100,
       duration: '2 Hours (Objective/Descriptive)',
       negativeMarking: 'Pass mark: 33%',
-      primaryCurriculum: 'Current events, Indian Polity, History, Geography, General Science, Indian Economy, Ecology.',
-      arunachalComponent: 'Arunachal Pradesh geography, natural resources, tribes, infrastructure challenges.',
+      primaryCurriculum:
+          'Current events, Indian Polity, History, Geography, General Science, Indian Economy, Ecology.',
+      arunachalComponent:
+          'Arunachal Pradesh geography, natural resources, tribes, infrastructure challenges.',
       weightageImpact: 'Mandatory component of total written score.',
     ),
 
     // AESE Technical - Civil Engineering (CE)
     AppscSyllabusSection(
       examName: 'Arunachal Engineering Service (AESE - AE)',
-      targetCadres: 'Assistant Engineer (Civil) in PWD, RWD, PHE, WRD, Urban Development',
+      targetCadres:
+          'Assistant Engineer (Civil) in PWD, RWD, PHE, WRD, Urban Development',
       stage: 'Stage 1: Recruitment Exam (Written)',
       paperName: 'Paper-III: Technical Paper-I (Civil Engineering)',
       marks: 150,
@@ -601,7 +640,8 @@ class OfficialSyllabusData {
       negativeMarking: 'Pass mark: 33%',
       primaryCurriculum:
           'Degree standard (B.Tech/BE): Solid Mechanics & Structural Analysis; Building Materials, Construction Practice & Concrete Technology; Design of Reinforced Concrete & Prestressed Structures; Design of Steel Structures; Fluid Mechanics, Open Channel Hydraulics & Hydraulic Machines; Geotechnical Engineering, Soil Mechanics & Deep/Shallow Foundations.',
-      arunachalComponent: 'Seismic Zone-V design standards, high-altitude concrete curing, landslide stabilization techniques, and hill slope retention.',
+      arunachalComponent:
+          'Seismic Zone-V design standards, high-altitude concrete curing, landslide stabilization techniques, and hill slope retention.',
       weightageImpact: 'Major core technical score.',
     ),
     AppscSyllabusSection(
@@ -614,14 +654,16 @@ class OfficialSyllabusData {
       negativeMarking: 'Pass mark: 33%',
       primaryCurriculum:
           'Hydrology & Water Resources Engineering; Irrigation & Flood Control; Environmental Engineering (Water Supply, Waste Water Engineering, Solid Waste); Transportation Engineering (Highway planning, Pavement design, Hill roads as per IRC:SP:48, Traffic engineering); Surveying, Photogrammetry & Total Station / GPS; Construction Planning, Management, CPM/PERT & Estimating.',
-      arunachalComponent: 'Mountain highway alignment, RCC bridge foundations across flash-flood rivers, and spring-shed water harvesting in hilly settlements.',
+      arunachalComponent:
+          'Mountain highway alignment, RCC bridge foundations across flash-flood rivers, and spring-shed water harvesting in hilly settlements.',
       weightageImpact: 'Major core technical score. Total Written = 500 marks.',
     ),
 
     // AESE Technical - Electrical Engineering (EE)
     AppscSyllabusSection(
       examName: 'Arunachal Engineering Service (AESE - AE)',
-      targetCadres: 'Assistant Engineer (Electrical) in Department of Power, Hydro Power Development (DHPD)',
+      targetCadres:
+          'Assistant Engineer (Electrical) in Department of Power, Hydro Power Development (DHPD)',
       stage: 'Stage 1: Recruitment Exam (Written)',
       paperName: 'Paper-III: Technical Paper-I (Electrical Engineering)',
       marks: 150,
@@ -629,12 +671,14 @@ class OfficialSyllabusData {
       negativeMarking: 'Pass mark: 33%',
       primaryCurriculum:
           'Electrical Circuits & Network Theory; Electromagnetic Fields & Waves; Electrical & Electronic Materials; Electrical Measurements & Instrumentation; Analog & Digital Electronics; Microprocessors & Microcontrollers (8085/8086, Embedded systems); Signals & Systems.',
-      arunachalComponent: 'Protection of measuring instruments and transmission lines against lightning and high humidity in dense forest corridors.',
+      arunachalComponent:
+          'Protection of measuring instruments and transmission lines against lightning and high humidity in dense forest corridors.',
       weightageImpact: 'Major core technical score.',
     ),
     AppscSyllabusSection(
       examName: 'Arunachal Engineering Service (AESE - AE)',
-      targetCadres: 'Assistant Engineer (Electrical) in Department of Power, DHPD',
+      targetCadres:
+          'Assistant Engineer (Electrical) in Department of Power, DHPD',
       stage: 'Stage 1: Recruitment Exam (Written)',
       paperName: 'Paper-IV: Technical Paper-II (Electrical Engineering)',
       marks: 150,
@@ -642,14 +686,16 @@ class OfficialSyllabusData {
       negativeMarking: 'Pass mark: 33%',
       primaryCurriculum:
           'Electrical Machines (DC Machines, Transformers, Synchronous & Induction Machines); Power Systems (Generation, EHV transmission, load flow, fault analysis, switchgear & protection); Control Systems (Time/frequency domain, state-space); Power Electronics & Drives (Thyristors, inverters, choppers); Non-Conventional Energy (Micro/Mini hydro, Solar PV, grid integration).',
-      arunachalComponent: 'Run-of-the-river hydro generation, transmission line sag & icing in sub-zero elevations, and micro-grid distribution in remote hilly villages.',
+      arunachalComponent:
+          'Run-of-the-river hydro generation, transmission line sag & icing in sub-zero elevations, and micro-grid distribution in remote hilly villages.',
       weightageImpact: 'Major core technical score. Total Written = 500 marks.',
     ),
 
     // AESE Technical - Mechanical Engineering (ME)
     AppscSyllabusSection(
       examName: 'Arunachal Engineering Service (AESE - AE)',
-      targetCadres: 'Assistant Engineer (Mechanical) in Power, PWD, Transport, Industries',
+      targetCadres:
+          'Assistant Engineer (Mechanical) in Power, PWD, Transport, Industries',
       stage: 'Stage 1: Recruitment Exam (Written)',
       paperName: 'Paper-III: Technical Paper-I (Mechanical Engineering)',
       marks: 150,
@@ -657,7 +703,8 @@ class OfficialSyllabusData {
       negativeMarking: 'Pass mark: 33%',
       primaryCurriculum:
           'Engineering Mechanics; Mechanics of Materials (Strength of Materials, Stress-Strain, Mohr circle); Theory of Machines & Mechanisms (Balancing, Governors, Cams, Gear trains); Design of Machine Elements (Shafts, Bearings, Gears, Welded joints); Materials Science & Metallurgy; Mechanical Vibrations.',
-      arunachalComponent: 'Cold-weather brittleness of metals, fatigue in heavy machinery operating on unpaved mountain roads.',
+      arunachalComponent:
+          'Cold-weather brittleness of metals, fatigue in heavy machinery operating on unpaved mountain roads.',
       weightageImpact: 'Major core technical score.',
     ),
     AppscSyllabusSection(
@@ -670,14 +717,16 @@ class OfficialSyllabusData {
       negativeMarking: 'Pass mark: 33%',
       primaryCurriculum:
           'Thermodynamics (Laws, cycles, availability); IC Engines, Steam Turbines & Gas Turbines; Heat Transfer (Conduction, Convection, Radiation, Heat Exchangers); Fluid Mechanics & Machinery (Pelton, Francis, Kaplan turbines, Centrifugal pumps); Refrigeration & Air Conditioning; Manufacturing Science (Casting, Welding, Metal Forming, CNC, Metrology); Industrial Engineering & Operations Research.',
-      arunachalComponent: 'Hydro-turbine runner silt erosion (sand abrasion in Himalayan rivers), heavy earthmoving equipment deployment and maintenance in hill sectors.',
+      arunachalComponent:
+          'Hydro-turbine runner silt erosion (sand abrasion in Himalayan rivers), heavy earthmoving equipment deployment and maintenance in hill sectors.',
       weightageImpact: 'Major core technical score. Total Written = 500 marks.',
     ),
 
     // AESE Technical - Electronics & Communication (ECE)
     AppscSyllabusSection(
       examName: 'Arunachal Engineering Service (AESE - AE)',
-      targetCadres: 'Assistant Engineer (Electronics / Telecomm) in IT Dept, Police Radio Organization',
+      targetCadres:
+          'Assistant Engineer (Electronics / Telecomm) in IT Dept, Police Radio Organization',
       stage: 'Stage 1: Recruitment Exam (Written)',
       paperName: 'Paper-III: Technical Paper-I (Electronics & Communication)',
       marks: 150,
@@ -685,12 +734,14 @@ class OfficialSyllabusData {
       negativeMarking: 'Pass mark: 33%',
       primaryCurriculum:
           'Electronic Devices & Semiconductor Physics; Analog Integrated Circuits (Op-Amps, Amplifiers, Oscillators); Digital Circuits & Combinational/Sequential Logic; Microprocessors, Microcontrollers & Interfacing; Signals & Systems; Electromagnetic Theory & Microwave Engineering (Waveguides, Radar, Antennas).',
-      arunachalComponent: 'Mountain terrain RF propagation, microwave line-of-sight repeater stations in deep valleys.',
+      arunachalComponent:
+          'Mountain terrain RF propagation, microwave line-of-sight repeater stations in deep valleys.',
       weightageImpact: 'Major core technical score.',
     ),
     AppscSyllabusSection(
       examName: 'Arunachal Engineering Service (AESE - AE)',
-      targetCadres: 'Assistant Engineer (Electronics / Telecomm) in IT Dept, Police Radio',
+      targetCadres:
+          'Assistant Engineer (Electronics / Telecomm) in IT Dept, Police Radio',
       stage: 'Stage 1: Recruitment Exam (Written)',
       paperName: 'Paper-IV: Technical Paper-II (Electronics & Communication)',
       marks: 150,
@@ -698,14 +749,16 @@ class OfficialSyllabusData {
       negativeMarking: 'Pass mark: 33%',
       primaryCurriculum:
           'Analog & Digital Communication Systems (AM, FM, PCM, QAM, SNR); Wireless & Mobile Communication (4G/5G, MIMO, OFDM); Optical Fiber Communications (Fibers, WDM, Lasers); Computer Networks & Protocols (TCP/IP, Routing, Security); Control Systems; Digital Signal Processing (DSP algorithms, FIR/IIR filters); Satellite Communication & VSAT systems.',
-      arunachalComponent: 'Satellite broadband & VSAT networks for border outposts and remote administrative centers, optical ground wire (OPGW) along hill transmission lines.',
+      arunachalComponent:
+          'Satellite broadband & VSAT networks for border outposts and remote administrative centers, optical ground wire (OPGW) along hill transmission lines.',
       weightageImpact: 'Major core technical score. Total Written = 500 marks.',
     ),
 
     // AESE Technical - Computer Science & IT (CSE/IT)
     AppscSyllabusSection(
       examName: 'Arunachal Engineering Service (AESE - AE)',
-      targetCadres: 'Assistant Engineer (Computer / IT / Systems) in Department of IT & Communication',
+      targetCadres:
+          'Assistant Engineer (Computer / IT / Systems) in Department of IT & Communication',
       stage: 'Stage 1: Recruitment Exam (Written)',
       paperName: 'Paper-III: Technical Paper-I (Computer Science & IT)',
       marks: 150,
@@ -713,12 +766,14 @@ class OfficialSyllabusData {
       negativeMarking: 'Pass mark: 33%',
       primaryCurriculum:
           'Discrete Mathematics & Graph Theory; Digital Logic & Computer Organization/Architecture (Instruction pipelining, Memory hierarchy); Programming in C, C++, Java & Python; Data Structures & Algorithms (Sorting, Trees, Graphs, Dynamic Programming, Complexity); Theory of Computation & Compiler Design.',
-      arunachalComponent: 'Secure local caching and offline-first software architecture for connectivity-limited remote administrative blocks.',
+      arunachalComponent:
+          'Secure local caching and offline-first software architecture for connectivity-limited remote administrative blocks.',
       weightageImpact: 'Major core technical score.',
     ),
     AppscSyllabusSection(
       examName: 'Arunachal Engineering Service (AESE - AE)',
-      targetCadres: 'Assistant Engineer (Computer / IT / Systems) in Department of IT & Communication',
+      targetCadres:
+          'Assistant Engineer (Computer / IT / Systems) in Department of IT & Communication',
       stage: 'Stage 1: Recruitment Exam (Written)',
       paperName: 'Paper-IV: Technical Paper-II (Computer Science & IT)',
       marks: 150,
@@ -726,14 +781,16 @@ class OfficialSyllabusData {
       negativeMarking: 'Pass mark: 33%',
       primaryCurriculum:
           'Operating Systems (Process management, Concurrency, Virtual memory, Linux); Database Management Systems (SQL, Normalization, Transactions, NoSQL); Computer Networks (TCP/IP, Routing protocols, Network Security); Software Engineering (Agile, CI/CD); Web & Mobile Technologies; Cyber Security & Cryptography (PKI, Firewalls, Threat mitigation); Cloud Computing & Virtualization.',
-      arunachalComponent: 'State Data Center (SDC) management, e-Governance services (e-Office, Jan Suvidha), and State Wide Area Network (SWAN) operations across Arunachal districts.',
+      arunachalComponent:
+          'State Data Center (SDC) management, e-Governance services (e-Office, Jan Suvidha), and State Wide Area Network (SWAN) operations across Arunachal districts.',
       weightageImpact: 'Major core technical score. Total Written = 500 marks.',
     ),
 
     // AESE Technical - Agricultural Engineering (AGRI)
     AppscSyllabusSection(
       examName: 'Arunachal Engineering Service (AESE - AE)',
-      targetCadres: 'Assistant Engineer (Agricultural / Soil Conservation) in Dept of Agriculture & Rural Development',
+      targetCadres:
+          'Assistant Engineer (Agricultural / Soil Conservation) in Dept of Agriculture & Rural Development',
       stage: 'Stage 1: Recruitment Exam (Written)',
       paperName: 'Paper-III: Technical Paper-I (Agricultural Engineering)',
       marks: 150,
@@ -741,12 +798,14 @@ class OfficialSyllabusData {
       negativeMarking: 'Pass mark: 33%',
       primaryCurriculum:
           'Farm Power & Tractor Technology (IC engines, transmission, power tillers, ergonomics); Farm Machinery & Implements (Tillage, sowing, planting, plant protection, harvesting, threshing); Post-Harvest Technology & Food Process Engineering (Drying, milling, cold storage, food preservation); Farm Structures, Rural Housing & Livestock Environmental Control.',
-      arunachalComponent: 'Specialized lightweight farm power machinery and mechanized hill terrace farming implements suited for Jhum and terrace cultivation.',
+      arunachalComponent:
+          'Specialized lightweight farm power machinery and mechanized hill terrace farming implements suited for Jhum and terrace cultivation.',
       weightageImpact: 'Major core technical score.',
     ),
     AppscSyllabusSection(
       examName: 'Arunachal Engineering Service (AESE - AE)',
-      targetCadres: 'Assistant Engineer (Agricultural / Soil Conservation) in Dept of Agriculture & Rural Development',
+      targetCadres:
+          'Assistant Engineer (Agricultural / Soil Conservation) in Dept of Agriculture & Rural Development',
       stage: 'Stage 1: Recruitment Exam (Written)',
       paperName: 'Paper-IV: Technical Paper-II (Agricultural Engineering)',
       marks: 150,
@@ -754,7 +813,8 @@ class OfficialSyllabusData {
       negativeMarking: 'Pass mark: 33%',
       primaryCurriculum:
           'Soil and Water Conservation Engineering (Water and wind erosion, contour bunding, graded terracing, bench terraces, gully control structures, silt detention basins); Watershed Hydrology, Planning & Resource Management; Irrigation & Drainage Engineering (Pressurized irrigation, Drip, Micro-sprinkler); Ground Water, Wells and Lift Pumps; Renewable Energy Applications (Biogas, solar dryers); GIS & Remote Sensing in Watersheds.',
-      arunachalComponent: 'Hill terrace soil erosion mitigation, catchment area treatment for hilly streams, and gravity-fed micro-irrigation systems in tribal farming tracts.',
+      arunachalComponent:
+          'Hill terrace soil erosion mitigation, catchment area treatment for hilly streams, and gravity-fed micro-irrigation systems in tribal farming tracts.',
       weightageImpact: 'Major core technical score. Total Written = 500 marks.',
     ),
 
@@ -766,8 +826,10 @@ class OfficialSyllabusData {
       marks: 75,
       duration: 'Interview Board',
       negativeMarking: 'Comprehensive Assessment',
-      primaryCurriculum: 'Technical assessment, practical problem-solving in field engineering, project execution in difficult terrain, code of ethics.',
-      arunachalComponent: 'Knowledge of terrain, geological formations, earthquake vulnerability (Zone V) of Arunachal Pradesh.',
+      primaryCurriculum:
+          'Technical assessment, practical problem-solving in field engineering, project execution in difficult terrain, code of ethics.',
+      arunachalComponent:
+          'Knowledge of terrain, geological formations, earthquake vulnerability (Zone V) of Arunachal Pradesh.',
       weightageImpact: 'Final Merit = 500 (Written) + 75 (Viva) = 575 Marks.',
       isInterview: true,
     ),
@@ -775,15 +837,18 @@ class OfficialSyllabusData {
     // JE Common
     AppscSyllabusSection(
       examName: 'Junior Engineer (JE) Common Exam',
-      targetCadres: 'Junior Engineer (Civil, Electrical, Mechanical, ECE, CSE/IT, Agri) in all State Departments',
+      targetCadres:
+          'Junior Engineer (Civil, Electrical, Mechanical, ECE, CSE/IT, Agri) in all State Departments',
       stage: 'Stage 1: Written Examination',
-      paperName: 'Paper-I: General English & General Knowledge (Common to All Trades)',
+      paperName:
+          'Paper-I: General English & General Knowledge (Common to All Trades)',
       marks: 100,
       duration: '2 Hours (50 English + 50 GK)',
       negativeMarking: 'Qualifying / Merit (Min 33%)',
       primaryCurriculum:
           'Part A (English - 50 marks): Grammar, vocabulary, error correction, comprehension. Part B (GK - 50 marks): Current affairs, national history, geography, constitution, science, and Arunachal Pradesh GK.',
-      arunachalComponent: 'Arunachal Pradesh general geography, tribal history, major projects.',
+      arunachalComponent:
+          'Arunachal Pradesh general geography, tribal history, major projects.',
       weightageImpact: 'Written component of total 300 marks.',
     ),
     AppscSyllabusSection(
@@ -796,12 +861,14 @@ class OfficialSyllabusData {
       negativeMarking: 'Technical Core (Min 33%)',
       primaryCurriculum:
           'Diploma Standard: Building Materials (Bricks, Cement, Aggregates, Mortar, Timber, Bitumen); Estimating, Costing & Valuation; Surveying (Chain, Compass, Plane table, Levelling, Theodolite, Contouring); Soil Mechanics & Foundation; Hydraulics & Fluid Mechanics; Irrigation Engineering; Transportation Engineering (Highway design, pavements, hill road drainage); Environmental Engineering (Water purification, sewerage); Theory of Structures, Concrete Technology, RCC & Steel Design.',
-      arunachalComponent: 'Hill slope cutting, gabion wall & sausage crate retaining structures, bamboo-reinforced composites, and mountain road drain clearing.',
+      arunachalComponent:
+          'Hill slope cutting, gabion wall & sausage crate retaining structures, bamboo-reinforced composites, and mountain road drain clearing.',
       weightageImpact: 'Written component. Total Written = 300 Marks.',
     ),
     AppscSyllabusSection(
       examName: 'Junior Engineer (JE) Common Exam',
-      targetCadres: 'Junior Engineer (Electrical) in Power Department, DHPD, PWD Electrical',
+      targetCadres:
+          'Junior Engineer (Electrical) in Power Department, DHPD, PWD Electrical',
       stage: 'Stage 1: Written Examination',
       paperName: 'Paper-II: Technical Domain - Electrical Engineering (EE)',
       marks: 200,
@@ -809,12 +876,14 @@ class OfficialSyllabusData {
       negativeMarking: 'Technical Core (Min 33%)',
       primaryCurriculum:
           'Diploma Standard: Basic Electrical Concepts (Ohm’s law, Kirchhoff’s laws, Network theorems, AC circuits); Magnetic Circuits; Electrical & Electronic Measurements (Meters, bridges); Electrical Machines (DC Motors/Generators, 1-Phase & 3-Phase Transformers, Induction Motors); Generation, Transmission & Distribution of Power; Switchgear & Protection (Fuses, circuit breakers, earthing); Estimation and Costing of Electrical Installations; Utilization of Electrical Energy (Illumination, Heating, Drives); Basic Electronics & Power Devices (Diodes, Transistors, SCR).',
-      arunachalComponent: 'Hill terrain distribution line maintenance, high lightning protection, transformer maintenance in damp mountain climates.',
+      arunachalComponent:
+          'Hill terrain distribution line maintenance, high lightning protection, transformer maintenance in damp mountain climates.',
       weightageImpact: 'Written component. Total Written = 300 Marks.',
     ),
     AppscSyllabusSection(
       examName: 'Junior Engineer (JE) Common Exam',
-      targetCadres: 'Junior Engineer (Mechanical) in PWD Mechanical, Power, Transport',
+      targetCadres:
+          'Junior Engineer (Mechanical) in PWD Mechanical, Power, Transport',
       stage: 'Stage 1: Written Examination',
       paperName: 'Paper-II: Technical Domain - Mechanical Engineering (ME)',
       marks: 200,
@@ -822,12 +891,14 @@ class OfficialSyllabusData {
       negativeMarking: 'Technical Core (Min 33%)',
       primaryCurriculum:
           'Diploma Standard: Engineering Mechanics (Forces, moments, friction); Strength of Materials (Stress, strain, bending moments, torsion in shafts); Theory of Machines (Simple mechanisms, gear trains, governors); Machine Design (Design of joints, keys, couplings, shafts); Thermal Engineering (Thermodynamic laws, boilers, steam turbines, IC Engines - 2 stroke, 4 stroke, Otto/Diesel cycles); Fluid Mechanics & Hydraulic Machinery (Bernoulli theorem, Pelton wheel, Francis turbine, pumps); Manufacturing Technology (Workshop processes, lathes, welding, casting); Industrial Management & Safety.',
-      arunachalComponent: 'Cold climate engine starting techniques, maintenance of road construction machinery (bulldozers, excavators, rock breakers) in remote hill sectors.',
+      arunachalComponent:
+          'Cold climate engine starting techniques, maintenance of road construction machinery (bulldozers, excavators, rock breakers) in remote hill sectors.',
       weightageImpact: 'Written component. Total Written = 300 Marks.',
     ),
     AppscSyllabusSection(
       examName: 'Junior Engineer (JE) Common Exam',
-      targetCadres: 'Junior Engineer (Electronics / Telecommunication) in Police Telecom, IT, Power',
+      targetCadres:
+          'Junior Engineer (Electronics / Telecommunication) in Police Telecom, IT, Power',
       stage: 'Stage 1: Written Examination',
       paperName: 'Paper-II: Technical Domain - Electronics & Comm. (ECE)',
       marks: 200,
@@ -835,12 +906,14 @@ class OfficialSyllabusData {
       negativeMarking: 'Technical Core (Min 33%)',
       primaryCurriculum:
           'Diploma Standard: Electronic Components & Semiconductor Devices (Diodes, BJTs, FETs, MOSFETs); Audio & Radio Frequency Amplifiers; Op-Amps & 555 Timers; Digital Electronics (Number systems, Logic gates, Flip-flops, Counters, Registers, Multiplexers); Communication Engineering (AM/FM/PM, transmitters, receivers, antennas, transmission lines); Microprocessors (8085 architecture, pin diagram, instruction set, programming); Electronic Measurements & Instruments (CRO, Multimeters, Signal generators); Industrial Electronics & Sensors.',
-      arunachalComponent: 'Maintenance of VHF/UHF wireless repeaters on high mountain ridges, solar-powered communication hubs in non-electrified outposts.',
+      arunachalComponent:
+          'Maintenance of VHF/UHF wireless repeaters on high mountain ridges, solar-powered communication hubs in non-electrified outposts.',
       weightageImpact: 'Written component. Total Written = 300 Marks.',
     ),
     AppscSyllabusSection(
       examName: 'Junior Engineer (JE) Common Exam',
-      targetCadres: 'Junior Engineer (Computer / IT) in Government Departments, NIC, IT Dept',
+      targetCadres:
+          'Junior Engineer (Computer / IT) in Government Departments, NIC, IT Dept',
       stage: 'Stage 1: Written Examination',
       paperName: 'Paper-II: Technical Domain - Computer Science & IT (CSE/IT)',
       marks: 200,
@@ -848,12 +921,14 @@ class OfficialSyllabusData {
       negativeMarking: 'Technical Core (Min 33%)',
       primaryCurriculum:
           'Diploma Standard: Computer Fundamentals & PC Architecture (CPU, Memory, I/O devices, BIOS); Operating Systems (Windows, Linux commands, File systems, Process scheduling); Programming in C & C++ (Functions, pointers, OOP concepts); Data Structures (Arrays, Stacks, Queues, Linked Lists, Trees, Sorting); Database Management Systems (SQL queries, normalization, table constraints); Computer Networks (LAN, WAN, TCP/IP, IP addressing, routers, switches); Web Development (HTML, CSS, JavaScript); Information Security & Cyber Laws; Hardware Troubleshooting & Peripheral Maintenance.',
-      arunachalComponent: 'Deploying and maintaining district IT infrastructure, LAN setups for Jan Suvidha / DC offices, and local backup mechanisms for remote offices.',
+      arunachalComponent:
+          'Deploying and maintaining district IT infrastructure, LAN setups for Jan Suvidha / DC offices, and local backup mechanisms for remote offices.',
       weightageImpact: 'Written component. Total Written = 300 Marks.',
     ),
     AppscSyllabusSection(
       examName: 'Junior Engineer (JE) Common Exam',
-      targetCadres: 'Junior Engineer (Agricultural) in Agriculture & Soil Conservation Departments',
+      targetCadres:
+          'Junior Engineer (Agricultural) in Agriculture & Soil Conservation Departments',
       stage: 'Stage 1: Written Examination',
       paperName: 'Paper-II: Technical Domain - Agricultural Engineering (AGRI)',
       marks: 200,
@@ -861,7 +936,8 @@ class OfficialSyllabusData {
       negativeMarking: 'Technical Core (Min 33%)',
       primaryCurriculum:
           'Diploma Standard: Farm Power (Sources of farm power, IC engine systems, tractors, power tillers); Farm Machinery (Tillage implements, seed drills, planters, plant protection equipment, harvesting and threshing machinery); Soil and Water Conservation (Soil erosion types, contour bunding, terracing, drop structures, water harvesting ponds); Irrigation and Drainage (Sprinkler, drip, canal lining, drainage for waterlogged lands); Post Harvest Technology & Agricultural Processing (Cleaning, grading, drying, storage); Renewable Energy in Agriculture (Biogas, solar appliances).',
-      arunachalComponent: 'Gravity water harvesting tanks for mountain slopes, terraced farming implement maintenance, and processing equipment for indigenous cash crops (large cardamom, ginger, kiwi, orange).',
+      arunachalComponent:
+          'Gravity water harvesting tanks for mountain slopes, terraced farming implement maintenance, and processing equipment for indigenous cash crops (large cardamom, ginger, kiwi, orange).',
       weightageImpact: 'Written component. Total Written = 300 Marks.',
     ),
     AppscSyllabusSection(
@@ -872,8 +948,10 @@ class OfficialSyllabusData {
       marks: 50,
       duration: 'Board Interview',
       negativeMarking: 'Technical Assessment',
-      primaryCurriculum: 'Domain knowledge, site inspection capabilities, instrument handling, survey tools, estimation accuracy.',
-      arunachalComponent: 'Arunachal terrain awareness and local engineering challenges.',
+      primaryCurriculum:
+          'Domain knowledge, site inspection capabilities, instrument handling, survey tools, estimation accuracy.',
+      arunachalComponent:
+          'Arunachal terrain awareness and local engineering challenges.',
       weightageImpact: 'Final Merit = 300 + 50 = 350 Marks.',
       isInterview: true,
     ),
@@ -881,13 +959,15 @@ class OfficialSyllabusData {
     // Teaching (PGT / TGT)
     AppscSyllabusSection(
       examName: 'Post Graduate Teacher (PGT)',
-      targetCadres: 'PGT in Govt Higher Secondary Schools (English, Maths, Physics, Chemistry, Biology, History, Pol Science, Geography, Economics)',
+      targetCadres:
+          'PGT in Govt Higher Secondary Schools (English, Maths, Physics, Chemistry, Biology, History, Pol Science, Geography, Economics)',
       stage: 'Stage 1: Written Examination',
       paperName: 'Paper-I: General English',
       marks: 100,
       duration: '3 Hours (Descriptive)',
       negativeMarking: 'Pass mark: 33%',
-      primaryCurriculum: 'Comprehension, Essay writing, Precis writing, Letter writing, English grammar, Syntax and vocabulary.',
+      primaryCurriculum:
+          'Comprehension, Essay writing, Precis writing, Letter writing, English grammar, Syntax and vocabulary.',
       arunachalComponent: 'Regional themes in essay writing.',
       weightageImpact: 'Written component (Total 400 marks).',
     ),
@@ -899,8 +979,10 @@ class OfficialSyllabusData {
       marks: 100,
       duration: '2 Hours (Objective/Descriptive)',
       negativeMarking: 'Pass mark: 33%',
-      primaryCurriculum: 'Current affairs, Indian polity, geography, history, everyday science, sports, environment.',
-      arunachalComponent: 'Arunachal Pradesh historical background, demography, tribes, art, and administrative structure.',
+      primaryCurriculum:
+          'Current affairs, Indian polity, geography, history, everyday science, sports, environment.',
+      arunachalComponent:
+          'Arunachal Pradesh historical background, demography, tribes, art, and administrative structure.',
       weightageImpact: 'Written component.',
     ),
     AppscSyllabusSection(
@@ -914,17 +996,20 @@ class OfficialSyllabusData {
       primaryCurriculum:
           'Advanced Master level curriculum in chosen subject discipline (e.g. advanced calculus/algebra for Maths; organic/inorganic/physical for Chemistry; political thought & theories for Political Science).',
       arunachalComponent: 'Applied context where applicable.',
-      weightageImpact: 'Core qualifying & ranking paper. Viva = 50 Marks. Total = 450 Marks.',
+      weightageImpact:
+          'Core qualifying & ranking paper. Viva = 50 Marks. Total = 450 Marks.',
     ),
     AppscSyllabusSection(
       examName: 'Trained Graduate Teacher (TGT)',
-      targetCadres: 'TGT in Govt Secondary Schools (Language, Sciences, Social Science, Maths)',
+      targetCadres:
+          'TGT in Govt Secondary Schools (Language, Sciences, Social Science, Maths)',
       stage: 'Stage 1: Written Examination',
       paperName: 'Paper-I: General English',
       marks: 100,
       duration: '3 Hours (Descriptive/Objective)',
       negativeMarking: 'Pass mark: 33%',
-      primaryCurriculum: 'English grammar, sentence comprehension, essay, letter, vocabulary, correction of sentences.',
+      primaryCurriculum:
+          'English grammar, sentence comprehension, essay, letter, vocabulary, correction of sentences.',
       arunachalComponent: 'General regional topics.',
       weightageImpact: 'Written component (Total 400 marks).',
     ),
@@ -936,8 +1021,10 @@ class OfficialSyllabusData {
       marks: 100,
       duration: '2 Hours (Objective)',
       negativeMarking: 'Pass mark: 33%',
-      primaryCurriculum: 'Current national & international events, Indian constitution, Indian geography, history, science.',
-      arunachalComponent: 'Arunachal Pradesh heritage, geography, economy, culture.',
+      primaryCurriculum:
+          'Current national & international events, Indian constitution, Indian geography, history, science.',
+      arunachalComponent:
+          'Arunachal Pradesh heritage, geography, economy, culture.',
       weightageImpact: 'Written component.',
     ),
     AppscSyllabusSection(
@@ -950,8 +1037,10 @@ class OfficialSyllabusData {
       negativeMarking: 'Graduate / B.Ed Standard',
       primaryCurriculum:
           'Degree syllabus in relevant subject along with Educational Psychology, Teaching Pedagogy, Classroom management, Curriculum development, and Assessment methodologies.',
-      arunachalComponent: 'Teaching methods suited for multicultural and tribal student cohorts.',
-      weightageImpact: 'Core ranking paper. Viva = 50 Marks. Total = 450 Marks.',
+      arunachalComponent:
+          'Teaching methods suited for multicultural and tribal student cohorts.',
+      weightageImpact:
+          'Core ranking paper. Viva = 50 Marks. Total = 450 Marks.',
     ),
 
     // Agriculture / Horticulture (ADO & HDO)
@@ -963,7 +1052,8 @@ class OfficialSyllabusData {
       marks: 100,
       duration: '2 Hours',
       negativeMarking: 'Pass mark: 33%',
-      primaryCurriculum: 'Essay writing, precis, comprehension, grammar, vocabulary, sentence correction.',
+      primaryCurriculum:
+          'Essay writing, precis, comprehension, grammar, vocabulary, sentence correction.',
       arunachalComponent: 'State agricultural topics.',
       weightageImpact: 'Written component (Total 400 marks).',
     ),
@@ -975,7 +1065,8 @@ class OfficialSyllabusData {
       marks: 100,
       duration: '2 Hours',
       negativeMarking: 'Pass mark: 33%',
-      primaryCurriculum: 'Current events, Indian economy, geography, polity, science, rural development.',
+      primaryCurriculum:
+          'Current events, Indian economy, geography, polity, science, rural development.',
       arunachalComponent:
           'Arunachal Pradesh agro-climatic zones, traditional farming systems (Jhum / shifting cultivation, Apatani wet rice-fish farming), state agricultural policies.',
       weightageImpact: 'Written component.',
@@ -990,21 +1081,26 @@ class OfficialSyllabusData {
       negativeMarking: 'B.Sc (Agri / Horti) Standard',
       primaryCurriculum:
           'For ADO: Agronomy, Soil Science, Plant Breeding & Genetics, Plant Pathology, Entomology, Agricultural Extension, Agricultural Economics, Seed Technology. For HDO: Pomology, Olericulture, Floriculture, Post-Harvest Management, Plantation Crops, Spices.',
-      arunachalComponent: 'Indigenous crops of Arunachal Pradesh (Large cardamom, ginger, kiwi, oranges, off-season vegetables), organic farming initiatives.',
-      weightageImpact: 'Core technical paper. Viva = 50 Marks. Total = 450 Marks.',
+      arunachalComponent:
+          'Indigenous crops of Arunachal Pradesh (Large cardamom, ginger, kiwi, oranges, off-season vegetables), organic farming initiatives.',
+      weightageImpact:
+          'Core technical paper. Viva = 50 Marks. Total = 450 Marks.',
     ),
 
     // Medical (GDMO / Dental Surgeon)
     AppscSyllabusSection(
       examName: 'Medical Officer (GDMO & Dental Surgeon)',
-      targetCadres: 'Medical Officer (Allopathy, Dental) in Dept of Health & Family Welfare',
+      targetCadres:
+          'Medical Officer (Allopathy, Dental) in Dept of Health & Family Welfare',
       stage: 'Stage 1: Recruitment Examination',
       paperName: 'Paper-I: General English & General Studies',
       marks: 100,
       duration: '2 Hours (50 + 50)',
       negativeMarking: 'Screening / Written',
-      primaryCurriculum: 'English: Comprehension, grammar, precis. GS: Indian Polity, health policies, public health systems, current events, Arunachal Pradesh profile.',
-      arunachalComponent: 'Health demographics, indigenous health challenges, epidemiology in hill tracts of Arunachal Pradesh.',
+      primaryCurriculum:
+          'English: Comprehension, grammar, precis. GS: Indian Polity, health policies, public health systems, current events, Arunachal Pradesh profile.',
+      arunachalComponent:
+          'Health demographics, indigenous health challenges, epidemiology in hill tracts of Arunachal Pradesh.',
       weightageImpact: 'Written screening score.',
     ),
     AppscSyllabusSection(
@@ -1017,8 +1113,10 @@ class OfficialSyllabusData {
       negativeMarking: 'MBBS / BDS Standard',
       primaryCurriculum:
           'General Medicine, Paediatrics, Surgery, Obstetrics & Gynaecology, Preventive & Social Medicine (PSM), Forensic Medicine, Pathology, Pharmacology, Microbiology.',
-      arunachalComponent: 'Public health diseases prevalent in Arunachal Pradesh (Vector-borne diseases, malaria, tuberculosis, endemic goitre).',
-      weightageImpact: 'Core technical ranking paper. Viva = 50 Marks. Total = 450 Marks.',
+      arunachalComponent:
+          'Public health diseases prevalent in Arunachal Pradesh (Vector-borne diseases, malaria, tuberculosis, endemic goitre).',
+      weightageImpact:
+          'Core technical ranking paper. Viva = 50 Marks. Total = 450 Marks.',
     ),
   ];
 
@@ -1031,70 +1129,96 @@ class OfficialSyllabusData {
       subTopic: 'Geography & Natural Resources',
       coreCurriculum:
           'Physical geography, river systems (Siang, Subansiri, Kameng, Lohit, Dibang, Tirap), mountain passes, agro-climatic zones, wildlife sanctuaries, national parks (Namdapha, Mouling, Pakke), mineral wealth, biodiversity hotspots.',
-      apssbScope: 'Direct facts: Rivers, origins, sanctuaries, district headquarters, borders with Tibet/China, Myanmar, Bhutan, Assam, Nagaland.',
-      appscScope: 'Descriptive analysis: Hydropower potential, environmental impact, trans-Himalayan connectivity, disaster vulnerability (Zone V seismic activity, floods).',
-      typicalWeightage: '10 - 15% of GK in APSSB; 30 - 35% of GS-I/Prelims in APPSC',
-      highYieldFocus: 'National parks, rivers, borders, biodiversity, environmental clearances.',
+      apssbScope:
+          'Direct facts: Rivers, origins, sanctuaries, district headquarters, borders with Tibet/China, Myanmar, Bhutan, Assam, Nagaland.',
+      appscScope:
+          'Descriptive analysis: Hydropower potential, environmental impact, trans-Himalayan connectivity, disaster vulnerability (Zone V seismic activity, floods).',
+      typicalWeightage:
+          '10 - 15% of GK in APSSB; 30 - 35% of GS-I/Prelims in APPSC',
+      highYieldFocus:
+          'National parks, rivers, borders, biodiversity, environmental clearances.',
     ),
     SubjectMatrixItem(
       category: 'Arunachal Pradesh General Studies',
       subTopic: 'History, Tribes, Culture & Administration',
       coreCurriculum:
           'Major tribes (Nyishi, Adi, Apatani, Galo, Tagin, Monpa, Mishmi, Wancho, Noctes, Tangsa, Singpho, etc.), festivals (Nyokum, Solung, Dree, Si-Donyi, Losar, Mopin, Chalo Loku), customary laws (Kebang, Buliang, Nyele), NEFA history, Daying Ering committee, Statehood Act 1986, Article 371H, Inner Line Permit (BEFR 1873).',
-      apssbScope: 'Festival dates, tribes associated, indigenous dances, traditional attires, year of NEFA renaming, first Chief Minister/Governor.',
-      appscScope: 'Evolution of local self-government, customary village councils vs statutory Panchayati Raj, border disputes, cultural preservation vs modernization.',
-      typicalWeightage: '15 - 20% of GK in APSSB; Up to 35% in APPSC Prelims & GS-I/II',
-      highYieldFocus: 'Tribal festivals, customary administration, constitutional safeguards (Art 371H, BEFR).',
+      apssbScope:
+          'Festival dates, tribes associated, indigenous dances, traditional attires, year of NEFA renaming, first Chief Minister/Governor.',
+      appscScope:
+          'Evolution of local self-government, customary village councils vs statutory Panchayati Raj, border disputes, cultural preservation vs modernization.',
+      typicalWeightage:
+          '15 - 20% of GK in APSSB; Up to 35% in APPSC Prelims & GS-I/II',
+      highYieldFocus:
+          'Tribal festivals, customary administration, constitutional safeguards (Art 371H, BEFR).',
     ),
     SubjectMatrixItem(
       category: 'General English',
       subTopic: 'Grammar & Functional Syntax',
       coreCurriculum:
           'Articles, Prepositions, Tenses, Subject-Verb Agreement, Voice change (Active/Passive), Direct & Indirect Speech, Sentence rearrangement, Sentence completion, Modal auxiliaries, Conditional clauses.',
-      apssbScope: '25 MCQs (50 marks): Spotting errors, sentence improvement, fill in the blanks, cloze tests.',
-      appscScope: 'Descriptive: Transformation of sentences, synthesis, grammatical correction, standard usage.',
-      typicalWeightage: '25% in APSSB CGL/CHSL; 300 marks qualifying or 100 marks scoring in APPSC',
-      highYieldFocus: 'Prepositions, subject-verb concord, voice and speech transformation.',
+      apssbScope:
+          '25 MCQs (50 marks): Spotting errors, sentence improvement, fill in the blanks, cloze tests.',
+      appscScope:
+          'Descriptive: Transformation of sentences, synthesis, grammatical correction, standard usage.',
+      typicalWeightage:
+          '25% in APSSB CGL/CHSL; 300 marks qualifying or 100 marks scoring in APPSC',
+      highYieldFocus:
+          'Prepositions, subject-verb concord, voice and speech transformation.',
     ),
     SubjectMatrixItem(
       category: 'General English',
       subTopic: 'Vocabulary & Composition',
       coreCurriculum:
           'Synonyms, Antonyms, Homonyms, Idioms & Phrases, One-word substitution, Spelling corrections, Precis writing, Comprehension passages, Formal & Informal letter writing, Essay drafting.',
-      apssbScope: 'MCQs on antonyms, synonyms, idioms, spellings, one-word substitutes, and short passage comprehension.',
-      appscScope: 'Descriptive: 1000-1200 word essays, precis writing of dense administrative/socio-economic texts, argument writing.',
-      typicalWeightage: '50% of English section in APSSB; 70% of descriptive English paper in APPSC',
-      highYieldFocus: 'Vocabulary flashcards, formal precis condensation, structured multi-paragraph essays.',
+      apssbScope:
+          'MCQs on antonyms, synonyms, idioms, spellings, one-word substitutes, and short passage comprehension.',
+      appscScope:
+          'Descriptive: 1000-1200 word essays, precis writing of dense administrative/socio-economic texts, argument writing.',
+      typicalWeightage:
+          '50% of English section in APSSB; 70% of descriptive English paper in APPSC',
+      highYieldFocus:
+          'Vocabulary flashcards, formal precis condensation, structured multi-paragraph essays.',
     ),
     SubjectMatrixItem(
       category: 'Elementary / Quantitative Maths',
       subTopic: 'Arithmetic & Commercial Math',
       coreCurriculum:
           'Number systems, Fractions, Decimals, Surds & Indices, LCM & HCF, Ratio & Proportion, Unitary method, Percentages, Profit & Loss, Simple Interest, Compound Interest, Discount, Partnership, Work & Time, Pipes & Cisterns, Speed, Distance & Time, Trains, Boats & Streams.',
-      apssbScope: '25 MCQs (50 marks): Quick calculations, formula applications, shortcut methods (Class 10 level).',
-      appscScope: 'CSAT Paper-II (Prelims): Quantitative aptitude, logical problem-solving, data sufficiency.',
-      typicalWeightage: '25% in APSSB CGL/CHSL/CSL; Major portion of APPSC CSAT (Paper-II)',
-      highYieldFocus: 'Percentages, Profit & Loss, Ratio, Time & Work, Speed & Distance.',
+      apssbScope:
+          '25 MCQs (50 marks): Quick calculations, formula applications, shortcut methods (Class 10 level).',
+      appscScope:
+          'CSAT Paper-II (Prelims): Quantitative aptitude, logical problem-solving, data sufficiency.',
+      typicalWeightage:
+          '25% in APSSB CGL/CHSL/CSL; Major portion of APPSC CSAT (Paper-II)',
+      highYieldFocus:
+          'Percentages, Profit & Loss, Ratio, Time & Work, Speed & Distance.',
     ),
     SubjectMatrixItem(
       category: 'Elementary / Quantitative Maths',
       subTopic: 'Geometry, Mensuration & Algebra',
       coreCurriculum:
           'Algebraic identities, Linear equations, Polynomials, Angles, Triangles, Quadrilaterals, Circles, Chords & Tangents, Perimeter and Area of 2D figures, Surface Area & Volume of 3D solids (Cylinder, Cone, Sphere, Prism, Pyramid), Trigonometric ratios.',
-      apssbScope: 'Standard formula-based geometry and mensuration MCQs in APSSB CGL.',
-      appscScope: 'Secondary level mathematical problems in CSAT; Applied geometry in AE/JE exams.',
+      apssbScope:
+          'Standard formula-based geometry and mensuration MCQs in APSSB CGL.',
+      appscScope:
+          'Secondary level mathematical problems in CSAT; Applied geometry in AE/JE exams.',
       typicalWeightage: '20 - 30% of Mathematics section in APSSB CGL',
-      highYieldFocus: 'Mensuration formulas, circle theorems, coordinate algebra.',
+      highYieldFocus:
+          'Mensuration formulas, circle theorems, coordinate algebra.',
     ),
     SubjectMatrixItem(
       category: 'General Intelligence & Reasoning',
       subTopic: 'Verbal & Analytical Reasoning',
       coreCurriculum:
           'Analogies, Classification, Alphabetical & Numerical series, Coding-Decoding, Blood relations, Direction sense, Order & Ranking, Venn diagrams, Syllogisms, Statement & Conclusions, Assertion & Reason, Critical reasoning.',
-      apssbScope: '25 MCQs (50 marks): Fast pattern recognition, coding rules, ranking logic.',
-      appscScope: 'Major component of APPSC Prelims Paper-II (CSAT): Critical logical deductions, argument evaluation.',
+      apssbScope:
+          '25 MCQs (50 marks): Fast pattern recognition, coding rules, ranking logic.',
+      appscScope:
+          'Major component of APPSC Prelims Paper-II (CSAT): Critical logical deductions, argument evaluation.',
       typicalWeightage: '25% in APSSB exams; 30 - 40% of CSAT in APPSC',
-      highYieldFocus: 'Syllogisms, blood relations, series completion, coding-decoding.',
+      highYieldFocus:
+          'Syllogisms, blood relations, series completion, coding-decoding.',
     ),
     SubjectMatrixItem(
       category: 'General Intelligence & Reasoning',
@@ -1111,50 +1235,68 @@ class OfficialSyllabusData {
       subTopic: 'Indian Polity, Constitution & Governance',
       coreCurriculum:
           'Preamble, Fundamental Rights, Directive Principles (DPSP), Fundamental Duties, Union Executive (President, PM, Council of Ministers), Parliament, State Legislature, Judiciary (Supreme Court, High Courts), Constitutional & Statutory bodies, Emergency provisions, Amendments, Panchayati Raj & Urban Local Bodies.',
-      apssbScope: 'Direct objective questions on Articles, Amendments, Tenures, Constitutional powers.',
-      appscScope: 'In-depth Mains GS-II: Federalism disputes, Judicial activism, Separation of powers, Electoral reforms, Civil service neutrality.',
-      typicalWeightage: '15 - 20% of GS in APSSB; Dedicated 250-mark paper (GS-II) in APPSC Mains',
-      highYieldFocus: 'Fundamental Rights, Articles 1-51A, Judiciary, Panchayati Raj, Art 371H.',
+      apssbScope:
+          'Direct objective questions on Articles, Amendments, Tenures, Constitutional powers.',
+      appscScope:
+          'In-depth Mains GS-II: Federalism disputes, Judicial activism, Separation of powers, Electoral reforms, Civil service neutrality.',
+      typicalWeightage:
+          '15 - 20% of GS in APSSB; Dedicated 250-mark paper (GS-II) in APPSC Mains',
+      highYieldFocus:
+          'Fundamental Rights, Articles 1-51A, Judiciary, Panchayati Raj, Art 371H.',
     ),
     SubjectMatrixItem(
       category: 'General Studies',
       subTopic: 'Indian History & National Movement',
       coreCurriculum:
           'Ancient India (Indus Valley, Vedic period, Buddhism/Jainism, Mauryan, Gupta empire), Medieval India (Delhi Sultanate, Mughal Empire, Bhakti & Sufi movements), Modern India (British expansion, Revolt of 1857, Socio-religious reforms, Indian National Congress, Gandhian movements, Partition & Independence).',
-      apssbScope: 'Chronological questions, historical battles, treaties, freedom fighter publications, acts (1909, 1919, 1935).',
-      appscScope: 'Analytical GS-I: Impact of colonial economic policies, tribal revolts, social reform debates, post-independence state reorganization.',
-      typicalWeightage: '15 - 20% of GS in APSSB; Significant portion of APPSC GS-I',
-      highYieldFocus: 'Modern freedom struggle (1905-1947), 1857 revolt, major tribal uprisings in North East.',
+      apssbScope:
+          'Chronological questions, historical battles, treaties, freedom fighter publications, acts (1909, 1919, 1935).',
+      appscScope:
+          'Analytical GS-I: Impact of colonial economic policies, tribal revolts, social reform debates, post-independence state reorganization.',
+      typicalWeightage:
+          '15 - 20% of GS in APSSB; Significant portion of APPSC GS-I',
+      highYieldFocus:
+          'Modern freedom struggle (1905-1947), 1857 revolt, major tribal uprisings in North East.',
     ),
     SubjectMatrixItem(
       category: 'General Studies',
       subTopic: 'Indian & World Geography',
       coreCurriculum:
           'Physical geography (Geomorphology, Climatology, Oceanography), Indian physical features (Himalayas, Northern Plains, Peninsular plateau, Coastal plains), Indian drainage systems, Monsoons & Climate, Soil types, Natural vegetation, Minerals, Agriculture, Industrial corridors, Population & Urbanization.',
-      apssbScope: 'Factual MCQs: Major rivers, mountain peaks, dams, soil distributions, minerals, census facts.',
-      appscScope: 'Analytical GS-I: Plate tectonics, resource distribution, climate change impacts on monsoon, industrial locational factors.',
-      typicalWeightage: '15% of GS in APSSB; Core part of APPSC Prelims & Mains GS-I',
-      highYieldFocus: 'Indian river basins, Himalayan geology, monsoons, soil & agricultural patterns.',
+      apssbScope:
+          'Factual MCQs: Major rivers, mountain peaks, dams, soil distributions, minerals, census facts.',
+      appscScope:
+          'Analytical GS-I: Plate tectonics, resource distribution, climate change impacts on monsoon, industrial locational factors.',
+      typicalWeightage:
+          '15% of GS in APSSB; Core part of APPSC Prelims & Mains GS-I',
+      highYieldFocus:
+          'Indian river basins, Himalayan geology, monsoons, soil & agricultural patterns.',
     ),
     SubjectMatrixItem(
       category: 'General Studies',
       subTopic: 'Indian Economy & Development',
       coreCurriculum:
           'Basic macroeconomic concepts, GDP/GNP, Inflation, Monetary Policy (RBI, Repo rates), Fiscal Policy (Budget, Taxation, GST), Banking system, Balance of Payments, Poverty, Unemployment, NITI Aayog, Government flagship schemes, Infrastructure & Agriculture.',
-      apssbScope: 'Definitions, current economic statistics, schemes, budgetary terms, inflation indices.',
-      appscScope: 'Analytical GS-III: Inclusive growth, fiscal federalism, agricultural supply chains, subsidies, industrial growth, employment generation.',
+      apssbScope:
+          'Definitions, current economic statistics, schemes, budgetary terms, inflation indices.',
+      appscScope:
+          'Analytical GS-III: Inclusive growth, fiscal federalism, agricultural supply chains, subsidies, industrial growth, employment generation.',
       typicalWeightage: '10 - 15% of GS in APSSB; Core part of APPSC GS-III',
-      highYieldFocus: 'Union & State Budgets, RBI monetary tools, poverty alleviation programmes.',
+      highYieldFocus:
+          'Union & State Budgets, RBI monetary tools, poverty alleviation programmes.',
     ),
     SubjectMatrixItem(
       category: 'General Studies',
       subTopic: 'Science, Technology & Environment',
       coreCurriculum:
           'Everyday Physics, Chemistry, Biology; Health and nutrition, Vitamins & diseases; Space technology (ISRO missions), Nuclear science, Defense systems, IT & Artificial Intelligence; Environmental ecology, Biodiversity, Wildlife conservation, Climate change protocols, Pollution control.',
-      apssbScope: 'Everyday science MCQs, scientific inventions, disease vectors, ISRO launch missions.',
-      appscScope: 'Analytical GS-III: Biotechnology applications, renewable energy transitions, climate negotiations, cyber security, environmental impact assessments.',
+      apssbScope:
+          'Everyday science MCQs, scientific inventions, disease vectors, ISRO launch missions.',
+      appscScope:
+          'Analytical GS-III: Biotechnology applications, renewable energy transitions, climate negotiations, cyber security, environmental impact assessments.',
       typicalWeightage: '15 - 20% of GS in APSSB; Major part of APPSC GS-III',
-      highYieldFocus: 'Renewable energy, space missions, environmental conventions, public health epidemiology.',
+      highYieldFocus:
+          'Renewable energy, space missions, environmental conventions, public health epidemiology.',
     ),
   ];
 }

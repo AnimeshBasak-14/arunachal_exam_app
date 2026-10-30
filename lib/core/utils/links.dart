@@ -16,7 +16,7 @@ Future<void> openLink(BuildContext context, String url) async {
     }
   }
   if (!ok && context.mounted) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Could not open the link.')));
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open the link.')));
   }
 }

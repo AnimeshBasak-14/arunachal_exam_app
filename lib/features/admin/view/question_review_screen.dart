@@ -26,7 +26,8 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
   String _selectedSource = 'All'; // 'All', 'PYQ', 'MOCK'
   String _selectedYear = 'All';
   String _selectedSubject = 'All';
-  String _selectedStatus = 'all'; // 'all', 'unreviewed', 'flagged', 'needs_ocr_rerun', 'approved'
+  String _selectedStatus =
+      'all'; // 'all', 'unreviewed', 'flagged', 'needs_ocr_rerun', 'approved'
 
   final List<String> _sources = ['All', 'PYQ', 'MOCK'];
   final List<String> _years = ['All', '2024', '2023', '2022', '2021'];
@@ -37,7 +38,13 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
     'General English',
     'Reasoning',
   ];
-  final List<String> _statuses = ['all', 'unreviewed', 'flagged', 'needs_ocr_rerun', 'approved'];
+  final List<String> _statuses = [
+    'all',
+    'unreviewed',
+    'flagged',
+    'needs_ocr_rerun',
+    'approved'
+  ];
 
   final List<String> _flagIssueTypes = [
     'merged_options',
@@ -109,22 +116,29 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
 
     String stripOptionKey(String raw, String key) {
       var s = raw.trim();
-      s = s.replaceFirst(RegExp(r'^[\(\[]?' + key + r'[\)\]\.\s]+', caseSensitive: false), '');
+      s = s.replaceFirst(
+          RegExp(r'^[\(\[]?' + key + r'[\)\]\.\s]+', caseSensitive: false), '');
       return s.trim();
     }
 
-    _optAController.text = q.options.isNotEmpty ? stripOptionKey(q.options[0], 'a') : '';
-    _optBController.text = q.options.length > 1 ? stripOptionKey(q.options[1], 'b') : '';
-    _optCController.text = q.options.length > 2 ? stripOptionKey(q.options[2], 'c') : '';
-    _optDController.text = q.options.length > 3 ? stripOptionKey(q.options[3], 'd') : '';
+    _optAController.text =
+        q.options.isNotEmpty ? stripOptionKey(q.options[0], 'a') : '';
+    _optBController.text =
+        q.options.length > 1 ? stripOptionKey(q.options[1], 'b') : '';
+    _optCController.text =
+        q.options.length > 2 ? stripOptionKey(q.options[2], 'c') : '';
+    _optDController.text =
+        q.options.length > 3 ? stripOptionKey(q.options[3], 'd') : '';
   }
 
   Future<void> _fetchQuestions() async {
     setState(() => _isLoading = true);
     try {
-      final bool needsInnerJoin = (_selectedSource != 'All' || _selectedYear != 'All');
+      final bool needsInnerJoin =
+          (_selectedSource != 'All' || _selectedYear != 'All');
       final String testsJoin = needsInnerJoin ? 'tests!inner(*)' : 'tests(*)';
-      var baseUrl = '$_supabaseUrl/rest/v1/questions?select=*,question_groups(*),$testsJoin';
+      var baseUrl =
+          '$_supabaseUrl/rest/v1/questions?select=*,question_groups(*),$testsJoin';
 
       if (_selectedSource == 'PYQ') {
         baseUrl += '&tests.paper_type=eq.PYQ';
@@ -156,8 +170,10 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
       ).timeout(const Duration(seconds: 10));
 
       bool columnMissing = false;
-      if (res.statusCode == 400 && (res.body.contains('review_status') || statusQuery.isNotEmpty)) {
-        debugPrint('[QuestionReview] review_status column not found. Retrying without status filter...');
+      if (res.statusCode == 400 &&
+          (res.body.contains('review_status') || statusQuery.isNotEmpty)) {
+        debugPrint(
+            '[QuestionReview] review_status column not found. Retrying without status filter...');
         columnMissing = true;
         requestUrl = '$baseUrl&order=id.asc';
         res = await http.get(
@@ -172,7 +188,9 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
 
       if (res.statusCode == 200 || res.statusCode == 206) {
         final List raw = jsonDecode(res.body);
-        List<Question> parsed = raw.map((m) => Question.fromSupabase(m as Map<String, dynamic>)).toList();
+        List<Question> parsed = raw
+            .map((m) => Question.fromSupabase(m as Map<String, dynamic>))
+            .toList();
         if (columnMissing && _selectedStatus != 'all') {
           if (_selectedStatus == 'unreviewed') {
             // Keep all rows as unreviewed
@@ -199,7 +217,8 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
     // Audit questions locally and find any with potential issues
     final local = QuestionRepository.allQuestions.where((q) {
       if (_selectedStatus == 'flagged') {
-        return q.options.any((o) => o.contains('Option A') || o.contains('(b)'));
+        return q.options
+            .any((o) => o.contains('Option A') || o.contains('(b)'));
       }
       return true;
     }).toList();
@@ -235,34 +254,38 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
       };
 
       final url = '$_supabaseUrl/rest/v1/questions?id=eq.${currentQ.id}';
-      var res = await http.patch(
-        Uri.parse(url),
-        headers: {
-          'apikey': _supabaseKey,
-          'Authorization': AdminSession.bearer,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=representation',
-        },
-        body: jsonEncode(patchBody),
-      ).timeout(const Duration(seconds: 6));
+      var res = await http
+          .patch(
+            Uri.parse(url),
+            headers: {
+              'apikey': _supabaseKey,
+              'Authorization': AdminSession.bearer,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=representation',
+            },
+            body: jsonEncode(patchBody),
+          )
+          .timeout(const Duration(seconds: 6));
 
       if (res.statusCode >= 400 && res.body.contains('review_status')) {
         // Fallback: update content fields that exist on current schema
-        res = await http.patch(
-          Uri.parse(url),
-          headers: {
-            'apikey': _supabaseKey,
-            'Authorization': AdminSession.bearer,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=representation',
-          },
-          body: jsonEncode({
-            'question_text': _questionTextController.text.trim(),
-            'options': updatedOptions,
-            'correct_answer': _selectedCorrectOption,
-            'explanation': _explanationController.text.trim(),
-          }),
-        ).timeout(const Duration(seconds: 6));
+        res = await http
+            .patch(
+              Uri.parse(url),
+              headers: {
+                'apikey': _supabaseKey,
+                'Authorization': AdminSession.bearer,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=representation',
+              },
+              body: jsonEncode({
+                'question_text': _questionTextController.text.trim(),
+                'options': updatedOptions,
+                'correct_answer': _selectedCorrectOption,
+                'explanation': _explanationController.text.trim(),
+              }),
+            )
+            .timeout(const Duration(seconds: 6));
       }
 
       if (mounted) {
@@ -278,7 +301,8 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
           // Saved locally in memory
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('⚠️ Could not save to the server. Sign in again as admin and retry.'),
+              content: Text(
+                  '⚠️ Could not save to the server. Sign in again as admin and retry.'),
               backgroundColor: AppColors.warning,
             ),
           );
@@ -298,7 +322,9 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Save error: $e'), backgroundColor: AppColors.error),
+          SnackBar(
+              content: Text('Save error: $e'),
+              backgroundColor: AppColors.error),
         );
         setState(() => _isSaving = false);
       }
@@ -364,7 +390,9 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Flagging error: $e'), backgroundColor: AppColors.error),
+          SnackBar(
+              content: Text('Flagging error: $e'),
+              backgroundColor: AppColors.error),
         );
         setState(() => _isSaving = false);
       }
@@ -385,31 +413,52 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
           'Return a valid JSON object with keys: "question", "option_a", "option_b", "option_c", "option_d", "correct_option", "explanation".';
 
       const apiKey = AppSecrets.geminiApiKey;
-      final res = await http.post(
-        Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/${AiService.model}:generateContent'),
-        headers: {'Content-Type': 'application/json', 'x-goog-api-key': apiKey},
-        body: jsonEncode({
-          'contents': [
-            {
-              'parts': [{'text': prompt}]
-            }
-          ],
-          'generationConfig': {'responseMimeType': 'application/json'}
-        }),
-      ).timeout(const Duration(seconds: 30));
+      final res = await http
+          .post(
+            Uri.parse(
+                'https://generativelanguage.googleapis.com/v1beta/models/${AiService.model}:generateContent'),
+            headers: {
+              'Content-Type': 'application/json',
+              'x-goog-api-key': apiKey
+            },
+            body: jsonEncode({
+              'contents': [
+                {
+                  'parts': [
+                    {'text': prompt}
+                  ]
+                }
+              ],
+              'generationConfig': {'responseMimeType': 'application/json'}
+            }),
+          )
+          .timeout(const Duration(seconds: 30));
 
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
-        final candidateText = data['candidates']?[0]?['content']?['parts']?[0]?['text'];
+        final candidateText =
+            data['candidates']?[0]?['content']?['parts']?[0]?['text'];
         if (candidateText != null) {
           final parsed = jsonDecode(candidateText);
           setState(() {
-            if (parsed['question'] != null) _questionTextController.text = parsed['question'].toString();
-            if (parsed['option_a'] != null) _optAController.text = parsed['option_a'].toString();
-            if (parsed['option_b'] != null) _optBController.text = parsed['option_b'].toString();
-            if (parsed['option_c'] != null) _optCController.text = parsed['option_c'].toString();
-            if (parsed['option_d'] != null) _optDController.text = parsed['option_d'].toString();
-            if (parsed['explanation'] != null) _explanationController.text = parsed['explanation'].toString();
+            if (parsed['question'] != null) {
+              _questionTextController.text = parsed['question'].toString();
+            }
+            if (parsed['option_a'] != null) {
+              _optAController.text = parsed['option_a'].toString();
+            }
+            if (parsed['option_b'] != null) {
+              _optBController.text = parsed['option_b'].toString();
+            }
+            if (parsed['option_c'] != null) {
+              _optCController.text = parsed['option_c'].toString();
+            }
+            if (parsed['option_d'] != null) {
+              _optDController.text = parsed['option_d'].toString();
+            }
+            if (parsed['explanation'] != null) {
+              _explanationController.text = parsed['explanation'].toString();
+            }
             if (parsed['correct_option'] != null) {
               final c = parsed['correct_option'].toString().toLowerCase();
               if (['a', 'b', 'c', 'd'].contains(c)) _selectedCorrectOption = c;
@@ -419,7 +468,8 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Question repaired with Gemini Vision LLM! Review and save.'),
+                content: Text(
+                    'Question repaired with Gemini Vision LLM! Review and save.'),
                 backgroundColor: AppColors.primary,
               ),
             );
@@ -438,8 +488,10 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
 
   void _applyLocalHeuristicRepair() {
     setState(() {
-      _questionTextController.text = MathUtils.cleanQuestionText(_questionTextController.text, _currentIndex + 1);
-      _explanationController.text = MathUtils.formatMath(_explanationController.text);
+      _questionTextController.text = MathUtils.cleanQuestionText(
+          _questionTextController.text, _currentIndex + 1);
+      _explanationController.text =
+          MathUtils.formatMath(_explanationController.text);
     });
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -469,7 +521,8 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
         ),
         title: const Row(
           children: [
-            Icon(Icons.admin_panel_settings_rounded, color: AppColors.primary, size: 20),
+            Icon(Icons.admin_panel_settings_rounded,
+                color: AppColors.primary, size: 20),
             SizedBox(width: 8),
             Text(
               'Question Quality & OCR Review',
@@ -510,7 +563,8 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
                     _fetchQuestions();
                   }),
                   const SizedBox(width: 8),
-                  _buildFilterChip('Subject', _selectedSubject, _subjects, (val) {
+                  _buildFilterChip('Subject', _selectedSubject, _subjects,
+                      (val) {
                     setState(() => _selectedSubject = val);
                     _fetchQuestions();
                   }),
@@ -529,15 +583,20 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.check_circle_outline_rounded, size: 48, color: AppColors.success),
+                            const Icon(Icons.check_circle_outline_rounded,
+                                size: 48, color: AppColors.success),
                             const SizedBox(height: 12),
                             Text(
                               'No questions matching status: $_selectedStatus',
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 15),
                             ),
                             const SizedBox(height: 6),
-                            const Text('Try selecting a different status filter or refresh.',
-                                style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                            const Text(
+                                'Try selecting a different status filter or refresh.',
+                                style: TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 12)),
                           ],
                         ),
                       )
@@ -551,14 +610,18 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 4),
                                   decoration: BoxDecoration(
                                     color: AppColors.primaryLight,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
                                     'Question ${_currentIndex + 1} of ${_questions.length}',
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                        color: AppColors.primary),
                                   ),
                                 ),
                                 Row(
@@ -567,7 +630,9 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
                                     const SizedBox(width: 6),
                                     Text(
                                       currentQ.subject,
-                                      style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                                      style: const TextStyle(
+                                          fontSize: 12,
+                                          color: AppColors.textSecondary),
                                     ),
                                   ],
                                 ),
@@ -581,10 +646,14 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
                                 spacing: 6,
                                 children: currentQ.flagReasons
                                     .map((r) => Chip(
-                                          label: Text(r, style: const TextStyle(fontSize: 10, color: Colors.white)),
+                                          label: Text(r,
+                                              style: const TextStyle(
+                                                  fontSize: 10,
+                                                  color: Colors.white)),
                                           backgroundColor: AppColors.error,
                                           padding: EdgeInsets.zero,
-                                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                          materialTapTargetSize:
+                                              MaterialTapTargetSize.shrinkWrap,
                                         ))
                                     .toList(),
                               ),
@@ -592,28 +661,37 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
                             ],
 
                             // Passage Card (if any)
-                            if (currentQ.passageOrDirection != null && currentQ.passageOrDirection!.isNotEmpty) ...[
+                            if (currentQ.passageOrDirection != null &&
+                                currentQ.passageOrDirection!.isNotEmpty) ...[
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFF0F4F8),
                                   borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: const Color(0xFFA1ACAC)),
+                                  border: Border.all(
+                                      color: const Color(0xFFA1ACAC)),
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const Row(
                                       children: [
-                                        Icon(Icons.menu_book_rounded, size: 14, color: AppColors.primary),
+                                        Icon(Icons.menu_book_rounded,
+                                            size: 14, color: AppColors.primary),
                                         SizedBox(width: 6),
                                         Text('Associated Passage / Direction',
-                                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                                            style: TextStyle(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.bold,
+                                                color: AppColors.primary)),
                                       ],
                                     ),
                                     const SizedBox(height: 6),
                                     Text(currentQ.passageOrDirection!,
-                                        style: const TextStyle(fontSize: 12, color: AppColors.textPrimary, height: 1.4)),
+                                        style: const TextStyle(
+                                            fontSize: 12,
+                                            color: AppColors.textPrimary,
+                                            height: 1.4)),
                                   ],
                                 ),
                               ),
@@ -621,7 +699,8 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
                             ],
 
                             // Question Image Preview (Interactive Pinch-to-zoom)
-                            if (currentQ.questionImage != null && currentQ.questionImage!.isNotEmpty) ...[
+                            if (currentQ.questionImage != null &&
+                                currentQ.questionImage!.isNotEmpty) ...[
                               Container(
                                 decoration: BoxDecoration(
                                   color: Colors.white,
@@ -632,8 +711,12 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text('Figure / Chart Preview (Pinch to zoom):',
-                                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textSecondary)),
+                                    const Text(
+                                        'Figure / Chart Preview (Pinch to zoom):',
+                                        style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppColors.textSecondary)),
                                     const SizedBox(height: 6),
                                     ClipRRect(
                                       borderRadius: BorderRadius.circular(8),
@@ -645,9 +728,13 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
                                             currentQ.questionImage!,
                                             height: 180,
                                             fit: BoxFit.contain,
-                                            errorBuilder: (_, __, ___) => const Padding(
+                                            errorBuilder: (_, __, ___) =>
+                                                const Padding(
                                               padding: EdgeInsets.all(16),
-                                              child: Text('Image failed to load from URL', style: TextStyle(color: AppColors.error)),
+                                              child: Text(
+                                                  'Image failed to load from URL',
+                                                  style: TextStyle(
+                                                      color: AppColors.error)),
                                             ),
                                           ),
                                         ),
@@ -664,7 +751,8 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                side: const BorderSide(color: AppColors.divider),
+                                side:
+                                    const BorderSide(color: AppColors.divider),
                               ),
                               child: Padding(
                                 padding: const EdgeInsets.all(AppSpacing.m),
@@ -672,21 +760,36 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         const Text('Question Prompt',
-                                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary)),
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 13,
+                                                color: AppColors.textPrimary)),
                                         TextButton.icon(
-                                          onPressed: _isGeneratingLLM ? null : _regenerateWithGeminiLLM,
+                                          onPressed: _isGeneratingLLM
+                                              ? null
+                                              : _regenerateWithGeminiLLM,
                                           icon: _isGeneratingLLM
                                               ? const SizedBox(
                                                   width: 14,
                                                   height: 14,
-                                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                          strokeWidth: 2),
                                                 )
-                                              : const Icon(Icons.auto_awesome_rounded, size: 16, color: Color(0xFF3F6B70)),
-                                          label: const Text('Repair with Vision AI',
-                                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF3F6B70))),
+                                              : const Icon(
+                                                  Icons.auto_awesome_rounded,
+                                                  size: 16,
+                                                  color: Color(0xFF3F6B70)),
+                                          label: const Text(
+                                              'Repair with Vision AI',
+                                              style: TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Color(0xFF3F6B70))),
                                         ),
                                       ],
                                     ),
@@ -694,11 +797,14 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
                                     TextField(
                                       controller: _questionTextController,
                                       maxLines: 4,
-                                      style: const TextStyle(fontSize: 14, height: 1.4),
+                                      style: const TextStyle(
+                                          fontSize: 14, height: 1.4),
                                       decoration: InputDecoration(
                                         filled: true,
                                         fillColor: const Color(0xFFF0F4F8),
-                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                        border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8)),
                                       ),
                                     ),
                                   ],
@@ -712,7 +818,8 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                side: const BorderSide(color: AppColors.divider),
+                                side:
+                                    const BorderSide(color: AppColors.divider),
                               ),
                               child: Padding(
                                 padding: const EdgeInsets.all(AppSpacing.m),
@@ -720,7 +827,10 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const Text('Options',
-                                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary)),
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13,
+                                            color: AppColors.textPrimary)),
                                     const SizedBox(height: 10),
                                     _buildOptionInput('A', _optAController),
                                     const SizedBox(height: 8),
@@ -740,7 +850,8 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                side: const BorderSide(color: AppColors.divider),
+                                side:
+                                    const BorderSide(color: AppColors.divider),
                               ),
                               child: Padding(
                                 padding: const EdgeInsets.all(AppSpacing.m),
@@ -750,27 +861,43 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
                                     Row(
                                       children: [
                                         const Text('Correct Option:',
-                                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 13)),
                                         const SizedBox(width: 12),
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10),
                                           decoration: BoxDecoration(
-                                            color: AppColors.success.withValues(alpha: 0.1),
-                                            borderRadius: BorderRadius.circular(8),
-                                            border: Border.all(color: AppColors.success),
+                                            color: AppColors.success
+                                                .withValues(alpha: 0.1),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                            border: Border.all(
+                                                color: AppColors.success),
                                           ),
                                           child: DropdownButtonHideUnderline(
                                             child: DropdownButton<String>(
                                               value: _selectedCorrectOption,
-                                              items: ['a', 'b', 'c', 'd'].map((k) {
+                                              items:
+                                                  ['a', 'b', 'c', 'd'].map((k) {
                                                 return DropdownMenuItem(
                                                   value: k,
-                                                  child: Text('Option (${k.toUpperCase()})',
-                                                      style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.success)),
+                                                  child: Text(
+                                                      'Option (${k.toUpperCase()})',
+                                                      style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: AppColors
+                                                              .success)),
                                                 );
                                               }).toList(),
                                               onChanged: (val) {
-                                                if (val != null) setState(() => _selectedCorrectOption = val);
+                                                if (val != null) {
+                                                  setState(() =>
+                                                      _selectedCorrectOption =
+                                                          val);
+                                                }
                                               },
                                             ),
                                           ),
@@ -778,8 +905,11 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
                                       ],
                                     ),
                                     const SizedBox(height: 12),
-                                    const Text('Solution / Official Explanation',
-                                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                                    const Text(
+                                        'Solution / Official Explanation',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13)),
                                     const SizedBox(height: 6),
                                     TextField(
                                       controller: _explanationController,
@@ -787,7 +917,9 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
                                       decoration: InputDecoration(
                                         filled: true,
                                         fillColor: const Color(0xFFF0F4F8),
-                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                        border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8)),
                                       ),
                                     ),
                                   ],
@@ -803,11 +935,13 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
                                 Expanded(
                                   flex: 2,
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8),
                                     decoration: BoxDecoration(
                                       color: Colors.white,
                                       borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(color: AppColors.error),
+                                      border:
+                                          Border.all(color: AppColors.error),
                                     ),
                                     child: DropdownButtonHideUnderline(
                                       child: DropdownButton<String>(
@@ -817,11 +951,16 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
                                           return DropdownMenuItem(
                                             value: t,
                                             child: Text(t.replaceAll('_', ' '),
-                                                style: const TextStyle(fontSize: 12, color: AppColors.error)),
+                                                style: const TextStyle(
+                                                    fontSize: 12,
+                                                    color: AppColors.error)),
                                           );
                                         }).toList(),
                                         onChanged: (val) {
-                                          if (val != null) setState(() => _selectedFlagIssue = val);
+                                          if (val != null) {
+                                            setState(
+                                                () => _selectedFlagIssue = val);
+                                          }
                                         },
                                       ),
                                     ),
@@ -829,31 +968,52 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
                                 ),
                                 const SizedBox(width: 8),
                                 ElevatedButton.icon(
-                                  onPressed: _isSaving ? null : _flagCurrentQuestion,
+                                  onPressed:
+                                      _isSaving ? null : _flagCurrentQuestion,
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.error,
-                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 14, vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
                                   ),
-                                  icon: const Icon(Icons.flag_rounded, color: Colors.white, size: 16),
-                                  label: const Text('Flag', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                  icon: const Icon(Icons.flag_rounded,
+                                      color: Colors.white, size: 16),
+                                  label: const Text('Flag',
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold)),
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   flex: 3,
                                   child: ElevatedButton.icon(
-                                    onPressed: _isSaving ? null : _saveAndApprove,
+                                    onPressed:
+                                        _isSaving ? null : _saveAndApprove,
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: AppColors.success,
-                                      padding: const EdgeInsets.symmetric(vertical: 12),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 12),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10)),
                                     ),
                                     icon: _isSaving
-                                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                                        : const Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+                                        ? const SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: CircularProgressIndicator(
+                                                color: Colors.white,
+                                                strokeWidth: 2))
+                                        : const Icon(Icons.check_circle_rounded,
+                                            color: Colors.white, size: 18),
                                     label: const Text(
                                       'Approve & Save',
-                                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13),
                                     ),
                                   ),
                                 ),
@@ -876,12 +1036,13 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
                                   label: const Text('Previous'),
                                 ),
                                 OutlinedButton.icon(
-                                  onPressed: _currentIndex < _questions.length - 1
-                                      ? () {
-                                          setState(() => _currentIndex++);
-                                          _syncControllersWithCurrentQuestion();
-                                        }
-                                      : null,
+                                  onPressed:
+                                      _currentIndex < _questions.length - 1
+                                          ? () {
+                                              setState(() => _currentIndex++);
+                                              _syncControllersWithCurrentQuestion();
+                                            }
+                                          : null,
                                   icon: const Icon(Icons.chevron_right_rounded),
                                   label: const Text('Next'),
                                 ),
@@ -909,7 +1070,8 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
           decoration: BoxDecoration(
             color: isCorrect ? AppColors.success : const Color(0xFFF0F4F8),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: isCorrect ? AppColors.success : AppColors.divider),
+            border: Border.all(
+                color: isCorrect ? AppColors.success : AppColors.divider),
           ),
           child: Text(
             '($key)',
@@ -926,12 +1088,16 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
             controller: controller,
             decoration: InputDecoration(
               isDense: true,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               filled: true,
-              fillColor: isCorrect ? AppColors.success.withValues(alpha: 0.04) : Colors.white,
+              fillColor: isCorrect
+                  ? AppColors.success.withValues(alpha: 0.04)
+                  : Colors.white,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: isCorrect ? AppColors.success : AppColors.divider),
+                borderSide: BorderSide(
+                    color: isCorrect ? AppColors.success : AppColors.divider),
               ),
             ),
           ),
@@ -955,7 +1121,8 @@ class _QuestionReviewScreenState extends State<QuestionReviewScreen> {
       ),
       child: Text(
         status.toUpperCase(),
-        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: color),
+        style:
+            TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: color),
       ),
     );
   }

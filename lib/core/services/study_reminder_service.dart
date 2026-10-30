@@ -31,7 +31,8 @@ class LocalStudyReminderService implements StudyReminderService {
     try {
       tz.initializeTimeZones();
       tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));
-      const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+      const androidSettings =
+          AndroidInitializationSettings('@mipmap/ic_launcher');
       const initSettings = InitializationSettings(android: androidSettings);
       await _plugin.initialize(settings: initSettings);
 
@@ -80,7 +81,8 @@ class LocalStudyReminderService implements StudyReminderService {
     await _ensureInit();
     try {
       final now = tz.TZDateTime.now(tz.local);
-      var scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+      var scheduled =
+          tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
       if (scheduled.isBefore(now)) {
         scheduled = scheduled.add(const Duration(days: 1));
       }

@@ -37,8 +37,7 @@ class StorageService {
     }
   }
 
-  String get userEmail =>
-      _prefs.getString(_keyUserEmail) ?? '';
+  String get userEmail => _prefs.getString(_keyUserEmail) ?? '';
   String get userName => _prefs.getString(_keyUserName) ?? '';
   String get userPhone => _prefs.getString(_keyUserPhone) ?? '';
   String get userProfilePic =>
@@ -129,7 +128,8 @@ class StorageService {
             final map = jsonDecode(raw) as Map<String, dynamic>;
             final email = map['email'] as String? ?? '';
             if (email.contains('@') &&
-                !accounts.any((a) => a.email.toLowerCase() == email.toLowerCase())) {
+                !accounts
+                    .any((a) => a.email.toLowerCase() == email.toLowerCase())) {
               accounts.add(UserModel(
                 name: map['name'] as String? ?? 'Student',
                 email: email,

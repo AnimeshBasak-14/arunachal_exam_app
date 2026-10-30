@@ -6,21 +6,18 @@ import '../../../core/data/exam_goals.dart';
 import '../../../core/theme/aura.dart';
 import '../../../core/widgets/aura/aura_widgets.dart';
 import '../../../core/widgets/aura/exam_goal_sheet.dart';
-import '../../../core/services/service_providers.dart';
-import '../../../core/services/streak_service.dart';
 import '../../auth/viewmodel/auth_viewmodel.dart';
-import '../../exam/data/attempt.dart';
-import '../../learn/data/learn_deck.dart';
-import '../../learn/data/learn_progress.dart';
-import '../../learn/data/topic_mapping.dart';
 import '../../home/view/notifications_screen.dart' show hasUnreadNotifProvider;
 import '../../learn/view/study_widgets.dart';
 import '../../mocks/view/live_mock_card.dart';
 import '../../papers/data/paper.dart';
-import '../../papers/view/paper_widgets.dart';
 import '../../plan/data/study_plan_provider.dart';
 import '../../plan/view/study_plan_sheet.dart';
-import '../../shell/view/app_shell.dart';
+import '../../streak/data/coins.dart';
+import '../../streak/data/daily.dart';
+import '../../streak/data/day_key.dart';
+import '../../streak/view/coin_widgets.dart';
+import 'exam_timer_card.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -52,6 +49,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       onRefresh: () async {
         ref.invalidate(papersProvider(PaperKind.pyq));
         ref.invalidate(papersProvider(PaperKind.mock));
+        ref.invalidate(dailyQuestionProvider(dayKey(DateTime.now())));
         await ref.read(papersProvider(PaperKind.pyq).future);
       },
       child: CustomScrollView(
@@ -59,14 +57,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             parent: AlwaysScrollableScrollPhysics()),
         slivers: [
           const SliverToBoxAdapter(child: _Header()),
-          const SliverToBoxAdapter(child: SizedBox(height: 22)),
+          const SliverToBoxAdapter(child: SizedBox(height: 24)),
           const SliverPadding(
             padding: EdgeInsets.symmetric(horizontal: AuraSpace.gutter),
-            sliver: SliverToBoxAdapter(child: _TodayCard()),
+            sliver: SliverToBoxAdapter(child: ExamTimerCard()),
+          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 14)),
+          const SliverPadding(
+            padding: EdgeInsets.symmetric(horizontal: AuraSpace.gutter),
+            sliver: SliverToBoxAdapter(child: _DailyCard()),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 30)),
-          const SliverToBoxAdapter(child: _PyqHub()),
-          const SliverToBoxAdapter(child: SizedBox(height: 34)),
           const SliverPadding(
             padding: EdgeInsets.symmetric(horizontal: AuraSpace.gutter),
             sliver: SliverToBoxAdapter(child: LiveMockCard()),
@@ -112,10 +113,10 @@ class _Header extends ConsumerWidget {
           Row(
             children: [
               Expanded(
-                child: Eyebrow(firstName.isEmpty
-                    ? _greeting()
-                    : '${_greeting()}, $firstName'),
+                child: Eyebrow(_greeting()),
               ),
+              const CoinPill(),
+              const SizedBox(width: 4),
               IconButton(
                 tooltip: 'Exam alerts',
                 onPressed: () => context.push('/notifications'),
@@ -179,262 +180,96 @@ class _Header extends ConsumerWidget {
   }
 }
 
-/// One calm card that answers "what should I do now?": today's progress,
-/// the streak, real exam countdown, weak topic action, and a single button.
-class _TodayCard extends ConsumerWidget {
-  const _TodayCard();
+/// The PYQ of the day: one real exam question, the same for everyone on a
+/// given date. Solving it counts as studying today.
+class _DailyCard extends ConsumerWidget {
+  const _DailyCard();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final a = context.aura;
-    final plan = ref.watch(studyPlanProvider);
-    final goal = ref.watch(dailyCardGoalProvider);
-    final p = ref.watch(learnProgressProvider);
-    final streaks = StreakService(ref.watch(sharedPreferencesProvider));
-    final streak = streaks.getCurrentStreak();
-    final best = streaks.getLongestStreak();
-    final now = DateTime.now();
-    final today =
-        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
-    final studiedToday = streaks.getLastActiveDate() == today;
-    final left = (goal - p.today).clamp(0, goal);
-    final done = p.today >= goal;
-
-    final attempts = loadAttempts(ref.watch(storageServiceProvider));
-    final weakTopics = findWeakTopics(attempts, max: 1);
-    final weakTopic = weakTopics.isNotEmpty ? weakTopics.first : null;
-    final daysUntil = plan.daysUntilExam();
-
-    final String headline;
-    final String line;
-    final String cta;
-    final VoidCallback onCta;
-
-    if (daysUntil != null && daysUntil < 0) {
-      headline = 'Exam date passed';
-      line = 'Set your next exam date to restart your countdown.';
-      cta = 'Set exam date';
-      onCta = () => showStudyPlanSheet(context);
-    } else {
-      if (daysUntil != null) {
-        headline = plan.deadlineLabel()!;
-      } else if (done) {
-        headline = 'Goal reached';
-      } else if (studiedToday) {
-        headline = '$left cards to your goal';
-      } else if (streak > 0) {
-        headline = '$streak-day streak';
-      } else {
-        headline = 'Start your streak';
-      }
-
-      if (weakTopic != null) {
-        line =
-            '${weakTopic.topic.label} is your weakest area (${weakTopic.accuracyPercent}%).';
-        cta = 'Practise ${weakTopic.topic.label}';
-        onCta = () =>
-            context.push('/learn?topic=${weakTopic.topic.name}&limit=10');
-      } else if (done) {
-        line = 'Your $streak-day streak is safe. Come back tomorrow.';
-        cta = 'Keep learning';
-        onCta = () => context.push('/learn');
-      } else if (studiedToday) {
-        line = 'Streak is safe today. Finish the goal to build on it.';
-        cta = 'Continue';
-        onCta = () => context.push('/learn');
-      } else if (streak > 0) {
-        line =
-            'Study today to keep it. $left cards, about ${(left / 6).ceil()} minutes.';
-        cta = 'Keep my streak';
-        onCta = () => context.push('/learn');
-      } else {
-        line = '$goal cards, about 5 minutes. Small, daily, and it adds up.';
-        cta = 'Start today';
-        onCta = () => context.push('/learn');
-      }
-    }
+    final today = dayKey(DateTime.now());
+    final async = ref.watch(dailyQuestionProvider(today));
+    final result = ref.watch(dailyLogProvider)[today];
+    final ready = async.isLoading || async.value != null;
 
     return GlassCard(
       elevated: true,
       padding: const EdgeInsets.all(20),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      onTap: () => context.push('/daily/$today'),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Eyebrow('Today'),
-                const SizedBox(height: 6),
-                Text(headline, style: AuraType.serif(23, a.ink, height: 1.2)),
-                const SizedBox(height: 6),
-                Text(line,
-                    style: AuraType.sans(13.5, a.inkMuted, height: 1.45)),
-                if (best > 1) ...[
-                  const SizedBox(height: 6),
-                  Text('Personal best: $best days',
-                      style: AuraType.sans(12, a.inkFaint)),
-                ],
-                const SizedBox(height: 16),
-                FilledButton(
-                  style: FilledButton.styleFrom(minimumSize: const Size(0, 46)),
-                  onPressed: onCta,
-                  child: Text(cta),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 16),
-          SizedBox(
-            width: 72,
-            height: 72,
-            child: Stack(alignment: Alignment.center, children: [
-              SizedBox.expand(
-                child: CircularProgressIndicator(
-                  value: (p.today / goal).clamp(0, 1).toDouble(),
-                  strokeWidth: 6,
-                  strokeCap: StrokeCap.round,
-                  backgroundColor: a.hairline,
-                  color: a.accent,
-                ),
-              ),
-              Column(mainAxisSize: MainAxisSize.min, children: [
-                Text('${p.today}',
-                    style: AuraType.digits(20, a.ink, weight: FontWeight.w600)),
-                Text('of $goal',
-                    style: AuraType.sans(10.5, a.inkFaint)),
+          Row(children: [
+            const Expanded(child: Eyebrow('PYQ of the day')),
+            if (result != null)
+              Tag(result.correct ? 'Solved' : 'Attempted',
+                  color: result.correct ? a.success : a.review)
+            else
+              Row(mainAxisSize: MainAxisSize.min, children: [
+                const CoinMark(size: 16),
+                const SizedBox(width: 5),
+                Text('+${CoinReward.dailyCorrect}',
+                    style: AuraType.digits(12.5, a.inkMuted,
+                        weight: FontWeight.w600)),
               ]),
-            ]),
+          ]),
+          const SizedBox(height: 10),
+          ...async.when(
+            loading: () => const [
+              SkeletonBox(height: 18),
+              SizedBox(height: 8),
+              SkeletonBox(height: 18, width: 180),
+            ],
+            error: (_, __) =>
+                [_quiet(a, "Today's question will load when you're online.")],
+            data: (q) => q == null
+                ? [
+                    _quiet(a,
+                        "Today's question isn't available yet. Pull down to retry.")
+                  ]
+                : [
+                    Text(q.questionText,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        style: AuraType.serif(19, a.ink, height: 1.3)),
+                    const SizedBox(height: 8),
+                    MetaLine([
+                      q.examCode,
+                      q.year > 0 ? '${q.year}' : null,
+                      q.subject
+                    ]),
+                  ],
           ),
+          const SizedBox(height: 16),
+          Row(children: [
+            Expanded(
+              child: FilledButton(
+                style: FilledButton.styleFrom(minimumSize: const Size(0, 46)),
+                onPressed: ready
+                    ? () => context.push('/daily/$today')
+                    : () => ref.invalidate(dailyQuestionProvider(today)),
+                child: Text(!ready
+                    ? 'Try again'
+                    : result == null
+                        ? 'Solve now'
+                        : 'Review answer'),
+              ),
+            ),
+            const SizedBox(width: 10),
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(minimumSize: const Size(0, 46)),
+              onPressed: () => context.push('/streak'),
+              child: const Text('Streak'),
+            ),
+          ]),
         ],
       ),
     );
   }
-}
 
-class _PyqHub extends ConsumerStatefulWidget {
-  const _PyqHub();
-
-  @override
-  ConsumerState<_PyqHub> createState() => _PyqHubState();
-}
-
-class _PyqHubState extends ConsumerState<_PyqHub> {
-  Department? _dept;
-
-  @override
-  Widget build(BuildContext context) {
-    final a = context.aura;
-    final goalDept = ref.watch(examGoalProvider).department;
-    final dept = _dept ?? goalDept;
-    final async = ref.watch(papersProvider(PaperKind.pyq));
-    final scale = MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 1.4);
-    final cardHeight = 190.0 * scale;
-    const depts = Department.primary;
-
-    void openLibrary() {
-      ref.read(libraryDepartmentProvider.notifier).state = dept;
-      ref.read(currentTabProvider.notifier).state = 1;
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AuraSpace.gutter),
-          child: SectionHeader('Previous Year Papers',
-              actionLabel: 'View all', onAction: openLibrary),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AuraSpace.gutter - 2),
-          child: SegmentedTabs(
-            labels: [for (final d in depts) d.label],
-            selected: depts.indexOf(dept).clamp(0, depts.length - 1),
-            onChanged: (i) => setState(() => _dept = depts[i]),
-          ),
-        ),
-        const SizedBox(height: 14),
-        SizedBox(
-          height: cardHeight,
-          child: async.when(
-            loading: () => ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: AuraSpace.gutter),
-              itemCount: 3,
-              separatorBuilder: (_, __) => const SizedBox(width: 12),
-              itemBuilder: (_, __) => const SkeletonBox(
-                  width: 232, height: double.infinity, radius: 20),
-            ),
-            error: (_, __) => _quiet(
-                context, 'Papers could not be loaded. Pull down to retry.'),
-            data: (result) {
-              final papers = result.byDepartment(dept);
-              if (papers.isEmpty) {
-                return _quiet(context,
-                    'No ${dept.label} papers yet. New papers appear here once their answer keys are verified.');
-              }
-              final shown = papers.take(10).toList();
-              return ListView.separated(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: AuraSpace.gutter),
-                itemCount:
-                    shown.length + (papers.length > shown.length ? 1 : 0),
-                separatorBuilder: (_, __) => const SizedBox(width: 12),
-                itemBuilder: (_, i) {
-                  if (i == shown.length) {
-                    return SizedBox(
-                      width: 150,
-                      child: GlassCard(
-                        onTap: openLibrary,
-                        child: Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(CupertinoIcons.arrow_right, color: a.accent),
-                              const SizedBox(height: 10),
-                              Text('All ${papers.length} papers',
-                                  textAlign: TextAlign.center,
-                                  style: AuraType.sans(13.5, a.ink,
-                                      weight: FontWeight.w500)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-                  return PaperCard(paper: shown[i]);
-                },
-              );
-            },
-          ),
-        ),
-        if (async.value?.isOffline == true &&
-            (async.value?.papers.isNotEmpty ?? false))
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-                AuraSpace.gutter, 10, AuraSpace.gutter, 0),
-            child: Text('Offline · showing saved papers',
-                style: AuraType.sans(12, a.inkFaint)),
-          ),
-      ],
-    );
-  }
-
-  Widget _quiet(BuildContext context, String text) {
-    final a = context.aura;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AuraSpace.gutter),
-      child: GlassCard(
-        child: Center(
-          child: Text(text,
-              textAlign: TextAlign.center,
-              style: AuraType.sans(14, a.inkMuted, height: 1.5)),
-        ),
-      ),
-    );
-  }
+  Widget _quiet(Aura a, String text) =>
+      Text(text, style: AuraType.sans(14, a.inkMuted, height: 1.5));
 }
 
 class _StudyShelf extends StatelessWidget {

@@ -9,6 +9,7 @@ import '../../../core/widgets/aura/aura_widgets.dart';
 import '../../plan/data/study_plan_provider.dart';
 import '../data/learn_deck.dart';
 import '../data/learn_progress.dart';
+import '../../streak/data/time_tracker.dart';
 
 /// Full-screen, swipe-up study feed. Short cards, instant feedback, and
 /// missed questions come back a few cards later (spaced retrieval), so the
@@ -128,7 +129,15 @@ class _LearnFeedScreenState extends ConsumerState<LearnFeedScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => TimeTracked(
+        section: 'cards',
+        sub: _feed.isEmpty
+            ? 'general'
+            : _feed[_page.clamp(0, _feed.length - 1)].topic.name,
+        child: _buildContent(context),
+      );
+
+  Widget _buildContent(BuildContext context) {
     final a = context.aura;
     final progress = ref.watch(learnProgressProvider);
     final top = MediaQuery.paddingOf(context).top;
@@ -218,13 +227,11 @@ class _LearnFeedScreenState extends ConsumerState<LearnFeedScreen> {
                                             ? _topics.first.label
                                             : 'Learn',
                                         style: AuraType.serif(19, a.ink)),
-                                    Text(
-                                        '$_page of ${widget.limit} done',
+                                    Text('$_page of ${widget.limit} done',
                                         style: AuraType.sans(12.5, a.inkMuted)),
                                   ],
                                 )
-                              : Text(
-                                  widget.savedOnly ? 'Saved cards' : 'Learn',
+                              : Text(widget.savedOnly ? 'Saved cards' : 'Learn',
                                   style: AuraType.serif(20, a.ink)),
                         ),
                         if (progress.combo >= 2) ...[

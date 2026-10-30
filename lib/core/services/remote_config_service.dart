@@ -194,8 +194,7 @@ class RemoteConfigService {
 
   String _string(String key) {
     try {
-      return _remoteConfig?.getString(key).trim() ??
-          (_defaults[key] as String);
+      return _remoteConfig?.getString(key).trim() ?? (_defaults[key] as String);
     } catch (_) {
       return _defaults[key] as String;
     }

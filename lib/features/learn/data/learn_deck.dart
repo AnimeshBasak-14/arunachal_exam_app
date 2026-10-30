@@ -5,7 +5,17 @@ import '../../../data/national_gk_data.dart';
 import '../../../data/state_gk_data.dart';
 import '../../../data/vocab_data.dart';
 
-enum LearnTopic { arunachal, polity, history, geography, economy, environment, science, grammar, vocab }
+enum LearnTopic {
+  arunachal,
+  polity,
+  history,
+  geography,
+  economy,
+  environment,
+  science,
+  grammar,
+  vocab
+}
 
 extension LearnTopicLabel on LearnTopic {
   String get label => switch (this) {
@@ -87,7 +97,8 @@ Map<LearnTopic, List<LearnCard>> _build() {
   // ── Places: where is it?
   final districts = gkPlaces
       .map((p) => p.district)
-      .where((d) => !d.contains('·') && !d.contains('Assam') && !d.contains('Capital'))
+      .where((d) =>
+          !d.contains('·') && !d.contains('Assam') && !d.contains('Capital'))
       .toSet()
       .toList();
   for (final p in gkPlaces) {
@@ -120,7 +131,8 @@ Map<LearnTopic, List<LearnCard>> _build() {
   for (final t in GrammarData.topics) {
     for (int i = 0; i < t.rules.length; i++) {
       final r = t.rules[i];
-      final good = _sentence(r.exampleCorrect), bad = _sentence(r.exampleIncorrect);
+      final good = _sentence(r.exampleCorrect),
+          bad = _sentence(r.exampleIncorrect);
       add(LearnCard(
         id: 'gr.${t.id}.$i.f',
         topic: LearnTopic.grammar,
@@ -154,7 +166,9 @@ Map<LearnTopic, List<LearnCard>> _build() {
       kind: CardKind.quiz,
       eyebrow: q.category,
       prompt: q.questionText,
-      options: [for (final o in q.options) o.replaceFirst(RegExp(r'^\([a-d]\)\s*'), '')],
+      options: [
+        for (final o in q.options) o.replaceFirst(RegExp(r'^\([a-d]\)\s*'), '')
+      ],
       answer: 'abcd'.indexOf(q.correctAnswer),
       explain: q.explanation,
     ));
@@ -187,7 +201,8 @@ Map<LearnTopic, List<LearnCard>> _build() {
   }
 
   pairs('idiom', 'Idiom', VocabData.idioms);
-  pairs('one', 'One-word substitution', [for (final (w, m) in VocabData.oneWord) (m, w)]);
+  pairs('one', 'One-word substitution',
+      [for (final (w, m) in VocabData.oneWord) (m, w)]);
   for (final s in VocabData.spellings) {
     final opts = [...s]..shuffle(math.Random(s.first.hashCode));
     add(LearnCard(
@@ -218,7 +233,8 @@ LearnTopic _topicFor(StateGkChapter ch) {
 /// Two-column tables become "match the pair" quizzes, with wrong options
 /// drawn from the same column. Tables whose answers repeat or run long are
 /// shown as flip cards instead.
-List<LearnCard> _tableQuizzes(StateGkChapter ch, LearnTopic topic, String name) {
+List<LearnCard> _tableQuizzes(
+    StateGkChapter ch, LearnTopic topic, String name) {
   final rows = ch.keyFacts.where((r) => r.length == 2).toList();
   if (rows.length < 4) return const [];
   final keys = rows.first.keys.toList();
@@ -273,7 +289,8 @@ List<String> _pickOptions(String right, List<String> pool, String seed) {
 /// Drops notes like "(Missing verb)" and keeps the result of "A -> B".
 String _sentence(String s) {
   var out = s.contains('->') ? s.split('->').last : s;
-  out = out.replaceAll(RegExp(r'\s*\((OR|Fragment|Missing|Incomplete)[^)]*\)'), '');
+  out = out.replaceAll(
+      RegExp(r'\s*\((OR|Fragment|Missing|Incomplete)[^)]*\)'), '');
   return out.trim();
 }
 

@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:arunachal_exam_app/core/services/question_repository.dart';
-import 'package:arunachal_exam_app/core/services/service_providers.dart';
 import 'package:arunachal_exam_app/core/services/study_reminder_service.dart';
 import 'package:arunachal_exam_app/core/theme/app_theme.dart';
 import 'package:arunachal_exam_app/features/exam/data/attempt.dart';
@@ -78,6 +77,7 @@ void main() {
     // Step 2: When will you study?
     expect(find.text('When will you study?'), findsOneWidget);
     expect(find.text('Daily card target'), findsOneWidget);
+    expect(find.text('Daily question target'), findsOneWidget);
     expect(find.textContaining('20 cards'), findsOneWidget);
     expect(find.text('Save & start preparing'), findsOneWidget);
 
@@ -88,7 +88,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Dashboard TodayCard without exam date shows streak state', (tester) async {
+  testWidgets('Dashboard shows the PYQ of the day and no old streak card', (tester) async {
     phoneViewport(tester);
     final prefs = await testPrefs({'exam_goal_id': 'apssb-cgl'});
     final fakeReminder = _FakeReminderService();
@@ -105,13 +105,15 @@ void main() {
     ));
     await settle(tester);
 
-    expect(find.text('TODAY'), findsOneWidget);
-    expect(find.text('Start your streak'), findsOneWidget);
-    expect(find.text('Start today'), findsOneWidget);
+    expect(find.text('PYQ OF THE DAY'), findsOneWidget);
+    expect(find.text('TODAY'), findsNothing);
+    expect(find.text('Start your streak'), findsNothing);
+    expect(find.text('Previous Year Papers'), findsNothing);
+    expect(find.textContaining('days to your exam'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Dashboard TodayCard with future exam date shows real deadline', (tester) async {
+  testWidgets('Dashboard header shows the real exam countdown', (tester) async {
     phoneViewport(tester);
     final future = DateTime.now().add(const Duration(days: 47));
     final plan = StudyPlan(
@@ -137,13 +139,15 @@ void main() {
     ));
     await settle(tester);
 
-    expect(find.text('TODAY'), findsOneWidget);
-    expect(find.text('47 days to your exam'), findsOneWidget);
-    expect(find.text('Start today'), findsOneWidget);
+    // 47 days out is more than a month, so the timer shows months and days.
+    expect(find.text('TIME TO YOUR EXAM'), findsOneWidget);
+    expect(find.textContaining('MONTH'), findsOneWidget);
+    expect(find.text('DAYS'), findsOneWidget);
+    expect(find.text('PYQ OF THE DAY'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Dashboard TodayCard with weak topic updates line and CTA button', (tester) async {
+  testWidgets('Weak topics are not on the dashboard any more', (tester) async {
     phoneViewport(tester);
     final q1 = _q('q1', 'Polity', 'a');
     final q2 = _q('q2', 'Polity', 'a');
@@ -183,9 +187,9 @@ void main() {
     ));
     await settle(tester);
 
-    expect(find.text('TODAY'), findsOneWidget);
-    expect(find.text('Polity is your weakest area (33%).'), findsOneWidget);
-    expect(find.text('Practise Polity'), findsOneWidget);
+    expect(find.text('Polity is your weakest area (33%).'), findsNothing);
+    expect(find.text('Practise Polity'), findsNothing);
+    expect(find.text('PYQ OF THE DAY'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

@@ -48,8 +48,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       setState(() => _pic = 'data:image/jpeg;base64,${base64Encode(bytes)}');
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Couldn\'t open the photo. Try again.')));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Couldn\'t open the photo. Try again.')));
       }
     }
   }
@@ -95,7 +95,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           profilePic: _pic,
         );
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile saved.')));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Profile saved.')));
     context.pop();
   }
 
@@ -122,7 +123,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     shape: BoxShape.circle,
                     border: Border.all(color: a.bg, width: 2),
                   ),
-                  child: Icon(CupertinoIcons.camera, size: 15, color: a.onAccent),
+                  child:
+                      Icon(CupertinoIcons.camera, size: 15, color: a.onAccent),
                 ),
               ),
             ]),
@@ -142,7 +144,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   labelText: 'Full name',
                   prefixIcon: Icon(CupertinoIcons.person, size: 19),
                 ),
-                validator: (v) => (v ?? '').trim().isEmpty ? 'Please enter your name' : null,
+                validator: (v) =>
+                    (v ?? '').trim().isEmpty ? 'Please enter your name' : null,
               ),
               const SizedBox(height: 14),
               TextFormField(
@@ -164,7 +167,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 validator: (v) {
                   final p = (v ?? '').replaceAll(RegExp(r'[\s-]'), '');
                   if (p.isEmpty) return null;
-                  return RegExp(r'^(\+91)?[6-9]\d{9}$').hasMatch(p) ? null : 'Enter a 10-digit mobile number';
+                  return RegExp(r'^(\+91)?[6-9]\d{9}$').hasMatch(p)
+                      ? null
+                      : 'Enter a 10-digit mobile number';
                 },
               ),
               const SizedBox(height: 14),

@@ -11,6 +11,7 @@ import '../../../core/services/ai_service.dart';
 import '../../../core/services/service_providers.dart';
 import '../../../core/theme/aura.dart';
 import '../../../core/widgets/aura/aura_widgets.dart';
+import '../../streak/data/time_tracker.dart';
 
 class _Msg {
   final bool user;
@@ -209,7 +210,13 @@ class _ChatbotScreenState extends ConsumerState<ChatbotScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => TimeTracked(
+        section: 'read',
+        sub: 'tutor',
+        child: _buildContent(context),
+      );
+
+  Widget _buildContent(BuildContext context) {
     final a = context.aura;
     return AuraBackground(
       child: Scaffold(

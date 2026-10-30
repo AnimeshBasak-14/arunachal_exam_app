@@ -37,7 +37,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    final ok = await ref.read(authViewModelProvider.notifier).login(_email.text, _password.text);
+    final ok = await ref
+        .read(authViewModelProvider.notifier)
+        .login(_email.text, _password.text);
     if (ok && mounted) context.go('/home');
   }
 
@@ -64,26 +66,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     labelText: 'Email',
                     prefixIcon: Icon(CupertinoIcons.at, size: 19),
                   ),
-                  validator: (v) => Validators.isEmail((v ?? '').trim().toLowerCase())
-                      ? null
-                      : 'Please enter a valid email address',
+                  validator: (v) =>
+                      Validators.isEmail((v ?? '').trim().toLowerCase())
+                          ? null
+                          : 'Please enter a valid email address',
                 ),
                 const SizedBox(height: 14),
                 PasswordField(
                   controller: _password,
                   action: TextInputAction.done,
                   onSubmitted: (_) => _submit(),
-                  validator: (v) => (v == null || v.isEmpty) ? 'Please enter your password' : null,
+                  validator: (v) => (v == null || v.isEmpty)
+                      ? 'Please enter your password'
+                      : null,
                 ),
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () => context.push('/forgot-password', extra: _email.text.trim()),
+                    onPressed: () => context.push('/forgot-password',
+                        extra: _email.text.trim()),
                     child: const Text('Forgot password?'),
                   ),
                 ),
                 FormError(state.errorMessage),
-                BusyButton(label: 'Sign in', busy: state.isLoading, onPressed: _submit),
+                BusyButton(
+                    label: 'Sign in',
+                    busy: state.isLoading,
+                    onPressed: _submit),
               ],
             ),
           ),

@@ -50,6 +50,11 @@ class StudyPlanNotifier extends Notifier<StudyPlan> {
     await _save(state.copyWith(dailyGoal: validGoal));
   }
 
+  Future<void> setDailyQuestions(int n) async {
+    final valid = StudyPlan.questionTargets.contains(n) ? n : 10;
+    await _save(state.copyWith(dailyQuestions: valid));
+  }
+
   Future<bool> setReminder({
     required bool enabled,
     int? hour,
@@ -80,6 +85,7 @@ class StudyPlanNotifier extends Notifier<StudyPlan> {
     int? reminderHour,
     int? reminderMinute,
     int dailyGoal = 20,
+    int dailyQuestions = 10,
   }) async {
     if (remindersEnabled) {
       final granted = await _reminder.requestPermission();
@@ -91,6 +97,7 @@ class StudyPlanNotifier extends Notifier<StudyPlan> {
       reminderMinute: reminderMinute ?? 0,
       remindersEnabled: remindersEnabled,
       dailyGoal: dailyGoal,
+      dailyQuestions: dailyQuestions,
       completed: true,
     );
     await _save(updated);
@@ -112,4 +119,9 @@ final studyPlanProvider =
 /// Dynamically provides the active daily card goal from the student's study plan.
 final dailyCardGoalProvider = Provider<int>((ref) {
   return ref.watch(studyPlanProvider).dailyGoal;
+});
+
+/// Questions the student wants to answer each day (papers, mocks, quizzes).
+final dailyQuestionTargetProvider = Provider<int>((ref) {
+  return ref.watch(studyPlanProvider).dailyQuestions;
 });

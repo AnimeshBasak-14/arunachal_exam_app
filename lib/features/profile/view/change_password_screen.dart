@@ -11,7 +11,8 @@ class ChangePasswordScreen extends ConsumerStatefulWidget {
   const ChangePasswordScreen({super.key});
 
   @override
-  ConsumerState<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
+  ConsumerState<ChangePasswordScreen> createState() =>
+      _ChangePasswordScreenState();
 }
 
 class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
@@ -42,7 +43,8 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
         .read(authViewModelProvider.notifier)
         .changePassword(_current.text, _next.text, _confirm.text);
     if (!ok || !mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password updated.')));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Password updated.')));
     context.pop();
   }
 
@@ -75,7 +77,8 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
 
     return FormPage(
       title: 'Change password',
-      subtitle: 'Use at least 8 characters. You\'ll stay signed in on this phone.',
+      subtitle:
+          'Use at least 8 characters. You\'ll stay signed in on this phone.',
       children: [
         Form(
           key: _formKey,
@@ -85,14 +88,16 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
               PasswordField(
                 controller: _current,
                 label: 'Current password',
-                validator: (v) => (v ?? '').isEmpty ? 'Enter your current password' : null,
+                validator: (v) =>
+                    (v ?? '').isEmpty ? 'Enter your current password' : null,
               ),
               const SizedBox(height: 14),
               PasswordField(
                 controller: _next,
                 label: 'New password',
                 newPassword: true,
-                validator: (v) => (v ?? '').length < 8 ? 'At least 8 characters' : null,
+                validator: (v) =>
+                    (v ?? '').length < 8 ? 'At least 8 characters' : null,
               ),
               const SizedBox(height: 14),
               PasswordField(
@@ -101,14 +106,19 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                 newPassword: true,
                 action: TextInputAction.done,
                 onSubmitted: (_) => _submit(),
-                validator: (v) => v != _next.text ? 'Passwords do not match' : null,
+                validator: (v) =>
+                    v != _next.text ? 'Passwords do not match' : null,
               ),
               const SizedBox(height: 22),
               FormError(state.errorMessage),
-              BusyButton(label: 'Update password', busy: state.isLoading, onPressed: _submit),
+              BusyButton(
+                  label: 'Update password',
+                  busy: state.isLoading,
+                  onPressed: _submit),
               const SizedBox(height: 8),
               TextButton(
-                onPressed: () => context.push('/forgot-password', extra: state.user?.email),
+                onPressed: () =>
+                    context.push('/forgot-password', extra: state.user?.email),
                 child: const Text('Forgot your current password?'),
               ),
             ],

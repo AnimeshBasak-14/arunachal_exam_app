@@ -85,10 +85,12 @@ class QuestionView extends StatelessWidget {
                   TextSpan(children: [
                     TextSpan(
                         text: 'Question $number',
-                        style: AuraType.sans(13, a.ink, weight: FontWeight.w600)),
+                        style:
+                            AuraType.sans(13, a.ink, weight: FontWeight.w600)),
                     TextSpan(
                         text: '  of $total',
-                        style: AuraType.digits(13, a.inkFaint, weight: FontWeight.w400)),
+                        style: AuraType.digits(13, a.inkFaint,
+                            weight: FontWeight.w400)),
                   ]),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -105,7 +107,9 @@ class QuestionView extends StatelessWidget {
                   visualDensity: VisualDensity.compact,
                   onPressed: onBookmark,
                   icon: Icon(
-                    bookmarked ? CupertinoIcons.bookmark_fill : CupertinoIcons.bookmark,
+                    bookmarked
+                        ? CupertinoIcons.bookmark_fill
+                        : CupertinoIcons.bookmark,
                     size: 19,
                     color: bookmarked ? a.accent : a.inkFaint,
                   ),
@@ -130,7 +134,8 @@ class QuestionView extends StatelessWidget {
           ],
           Text(
             MathUtils.cleanQuestionText(q.questionText, number),
-            style: AuraType.sans(17.5, a.ink, weight: FontWeight.w500, height: 1.6),
+            style: AuraType.sans(17.5, a.ink,
+                weight: FontWeight.w500, height: 1.6),
           ),
           if (image != null && image.trim().isNotEmpty) ...[
             const SizedBox(height: 16),
@@ -143,7 +148,8 @@ class QuestionView extends StatelessWidget {
               text: MathUtils.formatMath(options[i].text),
               image: i < q.optionImages.length ? q.optionImages[i] : null,
               state: _stateFor(options[i].letter),
-              onTap: onSelect == null ? null : () => onSelect!(options[i].letter),
+              onTap:
+                  onSelect == null ? null : () => onSelect!(options[i].letter),
             ),
             const SizedBox(height: 12),
           ],
@@ -231,7 +237,8 @@ class OptionTile extends StatelessWidget {
                       ),
                     ),
                   ),
-                  if (state == OptionState.correct || state == OptionState.wrong)
+                  if (state == OptionState.correct ||
+                      state == OptionState.wrong)
                     Padding(
                       padding: const EdgeInsets.only(left: 8, top: 4),
                       child: Icon(
@@ -239,7 +246,8 @@ class OptionTile extends StatelessWidget {
                             ? CupertinoIcons.checkmark_alt
                             : CupertinoIcons.xmark,
                         size: 17,
-                        color: state == OptionState.correct ? a.accent : a.danger,
+                        color:
+                            state == OptionState.correct ? a.accent : a.danger,
                       ),
                     ),
                 ],
@@ -260,7 +268,8 @@ class _LetterRadio extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final a = context.aura;
-    final filled = state == OptionState.selected || state == OptionState.correct;
+    final filled =
+        state == OptionState.selected || state == OptionState.correct;
     final wrong = state == OptionState.wrong;
     final color = wrong ? a.danger : a.accent;
     return AnimatedContainer(
@@ -323,7 +332,8 @@ class _PassageState extends State<_Passage> {
                   icon: AnimatedRotation(
                     turns: _open ? 0.5 : 0,
                     duration: const Duration(milliseconds: 220),
-                    child: Icon(CupertinoIcons.chevron_down, size: 16, color: a.inkFaint),
+                    child: Icon(CupertinoIcons.chevron_down,
+                        size: 16, color: a.inkFaint),
                   ),
                 ),
               ],
@@ -371,12 +381,17 @@ class _Explanation extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Eyebrow(q.hasAnswerKey ? 'Answer · ${q.correctAnswer.toUpperCase()}' : 'Answer key pending',
+          Eyebrow(
+              q.hasAnswerKey
+                  ? 'Answer · ${q.correctAnswer.toUpperCase()}'
+                  : 'Answer key pending',
               color: q.hasAnswerKey ? a.accent : a.review),
           const SizedBox(height: 10),
           Text(
             q.hasAnswerKey
-                ? (solution.isEmpty ? 'No written explanation for this question yet.' : MathUtils.formatMath(solution))
+                ? (solution.isEmpty
+                    ? 'No written explanation for this question yet.'
+                    : MathUtils.formatMath(solution))
                 : 'The official key for this question has not been verified, so it is not scored.',
             style: AuraType.sans(15, a.inkMuted, height: 1.65),
           ),
@@ -410,14 +425,14 @@ class _NetImage extends StatelessWidget {
       child: Image.network(
         url,
         fit: BoxFit.contain,
-        loadingBuilder: (ctx, child, progress) => progress == null
-            ? child
-            : const SkeletonBox(height: 160),
+        loadingBuilder: (ctx, child, progress) =>
+            progress == null ? child : const SkeletonBox(height: 160),
         errorBuilder: (_, __, ___) => Container(
           height: 64,
           alignment: Alignment.center,
           color: a.hairline.withValues(alpha: 0.4),
-          child: Text('Image unavailable offline', style: AuraType.sans(12.5, a.inkFaint)),
+          child: Text('Image unavailable offline',
+              style: AuraType.sans(12.5, a.inkFaint)),
         ),
       ),
     );

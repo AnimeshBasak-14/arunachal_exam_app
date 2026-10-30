@@ -31,7 +31,9 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
   String _duration(int s) {
     if (s <= 0) return '—';
     final m = s ~/ 60, sec = s % 60;
-    return m >= 60 ? '${m ~/ 60}h ${m % 60}m' : '${m}m ${sec.toString().padLeft(2, '0')}s';
+    return m >= 60
+        ? '${m ~/ 60}h ${m % 60}m'
+        : '${m}m ${sec.toString().padLeft(2, '0')}s';
   }
 
   String _status(Question q) {
@@ -60,7 +62,8 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     final a = context.aura;
     final t = widget.attempt;
     final qs = t.questions;
-    final history = widget.history ?? loadAttempts(ref.watch(storageServiceProvider));
+    final history =
+        widget.history ?? loadAttempts(ref.watch(storageServiceProvider));
     final comparison = compare(t, history);
 
     final filtered = [
@@ -98,21 +101,24 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                       IconButton(
                         tooltip: 'Close',
                         onPressed: _close,
-                        icon: Icon(CupertinoIcons.xmark, size: 20, color: a.ink),
+                        icon:
+                            Icon(CupertinoIcons.xmark, size: 20, color: a.ink),
                       ),
                     ],
                   ),
                 ),
               ),
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(AuraSpace.gutter, 8, AuraSpace.gutter, 0),
+                padding: const EdgeInsets.fromLTRB(
+                    AuraSpace.gutter, 8, AuraSpace.gutter, 0),
                 sliver: SliverToBoxAdapter(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Eyebrow(t.mode == 'study' ? 'Study session' : 'Result'),
                       const SizedBox(height: 8),
-                      Text(t.title, style: AuraType.serif(26, a.ink, height: 1.2)),
+                      Text(t.title,
+                          style: AuraType.serif(26, a.ink, height: 1.2)),
                       const SizedBox(height: 22),
 
                       // Main anchor block
@@ -129,26 +135,33 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                                   child: FittedBox(
                                     fit: BoxFit.scaleDown,
                                     child: Text(
-                                      t.maxScore > 0 ? '${(t.scoreRatio * 100).round()}%' : _fmt(t.score),
-                                      style: AuraType.digits(52, a.ink, weight: FontWeight.w300),
+                                      t.maxScore > 0
+                                          ? '${(t.scoreRatio * 100).round()}%'
+                                          : _fmt(t.score),
+                                      style: AuraType.digits(52, a.ink,
+                                          weight: FontWeight.w300),
                                     ),
                                   ),
                                 ),
                                 if (t.maxScore > 0) ...[
                                   Padding(
-                                    padding: const EdgeInsets.only(bottom: 10, left: 10),
+                                    padding: const EdgeInsets.only(
+                                        bottom: 10, left: 10),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.baseline,
                                       textBaseline: TextBaseline.alphabetic,
                                       children: [
                                         Text(
                                           _fmt(t.score),
-                                          style: AuraType.digits(18, a.inkMuted, weight: FontWeight.w500),
+                                          style: AuraType.digits(18, a.inkMuted,
+                                              weight: FontWeight.w500),
                                         ),
                                         Text(
                                           '/ ${_fmt(t.maxScore)}',
-                                          style: AuraType.digits(15, a.inkFaint, weight: FontWeight.w400),
+                                          style: AuraType.digits(15, a.inkFaint,
+                                              weight: FontWeight.w400),
                                         ),
                                       ],
                                     ),
@@ -158,7 +171,8 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                                   const Spacer(),
                                   Padding(
                                     padding: const EdgeInsets.only(bottom: 12),
-                                    child: Tag('New personal best', color: a.accent),
+                                    child: Tag('New personal best',
+                                        color: a.accent),
                                   ),
                                 ],
                               ],
@@ -166,7 +180,8 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                             const SizedBox(height: 4),
                             Text(
                               comparison.deltaHeadline,
-                              style: AuraType.sans(14, deltaColor, weight: FontWeight.w500),
+                              style: AuraType.sans(14, deltaColor,
+                                  weight: FontWeight.w500),
                             ),
                             if (comparison.deltaSubline != null) ...[
                               const SizedBox(height: 4),
@@ -177,7 +192,8 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                             ],
                             if (comparison.recentAttempts.length >= 2) ...[
                               const SizedBox(height: 18),
-                              _SparklineRow(attempts: comparison.recentAttempts),
+                              _SparklineRow(
+                                  attempts: comparison.recentAttempts),
                             ],
                             const SizedBox(height: 18),
                             _ProportionBar(
@@ -190,11 +206,23 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                               spacing: 18,
                               runSpacing: 6,
                               children: [
-                                _Key(color: a.accent, label: 'Correct', value: t.correct),
-                                _Key(color: a.danger, label: 'Wrong', value: t.wrong),
-                                _Key(color: a.hairline, label: 'Skipped', value: t.left),
+                                _Key(
+                                    color: a.accent,
+                                    label: 'Correct',
+                                    value: t.correct),
+                                _Key(
+                                    color: a.danger,
+                                    label: 'Wrong',
+                                    value: t.wrong),
+                                _Key(
+                                    color: a.hairline,
+                                    label: 'Skipped',
+                                    value: t.left),
                                 if (t.ungraded > 0)
-                                  _Key(color: a.review, label: 'Key pending', value: t.ungraded),
+                                  _Key(
+                                      color: a.review,
+                                      label: 'Key pending',
+                                      value: t.ungraded),
                               ],
                             ),
                           ],
@@ -203,14 +231,23 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                       const SizedBox(height: 14),
                       Row(
                         children: [
-                          _Stat(label: 'Accuracy', value: '${(t.accuracy * 100).round()}%'),
+                          _Stat(
+                              label: 'Accuracy',
+                              value: '${(t.accuracy * 100).round()}%'),
                           const SizedBox(width: 10),
-                          _Stat(label: 'Time taken', value: _duration(t.timeTaken)),
+                          _Stat(
+                              label: 'Time taken',
+                              value: _duration(t.timeTaken)),
                           const SizedBox(width: 10),
-                          _Stat(label: 'Attempted', value: '${t.attempted}/${t.questions.isEmpty ? t.attempted + t.left : t.questions.length}'),
+                          _Stat(
+                              label: 'Attempted',
+                              value:
+                                  '${t.attempted}/${t.questions.isEmpty ? t.attempted + t.left : t.questions.length}'),
                         ],
                       ),
-                      if (t.mode != 'study' && t.newRating != null && t.maxScore > 0) ...[
+                      if (t.mode != 'study' &&
+                          t.newRating != null &&
+                          t.maxScore > 0) ...[
                         const SizedBox(height: 14),
                         Text(
                           'Rating ${t.newRating}  (${t.ratingChange + t.speedBonus >= 0 ? '+' : ''}${t.ratingChange + t.speedBonus})',
@@ -222,13 +259,17 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                       // Primary action button: Practise weak topic or review mistakes
                       if (comparison.weakTopic != null)
                         FilledButton(
-                          style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(52)),
-                          onPressed: () => context.push('/learn?topic=${comparison.weakTopic!.topic.name}&limit=10'),
-                          child: Text('Practise your weak topics (${comparison.weakTopic!.topic.label})'),
+                          style: FilledButton.styleFrom(
+                              minimumSize: const Size.fromHeight(52)),
+                          onPressed: () => context.push(
+                              '/learn?topic=${comparison.weakTopic!.topic.name}&limit=10'),
+                          child: Text(
+                              'Practise your weak topics (${comparison.weakTopic!.topic.label})'),
                         )
                       else if (qs.isNotEmpty)
                         FilledButton(
-                          style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(52)),
+                          style: FilledButton.styleFrom(
+                              minimumSize: const Size.fromHeight(52)),
                           onPressed: () {
                             setState(() => _filter = 1);
                             _scrollController.animateTo(
@@ -259,14 +300,17 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                   child: Padding(
                     padding: const EdgeInsets.all(32),
                     child: Text(
-                      _filter == 1 ? 'No incorrect answers. Well done.' : 'You answered every question.',
+                      _filter == 1
+                          ? 'No incorrect answers. Well done.'
+                          : 'You answered every question.',
                       textAlign: TextAlign.center,
                       style: AuraType.sans(14, a.inkMuted),
                     ),
                   ),
                 ),
               SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: AuraSpace.gutter),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: AuraSpace.gutter),
                 sliver: SliverList.separated(
                   itemCount: filtered.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 10),
@@ -283,10 +327,14 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(
-                      AuraSpace.gutter, 24, AuraSpace.gutter, 24 + MediaQuery.paddingOf(context).bottom),
+                      AuraSpace.gutter,
+                      24,
+                      AuraSpace.gutter,
+                      24 + MediaQuery.paddingOf(context).bottom),
                   child: OutlinedButton(
                     onPressed: () => context.go('/home'),
-                    style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+                    style: OutlinedButton.styleFrom(
+                        minimumSize: const Size.fromHeight(50)),
                     child: const Text('Back to dashboard'),
                   ),
                 ),
@@ -370,7 +418,8 @@ class _MiniBar extends StatelessWidget {
 
 class _ProportionBar extends StatelessWidget {
   final int correct, wrong, left;
-  const _ProportionBar({required this.correct, required this.wrong, required this.left});
+  const _ProportionBar(
+      {required this.correct, required this.wrong, required this.left});
 
   @override
   Widget build(BuildContext context) {
@@ -383,9 +432,12 @@ class _ProportionBar extends StatelessWidget {
         height: 6,
         child: Row(
           children: [
-            if (correct > 0) Expanded(flex: correct, child: ColoredBox(color: a.accent)),
-            if (wrong > 0) Expanded(flex: wrong, child: ColoredBox(color: a.danger)),
-            if (left > 0) Expanded(flex: left, child: ColoredBox(color: a.hairline)),
+            if (correct > 0)
+              Expanded(flex: correct, child: ColoredBox(color: a.accent)),
+            if (wrong > 0)
+              Expanded(flex: wrong, child: ColoredBox(color: a.danger)),
+            if (left > 0)
+              Expanded(flex: left, child: ColoredBox(color: a.hairline)),
           ],
         ),
       ),
@@ -405,7 +457,10 @@ class _Key extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
         const SizedBox(width: 6),
         Text('$label ', style: AuraType.sans(12.5, a.inkMuted)),
         Text('$value', style: AuraType.digits(12.5, a.ink)),
@@ -434,7 +489,10 @@ class _Stat extends StatelessWidget {
               child: Text(value, style: AuraType.digits(17, a.ink)),
             ),
             const SizedBox(height: 4),
-            Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: AuraType.sans(11.5, a.inkFaint)),
+            Text(label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AuraType.sans(11.5, a.inkFaint)),
           ],
         ),
       ),
@@ -446,7 +504,8 @@ class _ReviewTile extends StatefulWidget {
   final int number;
   final Question question;
   final String? selected;
-  const _ReviewTile({required this.number, required this.question, this.selected});
+  const _ReviewTile(
+      {required this.number, required this.question, this.selected});
 
   @override
   State<_ReviewTile> createState() => _ReviewTileState();
@@ -459,7 +518,9 @@ class _ReviewTileState extends State<_ReviewTile> {
   Widget build(BuildContext context) {
     final a = context.aura;
     final q = widget.question;
-    final opts = {for (final o in ParsedOption.parse(q.options)) o.letter: o.text};
+    final opts = {
+      for (final o in ParsedOption.parse(q.options)) o.letter: o.text
+    };
     final sel = widget.selected;
     final (String label, Color color) = !q.hasAnswerKey
         ? ('Key pending', a.review)
@@ -473,12 +534,14 @@ class _ReviewTileState extends State<_ReviewTile> {
           padding: const EdgeInsets.only(top: 8),
           child: Text.rich(
             TextSpan(children: [
-              TextSpan(text: '$prefix  ', style: AuraType.sans(12.5, a.inkFaint)),
+              TextSpan(
+                  text: '$prefix  ', style: AuraType.sans(12.5, a.inkFaint)),
               TextSpan(
                 text: letter == null
                     ? '—'
                     : '${letter.toUpperCase()}. ${MathUtils.formatMath(opts[letter] ?? '')}',
-                style: AuraType.sans(14, c, weight: FontWeight.w500, height: 1.45),
+                style:
+                    AuraType.sans(14, c, weight: FontWeight.w500, height: 1.45),
               ),
             ]),
           ),
@@ -492,14 +555,17 @@ class _ReviewTileState extends State<_ReviewTile> {
         children: [
           Row(
             children: [
-              Text('Q${widget.number}', style: AuraType.digits(13, a.inkMuted, weight: FontWeight.w600)),
+              Text('Q${widget.number}',
+                  style:
+                      AuraType.digits(13, a.inkMuted, weight: FontWeight.w600)),
               const SizedBox(width: 10),
               Tag(label, color: color),
               const Spacer(),
               AnimatedRotation(
                 turns: _open ? 0.5 : 0,
                 duration: const Duration(milliseconds: 220),
-                child: Icon(CupertinoIcons.chevron_down, size: 15, color: a.inkFaint),
+                child: Icon(CupertinoIcons.chevron_down,
+                    size: 15, color: a.inkFaint),
               ),
             ],
           ),
@@ -528,7 +594,8 @@ class _ReviewTileState extends State<_ReviewTile> {
                         const Eyebrow('Explanation'),
                         const SizedBox(height: 6),
                         Text(MathUtils.formatMath(q.solution.trim()),
-                            style: AuraType.sans(14.5, a.inkMuted, height: 1.6)),
+                            style:
+                                AuraType.sans(14.5, a.inkMuted, height: 1.6)),
                       ],
                     ),
                   )

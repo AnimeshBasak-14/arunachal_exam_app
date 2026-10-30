@@ -37,10 +37,13 @@ class GoogleButton extends ConsumerWidget {
       ],
     );
     return outlined
-        ? OutlinedButton(onPressed: busy ? null : () => signInWithGoogle(context, ref), child: child)
+        ? OutlinedButton(
+            onPressed: busy ? null : () => signInWithGoogle(context, ref),
+            child: child)
         : TextButton(
             onPressed: busy ? null : () => signInWithGoogle(context, ref),
-            style: TextButton.styleFrom(foregroundColor: a.ink, minimumSize: const Size.fromHeight(50)),
+            style: TextButton.styleFrom(
+                foregroundColor: a.ink, minimumSize: const Size.fromHeight(50)),
             child: child,
           );
   }

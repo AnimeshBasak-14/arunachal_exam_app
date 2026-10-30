@@ -101,7 +101,10 @@ class _AuraTabBar extends StatelessWidget {
             borderRadius: BorderRadius.circular(33),
             border: Border.all(color: a.onChrome.withValues(alpha: 0.08)),
             boxShadow: const [
-              BoxShadow(color: Color(0x33000000), blurRadius: 24, offset: Offset(0, 8)),
+              BoxShadow(
+                  color: Color(0x33000000),
+                  blurRadius: 24,
+                  offset: Offset(0, 8)),
             ],
           ),
           child: Row(
@@ -153,7 +156,9 @@ class _TabItem extends StatelessWidget {
           curve: Curves.easeOutCubic,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: selected ? a.onChrome.withValues(alpha: 0.14) : Colors.transparent,
+            color: selected
+                ? a.onChrome.withValues(alpha: 0.14)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(26),
           ),
           child: MediaQuery.withClampedTextScaling(
@@ -169,7 +174,8 @@ class _TabItem extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.fade,
                         softWrap: false,
-                        style: AuraType.sans(13, color, weight: FontWeight.w600)),
+                        style:
+                            AuraType.sans(13, color, weight: FontWeight.w600)),
                   ),
                 ],
               ],

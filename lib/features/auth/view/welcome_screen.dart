@@ -25,7 +25,8 @@ class WelcomeScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const SizedBox(height: 28),
-                      const Align(alignment: Alignment.centerLeft, child: Wordmark()),
+                      const Align(
+                          alignment: Alignment.centerLeft, child: Wordmark()),
                       const Spacer(),
                       const SizedBox(height: 48),
                       Text('Prepare with calm.\nPerform with clarity.',
@@ -55,7 +56,9 @@ class WelcomeScreen extends ConsumerWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text('G', style: AuraType.sans(17, a.ink, weight: FontWeight.w700)),
+                            Text('G',
+                                style: AuraType.sans(17, a.ink,
+                                    weight: FontWeight.w700)),
                             const SizedBox(width: 10),
                             const Text('Continue with Google'),
                           ],
@@ -63,7 +66,8 @@ class WelcomeScreen extends ConsumerWidget {
                       ),
                       TextButton(
                         onPressed: () => context.push('/forgot-password'),
-                        style: TextButton.styleFrom(foregroundColor: a.inkMuted),
+                        style:
+                            TextButton.styleFrom(foregroundColor: a.inkMuted),
                         child: const Text('Forgot password?'),
                       ),
                       const SizedBox(height: 16),

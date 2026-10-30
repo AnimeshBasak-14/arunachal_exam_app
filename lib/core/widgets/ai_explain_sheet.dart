@@ -6,7 +6,8 @@ import '../theme/aura.dart';
 import 'aura/aura_widgets.dart';
 
 /// Bottom sheet that explains a question or passage with the AI tutor.
-void showAiExplainSheet(BuildContext context, {required String highlightedText}) {
+void showAiExplainSheet(BuildContext context,
+    {required String highlightedText}) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -26,7 +27,8 @@ class _AiExplainSheetState extends State<AiExplainSheet> {
   late Future<String> _answer = _ask();
 
   Future<String> _ask() => AiService.generate([
-        AiTurn.user('Explain this for an exam aspirant in under 150 words. Use bullet points where '
+        AiTurn.user(
+            'Explain this for an exam aspirant in under 150 words. Use bullet points where '
             'helpful and end with one memory tip.\n\n"${widget.text}"'),
       ]);
 
@@ -70,20 +72,22 @@ class _AiExplainSheetState extends State<AiExplainSheet> {
                 );
               }
               final body = AuraType.sans(15, a.ink, height: 1.55);
-              return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                MarkdownBody(
-                  data: snap.data!,
-                  selectable: true,
-                  styleSheet: MarkdownStyleSheet(
-                    p: body,
-                    listBullet: body,
-                    strong: body.copyWith(fontWeight: FontWeight.w700),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text('AI explanations can be wrong. Check important facts.',
-                    style: AuraType.sans(12, a.inkFaint)),
-              ]);
+              return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    MarkdownBody(
+                      data: snap.data!,
+                      selectable: true,
+                      styleSheet: MarkdownStyleSheet(
+                        p: body,
+                        listBullet: body,
+                        strong: body.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text('AI explanations can be wrong. Check important facts.',
+                        style: AuraType.sans(12, a.inkFaint)),
+                  ]);
             },
           ),
         ],

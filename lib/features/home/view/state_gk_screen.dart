@@ -5,6 +5,8 @@ import '../../../core/theme/aura.dart';
 import '../../../core/widgets/aura/aura_widgets.dart';
 import '../../../data/national_gk_data.dart';
 import '../../../data/state_gk_data.dart';
+import '../../../data/chapter_photos.dart';
+import '../../gk/view/chapter_gallery.dart';
 import '../../learn/data/learn_deck.dart';
 import '../../learn/view/study_widgets.dart';
 
@@ -25,7 +27,8 @@ class StateGkScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final a = context.aura;
-    final arunachal = StateGkData.chapters.where((c) => c.category != 'Science').toList();
+    final arunachal =
+        StateGkData.chapters.where((c) => c.category != 'Science').toList();
     final general = [
       ...NationalGkData.chapters,
       ...StateGkData.chapters.where((c) => c.category == 'Science'),
@@ -33,10 +36,13 @@ class StateGkScreen extends StatelessWidget {
 
     return StudyPage(
       title: 'General knowledge',
+      track: 'gk',
+      coinSpot: 'gk',
       children: [
         const LearnHero(
           title: 'GK in 60-second cards',
-          subtitle: 'Swipe through facts and quick quizzes. Missed ones come back until they stick.',
+          subtitle:
+              'Swipe through facts and quick quizzes. Missed ones come back until they stick.',
           route: '/learn',
         ),
         const SizedBox(height: 14),
@@ -53,7 +59,9 @@ class StateGkScreen extends StatelessWidget {
             mainAxisSpacing: 12,
             crossAxisSpacing: 12,
             childAspectRatio: 1.25,
-            children: [for (final (t, i) in _topics) TopicTile(topic: t, icon: i)],
+            children: [
+              for (final (t, i) in _topics) TopicTile(topic: t, icon: i)
+            ],
           );
         }),
         const SizedBox(height: 14),
@@ -98,7 +106,8 @@ class _MapCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Arunachal on the map', style: AuraType.sans(16, a.ink, weight: FontWeight.w600)),
+                Text('Arunachal on the map',
+                    style: AuraType.sans(16, a.ink, weight: FontWeight.w600)),
                 const SizedBox(height: 2),
                 Text('64 places with photos · play "Find it"',
                     style: AuraType.sans(13, a.inkMuted)),
@@ -134,7 +143,8 @@ class _ChapterList extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(c.title.replaceFirst(RegExp(r'^\d+\.\s*'), ''),
-                          style: AuraType.sans(15, context.aura.ink, weight: FontWeight.w500)),
+                          style: AuraType.sans(15, context.aura.ink,
+                              weight: FontWeight.w500)),
                       const SizedBox(height: 2),
                       Text(c.subtitle,
                           maxLines: 1,
@@ -143,7 +153,8 @@ class _ChapterList extends StatelessWidget {
                     ],
                   ),
                 ),
-                Icon(CupertinoIcons.chevron_right, size: 16, color: context.aura.inkFaint),
+                Icon(CupertinoIcons.chevron_right,
+                    size: 16, color: context.aura.inkFaint),
               ]),
             ),
           ),
@@ -160,15 +171,21 @@ class ChapterScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final a = context.aura;
-    final keys = chapter.keyFacts.isEmpty ? <String>[] : chapter.keyFacts.first.keys.toList();
+    final keys = chapter.keyFacts.isEmpty
+        ? <String>[]
+        : chapter.keyFacts.first.keys.toList();
     return StudyPage(
       title: chapter.category,
+      track: 'gk',
       children: [
         Text(chapter.title.replaceFirst(RegExp(r'^\d+\.\s*'), ''),
             style: AuraType.serif(27, a.ink, height: 1.2)),
         const SizedBox(height: 6),
         Text(chapter.subtitle, style: AuraType.sans(14, a.inkMuted)),
         const SizedBox(height: 22),
+        ChapterGallery(chapterId: chapter.id),
+        if (chapterPhotos[chapter.id]?.isNotEmpty ?? false)
+          const SizedBox(height: 26),
         for (final h in chapter.highlights)
           Padding(
             padding: const EdgeInsets.only(bottom: 14),
@@ -176,10 +193,14 @@ class ChapterScreen extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 8, right: 12),
                 child: Container(
-                    width: 5, height: 5,
-                    decoration: BoxDecoration(color: a.accent, shape: BoxShape.circle)),
+                    width: 5,
+                    height: 5,
+                    decoration:
+                        BoxDecoration(color: a.accent, shape: BoxShape.circle)),
               ),
-              Expanded(child: Text(h, style: AuraType.sans(15.5, a.ink, height: 1.6))),
+              Expanded(
+                  child:
+                      Text(h, style: AuraType.sans(15.5, a.ink, height: 1.6))),
             ]),
           ),
         if (keys.length >= 2) ...[
@@ -200,12 +221,21 @@ class ChapterScreen extends StatelessWidget {
               for (final row in chapter.keyFacts) ...[
                 Divider(color: a.hairline),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Expanded(child: Text(row[keys[0]] ?? '', style: AuraType.sans(14, a.ink, weight: FontWeight.w500, height: 1.4))),
-                    const SizedBox(width: 12),
-                    Expanded(child: Text(row[keys[1]] ?? '', style: AuraType.sans(14, a.inkMuted, height: 1.4))),
-                  ]),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                            child: Text(row[keys[0]] ?? '',
+                                style: AuraType.sans(14, a.ink,
+                                    weight: FontWeight.w500, height: 1.4))),
+                        const SizedBox(width: 12),
+                        Expanded(
+                            child: Text(row[keys[1]] ?? '',
+                                style: AuraType.sans(14, a.inkMuted,
+                                    height: 1.4))),
+                      ]),
                 ),
               ],
             ]),
@@ -221,7 +251,8 @@ class ChapterScreen extends StatelessWidget {
     );
   }
 
-  LearnTopic _topic(StateGkChapter c) =>
-      learnDeck.entries.firstWhere((e) => e.value.any((card) => card.id.startsWith('${c.id}.')),
-          orElse: () => MapEntry(LearnTopic.arunachal, const [])).key;
+  LearnTopic _topic(StateGkChapter c) => learnDeck.entries
+      .firstWhere((e) => e.value.any((card) => card.id.startsWith('${c.id}.')),
+          orElse: () => MapEntry(LearnTopic.arunachal, const []))
+      .key;
 }

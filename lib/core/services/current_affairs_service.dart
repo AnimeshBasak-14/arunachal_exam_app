@@ -63,7 +63,8 @@ class CurrentAffairsItem {
         link: j['link'] as String? ?? '',
         imageUrl: j['imageUrl'] as String?,
         kind: NewsKind.values.asNameMap()[j['kind']] ?? NewsKind.article,
-        region: NewsRegion.values.asNameMap()[j['region']] ?? NewsRegion.arunachal,
+        region:
+            NewsRegion.values.asNameMap()[j['region']] ?? NewsRegion.arunachal,
         examRelated: j['exam'] as bool? ?? false,
       );
 
@@ -88,7 +89,20 @@ String relativeDate(DateTime? d) {
   if (diff.inHours < 24) return '${diff.inHours} h ago';
   if (diff.inDays == 1) return 'Yesterday';
   if (diff.inDays < 7) return '${diff.inDays} days ago';
-  const m = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const m = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec'
+  ];
   return '${d.day} ${m[d.month - 1]} ${d.year}';
 }
 
@@ -100,7 +114,8 @@ class NewsSource {
   final String _target; // feed URL, site domain, or YouTube channel id
   final bool statewide;
 
-  const NewsSource._(this.name, this._type, this._target, {this.statewide = true});
+  const NewsSource._(this.name, this._type, this._target,
+      {this.statewide = true});
 
   /// The outlet's own RSS/Atom feed.
   const NewsSource.rss(String name, String url, {bool statewide = true})
@@ -142,8 +157,8 @@ class CurrentAffairsService {
     NewsSource.site('The Arunachal Times', 'arunachaltimes.in'),
     NewsSource.rss('Arunachal Observer', 'https://arunachalobserver.org/feed/'),
     NewsSource.rss('Arunachal24', 'https://arunachal24.in/feed/'),
-    NewsSource.rss('India Today NE',
-        'https://www.indiatodayne.in/rss/arunachal-pradesh',
+    NewsSource.rss(
+        'India Today NE', 'https://www.indiatodayne.in/rss/arunachal-pradesh',
         statewide: false),
     NewsSource.site('Northeast Today', 'northeasttoday.in', statewide: false),
     NewsSource.youtube('Arunachal News Live', 'UC4UXiSBNHe-IW9_CHUD-xJA'),
@@ -157,7 +172,8 @@ class CurrentAffairsService {
   static const _headers = {
     'User-Agent':
         'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Mobile Safari/537.36',
-    'Accept': 'application/rss+xml, application/atom+xml, application/xml, text/xml, */*',
+    'Accept':
+        'application/rss+xml, application/atom+xml, application/xml, text/xml, */*',
   };
 
   static List<CurrentAffairsItem> _memory = const [];
@@ -241,7 +257,8 @@ class CurrentAffairsService {
         text('encoded'), // content:encoded
         text('description'),
         text('summary'),
-        _child(n, 'group')?.let((g) => _child(g, 'description'))?.innerText ?? '',
+        _child(n, 'group')?.let((g) => _child(g, 'description'))?.innerText ??
+            '',
       ].firstWhere((t) => t.trim().isNotEmpty, orElse: () => '');
 
       var summary = cleanText(rawBody);
@@ -253,10 +270,15 @@ class CurrentAffairsService {
         if (dash > 0) title = title.substring(0, dash).trim();
         summary = '';
       }
-      if (summary.startsWith(title)) summary = summary.substring(title.length).trim();
+      if (summary.startsWith(title)) {
+        summary = summary.substring(title.length).trim();
+      }
 
-      final published = parseFeedDate(
-          text('pubDate').isNotEmpty ? text('pubDate') : (text('published').isNotEmpty ? text('published') : text('updated')));
+      final published = parseFeedDate(text('pubDate').isNotEmpty
+          ? text('pubDate')
+          : (text('published').isNotEmpty
+              ? text('published')
+              : text('updated')));
 
       final haystack = '$title $summary'.toLowerCase();
       final region = s.statewide || _mentionsArunachal(haystack)
@@ -264,7 +286,9 @@ class CurrentAffairsService {
           : NewsRegion.northeast;
 
       out.add(CurrentAffairsItem(
-        id: '${s.name}|${link.isNotEmpty ? link : title}'.hashCode.toRadixString(36),
+        id: '${s.name}|${link.isNotEmpty ? link : title}'
+            .hashCode
+            .toRadixString(36),
         title: title,
         summary: summary,
         source: s.name,
@@ -289,11 +313,13 @@ class CurrentAffairsService {
   static String? _image(XmlElement n, String rawBody) {
     for (final c in n.descendantElements) {
       final local = c.name.local;
-      if (local == 'thumbnail' || (local == 'content' && c.name.prefix == 'media')) {
+      if (local == 'thumbnail' ||
+          (local == 'content' && c.name.prefix == 'media')) {
         final u = c.getAttribute('url');
         if (u != null && u.startsWith('http')) return u;
       }
-      if (local == 'enclosure' && (c.getAttribute('type') ?? '').startsWith('image')) {
+      if (local == 'enclosure' &&
+          (c.getAttribute('type') ?? '').startsWith('image')) {
         return c.getAttribute('url');
       }
     }
@@ -337,8 +363,8 @@ class CurrentAffairsService {
 
   void _writeCache(List<CurrentAffairsItem> items) {
     try {
-      _prefs?.setString(
-          _cacheKey, jsonEncode(items.take(120).map((e) => e.toJson()).toList()));
+      _prefs?.setString(_cacheKey,
+          jsonEncode(items.take(120).map((e) => e.toJson()).toList()));
     } catch (_) {}
   }
 }
@@ -362,11 +388,29 @@ DateTime? parseFeedDate(String raw) {
           r'(\d{1,2})\s+([A-Za-z]{3})[a-z]*\s+(\d{4})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([+-]\d{2}:?\d{2}|[A-Z]{1,4})?')
       .firstMatch(s);
   if (m == null) return null;
-  const months = {'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6, 'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12};
+  const months = {
+    'jan': 1,
+    'feb': 2,
+    'mar': 3,
+    'apr': 4,
+    'may': 5,
+    'jun': 6,
+    'jul': 7,
+    'aug': 8,
+    'sep': 9,
+    'oct': 10,
+    'nov': 11,
+    'dec': 12
+  };
   final month = months[m.group(2)!.toLowerCase()];
   if (month == null) return null;
-  var dt = DateTime.utc(int.parse(m.group(3)!), month, int.parse(m.group(1)!),
-      int.parse(m.group(4)!), int.parse(m.group(5)!), int.parse(m.group(6) ?? '0'));
+  var dt = DateTime.utc(
+      int.parse(m.group(3)!),
+      month,
+      int.parse(m.group(1)!),
+      int.parse(m.group(4)!),
+      int.parse(m.group(5)!),
+      int.parse(m.group(6) ?? '0'));
 
   final zone = m.group(7) ?? 'GMT';
   final off = RegExp(r'([+-])(\d{2}):?(\d{2})').firstMatch(zone);
@@ -386,13 +430,29 @@ String cleanText(String html) {
       .replaceAll(RegExp(r'<br\s*/?>|</p>', caseSensitive: false), '\n')
       .replaceAll(RegExp(r'<[^>]*>'), ' ');
   s = s.replaceAllMapped(RegExp(r'&#(x?)([0-9a-fA-F]+);'), (m) {
-    final code = int.tryParse(m.group(2)!, radix: m.group(1)!.isEmpty ? 10 : 16);
+    final code =
+        int.tryParse(m.group(2)!, radix: m.group(1)!.isEmpty ? 10 : 16);
     return code == null ? '' : String.fromCharCode(code);
   });
-  const named = {'&nbsp;': ' ', '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&apos;': "'", '&hellip;': '…', '&rsquo;': '’', '&lsquo;': '‘', '&ldquo;': '“', '&rdquo;': '”', '&ndash;': '–', '&mdash;': '—'};
+  const named = {
+    '&nbsp;': ' ',
+    '&amp;': '&',
+    '&lt;': '<',
+    '&gt;': '>',
+    '&quot;': '"',
+    '&apos;': "'",
+    '&hellip;': '…',
+    '&rsquo;': '’',
+    '&lsquo;': '‘',
+    '&ldquo;': '“',
+    '&rdquo;': '”',
+    '&ndash;': '–',
+    '&mdash;': '—'
+  };
   named.forEach((k, v) => s = s.replaceAll(k, v));
   s = s
-      .replaceAll(RegExp(r'The post .{0,200} appeared first on .*$', dotAll: true), '')
+      .replaceAll(
+          RegExp(r'The post .{0,200} appeared first on .*$', dotAll: true), '')
       .replaceAll(RegExp(r'[ \t]+'), ' ')
       .replaceAll(RegExp(r'\s*\n\s*'), '\n')
       .trim();

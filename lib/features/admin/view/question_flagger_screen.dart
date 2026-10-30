@@ -55,11 +55,23 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
     {'id': 'wrong_answer_key', 'label': '🎯 Wrong Correct Answer Key'},
     {'id': 'explanation_wrong', 'label': '❌ Explanation / Solution Wrong'},
     {'id': 'missing_solution', 'label': '⚠️ Missing Explanation / Solution'},
-    {'id': 'question_text_wrong', 'label': '❌ Question Text Wrong / Mangled OCR'},
+    {
+      'id': 'question_text_wrong',
+      'label': '❌ Question Text Wrong / Mangled OCR'
+    },
     {'id': 'options_wrong', 'label': '❌ Options Wrong / Merged Options'},
-    {'id': 'dummy_placeholders', 'label': '⚠️ Dummy Placeholders (Option A, B...)'},
-    {'id': 'next_question_bleed', 'label': '🩸 Next Question Bleed Inside Option'},
-    {'id': 'wrong_passage_direction', 'label': '🔀 Wrong / Irrelevant Passage Direction'},
+    {
+      'id': 'dummy_placeholders',
+      'label': '⚠️ Dummy Placeholders (Option A, B...)'
+    },
+    {
+      'id': 'next_question_bleed',
+      'label': '🩸 Next Question Bleed Inside Option'
+    },
+    {
+      'id': 'wrong_passage_direction',
+      'label': '🔀 Wrong / Irrelevant Passage Direction'
+    },
     {'id': 'missing_image', 'label': '🖼️ Missing Chart / Person Image'},
     {'id': 'other', 'label': '❓ Other Issue'},
   ];
@@ -96,7 +108,8 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 250) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 250) {
       if (!_isLoading && !_isLoadingMore && _hasMore) {
         _fetchQuestions(reset: false);
       }
@@ -118,9 +131,11 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
 
     try {
       final offset = _currentPage * _pageSize;
-      final bool needsInnerJoin = (_selectedType != 'All' || _selectedYear != 'All');
+      final bool needsInnerJoin =
+          (_selectedType != 'All' || _selectedYear != 'All');
       final String testsJoin = needsInnerJoin ? 'tests!inner(*)' : 'tests(*)';
-      var baseUrl = '$_supabaseUrl/rest/v1/questions?select=*,question_groups(*),$testsJoin';
+      var baseUrl =
+          '$_supabaseUrl/rest/v1/questions?select=*,question_groups(*),$testsJoin';
 
       // 1. Type filter
       if (_selectedType == 'PYQ') {
@@ -152,20 +167,23 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
 
       // 4. Quick Search query
       if (_searchQuery.trim().isNotEmpty) {
-        baseUrl += '&question_text=ilike.*${Uri.encodeComponent(_searchQuery.trim())}*';
+        baseUrl +=
+            '&question_text=ilike.*${Uri.encodeComponent(_searchQuery.trim())}*';
       }
 
       // 5. Status filter query
       String statusQuery = '';
       if (!_dbNeedsMigration) {
         if (_selectedStatus == 'unreviewed') {
-          statusQuery = '&or=(review_status.eq.unreviewed,review_status.is.null)';
+          statusQuery =
+              '&or=(review_status.eq.unreviewed,review_status.is.null)';
         } else if (_selectedStatus != 'all') {
           statusQuery = '&review_status=eq.$_selectedStatus';
         }
       }
 
-      final paginationAndOrder = '&order=created_at.desc.nullslast,id.asc&limit=$_pageSize&offset=$offset';
+      final paginationAndOrder =
+          '&order=created_at.desc.nullslast,id.asc&limit=$_pageSize&offset=$offset';
       var requestUrl = '$baseUrl$statusQuery$paginationAndOrder';
 
       debugPrint('[QuestionFlagger] Fetching: $requestUrl');
@@ -181,8 +199,10 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
       ).timeout(const Duration(seconds: 10));
 
       // Resilient fallback: if Supabase returns 400 because review_status column does not exist yet
-      if (res.statusCode == 400 && (res.body.contains('review_status') || statusQuery.isNotEmpty)) {
-        debugPrint('[QuestionFlagger] review_status column not found on questions table. Retrying without status filter...');
+      if (res.statusCode == 400 &&
+          (res.body.contains('review_status') || statusQuery.isNotEmpty)) {
+        debugPrint(
+            '[QuestionFlagger] review_status column not found on questions table. Retrying without status filter...');
         _dbNeedsMigration = true;
         requestUrl = '$baseUrl$paginationAndOrder';
         res = await http.get(
@@ -197,7 +217,8 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
         ).timeout(const Duration(seconds: 10));
       }
 
-      debugPrint('[QuestionFlagger] HTTP Status: ${res.statusCode}, Body Length: ${res.body.length}');
+      debugPrint(
+          '[QuestionFlagger] HTTP Status: ${res.statusCode}, Body Length: ${res.body.length}');
       if (res.statusCode >= 400) {
         debugPrint('[QuestionFlagger] Postgres/Supabase Error: ${res.body}');
       }
@@ -206,7 +227,8 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
         final List raw = jsonDecode(res.body);
         List<Question> parsed = raw.map((m) {
           final q = Question.fromSupabase(m as Map<String, dynamic>);
-          if (m['admin_notes'] != null && m['admin_notes'].toString().isNotEmpty) {
+          if (m['admin_notes'] != null &&
+              m['admin_notes'].toString().isNotEmpty) {
             _questionAdminNotes[q.id] = m['admin_notes'].toString();
           }
           return q;
@@ -222,7 +244,8 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
           }
         }
 
-        debugPrint('[QuestionFlagger] Successfully loaded ${parsed.length} questions from Supabase.');
+        debugPrint(
+            '[QuestionFlagger] Successfully loaded ${parsed.length} questions from Supabase.');
         setState(() {
           if (reset) {
             _questions = parsed;
@@ -246,13 +269,21 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
 
   void _fallbackLocalQuestions({bool reset = false}) {
     final local = QuestionRepository.allQuestions.where((q) {
-      if (_selectedStatus != 'all' && q.reviewStatus.toLowerCase() != _selectedStatus.toLowerCase()) {
+      if (_selectedStatus != 'all' &&
+          q.reviewStatus.toLowerCase() != _selectedStatus.toLowerCase()) {
         return false;
       }
-      if (_selectedType == 'PYQ' && q.paperType.toUpperCase() != 'PYQ') return false;
-      if (_selectedType == 'Mock Test' && q.paperType.toUpperCase() != 'MOCK') return false;
-      if (_selectedYear != 'All' && q.year.toString() != _selectedYear) return false;
-      if (_selectedSubject != 'All' && !q.subject.toLowerCase().contains(_selectedSubject.toLowerCase())) {
+      if (_selectedType == 'PYQ' && q.paperType.toUpperCase() != 'PYQ') {
+        return false;
+      }
+      if (_selectedType == 'Mock Test' && q.paperType.toUpperCase() != 'MOCK') {
+        return false;
+      }
+      if (_selectedYear != 'All' && q.year.toString() != _selectedYear) {
+        return false;
+      }
+      if (_selectedSubject != 'All' &&
+          !q.subject.toLowerCase().contains(_selectedSubject.toLowerCase())) {
         return false;
       }
       if (_searchQuery.trim().isNotEmpty) {
@@ -292,27 +323,31 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
 
       // Supabase: questions table update
       final patchUrl = '$_supabaseUrl/rest/v1/questions?id=eq.${q.id}';
-      final patchRes = await http.patch(
-        Uri.parse(patchUrl),
-        headers: {
-          'apikey': _supabaseKey,
-          'Authorization': AdminSession.bearer,
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'review_status': 'approved',
-          'flagged_issues': [],
-          'flag_reasons': [],
-          'last_reviewed_at': now,
-        }),
-      ).timeout(const Duration(seconds: 6));
+      final patchRes = await http
+          .patch(
+            Uri.parse(patchUrl),
+            headers: {
+              'apikey': _supabaseKey,
+              'Authorization': AdminSession.bearer,
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({
+              'review_status': 'approved',
+              'flagged_issues': [],
+              'flag_reasons': [],
+              'last_reviewed_at': now,
+            }),
+          )
+          .timeout(const Duration(seconds: 6));
 
-      if (patchRes.statusCode >= 400 && patchRes.body.contains('review_status')) {
+      if (patchRes.statusCode >= 400 &&
+          patchRes.body.contains('review_status')) {
         setState(() => _dbNeedsMigration = true);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('⚠️ Could not save to the server. Sign in again as admin and retry.'),
+              content: Text(
+                  '⚠️ Could not save to the server. Sign in again as admin and retry.'),
               backgroundColor: Colors.orange,
               duration: Duration(seconds: 4),
             ),
@@ -323,22 +358,24 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
 
       // Supabase: question_flags audit log
       final flagUrl = '$_supabaseUrl/rest/v1/question_flags';
-      await http.post(
-        Uri.parse(flagUrl),
-        headers: {
-          'apikey': _supabaseKey,
-          'Authorization': AdminSession.bearer,
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'question_id': q.id,
-          'issue_category': 'correct',
-          'issue_type': 'correct',
-          'notes': 'Manually verified valid by admin',
-          'resolved': true,
-          'created_at': now,
-        }),
-      ).timeout(const Duration(seconds: 6));
+      await http
+          .post(
+            Uri.parse(flagUrl),
+            headers: {
+              'apikey': _supabaseKey,
+              'Authorization': AdminSession.bearer,
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({
+              'question_id': q.id,
+              'issue_category': 'correct',
+              'issue_type': 'correct',
+              'notes': 'Manually verified valid by admin',
+              'resolved': true,
+              'created_at': now,
+            }),
+          )
+          .timeout(const Duration(seconds: 6));
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -355,7 +392,8 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
   }
 
   // ─── Direct Action 2: Flag Issue with Category ────────────────────────────
-  Future<void> _flagIssue(Question q, String issueCategory, {String? notes}) async {
+  Future<void> _flagIssue(Question q, String issueCategory,
+      {String? notes}) async {
     if (issueCategory == 'correct') {
       await _markCorrect(q);
       return;
@@ -397,23 +435,28 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
         patchBody['admin_notes'] = notes;
       }
 
-      final patchRes = await http.patch(
-        Uri.parse(patchUrl),
-        headers: {
-          'apikey': _supabaseKey,
-          'Authorization': AdminSession.bearer,
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(patchBody),
-      ).timeout(const Duration(seconds: 6));
+      final patchRes = await http
+          .patch(
+            Uri.parse(patchUrl),
+            headers: {
+              'apikey': _supabaseKey,
+              'Authorization': AdminSession.bearer,
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode(patchBody),
+          )
+          .timeout(const Duration(seconds: 6));
 
-      if (patchRes.statusCode >= 400 && patchRes.body.contains('review_status')) {
+      if (patchRes.statusCode >= 400 &&
+          patchRes.body.contains('review_status')) {
         setState(() => _dbNeedsMigration = true);
         if (mounted) {
-          final label = issueCatalog.firstWhere((i) => i['id'] == issueCategory, orElse: () => {'label': issueCategory})['label'];
+          final label = issueCatalog.firstWhere((i) => i['id'] == issueCategory,
+              orElse: () => {'label': issueCategory})['label'];
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('⚠️ $label could not be saved to the server. Sign in again as admin and retry.'),
+              content: Text(
+                  '⚠️ $label could not be saved to the server. Sign in again as admin and retry.'),
               backgroundColor: Colors.orange,
               duration: const Duration(seconds: 4),
             ),
@@ -424,25 +467,28 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
 
       // Supabase: question_flags audit insert
       final flagUrl = '$_supabaseUrl/rest/v1/question_flags';
-      await http.post(
-        Uri.parse(flagUrl),
-        headers: {
-          'apikey': _supabaseKey,
-          'Authorization': AdminSession.bearer,
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'question_id': q.id,
-          'issue_category': issueCategory,
-          'issue_type': issueCategory,
-          'notes': notes ?? 'Flagged via Admin Review Feed',
-          'resolved': false,
-          'created_at': now,
-        }),
-      ).timeout(const Duration(seconds: 6));
+      await http
+          .post(
+            Uri.parse(flagUrl),
+            headers: {
+              'apikey': _supabaseKey,
+              'Authorization': AdminSession.bearer,
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({
+              'question_id': q.id,
+              'issue_category': issueCategory,
+              'issue_type': issueCategory,
+              'notes': notes ?? 'Flagged via Admin Review Feed',
+              'resolved': false,
+              'created_at': now,
+            }),
+          )
+          .timeout(const Duration(seconds: 6));
 
       if (mounted) {
-        final label = issueCatalog.firstWhere((i) => i['id'] == issueCategory, orElse: () => {'label': issueCategory})['label'];
+        final label = issueCatalog.firstWhere((i) => i['id'] == issueCategory,
+            orElse: () => {'label': issueCategory})['label'];
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Flagged: $label'),
@@ -471,14 +517,10 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
     final questionTextController = TextEditingController(text: q.questionText);
 
     // Prepare 4 clean option controllers
-    final optA =
-        q.options.isNotEmpty ? _stripOptionPrefix(q.options[0]) : '';
-    final optB =
-        q.options.length > 1 ? _stripOptionPrefix(q.options[1]) : '';
-    final optC =
-        q.options.length > 2 ? _stripOptionPrefix(q.options[2]) : '';
-    final optD =
-        q.options.length > 3 ? _stripOptionPrefix(q.options[3]) : '';
+    final optA = q.options.isNotEmpty ? _stripOptionPrefix(q.options[0]) : '';
+    final optB = q.options.length > 1 ? _stripOptionPrefix(q.options[1]) : '';
+    final optC = q.options.length > 2 ? _stripOptionPrefix(q.options[2]) : '';
+    final optD = q.options.length > 3 ? _stripOptionPrefix(q.options[3]) : '';
 
     final optAController = TextEditingController(text: optA);
     final optBController = TextEditingController(text: optB);
@@ -486,10 +528,10 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
     final optDController = TextEditingController(text: optD);
 
     final solutionController = TextEditingController(
-      text: (q.solution.isNotEmpty &&
-              q.solution != 'Verified with official key.')
-          ? q.solution
-          : '',
+      text:
+          (q.solution.isNotEmpty && q.solution != 'Verified with official key.')
+              ? q.solution
+              : '',
     );
 
     String selectedCorrect = q.correctAnswer.toLowerCase();
@@ -543,14 +585,16 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                 children: [
                   // 1. Direction / Instructions Field
                   const Text('Direction / Instructions (Optional):',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                   const SizedBox(height: 6),
                   TextField(
                     controller: directionController,
                     maxLines: 2,
                     style: const TextStyle(fontSize: 12),
                     decoration: const InputDecoration(
-                      hintText: 'e.g. Direction (Q. 1 to 5): Choose the correct antonym...',
+                      hintText:
+                          'e.g. Direction (Q. 1 to 5): Choose the correct antonym...',
                       border: OutlineInputBorder(),
                       isDense: true,
                     ),
@@ -559,7 +603,8 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
 
                   // 2. Passage / Comprehension Field
                   const Text('Passage / Reading Context (Optional):',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                   const SizedBox(height: 6),
                   TextField(
                     controller: passageController,
@@ -640,8 +685,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 12),
                               decoration: BoxDecoration(
-                                border:
-                                    Border.all(color: Colors.grey.shade400),
+                                border: Border.all(color: Colors.grey.shade400),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: DropdownButtonHideUnderline(
@@ -706,8 +750,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 12),
                               decoration: BoxDecoration(
-                                border:
-                                    Border.all(color: Colors.grey.shade400),
+                                border: Border.all(color: Colors.grey.shade400),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: DropdownButtonHideUnderline(
@@ -716,17 +759,13 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                                   value: selectedCorrect,
                                   items: const [
                                     DropdownMenuItem(
-                                        value: 'a',
-                                        child: Text('Option (A)')),
+                                        value: 'a', child: Text('Option (A)')),
                                     DropdownMenuItem(
-                                        value: 'b',
-                                        child: Text('Option (B)')),
+                                        value: 'b', child: Text('Option (B)')),
                                     DropdownMenuItem(
-                                        value: 'c',
-                                        child: Text('Option (C)')),
+                                        value: 'c', child: Text('Option (C)')),
                                     DropdownMenuItem(
-                                        value: 'd',
-                                        child: Text('Option (D)')),
+                                        value: 'd', child: Text('Option (D)')),
                                   ],
                                   onChanged: (val) {
                                     if (val != null) {
@@ -753,8 +792,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 12),
                               decoration: BoxDecoration(
-                                border:
-                                    Border.all(color: Colors.grey.shade400),
+                                border: Border.all(color: Colors.grey.shade400),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: DropdownButtonHideUnderline(
@@ -845,10 +883,9 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                   '(c) ${optCController.text.trim()}',
                   '(d) ${optDController.text.trim()}',
                 ];
-                final newSolution =
-                    solutionController.text.trim().isNotEmpty
-                        ? solutionController.text.trim()
-                        : 'Verified with official key.';
+                final newSolution = solutionController.text.trim().isNotEmpty
+                    ? solutionController.text.trim()
+                    : 'Verified with official key.';
 
                 Navigator.pop(ctx);
 
@@ -864,13 +901,14 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                     'explanation': newSolution,
                     'admin_notes': newNotes,
                     'review_status': selectedStatus,
-                    'direction_text': newDirection.isNotEmpty ? newDirection : null,
+                    'direction_text':
+                        newDirection.isNotEmpty ? newDirection : null,
                     'content_format': selectedFormat,
                     'topic': newTopic.isNotEmpty ? newTopic : null,
-                    if (newImageUrl.isNotEmpty) 'question_image_url': newImageUrl,
-                    'flagged_issues': selectedStatus == 'approved'
-                        ? []
-                        : q.flagReasons,
+                    if (newImageUrl.isNotEmpty)
+                      'question_image_url': newImageUrl,
+                    'flagged_issues':
+                        selectedStatus == 'approved' ? [] : q.flagReasons,
                     'last_reviewed_at': DateTime.now().toIso8601String(),
                   };
 
@@ -912,10 +950,13 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                         options: cleanOptions,
                         correctAnswer: selectedCorrect,
                         solution: newSolution,
-                        directionText: newDirection.isNotEmpty ? newDirection : null,
-                        passageOrDirection: newPassage.isNotEmpty ? newPassage : null,
+                        directionText:
+                            newDirection.isNotEmpty ? newDirection : null,
+                        passageOrDirection:
+                            newPassage.isNotEmpty ? newPassage : null,
                         imageUrl: newImageUrl.isNotEmpty ? newImageUrl : null,
-                        questionImage: newImageUrl.isNotEmpty ? newImageUrl : null,
+                        questionImage:
+                            newImageUrl.isNotEmpty ? newImageUrl : null,
                         contentFormat: selectedFormat,
                         topic: newTopic.isNotEmpty ? newTopic : null,
                         reviewStatus: selectedStatus,
@@ -957,8 +998,7 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
     );
   }
 
-  Widget _buildOptionEditField(
-      String label, TextEditingController controller) {
+  Widget _buildOptionEditField(String label, TextEditingController controller) {
     return TextField(
       controller: controller,
       style: const TextStyle(fontSize: 12.5),
@@ -971,12 +1011,10 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                 fontWeight: FontWeight.bold, color: AppColors.primary),
           ),
         ),
-        prefixIconConstraints:
-            const BoxConstraints(minWidth: 36, minHeight: 0),
+        prefixIconConstraints: const BoxConstraints(minWidth: 36, minHeight: 0),
         border: const OutlineInputBorder(),
         isDense: true,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       ),
     );
   }
@@ -1004,7 +1042,8 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                   fit: BoxFit.contain,
                   errorBuilder: (_, __, ___) => const Padding(
                     padding: EdgeInsets.all(32),
-                    child: Text('Failed to load image from URL', style: TextStyle(color: AppColors.error)),
+                    child: Text('Failed to load image from URL',
+                        style: TextStyle(color: AppColors.error)),
                   ),
                 ),
               ),
@@ -1043,7 +1082,8 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
           children: [
             Row(
               children: [
-                Icon(Icons.flag_circle_rounded, color: AppColors.error, size: 20),
+                Icon(Icons.flag_circle_rounded,
+                    color: AppColors.error, size: 20),
                 SizedBox(width: 8),
                 Text(
                   'Admin Question Review & Flagger',
@@ -1075,103 +1115,111 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 960),
                 child: Column(
-              children: [
-                // Quick Search input
-                TextField(
-                  controller: _searchController,
-                  onSubmitted: (val) {
-                    _searchQuery = val;
-                    _fetchQuestions(reset: true);
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Search by question text or ID (Press Enter)...',
-                    prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColors.textHint),
-                    suffixIcon: _searchQuery.isNotEmpty
-                        ? IconButton(
-                            tooltip: 'Clear',
-                            icon: const Icon(Icons.clear_rounded, size: 18),
-                            onPressed: () {
-                              _searchController.clear();
-                              _searchQuery = '';
+                  children: [
+                    // Quick Search input
+                    TextField(
+                      controller: _searchController,
+                      onSubmitted: (val) {
+                        _searchQuery = val;
+                        _fetchQuestions(reset: true);
+                      },
+                      decoration: InputDecoration(
+                        hintText:
+                            'Search by question text or ID (Press Enter)...',
+                        prefixIcon: const Icon(Icons.search_rounded,
+                            size: 20, color: AppColors.textHint),
+                        suffixIcon: _searchQuery.isNotEmpty
+                            ? IconButton(
+                                tooltip: 'Clear',
+                                icon: const Icon(Icons.clear_rounded, size: 18),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  _searchQuery = '';
+                                  _fetchQuestions(reset: true);
+                                },
+                              )
+                            : null,
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                        filled: true,
+                        fillColor: AppColors.background,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Dropdown Filter Chips Row
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          // 1. Status Filter
+                          _buildDropdownFilter(
+                            label: 'Status',
+                            value: _selectedStatus,
+                            items: _statuses,
+                            formatDisplay: (val) => val == 'all'
+                                ? 'Status: All'
+                                : 'Status: ${val.toUpperCase()}',
+                            onChanged: (v) {
+                              setState(() => _selectedStatus = v!);
                               _fetchQuestions(reset: true);
                             },
-                          )
-                        : null,
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    filled: true,
-                    fillColor: AppColors.background,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
+                          ),
+                          const SizedBox(width: 8),
+
+                          // 2. Type Filter
+                          _buildDropdownFilter(
+                            label: 'Type',
+                            value: _selectedType,
+                            items: _types,
+                            formatDisplay: (val) =>
+                                val == 'All' ? 'Type: All' : 'Type: $val',
+                            onChanged: (v) {
+                              setState(() => _selectedType = v!);
+                              _fetchQuestions(reset: true);
+                            },
+                          ),
+                          const SizedBox(width: 8),
+
+                          // 3. Subject Filter
+                          _buildDropdownFilter(
+                            label: 'Subject',
+                            value: _selectedSubject,
+                            items: _subjects,
+                            formatDisplay: (val) =>
+                                val == 'All' ? 'Subject: All' : val,
+                            onChanged: (v) {
+                              setState(() => _selectedSubject = v!);
+                              _fetchQuestions(reset: true);
+                            },
+                          ),
+                          const SizedBox(width: 8),
+
+                          // 4. Year Filter
+                          _buildDropdownFilter(
+                            label: 'Year',
+                            value: _selectedYear,
+                            items: _years,
+                            formatDisplay: (val) =>
+                                val == 'All' ? 'Year: All' : 'Year: $val',
+                            onChanged: (v) {
+                              setState(() => _selectedYear = v!);
+                              _fetchQuestions(reset: true);
+                            },
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-                const SizedBox(height: 10),
-
-                // Dropdown Filter Chips Row
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      // 1. Status Filter
-                      _buildDropdownFilter(
-                        label: 'Status',
-                        value: _selectedStatus,
-                        items: _statuses,
-                        formatDisplay: (val) => val == 'all' ? 'Status: All' : 'Status: ${val.toUpperCase()}',
-                        onChanged: (v) {
-                          setState(() => _selectedStatus = v!);
-                          _fetchQuestions(reset: true);
-                        },
-                      ),
-                      const SizedBox(width: 8),
-
-                      // 2. Type Filter
-                      _buildDropdownFilter(
-                        label: 'Type',
-                        value: _selectedType,
-                        items: _types,
-                        formatDisplay: (val) => val == 'All' ? 'Type: All' : 'Type: $val',
-                        onChanged: (v) {
-                          setState(() => _selectedType = v!);
-                          _fetchQuestions(reset: true);
-                        },
-                      ),
-                      const SizedBox(width: 8),
-
-                      // 3. Subject Filter
-                      _buildDropdownFilter(
-                        label: 'Subject',
-                        value: _selectedSubject,
-                        items: _subjects,
-                        formatDisplay: (val) => val == 'All' ? 'Subject: All' : val,
-                        onChanged: (v) {
-                          setState(() => _selectedSubject = v!);
-                          _fetchQuestions(reset: true);
-                        },
-                      ),
-                      const SizedBox(width: 8),
-
-                      // 4. Year Filter
-                      _buildDropdownFilter(
-                        label: 'Year',
-                        value: _selectedYear,
-                        items: _years,
-                        formatDisplay: (val) => val == 'All' ? 'Year: All' : 'Year: $val',
-                        onChanged: (v) {
-                          setState(() => _selectedYear = v!);
-                          _fetchQuestions(reset: true);
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
           const Divider(height: 1, color: AppColors.divider),
           if (_dbNeedsMigration) _buildMigrationBanner(),
 
@@ -1199,7 +1247,8 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                 else
                   Text(
                     _hasMore ? 'Scroll for more' : 'All questions loaded',
-                    style: const TextStyle(fontSize: 11, color: AppColors.textHint),
+                    style: const TextStyle(
+                        fontSize: 11, color: AppColors.textHint),
                   ),
               ],
             ),
@@ -1214,16 +1263,19 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.check_circle_outline_rounded, size: 48, color: AppColors.success),
+                            const Icon(Icons.check_circle_outline_rounded,
+                                size: 48, color: AppColors.success),
                             const SizedBox(height: 12),
                             Text(
                               'No questions matching "$_selectedStatus"',
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 15),
                             ),
                             const SizedBox(height: 6),
                             const Text(
                               'Try selecting another status (e.g. All Questions) or clear search.',
-                              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                              style: TextStyle(
+                                  fontSize: 12, color: AppColors.textSecondary),
                             ),
                             const SizedBox(height: 16),
                             ElevatedButton(
@@ -1253,7 +1305,8 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                             if (index == _questions.length) {
                               return const Padding(
                                 padding: EdgeInsets.symmetric(vertical: 24),
-                                child: Center(child: CircularProgressIndicator()),
+                                child:
+                                    Center(child: CircularProgressIndicator()),
                               );
                             }
                             final q = _questions[index];
@@ -1280,11 +1333,14 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
     required String Function(String) formatDisplay,
     required ValueChanged<String?> onChanged,
   }) {
-    final isSelected = value != 'all' && value != 'All' && value != 'unreviewed';
+    final isSelected =
+        value != 'all' && value != 'All' && value != 'unreviewed';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
       decoration: BoxDecoration(
-        color: isSelected ? AppColors.primary.withValues(alpha: 0.08) : AppColors.background,
+        color: isSelected
+            ? AppColors.primary.withValues(alpha: 0.08)
+            : AppColors.background,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isSelected ? AppColors.primary : AppColors.divider,
@@ -1300,11 +1356,13 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
             fontWeight: FontWeight.bold,
             color: isSelected ? AppColors.primary : AppColors.textPrimary,
           ),
-          icon: const Icon(Icons.arrow_drop_down_rounded, size: 18, color: AppColors.textHint),
+          icon: const Icon(Icons.arrow_drop_down_rounded,
+              size: 18, color: AppColors.textHint),
           items: items.map((item) {
             return DropdownMenuItem<String>(
               value: item,
-              child: Text(formatDisplay(item), style: const TextStyle(fontSize: 12)),
+              child: Text(formatDisplay(item),
+                  style: const TextStyle(fontSize: 12)),
             );
           }).toList(),
           onChanged: onChanged,
@@ -1360,7 +1418,8 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppColors.primaryLight,
                     borderRadius: BorderRadius.circular(6),
@@ -1382,7 +1441,8 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF0F4F8),
                           borderRadius: BorderRadius.circular(6),
@@ -1398,35 +1458,47 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                       ),
                       Text(
                         '${q.examCode} ${q.year} • ${q.paperType}',
-                        style: const TextStyle(fontSize: 10, color: AppColors.textHint),
+                        style: const TextStyle(
+                            fontSize: 10, color: AppColors.textHint),
                       ),
                       if (q.topic != null && q.topic!.trim().isNotEmpty) ...[
                         Text(
                           ' • ${q.topic}',
-                          style: const TextStyle(fontSize: 10, color: AppColors.primary, fontWeight: FontWeight.w600),
+                          style: const TextStyle(
+                              fontSize: 10,
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w600),
                         ),
                       ],
                       if (q.contentFormat == 'latex') ...[
                         const SizedBox(width: 4),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 5, vertical: 1.5),
                           decoration: BoxDecoration(
                             color: const Color(0xFFD2DDD4),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: const Text('📐 LaTeX',
-                              style: TextStyle(fontSize: 9, color: Color(0xFF233E42), fontWeight: FontWeight.bold)),
+                              style: TextStyle(
+                                  fontSize: 9,
+                                  color: Color(0xFF233E42),
+                                  fontWeight: FontWeight.bold)),
                         ),
                       ] else if (q.contentFormat == 'image_only') ...[
                         const SizedBox(width: 4),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 5, vertical: 1.5),
                           decoration: BoxDecoration(
                             color: const Color(0xFFE0F2FE),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: const Text('🖼️ Image',
-                              style: TextStyle(fontSize: 9, color: Color(0xFF0369A1), fontWeight: FontWeight.bold)),
+                              style: TextStyle(
+                                  fontSize: 9,
+                                  color: Color(0xFF0369A1),
+                                  fontWeight: FontWeight.bold)),
                         ),
                       ],
                     ],
@@ -1448,11 +1520,13 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                     orElse: () => {'label': r.replaceAll('_', ' ')},
                   );
                   return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: AppColors.error.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+                      border: Border.all(
+                          color: AppColors.error.withValues(alpha: 0.3)),
                     ),
                     child: Text(
                       item['label'] ?? r,
@@ -1469,7 +1543,8 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
             ],
 
             // ─── Linked Passage Box (Collapsible) ─────────────────────────
-            if (q.passageOrDirection != null && q.passageOrDirection!.trim().isNotEmpty) ...[
+            if (q.passageOrDirection != null &&
+                q.passageOrDirection!.trim().isNotEmpty) ...[
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(10),
@@ -1483,7 +1558,8 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.menu_book_rounded, size: 13, color: AppColors.primary),
+                        const Icon(Icons.menu_book_rounded,
+                            size: 13, color: AppColors.primary),
                         const SizedBox(width: 6),
                         const Text(
                           'Passage / Comprehension Box',
@@ -1506,7 +1582,10 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                           },
                           child: Text(
                             isPassageCollapsed ? 'Expand ▾' : 'Collapse ▴',
-                            style: const TextStyle(fontSize: 10, color: AppColors.primary, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                                fontSize: 10,
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold),
                           ),
                         ),
                       ],
@@ -1515,9 +1594,13 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                       const SizedBox(height: 6),
                       Text(
                         q.passageOrDirection!,
-                        style: const TextStyle(fontSize: 11.5, color: AppColors.textPrimary, height: 1.35),
+                        style: const TextStyle(
+                            fontSize: 11.5,
+                            color: AppColors.textPrimary,
+                            height: 1.35),
                       ),
-                      if (q.passageImage != null && q.passageImage!.trim().isNotEmpty) ...[
+                      if (q.passageImage != null &&
+                          q.passageImage!.trim().isNotEmpty) ...[
                         const SizedBox(height: 8),
                         ClipRRect(
                           borderRadius: BorderRadius.circular(6),
@@ -1525,8 +1608,10 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                             q.passageImage!,
                             height: 140,
                             fit: BoxFit.contain,
-                            errorBuilder: (_, __, ___) => const Text('Passage figure failed to load',
-                                style: TextStyle(fontSize: 10, color: AppColors.error)),
+                            errorBuilder: (_, __, ___) => const Text(
+                                'Passage figure failed to load',
+                                style: TextStyle(
+                                    fontSize: 10, color: AppColors.error)),
                           ),
                         ),
                       ],
@@ -1543,7 +1628,8 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                 q.directionText != q.passageOrDirection) ...[
               Container(
                 margin: const EdgeInsets.only(bottom: 10),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                 decoration: BoxDecoration(
                   color: const Color(0xFFEFF6FF),
                   borderRadius: BorderRadius.circular(8),
@@ -1552,7 +1638,8 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.info_outline_rounded, size: 14, color: AppColors.primary),
+                    const Icon(Icons.info_outline_rounded,
+                        size: 14, color: AppColors.primary),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
@@ -1585,17 +1672,24 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.image_rounded, size: 14, color: AppColors.textSecondary),
+                        const Icon(Icons.image_rounded,
+                            size: 14, color: AppColors.textSecondary),
                         const SizedBox(width: 6),
                         const Text(
                           'Extracted Figure (Tap to zoom):',
-                          style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
+                          style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textSecondary),
                         ),
                         const Spacer(),
                         InkWell(
                           onTap: () => _showImageZoomDialog(q.imageUrl!),
                           child: const Text('Full View ⛶',
-                              style: TextStyle(fontSize: 10, color: AppColors.primary, fontWeight: FontWeight.bold)),
+                              style: TextStyle(
+                                  fontSize: 10,
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.bold)),
                         ),
                       ],
                     ),
@@ -1611,7 +1705,9 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                             fit: BoxFit.contain,
                             errorBuilder: (_, __, ___) => const Padding(
                               padding: EdgeInsets.all(8),
-                              child: Text('Image failed to load from URL', style: TextStyle(color: AppColors.error, fontSize: 11)),
+                              child: Text('Image failed to load from URL',
+                                  style: TextStyle(
+                                      color: AppColors.error, fontSize: 11)),
                             ),
                           ),
                         ),
@@ -1623,7 +1719,8 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
             ] else if (mentionsMissingImage) ...[
               Container(
                 margin: const EdgeInsets.only(bottom: 10),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: const Color(0xFFEFE6D2),
                   borderRadius: BorderRadius.circular(8),
@@ -1631,12 +1728,16 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.warning_amber_rounded, size: 15, color: Color(0xFF8A6A2E)),
+                    Icon(Icons.warning_amber_rounded,
+                        size: 15, color: Color(0xFF8A6A2E)),
                     SizedBox(width: 6),
                     Expanded(
                       child: Text(
                         '⚠️ Potential missing image: Question text references a figure or chart, but image_url is empty.',
-                        style: TextStyle(fontSize: 11, color: Color(0xFF6E5424), fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF6E5424),
+                            fontWeight: FontWeight.w600),
                       ),
                     ),
                   ],
@@ -1661,17 +1762,26 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
               children: List.generate(q.options.length, (optIdx) {
                 final opt = q.options[optIdx];
                 final optChar = _extractOptionChar(opt, optIdx);
-                final isCorrect = optChar.toLowerCase() == q.correctAnswer.toLowerCase();
+                final isCorrect =
+                    optChar.toLowerCase() == q.correctAnswer.toLowerCase();
 
                 // Detect defects inside option
                 final isEmpty = opt.trim().isEmpty;
-                final isDummy = RegExp(r'^Option\s+[A-D]$', caseSensitive: false).hasMatch(opt.trim());
-                final isMerged = RegExp(r'[\(\[]?[b-d][\)\]\.\s]').hasMatch(opt) && optIdx == 0;
-                final isBleed = RegExp(r'(?:\b\d{1,3}\.\s|Q\d+|\bDirection\b|\bPassage\b)', caseSensitive: false).hasMatch(opt);
+                final isDummy =
+                    RegExp(r'^Option\s+[A-D]$', caseSensitive: false)
+                        .hasMatch(opt.trim());
+                final isMerged =
+                    RegExp(r'[\(\[]?[b-d][\)\]\.\s]').hasMatch(opt) &&
+                        optIdx == 0;
+                final isBleed = RegExp(
+                        r'(?:\b\d{1,3}\.\s|Q\d+|\bDirection\b|\bPassage\b)',
+                        caseSensitive: false)
+                    .hasMatch(opt);
 
                 return Container(
                   margin: const EdgeInsets.only(bottom: 6),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                   decoration: BoxDecoration(
                     color: isCorrect
                         ? AppColors.success.withValues(alpha: 0.08)
@@ -1699,14 +1809,18 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: isCorrect ? AppColors.success : const Color(0xFFDCE3E4),
+                          color: isCorrect
+                              ? AppColors.success
+                              : const Color(0xFFDCE3E4),
                         ),
                         child: Text(
                           optChar.toUpperCase(),
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
-                            color: isCorrect ? Colors.white : AppColors.textSecondary,
+                            color: isCorrect
+                                ? Colors.white
+                                : AppColors.textSecondary,
                           ),
                         ),
                       ),
@@ -1719,8 +1833,12 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                               opt,
                               style: TextStyle(
                                 fontSize: 12,
-                                fontWeight: isCorrect ? FontWeight.w600 : FontWeight.normal,
-                                color: isCorrect ? AppColors.success : AppColors.textPrimary,
+                                fontWeight: isCorrect
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                                color: isCorrect
+                                    ? AppColors.success
+                                    : AppColors.textPrimary,
                               ),
                             ),
                             // Defect warning tags
@@ -1728,25 +1846,40 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                               const Padding(
                                 padding: EdgeInsets.only(top: 2),
                                 child: Text('⚠️ Empty Option',
-                                    style: TextStyle(fontSize: 9.5, color: AppColors.error, fontWeight: FontWeight.bold)),
+                                    style: TextStyle(
+                                        fontSize: 9.5,
+                                        color: AppColors.error,
+                                        fontWeight: FontWeight.bold)),
                               ),
                             if (isDummy)
                               const Padding(
                                 padding: EdgeInsets.only(top: 2),
-                                child: Text('⚠️ Dummy Placeholder (e.g. Option A)',
-                                    style: TextStyle(fontSize: 9.5, color: Color(0xFF8A6A2E), fontWeight: FontWeight.bold)),
+                                child: Text(
+                                    '⚠️ Dummy Placeholder (e.g. Option A)',
+                                    style: TextStyle(
+                                        fontSize: 9.5,
+                                        color: Color(0xFF8A6A2E),
+                                        fontWeight: FontWeight.bold)),
                               ),
                             if (isMerged)
                               const Padding(
                                 padding: EdgeInsets.only(top: 2),
-                                child: Text('⚠️ Merged Options Leak (Contains (b) or (c))',
-                                    style: TextStyle(fontSize: 9.5, color: AppColors.error, fontWeight: FontWeight.bold)),
+                                child: Text(
+                                    '⚠️ Merged Options Leak (Contains (b) or (c))',
+                                    style: TextStyle(
+                                        fontSize: 9.5,
+                                        color: AppColors.error,
+                                        fontWeight: FontWeight.bold)),
                               ),
                             if (isBleed)
                               const Padding(
                                 padding: EdgeInsets.only(top: 2),
-                                child: Text('⚠️ Next Question Bleed Inside Option',
-                                    style: TextStyle(fontSize: 9.5, color: AppColors.error, fontWeight: FontWeight.bold)),
+                                child: Text(
+                                    '⚠️ Next Question Bleed Inside Option',
+                                    style: TextStyle(
+                                        fontSize: 9.5,
+                                        color: AppColors.error,
+                                        fontWeight: FontWeight.bold)),
                               ),
                             if (optIdx < q.optionImages.length &&
                                 q.optionImages[optIdx] != null &&
@@ -1772,8 +1905,13 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                       if (isCorrect)
                         const Row(
                           children: [
-                            Text('Correct: ', style: TextStyle(fontSize: 10, color: AppColors.success, fontWeight: FontWeight.bold)),
-                            Icon(Icons.check_circle_rounded, size: 15, color: AppColors.success),
+                            Text('Correct: ',
+                                style: TextStyle(
+                                    fontSize: 10,
+                                    color: AppColors.success,
+                                    fontWeight: FontWeight.bold)),
+                            Icon(Icons.check_circle_rounded,
+                                size: 15, color: AppColors.success),
                           ],
                         ),
                     ],
@@ -1786,22 +1924,30 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: AppColors.success.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
                     'Correct Option: (${q.correctAnswer.toUpperCase()})',
-                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.success),
+                    style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.success),
                   ),
                 ),
                 const SizedBox(width: 8),
-                if (_questionAdminNotes[q.id] != null && _questionAdminNotes[q.id]!.isNotEmpty) ...[
+                if (_questionAdminNotes[q.id] != null &&
+                    _questionAdminNotes[q.id]!.isNotEmpty) ...[
                   Expanded(
                     child: Text(
                       'Note: ${_questionAdminNotes[q.id]}',
-                      style: const TextStyle(fontSize: 10.5, fontStyle: FontStyle.italic, color: AppColors.textSecondary),
+                      style: const TextStyle(
+                          fontSize: 10.5,
+                          fontStyle: FontStyle.italic,
+                          color: AppColors.textSecondary),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -1874,7 +2020,8 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                           : FontStyle.italic,
                     ),
                   ),
-                  if (q.solutionImage != null && q.solutionImage!.trim().isNotEmpty) ...[
+                  if (q.solutionImage != null &&
+                      q.solutionImage!.trim().isNotEmpty) ...[
                     const SizedBox(height: 8),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(6),
@@ -1882,8 +2029,10 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                         q.solutionImage!,
                         height: 130,
                         fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) => const Text('Solution diagram load failed',
-                            style: TextStyle(color: AppColors.error, fontSize: 10)),
+                        errorBuilder: (_, __, ___) => const Text(
+                            'Solution diagram load failed',
+                            style: TextStyle(
+                                color: AppColors.error, fontSize: 10)),
                       ),
                     ),
                   ],
@@ -1905,17 +2054,23 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                 ElevatedButton.icon(
                   onPressed: () => _markCorrect(q),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isApproved ? AppColors.success : const Color(0xFFD2DDD4),
-                    foregroundColor: isApproved ? Colors.white : AppColors.success,
+                    backgroundColor: isApproved
+                        ? AppColors.success
+                        : const Color(0xFFD2DDD4),
+                    foregroundColor:
+                        isApproved ? Colors.white : AppColors.success,
                     elevation: 0,
                     side: const BorderSide(color: AppColors.success),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
                   ),
                   icon: const Icon(Icons.check_rounded, size: 15),
                   label: Text(
                     isApproved ? 'Approved ✓' : 'Mark Correct',
-                    style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        fontSize: 11.5, fontWeight: FontWeight.bold),
                   ),
                 ),
 
@@ -1933,9 +2088,14 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                       hint: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.flag_rounded, size: 14, color: AppColors.error),
+                          Icon(Icons.flag_rounded,
+                              size: 14, color: AppColors.error),
                           SizedBox(width: 4),
-                          Text('Flag Issue ▾', style: TextStyle(fontSize: 11, color: AppColors.error, fontWeight: FontWeight.bold)),
+                          Text('Flag Issue ▾',
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.error,
+                                  fontWeight: FontWeight.bold)),
                         ],
                       ),
                       items: issueCatalog.map((item) {
@@ -1943,7 +2103,8 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                           value: item['id'],
                           child: Text(
                             item['label']!,
-                            style: const TextStyle(fontSize: 11.5, color: AppColors.textPrimary),
+                            style: const TextStyle(
+                                fontSize: 11.5, color: AppColors.textPrimary),
                           ),
                         );
                       }).toList(),
@@ -2020,7 +2181,8 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
           const SizedBox(width: 4),
           Text(
             label,
-            style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: fg),
+            style: TextStyle(
+                fontSize: 9.5, fontWeight: FontWeight.bold, color: fg),
           ),
         ],
       ),
@@ -2029,7 +2191,8 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
 
   String _extractOptionChar(String option, int fallbackIndex) {
     final trimmed = option.trim();
-    final match = RegExp(r'^[\\(\\[]?([a-dA-D])[\\)\\]\\.\\s]').firstMatch(trimmed);
+    final match =
+        RegExp(r'^[\\(\\[]?([a-dA-D])[\\)\\]\\.\\s]').firstMatch(trimmed);
     if (match != null) return match.group(1)!.toLowerCase();
     return String.fromCharCode(97 + fallbackIndex);
   }
@@ -2042,7 +2205,8 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.info_outline_rounded, color: Color(0xFF8A6A2E), size: 18),
+          const Icon(Icons.info_outline_rounded,
+              color: Color(0xFF8A6A2E), size: 18),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -2059,14 +2223,16 @@ class _QuestionFlaggerScreenState extends State<QuestionFlaggerScreen> {
                 const SizedBox(height: 2),
                 const Text(
                   'Questions are loading in compatibility mode. To enable persistent DB flagging and status filters, run "migrations/003_admin_flagger.sql" in your Supabase SQL Editor.',
-                  style: TextStyle(fontSize: 11, color: Color(0xFF8A6A2E), height: 1.3),
+                  style: TextStyle(
+                      fontSize: 11, color: Color(0xFF8A6A2E), height: 1.3),
                 ),
               ],
             ),
           ),
           IconButton(
             tooltip: 'Close',
-            icon: const Icon(Icons.close_rounded, size: 16, color: Color(0xFF6E5424)),
+            icon: const Icon(Icons.close_rounded,
+                size: 16, color: Color(0xFF6E5424)),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
             onPressed: () => setState(() => _dbNeedsMigration = false),

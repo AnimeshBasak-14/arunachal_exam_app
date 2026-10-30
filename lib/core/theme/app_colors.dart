@@ -33,12 +33,14 @@ class AppColors {
   static const Color orbAmber = Color(0xFFE9ECEA);
 
   // ── Glassmorphism Variables ──────────────────────────────────────────────
-  static const Color glassSurface = Color(0xBFFFFFFF); // rgba(255, 255, 255, 0.75)
+  static const Color glassSurface =
+      Color(0xBFFFFFFF); // rgba(255, 255, 255, 0.75)
   static const Color glassBorder = Color(0x73A1ACAC);
   static const Color glassShadowColor = Color(0x0F233E42);
   static const Color glassBase = glassSurface;
   static const Color glassHighlight = glassBorder;
-  static const Color glassHover = Color(0xE6FFFFFF); // rgba(255, 255, 255, 0.90)
+  static const Color glassHover =
+      Color(0xE6FFFFFF); // rgba(255, 255, 255, 0.90)
 
   // ── Semantic Structure ────────────────────────────────────────────────────
   static const Color background = atmosphere;

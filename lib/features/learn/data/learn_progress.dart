@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/services/service_providers.dart';
 import '../../../core/services/streak_service.dart';
 import '../../plan/data/study_plan_provider.dart';
+import '../../streak/data/coins.dart';
+import '../../streak/data/questions_today.dart';
 
 /// Default daily card goal if no custom plan is set.
 const dailyCardGoal = 20;
@@ -24,7 +26,13 @@ class LearnProgress {
     this.known = const {},
   });
 
-  LearnProgress copyWith({int? xp, int? today, int? combo, int? bestCombo, Set<String>? saved, Set<String>? known}) =>
+  LearnProgress copyWith(
+          {int? xp,
+          int? today,
+          int? combo,
+          int? bestCombo,
+          Set<String>? saved,
+          Set<String>? known}) =>
       LearnProgress(
         xp: xp ?? this.xp,
         today: today ?? this.today,
@@ -67,11 +75,17 @@ class LearnProgressNotifier extends Notifier<LearnProgress> {
       ..setString('${_k}day', _todayKey);
     final goal = ref.read(dailyCardGoalProvider);
     final hitGoal = before < goal && state.today >= goal;
-    if (hitGoal) StreakService(_p).checkAndUpdateStreak();
+    if (hitGoal) {
+      StreakService(_p).checkAndUpdateStreak();
+      ref
+          .read(coinsProvider.notifier)
+          .award('goal:$_todayKey', CoinReward.dailyGoal, 'Daily card goal');
+    }
     return hitGoal;
   }
 
   void answered(String id, {required bool correct}) {
+    ref.read(questionsTodayProvider.notifier).add(1);
     final combo = correct ? state.combo + 1 : 0;
     final best = combo > state.bestCombo ? combo : state.bestCombo;
     state = state.copyWith(
@@ -93,4 +107,5 @@ class LearnProgressNotifier extends Notifier<LearnProgress> {
 }
 
 final learnProgressProvider =
-    NotifierProvider<LearnProgressNotifier, LearnProgress>(LearnProgressNotifier.new);
+    NotifierProvider<LearnProgressNotifier, LearnProgress>(
+        LearnProgressNotifier.new);

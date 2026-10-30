@@ -69,7 +69,9 @@ class Attempt {
     final examCode = j['examCode']?.toString() ?? '';
     final title = j['testTitle']?.toString() ?? '';
     return Attempt(
-      title: title.isNotEmpty ? title : (examCode.isEmpty ? 'Practice test' : examCode),
+      title: title.isNotEmpty
+          ? title
+          : (examCode.isEmpty ? 'Practice test' : examCode),
       examCode: examCode,
       mode: j['mode']?.toString() ?? 'exam',
       score: _d(j['score']),

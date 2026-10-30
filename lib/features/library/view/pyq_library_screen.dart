@@ -7,6 +7,7 @@ import '../../../core/widgets/aura/aura_widgets.dart';
 import '../../papers/data/paper.dart';
 import '../../papers/view/paper_widgets.dart';
 import '../../shell/view/app_shell.dart';
+import '../../streak/view/coin_widgets.dart';
 
 /// Searchable list of previous-year papers grouped by year.
 class PyqLibraryScreen extends ConsumerStatefulWidget {
@@ -60,6 +61,7 @@ class _PyqLibraryScreenState extends ConsumerState<PyqLibraryScreen> {
           SliverToBoxAdapter(
             child: ChromeHeader(
               title: 'PYQ Library',
+              actions: const [HiddenCoin('library')],
               subtitle: async.hasValue
                   ? '${async.value!.papers.length} papers from APPSC & APSSB'
                   : 'Previous year papers',

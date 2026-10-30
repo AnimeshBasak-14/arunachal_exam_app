@@ -14,8 +14,13 @@ class InboxMessage {
   final String? link;
   const InboxMessage(this.id, this.title, this.body, this.time, {this.link});
 
-  Map<String, dynamic> toJson() =>
-      {'id': id, 'title': title, 'body': body, 'time': time.toIso8601String(), 'link': link};
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'body': body,
+        'time': time.toIso8601String(),
+        'link': link
+      };
 
   factory InboxMessage.fromJson(Map<String, dynamic> j) => InboxMessage(
         j['id'] as String,
@@ -35,7 +40,8 @@ Future<void> saveInboxMessage(InboxMessage m) async {
   final prefs = await SharedPreferences.getInstance();
   final list = _read(prefs)..removeWhere((e) => e.id == m.id);
   list.insert(0, m);
-  await prefs.setString(_inboxKey, jsonEncode(list.take(50).map((e) => e.toJson()).toList()));
+  await prefs.setString(
+      _inboxKey, jsonEncode(list.take(50).map((e) => e.toJson()).toList()));
 }
 
 List<InboxMessage> _read(SharedPreferences p) {
@@ -74,7 +80,8 @@ class InboxNotifier extends StateNotifier<InboxState> {
 
   Future<void> remove(String id) async {
     final list = _read(_p)..removeWhere((e) => e.id == id);
-    await _p.setString(_inboxKey, jsonEncode(list.map((e) => e.toJson()).toList()));
+    await _p.setString(
+        _inboxKey, jsonEncode(list.map((e) => e.toJson()).toList()));
     reload();
   }
 }

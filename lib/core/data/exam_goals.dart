@@ -41,9 +41,11 @@ class ExamGoal {
 
 const examGoals = <ExamGoal>[
   ExamGoal('appsc-cce', Department.appsc, 'APPSC Combined Competitive Exam'),
-  ExamGoal('appsc-other', Department.appsc, 'APPSC Departmental & Technical Exams'),
+  ExamGoal(
+      'appsc-other', Department.appsc, 'APPSC Departmental & Technical Exams'),
   ExamGoal('apssb-cgl', Department.apssb, 'APSSB Combined Graduate Level'),
-  ExamGoal('apssb-chsl', Department.apssb, 'APSSB Combined Higher Secondary Level'),
+  ExamGoal(
+      'apssb-chsl', Department.apssb, 'APSSB Combined Higher Secondary Level'),
   ExamGoal('apssb-csle', Department.apssb, 'APSSB Combined Secondary Level'),
 ];
 

@@ -6,6 +6,8 @@ import '../../../core/theme/aura.dart';
 import '../../../core/widgets/aura/aura_widgets.dart';
 import '../../plan/data/study_plan_provider.dart';
 import '../data/learn_deck.dart';
+import '../../streak/data/time_tracker.dart';
+import '../../streak/view/coin_widgets.dart';
 import '../data/learn_progress.dart';
 
 /// Big entry card into the swipe feed, with today's goal and XP.
@@ -13,7 +15,11 @@ class LearnHero extends ConsumerWidget {
   final String title;
   final String subtitle;
   final String route;
-  const LearnHero({super.key, required this.title, required this.subtitle, required this.route});
+  const LearnHero(
+      {super.key,
+      required this.title,
+      required this.subtitle,
+      required this.route});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -33,13 +39,19 @@ class LearnHero extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(children: [
-                Expanded(child: Eyebrow('Today · ${p.today}/$goal cards', color: a.onTint.withValues(alpha: 0.75))),
-                Text('${p.xp} XP', style: AuraType.digits(13, a.onTint.withValues(alpha: 0.85))),
+                Expanded(
+                    child: Eyebrow('Today · ${p.today}/$goal cards',
+                        color: a.onTint.withValues(alpha: 0.75))),
+                Text('${p.xp} XP',
+                    style:
+                        AuraType.digits(13, a.onTint.withValues(alpha: 0.85))),
               ]),
               const SizedBox(height: 10),
               Text(title, style: AuraType.serif(25, a.onTint, height: 1.2)),
               const SizedBox(height: 6),
-              Text(subtitle, style: AuraType.sans(14, a.onTint.withValues(alpha: 0.8), height: 1.45)),
+              Text(subtitle,
+                  style: AuraType.sans(14, a.onTint.withValues(alpha: 0.8),
+                      height: 1.45)),
               const SizedBox(height: 16),
               ClipRRect(
                 borderRadius: BorderRadius.circular(99),
@@ -55,7 +67,8 @@ class LearnHero extends ConsumerWidget {
                 Icon(CupertinoIcons.play_fill, size: 15, color: a.onTint),
                 const SizedBox(width: 8),
                 Text(p.today == 0 ? 'Start swiping' : 'Keep going',
-                    style: AuraType.sans(14.5, a.onTint, weight: FontWeight.w600)),
+                    style:
+                        AuraType.sans(14.5, a.onTint, weight: FontWeight.w600)),
               ]),
             ],
           ),
@@ -86,7 +99,8 @@ class TopicTile extends ConsumerWidget {
         children: [
           Icon(icon, size: 22, color: a.accent),
           const SizedBox(height: 14),
-          Text(topic.label, style: AuraType.sans(15, a.ink, weight: FontWeight.w600)),
+          Text(topic.label,
+              style: AuraType.sans(15, a.ink, weight: FontWeight.w600)),
           const SizedBox(height: 2),
           Text('${cards.length} cards', style: AuraType.sans(12.5, a.inkFaint)),
           const SizedBox(height: 10),
@@ -114,7 +128,8 @@ class SavedCardsRow extends ConsumerWidget {
       GlassListRow(
         icon: CupertinoIcons.bookmark,
         title: 'Saved cards',
-        subtitle: n == 0 ? 'Double-tap any card to save it' : '$n saved for revision',
+        subtitle:
+            n == 0 ? 'Double-tap any card to save it' : '$n saved for revision',
         onTap: () => context.push('/learn?saved=1'),
       ),
     ]);
@@ -125,11 +140,24 @@ class SavedCardsRow extends ConsumerWidget {
 class StudyPage extends StatelessWidget {
   final String title;
   final List<Widget> children;
-  const StudyPage({super.key, required this.title, required this.children});
+
+  /// Optional: count time on this page under the "Reading" section, with this
+  /// sub-section ("gk", "english", ...).
+  final String? track;
+
+  /// Optional: this page can hold a hidden coin on some days.
+  final String? coinSpot;
+  const StudyPage({
+    super.key,
+    required this.title,
+    required this.children,
+    this.track,
+    this.coinSpot,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final page = Scaffold(
       body: AuraBackground(
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
@@ -142,15 +170,22 @@ class StudyPage extends StatelessWidget {
                 onPressed: () => context.pop(),
               ),
               title: Text(title),
+              actions: [
+                if (coinSpot != null) HiddenCoin(coinSpot!),
+                const SizedBox(width: 6)
+              ],
             ),
             SliverPadding(
-              padding: EdgeInsets.fromLTRB(AuraSpace.gutter, 8, AuraSpace.gutter,
-                  40 + MediaQuery.paddingOf(context).bottom),
+              padding: EdgeInsets.fromLTRB(AuraSpace.gutter, 8,
+                  AuraSpace.gutter, 40 + MediaQuery.paddingOf(context).bottom),
               sliver: SliverList.list(children: children),
             ),
           ],
         ),
       ),
     );
+    return track == null
+        ? page
+        : TimeTracked(section: 'read', sub: track!, child: page);
   }
 }

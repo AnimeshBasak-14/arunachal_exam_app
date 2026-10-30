@@ -11,6 +11,8 @@ import '../../../core/services/streak_service.dart';
 import '../../../core/theme/aura.dart';
 import '../../../core/widgets/aura/aura_widgets.dart';
 import '../../learn/data/learn_deck.dart';
+import '../../streak/data/time_tracker.dart';
+import '../../streak/data/questions_today.dart';
 
 /// Timed English test: 15 random grammar and vocabulary questions, 30
 /// seconds each. Results are saved to test history.
@@ -118,13 +120,20 @@ class _GrammarQuizScreenState extends ConsumerState<GrammarQuizScreen> {
       'completedAt': date,
     };
     final storage = ref.read(storageServiceProvider);
+    ref.read(questionsTodayProvider.notifier).add(answered);
     StreakService(ref.read(sharedPreferencesProvider)).checkAndUpdateStreak();
     await storage
         .saveQuizHistory([jsonEncode(record), ...storage.getQuizHistory()]);
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => TimeTracked(
+        section: 'mock',
+        sub: 'english',
+        child: _buildContent(context),
+      );
+
+  Widget _buildContent(BuildContext context) {
     final a = context.aura;
     return AuraBackground(
       child: Scaffold(
