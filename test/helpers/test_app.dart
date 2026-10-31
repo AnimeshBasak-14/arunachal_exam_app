@@ -44,7 +44,8 @@ void phoneViewport(WidgetTester tester, {Size size = const Size(360, 780)}) {
   addTearDown(tester.view.resetDevicePixelRatio);
 }
 
-Future<SharedPreferences> testPrefs([Map<String, Object> extra = const {}]) async {
+Future<SharedPreferences> testPrefs(
+    [Map<String, Object> extra = const {}]) async {
   SharedPreferences.setMockInitialValues({
     'cached_papers_pyq_v3': cachedPyqs,
     'cached_papers_mock_v3': cachedMocks,
@@ -61,7 +62,8 @@ List<Override> testOverrides(SharedPreferences prefs) => [
 /// Wraps [child] with 130% text, the owner's phone setting.
 Widget scaled(Widget child, {double scale = 1.3}) => Builder(
       builder: (context) => MediaQuery(
-        data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(scale)),
+        data: MediaQuery.of(context)
+            .copyWith(textScaler: TextScaler.linear(scale)),
         child: child,
       ),
     );

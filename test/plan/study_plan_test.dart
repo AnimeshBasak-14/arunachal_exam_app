@@ -61,7 +61,8 @@ void main() {
       expect(plan.deadlineLabel(today), '1 day to your exam');
     });
 
-    test('returns positive count for future dates across month/year boundaries', () {
+    test('returns positive count for future dates across month/year boundaries',
+        () {
       final planNextMonth = StudyPlan(examDate: DateTime(2026, 11, 15));
       expect(planNextMonth.daysUntilExam(today), 17);
       expect(planNextMonth.deadlineLabel(today), '17 days to your exam');

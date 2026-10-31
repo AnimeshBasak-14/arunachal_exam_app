@@ -34,12 +34,16 @@ void runInitQuestionMetadataBaseline({
 
       final likes = prefs.getInt('likes_${q.id}_$i') ?? (i * 3 + 2);
       commentLikesCount.putIfAbsent(q.id, () => {})[i] = likes;
-      commentUserLiked.putIfAbsent(q.id, () => {})[i] = prefs.getBool('user_liked_${q.id}_$i') ?? false;
+      commentUserLiked.putIfAbsent(q.id, () => {})[i] =
+          prefs.getBool('user_liked_${q.id}_$i') ?? false;
 
       for (int j = 0; j < repliesList.length; j++) {
         final rLikes = prefs.getInt('reply_likes_${q.id}_${i}_$j') ?? 1;
-        replyLikesCount.putIfAbsent(q.id, () => {}).putIfAbsent(i, () => {})[j] = rLikes;
-        replyUserLiked.putIfAbsent(q.id, () => {}).putIfAbsent(i, () => {})[j] = prefs.getBool('user_reply_liked_${q.id}_${i}_$j') ?? false;
+        replyLikesCount
+            .putIfAbsent(q.id, () => {})
+            .putIfAbsent(i, () => {})[j] = rLikes;
+        replyUserLiked.putIfAbsent(q.id, () => {}).putIfAbsent(i, () => {})[j] =
+            prefs.getBool('user_reply_liked_${q.id}_${i}_$j') ?? false;
       }
     }
   }
@@ -91,7 +95,8 @@ void runInitQuestionMetadataOptimized({
         for (int j = 0; j < repliesList.length; j++) {
           final replyKeyPrefix = '${keyPrefix}_$j';
           iReplyLikes[j] = prefs.getInt('reply_likes_$replyKeyPrefix') ?? 1;
-          iReplyUserLiked[j] = prefs.getBool('user_reply_liked_$replyKeyPrefix') ?? false;
+          iReplyUserLiked[j] =
+              prefs.getBool('user_reply_liked_$replyKeyPrefix') ?? false;
         }
 
         qReplyLikesCount[i] = iReplyLikes;
@@ -120,7 +125,8 @@ void main() {
 
     for (int qIdx = 0; qIdx < questionCount; qIdx++) {
       final qId = 'question_$qIdx';
-      final initialComments = List.generate(commentsPerQuestion, (i) => 'Comment $i for $qId');
+      final initialComments =
+          List.generate(commentsPerQuestion, (i) => 'Comment $i for $qId');
       questions.add(Question(
         id: qId,
         examCode: 'APSSB-CGLE',
@@ -135,7 +141,8 @@ void main() {
       ));
 
       for (int i = 0; i < commentsPerQuestion; i++) {
-        final repliesList = List.generate(repliesPerComment, (j) => 'Reply $j to comment $i');
+        final repliesList =
+            List.generate(repliesPerComment, (j) => 'Reply $j to comment $i');
         values['replies_${qId}_$i'] = repliesList;
         values['likes_${qId}_$i'] = i * 3 + 2;
         values['user_liked_${qId}_$i'] = i % 2 == 0;
@@ -152,29 +159,35 @@ void main() {
     final storage = StorageService(prefs);
 
     // Verify both produce identical outputs
-    final baselineData = _runAndCapture(runInitQuestionMetadataBaseline, questions, storage, prefs);
-    final optimizedData = _runAndCapture(runInitQuestionMetadataOptimized, questions, storage, prefs);
+    final baselineData = _runAndCapture(
+        runInitQuestionMetadataBaseline, questions, storage, prefs);
+    final optimizedData = _runAndCapture(
+        runInitQuestionMetadataOptimized, questions, storage, prefs);
 
     expect(optimizedData, equals(baselineData));
 
     // Warm up
     for (int run = 0; run < 10; run++) {
-      _runAndCapture(runInitQuestionMetadataBaseline, questions, storage, prefs);
-      _runAndCapture(runInitQuestionMetadataOptimized, questions, storage, prefs);
+      _runAndCapture(
+          runInitQuestionMetadataBaseline, questions, storage, prefs);
+      _runAndCapture(
+          runInitQuestionMetadataOptimized, questions, storage, prefs);
     }
 
     // Benchmark loop baseline
     const iterations = 100;
     final swBaseline = Stopwatch()..start();
     for (int run = 0; run < iterations; run++) {
-      _runAndCapture(runInitQuestionMetadataBaseline, questions, storage, prefs);
+      _runAndCapture(
+          runInitQuestionMetadataBaseline, questions, storage, prefs);
     }
     swBaseline.stop();
 
     // Benchmark loop optimized
     final swOptimized = Stopwatch()..start();
     for (int run = 0; run < iterations; run++) {
-      _runAndCapture(runInitQuestionMetadataOptimized, questions, storage, prefs);
+      _runAndCapture(
+          runInitQuestionMetadataOptimized, questions, storage, prefs);
     }
     swOptimized.stop();
 
@@ -182,8 +195,10 @@ void main() {
     final optimizedAvgUs = swOptimized.elapsedMicroseconds / iterations;
     final speedup = ((baselineAvgUs - optimizedAvgUs) / baselineAvgUs) * 100;
 
-    debugPrint('BENCHMARK_BASELINE: ${swBaseline.elapsedMilliseconds}ms total (${baselineAvgUs.toStringAsFixed(2)} us/run)');
-    debugPrint('BENCHMARK_OPTIMIZED: ${swOptimized.elapsedMilliseconds}ms total (${optimizedAvgUs.toStringAsFixed(2)} us/run)');
+    debugPrint(
+        'BENCHMARK_BASELINE: ${swBaseline.elapsedMilliseconds}ms total (${baselineAvgUs.toStringAsFixed(2)} us/run)');
+    debugPrint(
+        'BENCHMARK_OPTIMIZED: ${swOptimized.elapsedMilliseconds}ms total (${optimizedAvgUs.toStringAsFixed(2)} us/run)');
     debugPrint('BENCHMARK_SPEEDUP: ${speedup.toStringAsFixed(2)}% faster');
   });
 }

@@ -9,7 +9,8 @@ void main() {
       expect(learnDeck[t], isNotEmpty, reason: t.name);
     }
     // ignore: avoid_print
-    print({for (final e in learnDeck.entries) e.key.name: e.value.length}..['total'] = all.length);
+    print({for (final e in learnDeck.entries) e.key.name: e.value.length}
+      ..['total'] = all.length);
   });
 
   test('card ids are unique', () {
@@ -20,7 +21,8 @@ void main() {
   test('quizzes are well formed', () {
     for (final c in all.where((c) => c.kind == CardKind.quiz)) {
       expect(c.options.length, greaterThanOrEqualTo(2), reason: c.id);
-      expect(c.options.toSet().length, c.options.length, reason: '${c.id} has duplicate options');
+      expect(c.options.toSet().length, c.options.length,
+          reason: '${c.id} has duplicate options');
       expect(c.answer, inInclusiveRange(0, c.options.length - 1), reason: c.id);
       expect(c.options.every((o) => o.trim().isNotEmpty), isTrue, reason: c.id);
     }

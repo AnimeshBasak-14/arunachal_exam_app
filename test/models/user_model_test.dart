@@ -67,14 +67,16 @@ void main() {
         expect(updatedName.name, 'John Updated');
         expect(updatedName.email, initialUser.email);
 
-        final updatedEmail = initialUser.copyWith(email: 'newemail@example.com');
+        final updatedEmail =
+            initialUser.copyWith(email: 'newemail@example.com');
         expect(updatedEmail.email, 'newemail@example.com');
         expect(updatedEmail.name, initialUser.name);
 
         final updatedPhone = initialUser.copyWith(phone: '1112223333');
         expect(updatedPhone.phone, '1112223333');
 
-        final updatedProfilePic = initialUser.copyWith(profilePic: 'https://example.com/new.png');
+        final updatedProfilePic =
+            initialUser.copyWith(profilePic: 'https://example.com/new.png');
         expect(updatedProfilePic.profilePic, 'https://example.com/new.png');
 
         final updatedDob = initialUser.copyWith(dob: '1992-02-02');

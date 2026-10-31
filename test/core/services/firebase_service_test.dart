@@ -40,7 +40,8 @@ void main() {
       );
     });
 
-    test('successfully logs screen view when analytics call succeeds', () async {
+    test('successfully logs screen view when analytics call succeeds',
+        () async {
       const screenName = 'HomeScreen';
 
       await firebaseService.logScreenView(screenName);
@@ -49,7 +50,8 @@ void main() {
       expect(mockAnalytics.loggedScreenName, equals(screenName));
     });
 
-    test('handles error gracefully when analytics throws an exception', () async {
+    test('handles error gracefully when analytics throws an exception',
+        () async {
       mockAnalytics.shouldThrow = true;
       const screenName = 'ErrorScreen';
 

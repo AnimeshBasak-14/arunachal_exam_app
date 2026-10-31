@@ -1,61 +1,23 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/services/service_providers.dart';
+import 'dart:math' as math;
+import '../../streak/data/day_key.dart';
 import '../../../data/chapter_photos.dart';
 import '../../../data/photo_match.dart';
 import 'learn_deck.dart';
 
-/// Test feature: show a related photo on GK cards. Off by default because
-/// it uses more mobile data.
-final cardPhotosProvider =
-    NotifierProvider<CardPhotosNotifier, bool>(CardPhotosNotifier.new);
+/// Share of matching cards that show their photo on a given day. Less than
+/// all of them on purpose: a photo that may or may not appear keeps swiping
+/// a little surprising.
+const photoChance = 0.65;
 
-class CardPhotosNotifier extends Notifier<bool> {
-  static const key = 'beta_card_photos';
-
-  @override
-  bool build() => ref.watch(sharedPreferencesProvider).getBool(key) ?? false;
-
-  Future<void> set(bool on) async {
-    state = on;
-    await ref.read(sharedPreferencesProvider).setBool(key, on);
+/// Whether card [c] shows its photo today. Random, but fixed for the day so a
+/// card does not change when you swipe back to it.
+bool photoShownToday(LearnCard c, {DateTime? now}) {
+  final d = now ?? DateTime.now();
+  var h = 2166136261; // FNV-1a: the same on every run and device
+  for (final u in '${c.id}|${dayKey(d)}'.codeUnits) {
+    h = ((h ^ u) * 16777619) & 0x7fffffff;
   }
-}
-
-/// Subjects that can show pictures. English and vocabulary never do.
-const photoTopics = [
-  LearnTopic.arunachal,
-  LearnTopic.history,
-  LearnTopic.polity,
-  LearnTopic.geography,
-  LearnTopic.economy,
-  LearnTopic.environment,
-  LearnTopic.science,
-];
-
-/// Which subjects show pictures once the feature is on. All by default.
-final cardPhotoTopicsProvider =
-    NotifierProvider<CardPhotoTopicsNotifier, Set<LearnTopic>>(
-        CardPhotoTopicsNotifier.new);
-
-class CardPhotoTopicsNotifier extends Notifier<Set<LearnTopic>> {
-  static const key = 'beta_card_photo_topics';
-
-  @override
-  Set<LearnTopic> build() {
-    final saved = ref.watch(sharedPreferencesProvider).getStringList(key);
-    if (saved == null) return photoTopics.toSet();
-    return {
-      for (final t in photoTopics)
-        if (saved.contains(t.name)) t
-    };
-  }
-
-  Future<void> toggle(LearnTopic t) async {
-    state = state.contains(t) ? ({...state}..remove(t)) : {...state, t};
-    await ref
-        .read(sharedPreferencesProvider)
-        .setStringList(key, [for (final x in state) x.name]);
-  }
+  return math.Random(h).nextDouble() < photoChance;
 }
 
 final _chapterId = RegExp(r'^([a-z]+\d+)\.');

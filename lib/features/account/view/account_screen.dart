@@ -2,8 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../learn/data/card_photos.dart';
-import '../../learn/data/learn_deck.dart';
 import '../../../core/data/exam_goals.dart';
 import '../../../core/theme/aura.dart';
 import '../../../core/theme/theme_mode_provider.dart';
@@ -121,8 +119,6 @@ class AccountScreen extends ConsumerWidget {
     final goal = ref.watch(examGoalProvider);
     final plan = ref.watch(studyPlanProvider);
     final mode = ref.watch(themeModeProvider);
-    final photosOn = ref.watch(cardPhotosProvider);
-    final photoTopicSet = ref.watch(cardPhotoTopicsProvider);
     final name = (user?.name ?? '').trim();
     const modes = [ThemeMode.system, ThemeMode.light, ThemeMode.dark];
 
@@ -220,80 +216,6 @@ class AccountScreen extends ConsumerWidget {
                     ),
                 ],
               ),
-            ),
-            const SizedBox(height: 26),
-            const Eyebrow('Test features'),
-            const SizedBox(height: 10),
-            GlassCard(
-              padding: const EdgeInsets.fromLTRB(16, 12, 10, 12),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(children: [
-                      Icon(CupertinoIcons.photo_on_rectangle,
-                          size: 20, color: a.accent),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(children: [
-                              Flexible(
-                                child: Text('Pictures on cards',
-                                    style: AuraType.sans(15, a.ink,
-                                        weight: FontWeight.w500)),
-                              ),
-                              const SizedBox(width: 8),
-                              Tag('Beta', color: a.review),
-                            ]),
-                            const SizedBox(height: 3),
-                            Text(
-                                'Cards feel empty? Show a related photo when one fits. Uses more mobile data.',
-                                style: AuraType.sans(12.5, a.inkMuted,
-                                    height: 1.45)),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Switch.adaptive(
-                        value: photosOn,
-                        onChanged: (v) =>
-                            ref.read(cardPhotosProvider.notifier).set(v),
-                      ),
-                    ]),
-                    AnimatedSize(
-                      duration: const Duration(milliseconds: 250),
-                      curve: Curves.easeOutCubic,
-                      alignment: Alignment.topCenter,
-                      child: !photosOn
-                          ? const SizedBox(width: double.infinity)
-                          : Padding(
-                              padding: const EdgeInsets.fromLTRB(34, 14, 6, 4),
-                              child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Eyebrow('Show pictures in'),
-                                    const SizedBox(height: 10),
-                                    Wrap(spacing: 8, runSpacing: 8, children: [
-                                      for (final t in photoTopics)
-                                        FilterChip(
-                                          label: Text(t.label),
-                                          selected: photoTopicSet.contains(t),
-                                          onSelected: (_) => ref
-                                              .read(cardPhotoTopicsProvider
-                                                  .notifier)
-                                              .toggle(t),
-                                        ),
-                                    ]),
-                                    const SizedBox(height: 10),
-                                    Text(
-                                        'Not every card gets one, only cards where a matching photo exists: a battle, a person, an animal, a place. English and vocabulary never show pictures.',
-                                        style: AuraType.sans(12, a.inkFaint,
-                                            height: 1.45)),
-                                  ]),
-                            ),
-                    ),
-                  ]),
             ),
             const SizedBox(height: 26),
             const Eyebrow('Account'),

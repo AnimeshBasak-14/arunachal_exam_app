@@ -143,8 +143,6 @@ class _LearnFeedScreenState extends ConsumerState<LearnFeedScreen> {
 
   Widget _buildContent(BuildContext context) {
     final a = context.aura;
-    final showPhotos = ref.watch(cardPhotosProvider);
-    final photoTopicSet = ref.watch(cardPhotoTopicsProvider);
     final progress = ref.watch(learnProgressProvider);
     final top = MediaQuery.paddingOf(context).top;
 
@@ -192,7 +190,7 @@ class _LearnFeedScreenState extends ConsumerState<LearnFeedScreen> {
                   return _CardPage(
                     key: ValueKey('$i-${_feed[i].id}'),
                     card: _feed[i],
-                    photo: showPhotos && photoTopicSet.contains(_feed[i].topic)
+                    photo: photoShownToday(_feed[i])
                         ? photoForCard(_feed[i])
                         : null,
                     saved: progress.saved.contains(_feed[i].id),

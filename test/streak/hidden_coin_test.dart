@@ -30,7 +30,8 @@ void main() {
     final spot = hiddenSpotsFor(DateTime.now()).first;
     final c = await pump(tester, spot);
 
-    expect(find.bySemanticsLabel('Hidden coin. Tap to collect.'), findsOneWidget);
+    expect(
+        find.bySemanticsLabel('Hidden coin. Tap to collect.'), findsOneWidget);
     await tester.tap(find.byType(HiddenCoin));
     await tester.pump();
 
@@ -60,6 +61,7 @@ void main() {
       ),
     ));
     expect(find.text('48'), findsOneWidget);
-    expect(find.bySemanticsLabel('Streak and coins. 48 coins.'), findsOneWidget);
+    expect(
+        find.bySemanticsLabel('Streak and coins. 48 coins.'), findsOneWidget);
   });
 }

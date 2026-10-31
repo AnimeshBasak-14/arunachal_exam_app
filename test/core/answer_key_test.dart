@@ -31,7 +31,8 @@ void main() {
     });
 
     test('correct_option takes precedence over correct_answer', () {
-      final q = Question.fromSupabase(_row(correctAnswer: 'a', correctOption: 'c'));
+      final q =
+          Question.fromSupabase(_row(correctAnswer: 'a', correctOption: 'c'));
       expect(q.correctAnswer, 'c');
     });
   });

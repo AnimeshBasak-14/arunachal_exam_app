@@ -18,7 +18,11 @@ class _FakeReminderService implements StudyReminderService {
   @override
   Future<bool> requestPermission() async => granted;
   @override
-  Future<bool> scheduleDailyReminder({required int hour, required int minute, required int cardGoal}) async => true;
+  Future<bool> scheduleDailyReminder(
+          {required int hour,
+          required int minute,
+          required int cardGoal}) async =>
+      true;
   @override
   Future<bool> cancelDailyReminder() async => true;
 }
@@ -88,7 +92,8 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Dashboard shows the PYQ of the day and no old streak card', (tester) async {
+  testWidgets('Dashboard shows the PYQ of the day and no old streak card',
+      (tester) async {
     phoneViewport(tester);
     final prefs = await testPrefs({'exam_goal_id': 'apssb-cgl'});
     final fakeReminder = _FakeReminderService();

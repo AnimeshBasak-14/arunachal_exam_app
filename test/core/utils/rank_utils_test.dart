@@ -49,7 +49,8 @@ void main() {
       });
 
       test('getTierIcon returns correct tier icon', () {
-        expect(RankUtils.getTierIcon(3000), equals(Icons.workspace_premium_rounded));
+        expect(RankUtils.getTierIcon(3000),
+            equals(Icons.workspace_premium_rounded));
         expect(RankUtils.getTierIcon(0), equals(Icons.shield_outlined));
       });
     });

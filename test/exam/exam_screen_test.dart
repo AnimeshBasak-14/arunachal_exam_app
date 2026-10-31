@@ -12,7 +12,9 @@ import 'package:arunachal_exam_app/features/exam/view/exam_screen.dart';
 import 'package:arunachal_exam_app/features/exam/view/result_screen.dart';
 import '../helpers/test_app.dart';
 
-Question q(String id, String text, String key, {String subject = 'General Studies'}) => Question(
+Question q(String id, String text, String key,
+        {String subject = 'General Studies'}) =>
+    Question(
       id: id,
       examCode: 'APSSB-CGLE',
       year: 2024,
@@ -30,7 +32,8 @@ final questions = [
   q('q3', 'Question whose answer key is not verified yet?', ''),
 ];
 
-Future<void> pumpExam(WidgetTester tester, {bool study = false, ThemeData? theme}) async {
+Future<void> pumpExam(WidgetTester tester,
+    {bool study = false, ThemeData? theme}) async {
   final prefs = await testPrefs();
   final router = GoRouter(routes: [
     GoRoute(
@@ -49,7 +52,8 @@ Future<void> pumpExam(WidgetTester tester, {bool study = false, ThemeData? theme
       builder: (_, s) => ResultScreen(
           attempt: Attempt.fromJson(Map<String, dynamic>.from(s.extra as Map))),
     ),
-    GoRoute(path: '/home', builder: (_, __) => const Scaffold(body: Text('HOME'))),
+    GoRoute(
+        path: '/home', builder: (_, __) => const Scaffold(body: Text('HOME'))),
   ]);
   await tester.pumpWidget(ProviderScope(
     overrides: testOverrides(prefs),
@@ -63,12 +67,14 @@ Future<void> pumpExam(WidgetTester tester, {bool study = false, ThemeData? theme
 }
 
 void main() {
-  testWidgets('exam flow: answer, review palette, submit, see the right score', (tester) async {
+  testWidgets('exam flow: answer, review palette, submit, see the right score',
+      (tester) async {
     phoneViewport(tester);
     await pumpExam(tester);
 
     expect(find.text('10:00'), findsOneWidget);
-    expect(find.textContaining('Question 1', findRichText: true), findsOneWidget);
+    expect(
+        find.textContaining('Question 1', findRichText: true), findsOneWidget);
     expect(find.text('Capital of Arunachal Pradesh?'), findsOneWidget);
 
     await tester.tap(find.text('Itanagar')); // correct
@@ -103,7 +109,8 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('study mode reveals the key after answering and locks the answer', (tester) async {
+  testWidgets('study mode reveals the key after answering and locks the answer',
+      (tester) async {
     phoneViewport(tester);
     await pumpExam(tester, study: true);
 
@@ -120,7 +127,8 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('history record is saved with questions and mode', (tester) async {
+  testWidgets('history record is saved with questions and mode',
+      (tester) async {
     phoneViewport(tester);
     await pumpExam(tester);
     await tester.tap(find.text('Itanagar'));
@@ -132,7 +140,8 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Submit'));
     await settle(tester, 8);
 
-    final container = ProviderScope.containerOf(tester.element(find.byType(ResultScreen)));
+    final container =
+        ProviderScope.containerOf(tester.element(find.byType(ResultScreen)));
     final prefs = container.read(sharedPreferencesProvider);
     final saved = prefs.getStringList('quiz_history')!;
     final record = jsonDecode(saved.first) as Map<String, dynamic>;

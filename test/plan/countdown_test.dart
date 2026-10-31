@@ -1,7 +1,8 @@
 import 'package:arunachal_exam_app/features/plan/data/countdown.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-String show(Countdown c) => c.segments.map((s) => '${s.value} ${s.label}').join(' : ');
+String show(Countdown c) =>
+    c.segments.map((s) => '${s.value} ${s.label}').join(' : ');
 
 void main() {
   final exam = DateTime(2026, 12, 16);
@@ -37,7 +38,8 @@ void main() {
   });
 
   test('exactly 7 days is still DAYS : HOURS', () {
-    expect(show(examCountdown(DateTime(2026, 12, 9), exam)), '07 DAYS : 00 HRS');
+    expect(
+        show(examCountdown(DateTime(2026, 12, 9), exam)), '07 DAYS : 00 HRS');
   });
 
   test('under 7 days shows DAYS : HOURS : MINUTES', () {
@@ -54,17 +56,21 @@ void main() {
 
   test('exactly 3 days is minutes, just under is seconds', () {
     expect(examCountdown(DateTime(2026, 12, 13), exam).segments.length, 3);
-    expect(examCountdown(DateTime(2026, 12, 13, 0, 0, 1), exam).segments.length, 4);
+    expect(examCountdown(DateTime(2026, 12, 13, 0, 0, 1), exam).segments.length,
+        4);
   });
 
   test('exam day and passed dates', () {
-    expect(examCountdown(DateTime(2026, 12, 16, 8), exam).state, CountdownState.examDay);
-    expect(examCountdown(DateTime(2026, 12, 17), exam).state, CountdownState.passed);
+    expect(examCountdown(DateTime(2026, 12, 16, 8), exam).state,
+        CountdownState.examDay);
+    expect(examCountdown(DateTime(2026, 12, 17), exam).state,
+        CountdownState.passed);
     expect(examCountdown(DateTime(2027, 1, 1), exam).segments, isEmpty);
   });
 
   test('time of the exam date argument is ignored', () {
-    final a = examCountdown(DateTime(2026, 12, 2), DateTime(2026, 12, 16, 23, 59));
+    final a =
+        examCountdown(DateTime(2026, 12, 2), DateTime(2026, 12, 16, 23, 59));
     final b = examCountdown(DateTime(2026, 12, 2), DateTime(2026, 12, 16));
     expect(show(a), show(b));
   });

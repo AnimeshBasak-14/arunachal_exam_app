@@ -8,7 +8,8 @@ void main() {
   group('topicForSubject mapping', () {
     test('maps common subjects correctly', () {
       expect(topicForSubject('Polity'), LearnTopic.polity);
-      expect(topicForSubject('Indian Polity & Constitution'), LearnTopic.polity);
+      expect(
+          topicForSubject('Indian Polity & Constitution'), LearnTopic.polity);
       expect(topicForSubject('Modern History'), LearnTopic.history);
       expect(topicForSubject('Geography of India'), LearnTopic.geography);
       expect(topicForSubject('Indian Economy'), LearnTopic.economy);

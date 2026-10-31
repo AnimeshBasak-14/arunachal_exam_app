@@ -30,15 +30,19 @@ class FakeGateway implements AuthGateway {
   @override
   Future<AuthIdentity> signInWithEmail(String email, String password) async {
     if (accounts[email] != password) {
-      throw const AuthFailure('Email or password is incorrect.', 'invalid-credential');
+      throw const AuthFailure(
+          'Email or password is incorrect.', 'invalid-credential');
     }
     current = email;
     return AuthIdentity(email);
   }
 
   @override
-  Future<AuthIdentity> createAccount(String email, String password, String name) async {
-    if (accounts.containsKey(email)) throw const AuthFailure('exists', 'email-already-in-use');
+  Future<AuthIdentity> createAccount(
+      String email, String password, String name) async {
+    if (accounts.containsKey(email)) {
+      throw const AuthFailure('exists', 'email-already-in-use');
+    }
     accounts[email] = password;
     current = email;
     return AuthIdentity(email, displayName: name);
@@ -55,7 +59,9 @@ class FakeGateway implements AuthGateway {
 
   @override
   Future<void> changePassword(String c, String n) async {
-    if (accounts[current] != c) throw const AuthFailure('wrong', 'invalid-credential');
+    if (accounts[current] != c) {
+      throw const AuthFailure('wrong', 'invalid-credential');
+    }
     accounts[current!] = n;
   }
 
@@ -94,10 +100,11 @@ void main() {
     gateway = FakeGateway();
     when(() => secure.read(key: any(named: 'key')))
         .thenAnswer((i) async => secureData[i.namedArguments[#key] as String]);
-    when(() => secure.write(key: any(named: 'key'), value: any(named: 'value'))).thenAnswer(
-        (i) async => secureData[i.namedArguments[#key] as String] = i.namedArguments[#value] as String);
-    when(() => secure.delete(key: any(named: 'key')))
-        .thenAnswer((i) async => secureData.remove(i.namedArguments[#key] as String));
+    when(() => secure.write(key: any(named: 'key'), value: any(named: 'value')))
+        .thenAnswer((i) async => secureData[i.namedArguments[#key] as String] =
+            i.namedArguments[#value] as String);
+    when(() => secure.delete(key: any(named: 'key'))).thenAnswer(
+        (i) async => secureData.remove(i.namedArguments[#key] as String));
     when(() => firebase.fetchUserProfile(any())).thenAnswer((_) async => null);
     when(() => firebase.syncUserProfile(any())).thenAnswer((_) async {});
     when(() => firebase.logLogin(any())).thenAnswer((_) async {});
@@ -114,7 +121,10 @@ void main() {
   test('register creates a Firebase account and a profile', () async {
     final vm = await make();
     final ok = await vm.register(
-        name: 'Tashi Bam', email: 'Tashi@Mail.com ', password: 'secret123', confirmPassword: 'secret123');
+        name: 'Tashi Bam',
+        email: 'Tashi@Mail.com ',
+        password: 'secret123',
+        confirmPassword: 'secret123');
     expect(ok, isTrue);
     expect(gateway.accounts['tashi@mail.com'], 'secret123');
     expect(vm.state.user?.name, 'Tashi Bam');
@@ -122,11 +132,22 @@ void main() {
     verify(() => firebase.syncUserProfile(any())).called(1);
   });
 
-  test('register rejects short or mismatched passwords before calling Firebase', () async {
+  test('register rejects short or mismatched passwords before calling Firebase',
+      () async {
     final vm = await make();
-    expect(await vm.register(name: 'A', email: 'a@b.com', password: 'short', confirmPassword: 'short'), isFalse);
     expect(
-        await vm.register(name: 'A', email: 'a@b.com', password: 'longenough', confirmPassword: 'different'),
+        await vm.register(
+            name: 'A',
+            email: 'a@b.com',
+            password: 'short',
+            confirmPassword: 'short'),
+        isFalse);
+    expect(
+        await vm.register(
+            name: 'A',
+            email: 'a@b.com',
+            password: 'longenough',
+            confirmPassword: 'different'),
         isFalse);
     expect(gateway.accounts, isEmpty);
   });
@@ -141,8 +162,12 @@ void main() {
 
   test('login restores the Firestore profile', () async {
     gateway.accounts['a@b.com'] = 'pass1234';
-    when(() => firebase.fetchUserProfile('a@b.com')).thenAnswer(
-        (_) async => UserModel(name: 'Remote Name', email: 'a@b.com', phone: '9000000000', rating: 40));
+    when(() => firebase.fetchUserProfile('a@b.com')).thenAnswer((_) async =>
+        UserModel(
+            name: 'Remote Name',
+            email: 'a@b.com',
+            phone: '9000000000',
+            rating: 40));
     final vm = await make();
     expect(await vm.login('a@b.com', 'pass1234'), isTrue);
     expect(vm.state.user?.name, 'Remote Name');
@@ -171,7 +196,8 @@ void main() {
   });
 
   test('Google sign-in creates a profile for a new account', () async {
-    gateway.googleAccount = const AuthIdentity('new.user@gmail.com', displayName: 'New User');
+    gateway.googleAccount =
+        const AuthIdentity('new.user@gmail.com', displayName: 'New User');
     final vm = await make();
     expect(await vm.signInWithGoogle(), isTrue);
     expect(vm.state.user?.email, 'new.user@gmail.com');
@@ -185,7 +211,11 @@ void main() {
   });
 
   test('a saved session without a Firebase user is signed out', () async {
-    final vm = await make({'is_logged_in': true, 'user_email': 'ghost@b.com', 'user_name': 'Ghost'});
+    final vm = await make({
+      'is_logged_in': true,
+      'user_email': 'ghost@b.com',
+      'user_name': 'Ghost'
+    });
     expect(vm.state.isLoggedIn, isTrue);
     await pumpEventQueue();
     expect(vm.state.isLoggedIn, isFalse);
@@ -193,12 +223,17 @@ void main() {
 
   test('a saved session backed by Firebase stays signed in', () async {
     gateway.current = 'real@b.com';
-    final vm = await make({'is_logged_in': true, 'user_email': 'real@b.com', 'user_name': 'Real'});
+    final vm = await make({
+      'is_logged_in': true,
+      'user_email': 'real@b.com',
+      'user_name': 'Real'
+    });
     await pumpEventQueue();
     expect(vm.state.isLoggedIn, isTrue);
   });
 
-  test('delete account needs the right password, then removes data and sign-in', () async {
+  test('delete account needs the right password, then removes data and sign-in',
+      () async {
     gateway.accounts['a@b.com'] = 'pass1234';
     final vm = await make();
     await vm.login('a@b.com', 'pass1234');

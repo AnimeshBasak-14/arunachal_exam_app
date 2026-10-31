@@ -8,10 +8,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-Future<ProviderContainer> container([Map<String, Object> initial = const {}]) async {
+Future<ProviderContainer> container(
+    [Map<String, Object> initial = const {}]) async {
   SharedPreferences.setMockInitialValues(initial);
   final prefs = await SharedPreferences.getInstance();
-  return ProviderContainer(overrides: [sharedPreferencesProvider.overrideWithValue(prefs)]);
+  return ProviderContainer(
+      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)]);
 }
 
 void main() {
@@ -29,12 +31,16 @@ void main() {
     });
 
     test('day numbers are consecutive across month and year ends', () {
-      expect(dayNumber(DateTime(2026, 1, 1)) - dayNumber(DateTime(2025, 12, 31)), 1);
-      expect(dayNumber(DateTime(2026, 3, 1)) - dayNumber(DateTime(2026, 2, 28)), 1);
+      expect(
+          dayNumber(DateTime(2026, 1, 1)) - dayNumber(DateTime(2025, 12, 31)),
+          1);
+      expect(dayNumber(DateTime(2026, 3, 1)) - dayNumber(DateTime(2026, 2, 28)),
+          1);
     });
 
     test('time of day does not change the day number', () {
-      expect(dayNumber(DateTime(2026, 5, 1, 0, 1)), dayNumber(DateTime(2026, 5, 1, 23, 59)));
+      expect(dayNumber(DateTime(2026, 5, 1, 0, 1)),
+          dayNumber(DateTime(2026, 5, 1, 23, 59)));
     });
   });
 
@@ -61,7 +67,8 @@ void main() {
             year: 2023,
             subject: 'GK',
             questionText: text,
-            options: options ?? const ['(a) Brahmaputra', '(b) Yarlung Tsangpo'],
+            options:
+                options ?? const ['(a) Brahmaputra', '(b) Yarlung Tsangpo'],
             correctAnswer: key,
             officialAnswer: key,
             solution: '',
@@ -91,7 +98,8 @@ void main() {
       final c = await container();
       c.read(coinsProvider.notifier).award('k1', 7, 'a');
       final prefs = c.read(sharedPreferencesProvider);
-      final c2 = ProviderContainer(overrides: [sharedPreferencesProvider.overrideWithValue(prefs)]);
+      final c2 = ProviderContainer(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)]);
       expect(c2.read(coinsProvider).balance, 7);
       expect(c2.read(coinsProvider.notifier).award('k1', 7, 'a'), isFalse);
     });
@@ -102,13 +110,18 @@ void main() {
       expect(c.read(coinsProvider).balance, 0);
     });
 
-    test('hidden coins: three distinct spots, stable per day, varying across days', () {
+    test(
+        'hidden coins: three distinct spots, stable per day, varying across days',
+        () {
       final d = DateTime(2026, 11, 2);
       final spots = hiddenSpotsFor(d);
       expect(spots.length, 3);
       expect(spots.toSet().length, 3);
       expect(hiddenSpotsFor(DateTime(2026, 11, 2, 18)), spots);
-      final seen = {for (int i = 0; i < 20; i++) hiddenSpotsFor(DateTime(2026, 11, 1 + i)).join(',')};
+      final seen = {
+        for (int i = 0; i < 20; i++)
+          hiddenSpotsFor(DateTime(2026, 11, 1 + i)).join(',')
+      };
       expect(seen.length, greaterThan(5));
       expect(hiddenSpotsFor(d).every(hiddenCoinSpots.contains), isTrue);
     });
@@ -129,7 +142,9 @@ void main() {
 
     test('a wrong answer still earns the smaller reward', () async {
       final c = await container();
-      c.read(dailyLogProvider.notifier).answer(dayKey(DateTime.now()), 'a', false);
+      c
+          .read(dailyLogProvider.notifier)
+          .answer(dayKey(DateTime.now()), 'a', false);
       expect(c.read(coinsProvider).balance, CoinReward.dailyTried);
     });
 

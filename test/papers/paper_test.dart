@@ -66,11 +66,19 @@ void main() {
 
   test('duration falls back to one minute per question, minimum 10', () {
     const small = Paper(
-        id: 'a', kind: PaperKind.pyq, title: 'a', examCode: 'APPSC',
-        department: Department.appsc, questionCount: 5);
+        id: 'a',
+        kind: PaperKind.pyq,
+        title: 'a',
+        examCode: 'APPSC',
+        department: Department.appsc,
+        questionCount: 5);
     const big = Paper(
-        id: 'b', kind: PaperKind.pyq, title: 'b', examCode: 'APPSC',
-        department: Department.appsc, questionCount: 80);
+        id: 'b',
+        kind: PaperKind.pyq,
+        title: 'b',
+        examCode: 'APPSC',
+        department: Department.appsc,
+        questionCount: 80);
     expect(small.effectiveDuration, 10);
     expect(big.effectiveDuration, 80);
   });

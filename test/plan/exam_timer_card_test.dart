@@ -19,7 +19,9 @@ class _Reminder implements StudyReminderService {
   Future<bool> requestPermission() async => true;
   @override
   Future<bool> scheduleDailyReminder(
-          {required int hour, required int minute, required int cardGoal}) async =>
+          {required int hour,
+          required int minute,
+          required int cardGoal}) async =>
       true;
   @override
   Future<bool> cancelDailyReminder() async => true;
@@ -45,7 +47,8 @@ Future<void> pumpCard(
     ],
     child: MaterialApp(
       theme: AppTheme.lightTheme,
-      home: scaled(const Scaffold(body: Padding(padding: EdgeInsets.all(20), child: ExamTimerCard()))),
+      home: scaled(const Scaffold(
+          body: Padding(padding: EdgeInsets.all(20), child: ExamTimerCard()))),
     ),
   ));
   await settle(tester, 3);
@@ -55,7 +58,8 @@ DateTime inDays(int d, {int hours = 0}) =>
     DateTime.now().add(Duration(days: d, hours: hours));
 
 void main() {
-  testWidgets('no exam date asks for one and still shows the question ring', (tester) async {
+  testWidgets('no exam date asks for one and still shows the question ring',
+      (tester) async {
     await pumpCard(tester);
     expect(find.text('Add your exam date'), findsOneWidget);
     expect(find.text('0'), findsOneWidget);
@@ -65,7 +69,8 @@ void main() {
   });
 
   testWidgets('over a month away shows months and days', (tester) async {
-    await pumpCard(tester, plan: StudyPlan(examDate: inDays(75), completed: true));
+    await pumpCard(tester,
+        plan: StudyPlan(examDate: inDays(75), completed: true));
     expect(find.text('TIME TO YOUR EXAM'), findsOneWidget);
     expect(find.textContaining('MONTH'), findsOneWidget);
     expect(find.textContaining('DAY'), findsOneWidget);
@@ -74,7 +79,8 @@ void main() {
   });
 
   testWidgets('under a month shows days and hours', (tester) async {
-    await pumpCard(tester, plan: StudyPlan(examDate: inDays(12), completed: true));
+    await pumpCard(tester,
+        plan: StudyPlan(examDate: inDays(12), completed: true));
     expect(find.text('DAYS'), findsOneWidget);
     expect(find.text('HRS'), findsOneWidget);
     expect(find.text('MIN'), findsNothing);
@@ -82,14 +88,17 @@ void main() {
   });
 
   testWidgets('under a week adds minutes', (tester) async {
-    await pumpCard(tester, plan: StudyPlan(examDate: inDays(5), completed: true));
+    await pumpCard(tester,
+        plan: StudyPlan(examDate: inDays(5), completed: true));
     expect(find.text('HRS'), findsOneWidget);
     expect(find.text('MIN'), findsOneWidget);
     expect(find.text('SEC'), findsNothing);
   });
 
-  testWidgets('under three days adds seconds and keeps refreshing cleanly', (tester) async {
-    await pumpCard(tester, plan: StudyPlan(examDate: inDays(1, hours: 5), completed: true));
+  testWidgets('under three days adds seconds and keeps refreshing cleanly',
+      (tester) async {
+    await pumpCard(tester,
+        plan: StudyPlan(examDate: inDays(1, hours: 5), completed: true));
     expect(find.text('SEC'), findsOneWidget);
     // The card refreshes every second here (see examCountdown's
     // ticksEverySecond); it must do so without errors and stop on dispose.
@@ -100,14 +109,17 @@ void main() {
   });
 
   testWidgets('a past date asks for the next one', (tester) async {
-    await pumpCard(tester, plan: StudyPlan(examDate: inDays(-3), completed: true));
+    await pumpCard(tester,
+        plan: StudyPlan(examDate: inDays(-3), completed: true));
     expect(find.text('Your exam date has passed'), findsOneWidget);
     expect(find.text('SEC'), findsNothing);
   });
 
-  testWidgets('the ring follows the plan target and todays answers', (tester) async {
+  testWidgets('the ring follows the plan target and todays answers',
+      (tester) async {
     await pumpCard(tester,
-        plan: const StudyPlan(dailyQuestions: 20, completed: true), answered: 7);
+        plan: const StudyPlan(dailyQuestions: 20, completed: true),
+        answered: 7);
     expect(find.text('7'), findsOneWidget);
     expect(find.text('of 20'), findsOneWidget);
     expect(find.textContaining('13 more questions'), findsOneWidget);
@@ -131,7 +143,8 @@ void main() {
         ...testOverrides(prefs),
       ]);
       addTearDown(c.dispose);
-      expect(c.read(questionsTodayProvider), 0); // stored count is from another day
+      expect(c.read(questionsTodayProvider),
+          0); // stored count is from another day
       c.read(questionsTodayProvider.notifier).add(3);
       c.read(questionsTodayProvider.notifier).add(2);
       c.read(questionsTodayProvider.notifier).add(0); // ignored
@@ -156,7 +169,10 @@ void main() {
     test('old saved plans without the field get the default', () {
       final plan = StudyPlan.fromJson({'dailyGoal': 30, 'completed': true});
       expect(plan.dailyQuestions, 10);
-      expect(StudyPlan.fromJson(const StudyPlan(dailyQuestions: 20).toJson()).dailyQuestions, 20);
+      expect(
+          StudyPlan.fromJson(const StudyPlan(dailyQuestions: 20).toJson())
+              .dailyQuestions,
+          20);
     });
   });
 }

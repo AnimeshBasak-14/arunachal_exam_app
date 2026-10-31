@@ -10,6 +10,7 @@ ChapterPhoto photo(String caption) =>
     ChapterPhoto('a/ab/x.jpg', caption, 'Someone', 'CC0', 2000);
 
 void main() {
+  cardChanceTests();
   test('keywords keep names and drop common words', () {
     expect(photoKeywords(photo('Nyishi man in a hornbill-beak headdress')),
         containsAll(['nyishi', 'hornbill-beak', 'headdress']));
@@ -114,6 +115,33 @@ void main() {
               reason: '${c.id}: ${p.caption}');
         }
       }
+    });
+  });
+}
+
+void cardChanceTests() {
+  group('mystery photos', () {
+    final cards = [
+      for (final t in LearnTopic.values) ...learnDeck[t]!.take(200)
+    ];
+    final day = DateTime(2026, 11, 2);
+
+    test('the same card gives the same answer all day', () {
+      for (final c in cards.take(100)) {
+        expect(photoShownToday(c, now: day),
+            photoShownToday(c, now: day.add(const Duration(hours: 9))));
+      }
+    });
+
+    test('about two in three show, and it changes from day to day', () {
+      final shown = cards.where((c) => photoShownToday(c, now: day)).length;
+      expect(shown / cards.length, inInclusiveRange(0.55, 0.75));
+      final next = DateTime(2026, 11, 3);
+      final differ = cards
+          .where((c) =>
+              photoShownToday(c, now: day) != photoShownToday(c, now: next))
+          .length;
+      expect(differ, greaterThan(cards.length * 0.2));
     });
   });
 }

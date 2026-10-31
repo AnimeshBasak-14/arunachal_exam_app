@@ -36,7 +36,8 @@ void main() {
       expect(result.city, 'Naharlagun');
     });
 
-    test('trims and lowercases emailOrPhone parameter when querying key', () async {
+    test('trims and lowercases emailOrPhone parameter when querying key',
+        () async {
       final userMap = {
         'name': 'John Smith',
         'email': 'john@example.com',
@@ -56,7 +57,8 @@ void main() {
       expect(result.email, 'john@example.com');
     });
 
-    test('uses default fallback values when JSON fields are missing or null', () async {
+    test('uses default fallback values when JSON fields are missing or null',
+        () async {
       final partialMap = <String, dynamic>{
         'name': 'Partial User',
       };
@@ -71,7 +73,8 @@ void main() {
 
       expect(result, isNotNull);
       expect(result!.name, 'Partial User');
-      expect(result.email, 'partial@example.com'); // falls back to passed emailOrPhone
+      expect(result.email,
+          'partial@example.com'); // falls back to passed emailOrPhone
       expect(result.phone, '9876543210'); // default fallback
       expect(result.profilePic, 'avatar_green'); // default fallback
       expect(result.dob, '2000-01-01'); // default fallback
@@ -79,7 +82,8 @@ void main() {
       expect(result.city, 'Itanagar'); // default fallback
     });
 
-    test('returns null when account data does not exist in SharedPreferences', () async {
+    test('returns null when account data does not exist in SharedPreferences',
+        () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final storageService = StorageService(prefs);
@@ -89,7 +93,8 @@ void main() {
       expect(result, isNull);
     });
 
-    test('returns null when JSON parsing fails due to corrupted JSON string', () async {
+    test('returns null when JSON parsing fails due to corrupted JSON string',
+        () async {
       SharedPreferences.setMockInitialValues({
         'account_data_corrupt@example.com': '{invalid_json_string',
       });
@@ -101,7 +106,8 @@ void main() {
       expect(result, isNull);
     });
 
-    test('returns null when stored JSON is not a Map (e.g. JSON array)', () async {
+    test('returns null when stored JSON is not a Map (e.g. JSON array)',
+        () async {
       SharedPreferences.setMockInitialValues({
         'account_data_array@example.com': '["item1", "item2"]',
       });
@@ -113,7 +119,8 @@ void main() {
       expect(result, isNull);
     });
 
-    test('retrieves user saved via saveUser (round-trip persistence)', () async {
+    test('retrieves user saved via saveUser (round-trip persistence)',
+        () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final storageService = StorageService(prefs);
@@ -128,7 +135,8 @@ void main() {
         city: 'Pasighat',
       );
 
-      final retrievedByEmail = storageService.getAccountData('alice@example.com');
+      final retrievedByEmail =
+          storageService.getAccountData('alice@example.com');
       expect(retrievedByEmail, isNotNull);
       expect(retrievedByEmail!.name, 'Alice');
       expect(retrievedByEmail.email, 'alice@example.com');

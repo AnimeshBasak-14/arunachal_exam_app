@@ -69,7 +69,8 @@ void main() {
     );
   }
 
-  testWidgets('ResultScreen with 0 previous attempts (first attempt)', (tester) async {
+  testWidgets('ResultScreen with 0 previous attempts (first attempt)',
+      (tester) async {
     phoneViewport(tester);
     final prefs = await testPrefs();
     final current = _buildAttempt(
@@ -88,13 +89,16 @@ void main() {
     expect(find.text('50%'), findsAtLeastNWidgets(1));
     expect(find.text('50'), findsOneWidget);
     expect(find.text('/ 100'), findsOneWidget);
-    expect(find.text('First attempt. This is your starting point.'), findsOneWidget);
+    expect(find.text('First attempt. This is your starting point.'),
+        findsOneWidget);
     expect(find.text('New personal best'), findsNothing);
     expect(find.text('Review mistakes'), findsNothing); // qs is empty
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('ResultScreen with 1 previous attempt (improvement and personal best)', (tester) async {
+  testWidgets(
+      'ResultScreen with 1 previous attempt (improvement and personal best)',
+      (tester) async {
     phoneViewport(tester);
     final prefs = await testPrefs();
     final prev = _buildAttempt(
@@ -117,13 +121,16 @@ void main() {
     await settle(tester, 5);
 
     expect(find.text('75%'), findsOneWidget);
-    expect(find.text('+35 points since your last APSSB-CGL attempt'), findsOneWidget);
+    expect(find.text('+35 points since your last APSSB-CGL attempt'),
+        findsOneWidget);
     expect(find.text('New personal best'), findsOneWidget);
     expect(find.text('Last 2 attempts'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('ResultScreen with 3 previous attempts in dark mode at 130% text (drop & weak topic)', (tester) async {
+  testWidgets(
+      'ResultScreen with 3 previous attempts in dark mode at 130% text (drop & weak topic)',
+      (tester) async {
     phoneViewport(tester);
     final prefs = await testPrefs();
     final a1 = _buildAttempt(
@@ -182,8 +189,10 @@ void main() {
     await settle(tester, 5);
 
     expect(find.text('55%'), findsOneWidget);
-    expect(find.text('-25 points since your last APSSB-CGL attempt'), findsOneWidget);
-    expect(find.text('A dip is normal. Review the questions you missed.'), findsOneWidget);
+    expect(find.text('-25 points since your last APSSB-CGL attempt'),
+        findsOneWidget);
+    expect(find.text('A dip is normal. Review the questions you missed.'),
+        findsOneWidget);
     expect(find.text('Last 4 attempts'), findsOneWidget);
     expect(find.text('Practise your weak topics (Polity)'), findsOneWidget);
     expect(tester.takeException(), isNull);

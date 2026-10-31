@@ -40,7 +40,10 @@ class StateGkData {
         {'Symbol': 'State Animal', 'Value': 'Mithun (Bos frontalis)'},
         {'Symbol': 'State Bird', 'Value': 'Great Hornbill (Buceros bicornis)'},
         {'Symbol': 'State Fish', 'Value': 'Golden Mahseer (Tor putitora)'},
-        {'Symbol': 'State Tree', 'Value': 'Hollong (Dipterocarpus macrocarpus)'},
+        {
+          'Symbol': 'State Tree',
+          'Value': 'Hollong (Dipterocarpus macrocarpus)'
+        },
         {
           'Symbol': 'State Flower',
           'Value': 'Foxtail Orchid (Rhynchostylis retusa)'
